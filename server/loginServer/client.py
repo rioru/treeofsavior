@@ -24,7 +24,7 @@ class ClientHandler:
 		data = sock.recv (self.PACKETSIZE_MAX)
 		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify(data)
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
-		reply += "A" * 4; # Unknown
+		reply += "B" * 4; # Unknown
 		# Le paquet peut contenir le nom de l'équipe si le joueur l'a déjà créée.
 		reply += struct.pack("<H", 16);
 		reply += "\x00" * 4 # Field 1
