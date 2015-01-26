@@ -18,17 +18,19 @@ class ClientHandler:
 		reply += "\x00" * 35 # <-- Zéro ici pour mettre le compte en mode développeur
 		sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply);
+		
+	def startBarrack (self, sock):
+		data = sock.recv (self.PACKETSIZE_MAX)
+		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify(data)
 
 	def commanderListHandler (self, sock):
 		print "BC_COMMANDER_LIST Handler";
-		data = sock.recv (self.PACKETSIZE_MAX)
-		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify(data)
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
-		reply += "B" * 4; # Unknown
+		reply += "\x00" * 4; # Field 1
 		# Le paquet peut contenir le nom de l'équipe si le joueur l'a déjà créée.
 		reply += struct.pack("<H", 16);
-		reply += "\x00" * 4 # Field 1
 		reply += "\x00" * 4 # Field 2
+		reply += "\x00" * 4 # Field 3
 		sock.send (reply);
 		print "Sent : " + binascii.hexlify (reply);
 
@@ -43,22 +45,47 @@ class ClientHandler:
 		print 'Expected CB_BARRACKNAME_CHANGE. Received : ' + binascii.hexlify(data)
 		barrackName = "Spl3en"
 		reply  = struct.pack("<H", PacketType.BC_BARRACKNAME_CHANGE)
-		reply += "B" * 9;
+		reply += "\x01" * 9;
 		reply += barrackName + "\x00";
-		reply += "C" * (63 - len(barrackName));
+		reply += "\x00" * (63 - len(barrackName));
 		sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply);
-	
+
 	def commanderCreateHandler (self, sock):
+		nbCharacterBarrack = 0;
+
 		while True:
 			print "BC_COMMANDER_CREATE Handler";
 			data = sock.recv (self.PACKETSIZE_MAX) # CB_BARRACKNAME_CHANGE
 			print 'Expected CB_COMMANDER_CREATE. Received : ' + binascii.hexlify(data)
+			
 			# Size: 318
+			# Configs
+			nbCharacterBarrack += 1;
+			classId = 4;
+			jobId = 4;
+			gender = 1;
+			
+			# Packet
 			reply  = struct.pack("<H", PacketType.BC_COMMANDER_CREATE);
-			reply += "\x01"*316
+			reply += "\xFF"*4 # Field 1
+			reply += "\xFF"*144
+			reply += struct.pack("<H", classId) # class id
+			reply += "\x01"*2
+			reply += struct.pack("<H", jobId) # job id
+			reply += struct.pack("<B", gender) # Gender
+			reply += "\x04"*1
+			reply += "\x01"*4
+			reply += struct.pack("<I", 2) * 20; # items
+			reply += struct.pack("<Q", 1); # quad sprintf (00452885)
+			reply += "\x01"*4
+			reply += struct.pack("<B", nbCharacterBarrack) # Character position in the character list
+			reply += "\x01"
+			reply += struct.pack("<H", 4) #sysbarrack related
+			reply += "\x01"*60
 			sock.send (reply)
 			print "Sent : " + binascii.hexlify (reply);
+			
 
 	"""
 	def iesModifyListHandler (self, sock):
@@ -102,6 +129,7 @@ class ClientHandler:
 
 	def start (self, sock):
 		self.loginOKHandler (sock);
+		self.startBarrack (sock);
 		self.commanderListHandler (sock);
 		self.currentBarrackHandler (sock);
 		self.barrackNameChangeHandler (sock);
