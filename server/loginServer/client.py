@@ -64,15 +64,15 @@ class ClientHandler:
 			nbCharacterBarrack += 1;
 			charName = "Rioru";
 			rightClick = "I'm displayed by a right click on the character";
-			classId = 0x2711;
-			jobId = 2;
+			classId = 10003;
+			jobId = 3;
 			gender = 1;
 			mapId = 0xD34;
 			characterLevel = 1337;
 			# 0x2710 = empty item (? or maybe it's just bugged)
 			itemsID = [0x9d89d, 0x9d89e, 0x9d89f, 0x9d8a0, 0x9d8a1, 0x2710, 0x2710, 0x2710, 0x9d8a5, 0x9d8a6, 0x9d8a7, 0x9d8a8, 0x9d8a9, 0x9d8aa, 0x9d8ab, 0x9d8ac, 0x9d8ad, 0x9d8ae, 0x9d8af, 0x9d8b0];
 			hairId = 2;
-			spriteID = 2; # max 18
+			spriteID = 0; # max 18
 
 			# Packet
 			reply  = struct.pack("<H", PacketType.BC_COMMANDER_CREATE);
