@@ -62,6 +62,7 @@ class ClientHandler:
 			# Size: 318
 			# Configs
 			nbCharacterBarrack += 1;
+			charName = "Rioru";
 			classId = 0x2711;
 			jobId = 2;
 			gender = 1;
@@ -74,7 +75,10 @@ class ClientHandler:
 
 			# Packet
 			reply  = struct.pack("<H", PacketType.BC_COMMANDER_CREATE);
-			reply += struct.pack("<I", 0xFF) * 37; # UNKNOWN
+			reply += struct.pack("<I", 0xFF) * 1; # UNKNOWN
+			reply += charName; # Character Name
+			reply += "\x00" * (64 - len(charName)); # Not sure of the size
+			reply += struct.pack("<I", 0xFF) * 20; # UNKNOWN
 
 			reply += struct.pack("<H", classId) # class id
 
@@ -106,7 +110,7 @@ class ClientHandler:
 			reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN
 
 			sock.send (reply)
-			print "Sent : " + binascii.hexlify (reply);
+			print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 
 	"""
