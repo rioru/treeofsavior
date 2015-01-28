@@ -39,13 +39,24 @@ int main (int argc, char **argv)
     int mapID = 0xD34;
     int itemID = 0x9D89D;
 
-    int itemIndex = getItemIndex(itemID, sizeof_array (tableItems) / 2, 0xFFF);
-    unsigned int item = tableItems[2 * itemIndex];
-    printf("idx %x => %x\n", itemIndex, item);
+    printf("itemsID = [");
+    int nbItem = 0;
+    for (int i = itemID; i < itemID + 100; i++) {
+        int itemIndex = getItemIndex(i, sizeof_array (tableItems) / 2, 0xFFF);
+        unsigned int item = tableItems[2 * itemIndex];
+        if (item != 0x4a04110) {
+            printf("0x%x", i);
+            if (++nbItem >= 20)
+                break;
+            else
+                printf (", ");
+        }
+    }
+    printf("];\n");
 
     int mapIndex = getItemIndex(mapID, sizeof_array(tableMapId) / 2, 0x1FF);
     unsigned int map = tableMapId[2 * mapIndex];
-    printf("idx %x => %x\n", itemIndex, map);
+    printf("idx %x => %x\n", mapIndex, map);
 
     return 0;
 }
