@@ -62,27 +62,43 @@ class ClientHandler:
 			# Size: 318
 			# Configs
 			nbCharacterBarrack += 1;
-			classId = 4;
-			jobId = 4;
+			classId = 0x2711;
+			jobId = 2;
 			gender = 1;
+			mapId = 0xD34;
+			characterLevel = 1337;
 			
 			# Packet
 			reply  = struct.pack("<H", PacketType.BC_COMMANDER_CREATE);
-			reply += "\xFF"*4 # Field 1
-			reply += "\xFF"*144
+			reply += struct.pack("<I", 0xFF) * 37; # UNKNOWN
+			
 			reply += struct.pack("<H", classId) # class id
-			reply += "\x01"*2
+			
+			reply += struct.pack("<H", 0xFF) # UNKNOWN
+			
 			reply += struct.pack("<H", jobId) # job id
 			reply += struct.pack("<B", gender) # Gender
-			reply += "\x04"*1
-			reply += "\x01"*4
-			reply += struct.pack("<I", 2) * 20; # items
-			reply += struct.pack("<Q", 1); # quad sprintf (00452885)
-			reply += "\x01"*4
+			
+			reply += struct.pack("<B", 1) # UNKNOWN
+			
+			reply += struct.pack("<I", characterLevel); # Character level
+			reply += struct.pack("<I", 0x9D89D) * 20; # items
+			
+			reply += struct.pack("<Q", 0xFF); # UNKNOWN
+			reply += struct.pack("<I", 0xFF) # UNKNOWN
+			
 			reply += struct.pack("<B", nbCharacterBarrack) # Character position in the character list
-			reply += "\x01"
-			reply += struct.pack("<H", 4) #sysbarrack related
-			reply += "\x01"*60
+			
+			reply += struct.pack("<B", 0xFF) # UNKNOWN
+			
+			reply += struct.pack("<H", mapId) # mapID
+			
+			reply += struct.pack("<I", 0xFF) * 3; # UNKNOWN
+			reply += struct.pack("<I", 11) * 1; # Apparence du sprite du corps
+			reply += struct.pack("<I", 0xFF) * 1; # UNKNOWN
+			reply += struct.pack("<I", 0xFF) * 2; # UNKNOWN
+			reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN
+			
 			sock.send (reply)
 			print "Sent : " + binascii.hexlify (reply);
 			
