@@ -63,6 +63,7 @@ class ClientHandler:
 			# Configs
 			nbCharacterBarrack += 1;
 			charName = "Rioru";
+			rightClick = "I'm displayed by a right click on the character";
 			classId = 0x2711;
 			jobId = 2;
 			gender = 1;
@@ -78,7 +79,11 @@ class ClientHandler:
 			reply += struct.pack("<I", 0xFF) * 1; # UNKNOWN
 			reply += charName; # Character Name
 			reply += "\x00" * (64 - len(charName)); # Not sure of the size
-			reply += struct.pack("<I", 0xFF) * 20; # UNKNOWN
+			reply += struct.pack("<B", 1) # UNKNOWN
+			reply += rightClick; # Right click description, not sure what it's for
+			reply += "\x00" * (64 - len(rightClick)); # Not sure of the size
+			reply += struct.pack("<B", 0xFF) * 12; # UNKNOWN
+			reply += struct.pack("<B", 1) * 3 # UNKNOWN
 
 			reply += struct.pack("<H", classId) # class id
 
