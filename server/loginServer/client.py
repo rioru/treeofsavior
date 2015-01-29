@@ -15,7 +15,7 @@ class ClientHandler:
 		print 'CB_LOGIN_BY_PASSPORT expected. Received : ' + binascii.hexlify(data)
 		# Size: 37
 		reply  = struct.pack("<H", PacketType.BC_LOGINOK)
-		reply += "\x00" * 35 # <-- Zéro ici pour mettre le compte en mode développeur
+		reply += "A" * 35 # <-- Zéro ici pour mettre le compte en mode développeur
 		sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply);
 
@@ -27,8 +27,10 @@ class ClientHandler:
 		print "BC_COMMANDER_LIST Handler";
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
 		reply += "\x00" * 4; # Field 1
+		
 		# Le paquet peut contenir le nom de l'équipe si le joueur l'a déjà créée.
-		reply += struct.pack("<H", 16);
+		# A priori, il peut aussi contenir les anciens personnages déjà existants.
+		reply += struct.pack("<H", 16); # 16 = Taille du paquet en comptant à partir du field 1
 		reply += "\x00" * 4 # Field 2
 		reply += "\x00" * 4 # Field 3
 		sock.send (reply);
