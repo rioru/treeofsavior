@@ -101,7 +101,11 @@ class ClientHandler:
 			reply += struct.pack("<I", characterLevel); # Character level
 			for itemId in itemsId: # Inventory : 20 items
 				reply += struct.pack("<I", itemId); # items
-			reply += struct.pack("<Q", hairId); # Hairstyle
+				
+			reply += struct.pack("<B", 3); # Hairstyle
+			
+			reply += struct.pack("<B", 0xFF) * 3; # UNKNOWN
+			reply += struct.pack("<I", 0xFF); # UNKNOWN
 			reply += struct.pack("<I", positionCharacterList) # Position in the character list
 			reply += struct.pack("<B", nbCharacterBarrack) # Character position in the character list
 
