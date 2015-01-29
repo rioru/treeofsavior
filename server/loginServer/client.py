@@ -75,7 +75,7 @@ class ClientHandler:
 			characterLevel = 1337;
 			# 0x2710 = empty item (? or maybe it's just bugged)
 			itemsId = [0x9d89d, 0x9d89e, 0x9d89f, 0x9d8a0, 0x9d8a1, 0x2710, 0x2710, 0x2710, 0x9d8a5, 0x9d8a6, 0x9d8a7, 0x9d8a8, 0x9d8a9, 0x9d8aa, 0x9d8ab, 0x9d8ac, 0x9d8ad, 0x9d8ae, 0x9d8af, 0x9d8b0];
-			hairId = 2;
+			hairId = 3;
 			spriteID = 0; # max 18
 
 			# Packet
@@ -103,9 +103,9 @@ class ClientHandler:
 			reply += struct.pack("<I", characterLevel); # Character level
 			for itemId in itemsId: # Inventory : 20 items
 				reply += struct.pack("<I", itemId); # items
-				
-			reply += struct.pack("<B", 3); # Hairstyle
-			
+
+			reply += struct.pack("<B", hairId); # Hairstyle
+
 			reply += struct.pack("<B", 0xFF) * 3; # UNKNOWN
 			reply += struct.pack("<I", 0xFF); # UNKNOWN
 			reply += struct.pack("<I", positionCharacterList) # Position in the character list
@@ -120,7 +120,7 @@ class ClientHandler:
 			reply += struct.pack("<I", 0xFF) * 1; # UNKNOWN
 			reply += struct.pack("<I", 0xFF) * 2; # UNKNOWN
 			reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN
-			
+
 			sock.send (reply)
 			print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
