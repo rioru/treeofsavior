@@ -21,7 +21,7 @@ class ClientHandler:
 		reply += "\x00" * 1 # 0 = developper mode, otherwise normal mode
 		reply += "\x00" * 1
 		sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply);
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def startBarrack (self, sock):
 		data = sock.recv (self.PACKETSIZE_MAX)
@@ -38,7 +38,7 @@ class ClientHandler:
 		reply += "\x00" * 4 # Field 2
 		reply += "\x00" * 4 # Field 3
 		sock.send (reply);
-		print "Sent : " + binascii.hexlify (reply);
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def currentBarrackHandler (self, sock):
 		print "CURRENT_BARRACK Handler";
@@ -55,7 +55,7 @@ class ClientHandler:
 		reply += barrackName + "\x00";
 		reply += "\x00" * (63 - len(barrackName));
 		sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply);
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def commanderCreateHandler (self, sock):
 		nbCharacterBarrack = 0;
