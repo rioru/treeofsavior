@@ -15,7 +15,11 @@ class ClientHandler:
 		print 'CB_LOGIN_BY_PASSPORT expected. Received : ' + binascii.hexlify(data)
 		# Size: 37
 		reply  = struct.pack("<H", PacketType.BC_LOGINOK)
-		reply += "A" * 35 # <-- Zéro ici pour mettre le compte en mode développeur
+		reply += "\x00" * 8
+		reply += "\x01" * 1 # Send movements to server in barrack + allow mouse movements
+		reply += "\x00" * 24
+		reply += "\x00" * 1 # 0 = developper mode, otherwise normal mode
+		reply += "\x00" * 1
 		sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply);
 
