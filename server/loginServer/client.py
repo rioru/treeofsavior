@@ -84,47 +84,32 @@ class ClientHandler:
 
 			# Packet
 			reply  = struct.pack("<H", PacketType.BC_COMMANDER_CREATE);
-
 			reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
-
 			reply += charName; # Character Name
 			reply += "\x00" * (65 - len(charName));
-
 			reply += rightClick; # Right click description, not sure what it's for
 			reply += "\x00" * (65 - len(rightClick));
-
 			reply += struct.pack("<B", 0xFF) * 14; # UNKNOWN
-
 			reply += struct.pack("<H", classId) # class id
-
 			reply += struct.pack("<H", 0xFF) # UNKNOWN
-
 			reply += struct.pack("<H", jobId) # job id
 			reply += struct.pack("<B", gender) # Gender
-
 			reply += struct.pack("<B", 1) # UNKNOWN
-
 			reply += struct.pack("<I", characterLevel); # Character level
 			for itemId in itemsId: # Inventory : 20 items
 				reply += struct.pack("<I", itemId); # items
-
 			reply += struct.pack("<B", hairId); # Hairstyle
-
 			reply += struct.pack("<B", 0xFF) * 3; # UNKNOWN
 			reply += struct.pack("<I", 0xFF); # UNKNOWN
 			reply += struct.pack("<I", positionCharacterList) # Position in the character list
 			reply += struct.pack("<B", nbCharacterBarrack) # Character position in the character list
-
 			reply += struct.pack("<B", 0xFF) # UNKNOWN
-
 			reply += struct.pack("<H", mapId) # mapID
-
 			reply += struct.pack("<I", 0xFF) * 3; # UNKNOWN
 			reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 			reply += struct.pack("<I", 0xFF) * 1; # UNKNOWN
 			reply += struct.pack("<I", 0xFF) * 2; # UNKNOWN
 			reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN
-
 			sock.send (reply)
 			print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
