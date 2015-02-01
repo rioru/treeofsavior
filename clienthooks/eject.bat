@@ -1,1 +1,0 @@
-dllinject.exe --lib "%CD%\ToSClient.dll" --procname "Client_tos.exe" --dbgpriv --eject
