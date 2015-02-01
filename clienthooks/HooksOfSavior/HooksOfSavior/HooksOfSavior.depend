@@ -1,0 +1,156 @@
+# depslib dependency file v1.0
+1421799106 source:c:\users\spl3en\desktop\c\bbqueue\bbqueue.c
+	"BbQueue.h"
+	"dbg/dbg.h"
+
+1421799106 c:\users\spl3en\desktop\c\bbqueue\bbqueue.h
+	<stdio.h>
+	<stdlib.h>
+	"Utils/Utils.h"
+
+1421800971 c:\users\spl3en\desktop\c\\utils\utils.h
+	<time.h>
+	<stdio.h>
+	<windows.h>
+
+1422049831 c:\users\spl3en\desktop\c\\dbg\dbg.h
+	<stdio.h>
+	"Utils/Utils.h"
+
+1421800895 source:c:\users\spl3en\desktop\c\console\console.c
+	"Console.h"
+	<stdlib.h>
+	<windows.h>
+	"dbg/dbg.h"
+
+1421801707 c:\users\spl3en\desktop\c\console\console.h
+	"Utils/Utils.h"
+
+1421799088 source:c:\users\spl3en\desktop\c\dbg\dbg.c
+	"dbg.h"
+	<stdarg.h>
+	<stdio.h>
+	"Console/Console.h"
+
+1422049831 c:\users\spl3en\desktop\c\dbg\dbg.h
+	<stdio.h>
+	"Utils/Utils.h"
+
+1421801707 c:\users\spl3en\desktop\c\\console\console.h
+	"Utils/Utils.h"
+
+1422054869 source:c:\users\spl3en\desktop\c\utils\utils.c
+	"Utils.h"
+	<stdint.h>
+
+1421800971 c:\users\spl3en\desktop\c\utils\utils.h
+	<time.h>
+	<stdio.h>
+	<windows.h>
+
+1421855567 source:c:\users\spl3en\desktop\c\win32tools\win32tools.c
+	"Win32Tools.h"
+	"dbg/dbg.h"
+
+1421799072 c:\users\spl3en\desktop\c\win32tools\win32tools.h
+	<stdlib.h>
+	<windows.h>
+	<tlhelp32.h>
+	<time.h>
+	<psapi.h>
+	<wincon.h>
+	<subauth.h>
+	<ntdef.h>
+	<sal.h>
+	"Ztring/Ztring.h"
+	"Utils/Utils.h"
+	"Console/Console.h"
+
+1421800528 c:\users\spl3en\desktop\c\\ztring\ztring.h
+	<stdarg.h>
+	<string.h>
+	<ctype.h>
+	<unistd.h>
+	"BbQueue/BbQueue.h"
+	"Utils/Utils.h"
+
+1421799106 c:\users\spl3en\desktop\c\\bbqueue\bbqueue.h
+	<stdio.h>
+	<stdlib.h>
+	"Utils/Utils.h"
+
+1421801644 source:c:\users\spl3en\desktop\c\ztring\ztring.c
+	"Ztring.h"
+
+1421800528 c:\users\spl3en\desktop\c\ztring\ztring.h
+	<stdarg.h>
+	<string.h>
+	<ctype.h>
+	<unistd.h>
+	"BbQueue/BbQueue.h"
+	"Utils/Utils.h"
+
+1422140196 source:c:\users\spl3en\desktop\c\tosclient\main.c
+	"HookEngine/HookEngine.h"
+	"Utils/Utils.h"
+	"Win32Tools/Win32Tools.h"
+	"PacketType.h"
+	"dbg/dbg.h"
+
+1421801693 c:\users\spl3en\desktop\c\\hookengine\hookengine.h
+	"Utils/Utils.h"
+	"BbQueue/BbQueue.h"
+
+1421799072 c:\users\spl3en\desktop\c\\win32tools\win32tools.h
+	<stdlib.h>
+	<windows.h>
+	<tlhelp32.h>
+	<time.h>
+	<psapi.h>
+	<wincon.h>
+	<subauth.h>
+	<ntdef.h>
+	<sal.h>
+	"Ztring/Ztring.h"
+	"Utils/Utils.h"
+	"Console/Console.h"
+
+1421851607 source:c:\users\spl3en\desktop\c\hookengine\hookengine.c
+	"HookEngine.h"
+	<stdlib.h>
+	"dbg/dbg.h"
+
+1421801693 c:\users\spl3en\desktop\c\hookengine\hookengine.h
+	"Utils/Utils.h"
+	"BbQueue/BbQueue.h"
+
+1422051270 c:\users\spl3en\desktop\c\tosclient\packettype.h
+	"Utils/Utils.h"
+
+1421801693 c:\users\spl3en\desktop\c\tosclient\hookengine\hookengine.h
+	"Utils/Utils.h"
+	"BbQueue/BbQueue.h"
+
+1421800971 c:\users\spl3en\desktop\c\tosclient\utils\utils.h
+	<time.h>
+	<stdio.h>
+	<windows.h>
+
+1421799072 c:\users\spl3en\desktop\c\tosclient\win32tools\win32tools.h
+	<stdlib.h>
+	<windows.h>
+	<tlhelp32.h>
+	<time.h>
+	<psapi.h>
+	<wincon.h>
+	<subauth.h>
+	<ntdef.h>
+	<sal.h>
+	"Ztring/Ztring.h"
+	"Utils/Utils.h"
+	"Console/Console.h"
+
+1422049831 c:\users\spl3en\desktop\c\tosclient\dbg\dbg.h
+	<stdio.h>
+	"Utils/Utils.h"
+
