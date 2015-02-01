@@ -19,12 +19,6 @@ void __cdecl logDebug_1 (int a1, LPCSTR lpOutputString, char *message)
 	char buffer[4096];
 	sprintf (buffer, message);
 
-	if (strstr(buffer, "PrintIES0004Error")) {
-        while (1) {
-            Sleep(1);
-        }
-	}
-
 	dbg ("%s", buffer);
 
 	return hooked (a1, lpOutputString, message);
