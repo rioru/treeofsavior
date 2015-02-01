@@ -128,7 +128,7 @@ void dbgBuffer (BYTE *buffer, int bufferSize)
 
 void startInjection (void)
 {
-	char *tosDllPath = get_module_path ("ToSClient.dll");
+	char *tosDllPath = get_module_path ("HooksOfSavior.dll");
 	dbg_set_output (fopen (str_dup_printf("%s/log.txt", tosDllPath), "w+"));
 
 	if (!HookEngine_new (str_dup_printf ("%s/NtHookEngine.dll", tosDllPath))) {
