@@ -3,6 +3,8 @@
 #include "Win32Tools/Win32Tools.h"
 #include "PacketType.h"
 
+#include "TableNameItemsEnglish.h"
+
 #define __DEBUG_OBJECT__ "ToSClient"
 #include "dbg/dbg.h"
 
@@ -88,6 +90,75 @@ int __cdecl imcCrypt__NetEncrypt (signed int plaintextSize, BYTE *plaintextIn, v
     return hooked (plaintextSize, plaintextIn, ciphertextOut);
 }
 
+typedef struct _StringID
+{
+    struct _StringID *self;
+    DWORD unk2;
+    DWORD unk3;
+    int stringLen;
+    char stringOrPtr[16];
+
+}   StringID;
+
+typedef struct _ItemTable {
+    char data[0x230];
+}   ItemTable;
+
+typedef struct _imcIESObject {
+    char data[0x5C];
+    StringID *type;
+    DWORD classList;
+}   imcIESObject;
+
+typedef struct _ItemManager {
+    int seed;
+    StringID *itemName;
+    StringID *className;
+    StringID *itemType;
+    StringID *GroupName;
+    StringID *classType;
+    StringID *EqpType;
+    StringID *AttackType;
+    StringID *Attribute;
+    int ItemLv;
+    StringID *HandSide;
+    char data[0x114];
+}   ItemManager;
+
+
+int __thiscall ItemTable__InitItem (ItemTable *this, imcIESObject *object, ItemManager *itemManager)
+{
+	#define OFFSET_InitItem (0x0BF1E10 - 0x400000)
+	int (__thiscall *hooked) (ItemTable *, imcIESObject *, ItemManager *) =
+		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) ItemTable__InitItem);
+
+    int res = hooked (this, object, itemManager);
+
+    static int curId = 0;
+    char * (__thiscall *StringID__getString) (StringID **this) = (void *) 0x0103B740;
+
+    // Korean item name :
+    // char *itemName   = StringID__getString (&itemManager->itemName);
+
+    int seed         = itemManager->seed;
+    int ItemLv       = itemManager->ItemLv;
+
+    char *className  = StringID__getString (&itemManager->className);
+    char *itemType   = StringID__getString (&itemManager->itemType);
+    char *GroupName  = StringID__getString (&itemManager->GroupName);
+    char *classType  = StringID__getString (&itemManager->classType);
+    char *EqpType    = StringID__getString (&itemManager->EqpType);
+    char *AttackType = StringID__getString (&itemManager->AttackType);
+    char *Attribute  = StringID__getString (&itemManager->Attribute);
+    char *HandSide   = StringID__getString (&itemManager->HandSide);
+
+    dbg ("Seed = 0x%08X | ItemLv = %0.3d | ClassName = <%s> | itemType = <%s> | GroupName = <%s> | classType = <%s> | "
+         "EqpType = <%s> | AttackType = <%s> | Attribute = <%s> | HandSide = <%s> | Name = <%s>",
+         seed, ItemLv, className, itemType, GroupName, classType, EqpType, AttackType, Attribute, HandSide, tableNameItemsEnglish[curId++]);
+
+    return res;
+}
+
 
 /** ============== UTILS =================== */
 
@@ -141,6 +212,7 @@ void startInjection (void)
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2, (ULONG_PTR) logDebug_2);
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt, (ULONG_PTR) imcCrypt__NetEncrypt);
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,  (ULONG_PTR) ClientNet__GetPacket);
+	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_InitItem,  (ULONG_PTR) ItemTable__InitItem);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_createCmd,  (ULONG_PTR) unknown__createCmd);
 }
 

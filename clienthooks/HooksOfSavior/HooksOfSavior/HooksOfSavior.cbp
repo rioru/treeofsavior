@@ -64,6 +64,7 @@
 		</Unit>
 		<Unit filename="../dbg/dbg.h" />
 		<Unit filename="PacketType.h" />
+		<Unit filename="TableNameItemsEnglish.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

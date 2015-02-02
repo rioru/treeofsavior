@@ -2,6 +2,7 @@
 *.o
 
 # HooksOfSavior project ignored files
+clienthooks/HooksOfSavior/HooksOfSavior/log.txt
 clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.layout
 clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.depend
 clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.dll
