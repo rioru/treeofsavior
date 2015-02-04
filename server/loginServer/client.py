@@ -61,21 +61,22 @@ class ClientHandler:
 		self.sock.send (reply);
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def commanderListHandler (self, packet):
 		# BC_COMMANDER_LIST = 0x000F, // Size: 0
 		createNewAccount = True;
 		nbCharacterListed = 1;
-	
+
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		# reply += struct.pack("<H", X); # Size of the entire packet - Added dynamically at the end of the function
-		reply += struct.pack("<I", 0); # Field 2 - 
+		reply += struct.pack("<I", 0); # Field 2 -
 		reply += struct.pack("<I", 0); # Field 3 - Field 2 and 3 are used for visiting other barracks.
 
 		if not createNewAccount:
 			barrackName = "Spl3en"
+			barrackName = packet[10:72]
 			reply += struct.pack("<B", 0xFF); # UNKNOWN (seems not to be used)
 			reply += struct.pack("<B", nbCharacterListed); # Number of characters contained in the packet
 			reply += barrackName + "\x00" * (64 - len(barrackName));
@@ -121,7 +122,7 @@ class ClientHandler:
 
 			reply += struct.pack("<B", hairId); # Hairstyle
 			reply += struct.pack("<B",0x00) * 3; # UNKNOWN
-			
+
 			reply += struct.pack("<I",0x000000FF); # PCID - Still need to understand how it works
 
 			reply += struct.pack("<I", self.positionCharacterList) # Position in the character list
@@ -133,7 +134,7 @@ class ClientHandler:
 			reply += struct.pack("<I", 0) * 1; # UNKNOWN
 			reply += struct.pack("<I", 0) * 2; # UNKNOWN
 			reply += struct.pack("<I", 0) * 8; # UNKNOWN
-		
+
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
@@ -148,7 +149,7 @@ class ClientHandler:
 	def barrackNameChangeHandler (self, packet):
 		# CB_BARRACKNAME_CHANGE = 0x000A, // Size: 74
 		print 'CB_BARRACKNAME_CHANGE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		
+
 		# BC_BARRACKNAME_CHANGE = 0x0017, // Size: 75
 		barrackName = "Spl3en"
 		reply  = struct.pack("<H", PacketType.BC_BARRACKNAME_CHANGE)
@@ -164,7 +165,8 @@ class ClientHandler:
 		# BC_COMMANDER_CREATE = 0x0010, // Size: 318
 		self.nbCharacterBarrack += 1;
 		self.positionCharacterList += 1;
-		charName = "Rioru";
+		#charName = "Rioru";
+		charName = packet[11:76]
 		rightClick = "I'm displayed by a right click on the character";
 		classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 		jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
@@ -199,7 +201,7 @@ class ClientHandler:
 
 		reply += struct.pack("<B", hairId); # Hairstyle
 		reply += struct.pack("<B",0x00) * 3; # UNKNOWN
-		
+
 		reply += struct.pack("<I",0x000000FF); # PCID - Still need to understand how it works
 
 		reply += struct.pack("<I", self.positionCharacterList) # Position in the character list
@@ -211,11 +213,11 @@ class ClientHandler:
 		reply += struct.pack("<I", 0) * 1; # UNKNOWN
 		reply += struct.pack("<I", 0) * 2; # UNKNOWN
 		reply += struct.pack("<I", 0) * 8; # UNKNOWN
-		
+
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def jumpHandler (self, packet):
 		# CB_JUMP = 0x0055, // Size: 19
 		print 'Expected CB_JUMP. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -226,10 +228,10 @@ class ClientHandler:
 		unk3 = stream_unpack ("<H", packetStream);
 		bIsJumping = stream_unpack ("<B", packetStream);
 		unk4 = stream_unpack ("<I", packetStream);
-		
+
 		if packetStream.read (1):
 			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
-			
+
 		# BC_COMMANDER_CREATE = 0x0056, // Size: 19
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
 		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
@@ -237,61 +239,65 @@ class ClientHandler:
 		reply += struct.pack("<I", 0x00010000); # Keep this value
 		reply += struct.pack("<I", 0); # Keep this value
 		reply += struct.pack("<B", 1); # Keep this value
-		
+
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 
 	def moveHandler (self, packet):
-		# CB_COMMANDER_MOVE = 0x000B, // Size: 31
-		# print 'Expected CB_COMMANDER_MOVE. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+		print 'CB_COMMANDER_MOVE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		sequenceNumber, checksum, unk, a, b, c, d, e, f, g, h, i = struct.unpack("<iI?hhhhhhhhh", packet[2:29])
+		print "nbPacket : " + str(sequenceNumber)
+		print "??????? a: " + str(a) + ", b: " + str(b) + ", c: " + str(c)
+		print "??????? d: " + str(d) + ", e: " + str(e) + ", f: " + str(f)
+		print "onClick g: " + str(g) + ", h: " + str(h) + ", i: " + str(i)
 		return;
-		
+
 	def netDecrypt (self, data):
 		if (len(data) == 0):
 			return;
-		
+
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
 		packet = data[2:];
 		return packet;
 
-		
+
 	def extractPacketType (self, data):
 		return struct.unpack("<H", data[:2])[0];
 
-		
+
 	def start (self):
 		while True:
 			data = self.sock.recv (self.PACKETSIZE_MAX)
 			packet = self.netDecrypt (data);
 			packetType = self.extractPacketType (packet);
-			
+
 			# Packet handler
 			if (packetType == PacketType.CB_LOGIN_BY_PASSPORT):
 				self.loginByPasswordHandler (packet);
-				
+
 			elif (packetType == PacketType.CB_START_BARRACK):
 				self.startBarrackHandler (packet);
-				
+
 			elif (packetType == PacketType.CB_CURRENT_BARRACK):
 				self.currentBarrackHandler (packet);
-				
+
 			elif (packetType == PacketType.CB_BARRACKNAME_CHANGE):
 				self.barrackNameChangeHandler (packet);
-				
+
 			elif (packetType == PacketType.CB_COMMANDER_CREATE):
 				self.commanderCreateHandler (packet);
-				
+
 			elif (packetType == PacketType.CB_JUMP):
 				self.jumpHandler (packet);
-				
+
 			elif (packetType == PacketType.CB_COMMANDER_MOVE):
 				self.moveHandler (packet);
-				
+
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
-			
+
 
 	def __init__ (self, sock):
 		self.sock = sock;
