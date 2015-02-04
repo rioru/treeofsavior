@@ -76,7 +76,7 @@ class ClientHandler:
 
 		if not createNewAccount:
 			barrackName = "Spl3en"
-			barrackName = packet[10:72]
+			#barrackName = packet[10:72]
 			reply += struct.pack("<B", 0xFF); # UNKNOWN (seems not to be used)
 			reply += struct.pack("<B", nbCharacterListed); # Number of characters contained in the packet
 			reply += barrackName + "\x00" * (64 - len(barrackName));
@@ -151,7 +151,8 @@ class ClientHandler:
 		print 'CB_BARRACKNAME_CHANGE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 
 		# BC_BARRACKNAME_CHANGE = 0x0017, // Size: 75
-		barrackName = "Spl3en"
+		#barrackName = "Spl3en"
+		barrackName = packet[10:72]
 		reply  = struct.pack("<H", PacketType.BC_BARRACKNAME_CHANGE)
 		reply += "\x01" * 9;
 		reply += barrackName + "\x00" * (64 - len(barrackName));
