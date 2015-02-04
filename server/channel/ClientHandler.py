@@ -1,12 +1,10 @@
-# Dependencies
+﻿# Dependencies
 import binascii
 import struct
 import time
 import socket
 import io
-from ChannelPacketType import ChannelPacketType
 from PacketType import PacketType
-import itertools as IT
 
 def stream_unpack (fmt, stream):
     size = struct.calcsize(fmt)
@@ -18,7 +16,7 @@ class ClientHandler:
 	# Configurations
 	PACKETSIZE_MAX = 8192
 
-	def start (self, sock):
+	def LoginHandler (self, packetStr):
 		"""
 			struct CSLoginPacket {
 			  WORD type;			## 0b55
@@ -30,7 +28,6 @@ class ClientHandler:
 			  int unk3;				## 00000000
 			};
 		"""
-		packetStr = sock.recv (self.PACKETSIZE_MAX);
 		packet = io.BytesIO (packetStr);
 		print "packet = " + binascii.hexlify (packetStr);
 
@@ -58,21 +55,23 @@ class ClientHandler:
 		if packet.read (1):
 			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
 
+		# Don't know what to answer
+		
+	def extractPacketType (self, data):
+		return struct.unpack("<H", data[:2])[0];
+
+	def start (self):
+		while True:
+			packet = self.sock.recv (self.PACKETSIZE_MAX)
+			packetType = self.extractPacketType (packet);
 			
-		reply  = struct.pack ("<H", PacketType.SC_NORMAL);
-		reply += struct.pack("<I", 0); # UNKNOWN
-		# reply += struct.pack("<H", X); # Size of the packet, added dynamically at the end
-		reply += struct.pack("<I", ChannelPacketType.RECV_SNS_PC_GAME_INFO);  # Encapsulated type of the packet (cf 0x087B5F0)
-		
-		reply += "\x01"; # Index
-		reply += "\x01"; # Count of something
-		
-		# Add dynamically the size of the packet
-		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
-		reply = reply[:6] + size + reply[6:];
-		
-		sock.send (reply);
-		
-		
+			# Packet handler
+			if (packetType == PacketType.CS_LOGIN):
+				self.LoginHandler (packet);
+				
+			else:
+				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
+			
 	def __init__ (self, sock):
-		self.start (sock);
+		self.sock = sock;
+		self.start ();
