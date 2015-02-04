@@ -3,7 +3,13 @@ import binascii
 import struct
 import time
 import socket
+import io
 from PacketType import PacketType
+
+def stream_unpack (fmt, stream):
+    size = struct.calcsize(fmt)
+    buf = stream.read(size)
+    return struct.unpack(fmt, buf)[0];
 
 # ==========================================================
 class ClientHandler:
@@ -32,6 +38,7 @@ class ClientHandler:
 	def startBarrackHandler (self, packet):
 		# CB_START_BARRACK = 0x0006, // Size: 11
 		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		self.serverEntryHandler (packet);
 		self.commanderListHandler (packet);
 
 
@@ -173,7 +180,6 @@ class ClientHandler:
 		hairId = 3;
 		spriteID = 0; # max 18
 
-		# Packet
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_CREATE);
 		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
 		reply += charName; # Character Name
@@ -209,11 +215,44 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+		
+	def jumpHandler (self, packet):
+		# CB_JUMP = 0x0055, // Size: 19
+		print 'Expected CB_JUMP. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+		packetStream = io.BytesIO (packet);
+		packetType = stream_unpack ("<H", packetStream);
+		unk1 = stream_unpack ("<I", packetStream);
+		unk2 = stream_unpack ("<I", packetStream);
+		unk3 = stream_unpack ("<H", packetStream);
+		bIsJumping = stream_unpack ("<B", packetStream);
+		unk4 = stream_unpack ("<I", packetStream);
+		
+		if packetStream.read (1):
+			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
 			
+		# BC_COMMANDER_CREATE = 0x0056, // Size: 19
+		reply  = struct.pack("<H", PacketType.BC_JUMP);
+		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
+		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN
+		reply += struct.pack("<I", 0x00010000); # Keep this value
+		reply += struct.pack("<I", 0); # Keep this value
+		reply += struct.pack("<B", 1); # Keep this value
+		
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+
+	def moveHandler (self, packet):
+		# CB_COMMANDER_MOVE = 0x000B, // Size: 31
+		# print 'Expected CB_COMMANDER_MOVE. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+		return;
+		
 	def netDecrypt (self, data):
-		# TODO
-		packetSize = struct.unpack("<H", data[:2])[0];
-		print "PacketSize received : %d" % packetSize;
+		if (len(data) == 0):
+			return;
+		
+		packetSize = struct.unpack("<H", data[:2]);
+		# print "PacketSize received : %d" % packetSize;
 		packet = data[2:];
 		return packet;
 
@@ -243,6 +282,12 @@ class ClientHandler:
 				
 			elif (packetType == PacketType.CB_COMMANDER_CREATE):
 				self.commanderCreateHandler (packet);
+				
+			elif (packetType == PacketType.CB_JUMP):
+				self.jumpHandler (packet);
+				
+			elif (packetType == PacketType.CB_COMMANDER_MOVE):
+				self.moveHandler (packet);
 				
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
