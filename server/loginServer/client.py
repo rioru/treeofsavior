@@ -233,7 +233,7 @@ class ClientHandler:
 		if packetStream.read (1):
 			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
 
-		# BC_COMMANDER_CREATE = 0x0056, // Size: 19
+		# BC_JUMP = 0x0056, // Size: 19
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
 		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
 		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN
@@ -254,14 +254,32 @@ class ClientHandler:
 		print "onClick g: " + str(g) + ", h: " + str(h) + ", i: " + str(i)
 		return;
 
-	def netDecrypt (self, data):
-		if (len(data) == 0):
-			return;
+		
+	def startGameHandler (self, packet):
+		# CB_START_GAME = 0x0009 // Size: 13
+		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
 
+		# BC_START_GAMEOK = 0x0012 // Size: 60
+		reply  = struct.pack("<H", PacketType.BC_START_GAMEOK);
+		reply += struct.pack("<I", int(binascii.hexlify("AAAA"), 16));
+		reply += struct.pack("<I", int(binascii.hexlify("BBBB"), 16));
+		reply += struct.pack("<I", 28); # Size of string
+		reply += struct.pack("<B", int(binascii.hexlify("C"), 16)) * 27 + "\x00"; # zero terminated string
+		reply += struct.pack("<I", int(binascii.hexlify("EEEE"), 16)); # zoneServerId
+		reply += struct.pack("<I", 0x408); # mapId
+		reply += struct.pack("<B", int(binascii.hexlify("G"), 16));
+		reply += struct.pack("<I", int(binascii.hexlify("HHHH"), 16));
+		reply += struct.pack("<I", int(binascii.hexlify("IIII"), 16));
+		reply += struct.pack("<B", int(binascii.hexlify("J"), 16));
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+		
+	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
-		packet = data[2:];
-		return packet;
+		return data[2:];
 
 
 	def extractPacketType (self, data):
@@ -270,7 +288,10 @@ class ClientHandler:
 
 	def start (self):
 		while True:
-			data = self.sock.recv (self.PACKETSIZE_MAX)
+			data = self.sock.recv (self.PACKETSIZE_MAX);
+			if (len(data) == 0):
+				break; # Client exited
+				
 			packet = self.netDecrypt (data);
 			packetType = self.extractPacketType (packet);
 
@@ -295,6 +316,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CB_COMMANDER_MOVE):
 				self.moveHandler (packet);
+				
+			elif (packetType == PacketType.CB_START_GAME):
+				self.startGameHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
@@ -302,4 +326,6 @@ class ClientHandler:
 
 	def __init__ (self, sock):
 		self.sock = sock;
+		self.nbCharacterBarrack = 0;
+		self.positionCharacterList = 0;
 		self.start ();
