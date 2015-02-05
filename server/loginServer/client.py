@@ -270,23 +270,23 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-
+		
 	def startGameHandler (self, packet):
+		zoneName = "f_siauliai_2";
 		# CB_START_GAME = 0x0009 // Size: 13
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
 
 		# BC_START_GAMEOK = 0x0012 // Size: 60
 		reply  = struct.pack("<H", PacketType.BC_START_GAMEOK);
-		reply += struct.pack("<I", int(binascii.hexlify("AAAA"), 16));
-		reply += struct.pack("<I", int(binascii.hexlify("BBBB"), 16));
-		reply += struct.pack("<I", 28); # Size of string
-		reply += struct.pack("<B", int(binascii.hexlify("C"), 16)) * 27 + "\x00"; # zero terminated string
-		reply += struct.pack("<I", int(binascii.hexlify("EEEE"), 16)); # zoneServerId
+		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
+		reply += struct.pack("<I", 0x00); # Memory address ? That's weird.
+		reply += zoneName + "\x00" * (32 - len(zoneName));
+		reply += struct.pack("<I", 13337); # zoneServerId
 		reply += struct.pack("<I", 0x408); # mapId
-		reply += struct.pack("<B", int(binascii.hexlify("G"), 16));
-		reply += struct.pack("<I", int(binascii.hexlify("HHHH"), 16));
-		reply += struct.pack("<I", int(binascii.hexlify("IIII"), 16));
-		reply += struct.pack("<B", int(binascii.hexlify("J"), 16));
+		reply += "G"
+		reply += "HHHH"
+		reply += "IIII"
+		reply += "J"
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
