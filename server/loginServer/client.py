@@ -255,6 +255,22 @@ class ClientHandler:
 		return;
 
 
+	def commanderDestroyHandler (self, packet):
+		# CB_COMMANDER_DESTROY = 0x0008, // Size: 11
+		print 'Expected CB_COMMANDER_DESTROY. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+
+		# BC_COMMANDER_DESTROY = 0x0011, // Size: 7
+		reply  = struct.pack("<H", PacketType.BC_COMMANDER_DESTROY);
+		reply += struct.pack("<I", 0xFFFFFFFF);
+		reply += struct.pack("<B", 0xFF); # 0xFF = Clear all characters
+		
+		self.nbCharacterBarrack = 0;
+		self.positionCharacterList = 0;
+		
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+
 	def startGameHandler (self, packet):
 		# CB_START_GAME = 0x0009 // Size: 13
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -316,6 +332,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CB_COMMANDER_CREATE):
 				self.commanderCreateHandler (packet);
+
+			elif (packetType == PacketType.CB_COMMANDER_DESTROY):
+				self.commanderDestroyHandler (packet);
 
 			elif (packetType == PacketType.CB_JUMP):
 				self.jumpHandler (packet);
