@@ -235,8 +235,8 @@ class ClientHandler:
 
 		# BC_JUMP = 0x0056, // Size: 19
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
-		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN SeqNum
-		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN Checksum
+		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
+		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN
 		reply += struct.pack("<I", 0x00010000); # Keep this value
 		reply += struct.pack("<I", 0); # Keep this value
 		reply += struct.pack("<B", 1); # Character Id Jumping
@@ -275,6 +275,12 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def logoutHandler (self, packet):
+		# CB_LOGOUT = 0x0005 // Size: 10
+		print 'Expected CB_LOGOUT. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+		reply  = struct.pack("<H", PacketType.BC_LOGOUTOK);
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
@@ -319,6 +325,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CB_START_GAME):
 				self.startGameHandler (packet);
+
+			elif (packetType == PacketType.CB_LOGOUT):
+				self.logoutHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
