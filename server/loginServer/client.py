@@ -40,7 +40,7 @@ class ClientHandler:
 		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 		self.serverEntryHandler (packet);
 		self.commanderListHandler (packet);
-		self.singleInfoHandler(packet);
+		# self.singleInfoHandler(packet);
 
 
 	def serverEntryHandler (self, packet):
