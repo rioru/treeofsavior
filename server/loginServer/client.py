@@ -50,7 +50,7 @@ class ClientHandler:
 		channelPort2 = 1338;
 
 		reply  = struct.pack("<H", PacketType.BC_SERVER_ENTRY)
-		reply += struct.pack("<I", 0); # UNKNOWN
+		reply += struct.pack("<I", 1); # UNKNOWN - 0 throws an error (IESError004) in log
 
 		channelIP = socket.inet_aton (channelIP);
 		reply += channelIP; # ClientNet
@@ -225,11 +225,12 @@ class ClientHandler:
 		print 'Expected CB_JUMP. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
 		packetStream = io.BytesIO (packet);
 		packetType = stream_unpack ("<H", packetStream);
-		unk1 = stream_unpack ("<I", packetStream);
-		unk2 = stream_unpack ("<I", packetStream);
-		unk3 = stream_unpack ("<H", packetStream);
+		packetNum = stream_unpack ("<I", packetStream);
+		packetChecksum = stream_unpack ("<H", packetStream);
+		unk1 = stream_unpack ("<H", packetStream);
+		unk2 = stream_unpack ("<H", packetStream);
 		bIsJumping = stream_unpack ("<B", packetStream);
-		unk4 = stream_unpack ("<I", packetStream);
+		unk3 = stream_unpack ("<I", packetStream);
 
 		if packetStream.read (1):
 			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
@@ -238,8 +239,8 @@ class ClientHandler:
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
 		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
 		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN
-		reply += struct.pack("<I", 0x00010000); # Keep this value
-		reply += struct.pack("<I", 0); # Keep this value
+		reply += struct.pack("<I", 0x00010000); # UNKNOWN - This value is checked in a conditionnal jump
+		reply += struct.pack("<I", 0); # UNKNOWN -This value is checked in a conditionnal jump
 		reply += struct.pack("<B", 1); # Character Id Jumping
 
 		self.sock.send (reply)
