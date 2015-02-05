@@ -235,11 +235,11 @@ class ClientHandler:
 
 		# BC_JUMP = 0x0056, // Size: 19
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
-		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
-		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN
+		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN SeqNum
+		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN Checksum
 		reply += struct.pack("<I", 0x00010000); # Keep this value
 		reply += struct.pack("<I", 0); # Keep this value
-		reply += struct.pack("<B", 1); # Keep this value
+		reply += struct.pack("<B", 1); # Character Id Jumping
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
