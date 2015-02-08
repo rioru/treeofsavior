@@ -17,6 +17,9 @@ class ClientHandler:
 	PACKETSIZE_MAX = 8192
 
 	def LoginHandler (self, packetStr):
+		# CS_LOGIN = 0x0B55, Size: 48
+		print 'CS_LOGIN expected. Received : ' + binascii.hexlify (packetStr) + " (" + str(len(packetStr)) + ")";
+		
 		"""
 			struct CSLoginPacket {
 			  WORD type;			## 0b55
@@ -28,6 +31,7 @@ class ClientHandler:
 			  int unk3;				## 00000000
 			};
 		"""
+
 		packet = io.BytesIO (packetStr);
 		print "packet = " + binascii.hexlify (packetStr);
 
@@ -63,6 +67,9 @@ class ClientHandler:
 	def start (self):
 		while True:
 			packet = self.sock.recv (self.PACKETSIZE_MAX)
+			if (len(packet) == 0):
+				break; # Client exited
+
 			packetType = self.extractPacketType (packet);
 			
 			# Packet handler
