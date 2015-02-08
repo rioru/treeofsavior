@@ -319,7 +319,7 @@ class ClientHandler:
 
 	def startGameHandler (self, packet):
 		zoneServerDomainName = "127.0.0.1";
-		zoneServerPort = 0x1337;
+		zoneServerPort = 4919;
 		
 		# CB_START_GAME = 0x0009 // Size: 13
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
