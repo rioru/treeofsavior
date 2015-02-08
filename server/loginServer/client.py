@@ -40,7 +40,7 @@ class ClientHandler:
 		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 		self.serverEntryHandler (packet);
 		self.commanderListHandler (packet);
-		# self.singleInfoHandler(packet);
+		self.singleInfoHandler(packet);
 
 
 	def serverEntryHandler (self, packet):
@@ -143,10 +143,12 @@ class ClientHandler:
 		self.sock.send (reply);
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+		
 	def currentBarrackHandler (self, packet):
 		# CB_CURRENT_BARRACK = 0x004E, // Size: 39
 		print 'CB_CURRENT_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 
+		
 	def barrackNameChangeHandler (self, packet):
 		# CB_BARRACKNAME_CHANGE = 0x000A, // Size: 74
 		print 'CB_BARRACKNAME_CHANGE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
@@ -160,6 +162,7 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+		
 	def commanderCreateHandler (self, packet):
 		# CB_COMMANDER_CREATE = 0x0007, // Size: 91
 		print 'Expected CB_COMMANDER_CREATE. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -279,10 +282,10 @@ class ClientHandler:
 		reply  = struct.pack("<H", PacketType.BC_SINGLE_INFO)
 		reply += struct.pack("<I", 0); # UNKNOWN
 		
-		reply += "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac"
+		reply += "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac" # block 65 bytes
 		reply += "1Ac2Ac3Ac4Ac5Ac6"
 		reply += "Ac7A"
-		reply += struct.pack("<H", 0x51); # classId
+		reply += struct.pack("<H", 0x1); # jobClassId
 		
 		reply += "Ac9Ad0"
 		itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
@@ -304,10 +307,10 @@ class ClientHandler:
 		
 		reply += "F" * 4; # dword
 		
-		reply += "\x00" * 32; # buffer 32
+		reply += "6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6" + "\x00"; # string 31B + zero
 		reply += "C" * 4; # dword
 		
-		reply += "D" * 40 + "\x00"; # string zero terminated
+		reply += "n3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao" + "\x00"; # string 40B + zero
 		reply += "E" # Byte
 
 		self.sock.send (reply);
@@ -315,25 +318,28 @@ class ClientHandler:
 
 
 	def startGameHandler (self, packet):
-		zoneName = "f_siauliai_2";
+		zoneServerDomainName = "127.0.0.1";
+		zoneServerPort = 0x1337;
+		
 		# CB_START_GAME = 0x0009 // Size: 13
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
 
 		# BC_START_GAMEOK = 0x0012 // Size: 60
 		reply  = struct.pack("<H", PacketType.BC_START_GAMEOK);
 		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
-		reply += struct.pack("<I", 0x00); # Memory address ? That's weird.
-		reply += zoneName + "\x00" * (32 - len(zoneName));
-		reply += struct.pack("<I", 13337); # zoneServerId
+		reply += struct.pack("<I", 0x12345678); # zone ID
+		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
+		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", 0x408); # mapId
-		reply += "G"
+		reply += struct.pack("<B", 1); # Channel ID
 		reply += "HHHH"
 		reply += "IIII"
-		reply += "J"
+		reply += "\x00" # Boolean : StartSingleMap
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+		
 	def logoutHandler (self, packet):
 		# CB_LOGOUT = 0x0005 // Size: 10
 		print 'Expected CB_LOGOUT. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -341,6 +347,7 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+		
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -350,7 +357,7 @@ class ClientHandler:
 	def extractPacketType (self, data):
 		return struct.unpack("<H", data[:2])[0];
 
-
+		
 	def start (self):
 		while True:
 			data = self.sock.recv (self.PACKETSIZE_MAX);

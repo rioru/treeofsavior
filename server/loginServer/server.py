@@ -19,7 +19,7 @@ except socket.error as msg:
 
 # Start listening on socket
 server.listen (10)
-print 'Socket now listening on port ' + str(PORT);
+print '[LOGIN SERVER] Socket now listening on port ' + str(PORT);
 
 # Client handler
 while True:
