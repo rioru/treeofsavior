@@ -15,7 +15,7 @@ for i, v in enumerate(s):
         print("Failed to retrieve string index %d" % i)
     else:
         matchObj = re.match( r'.*(?:\_\_.*?) (.*)\(.*\)', str(v), re.M|re.I) # Regex to get strings that contain a function name
-        if matchObj and "<" not in matchObj.group(1) and ">" not in matchObj.group(1) and "struct" not in matchObj.group(1):
+        if matchObj and "<" not in matchObj.group(1) and ">" not in matchObj.group(1):
            sub1 = re.sub(r'<[^)]*>', '', matchObj.group(1))
            sub2 = re.sub(r'\[[^)]*\]', '', sub1)
            print "Found function : " + sub2.strip()
