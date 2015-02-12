@@ -258,7 +258,6 @@ class ClientHandler:
 		print "Position : %f %f %f" % (x, y, z)
 		print "onClick g: %f %f %f" % (g, h, i)
 
-
 	def commanderDestroyHandler (self, packet):
 		# CB_COMMANDER_DESTROY = 0x0008, // Size: 11
 		print 'Expected CB_COMMANDER_DESTROY. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -277,11 +276,14 @@ class ClientHandler:
 
 	def singleInfoHandler (self, packet):
 		# BC_SINGLE_INFO = 0x0013 // Size: 337
+		
+		charName = "Rioru";
 
 		reply  = struct.pack("<H", PacketType.BC_SINGLE_INFO)
 		reply += struct.pack("<I", 0); # UNKNOWN
 		
-		reply += "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac" # block 65 bytes
+		reply += charName + "\x00" * (65 - len(charName)); # Character Name
+		
 		reply += "1Ac2Ac3Ac4Ac5Ac6"
 		reply += "Ac7A"
 		reply += struct.pack("<H", 0x1); # jobClassId
@@ -317,6 +319,7 @@ class ClientHandler:
 
 
 	def startGameHandler (self, packet):
+		spriteID = 0;
 		zoneServerDomainName = "127.0.0.1";
 		zoneServerPort = 4919;
 		
@@ -331,8 +334,8 @@ class ClientHandler:
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", 0x408); # mapId
 		reply += struct.pack("<B", 1); # Channel ID
-		reply += "HHHH"
-		reply += "IIII"
+		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
+		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
 		reply += "\x00" # Boolean : StartSingleMap
 
 		self.sock.send (reply)
@@ -390,7 +393,7 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CB_COMMANDER_MOVE):
 				self.moveHandler (packet);
-
+			
 			elif (packetType == PacketType.CB_START_GAME):
 				self.startGameHandler (packet);
 
