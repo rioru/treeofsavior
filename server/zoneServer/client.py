@@ -78,12 +78,11 @@ class ClientHandler:
 		reply += struct.pack("<B", 0) # UNKNOWN
 		reply += struct.pack("<H", mapId) # mapID
 		reply += struct.pack("<I", 0) * 3; # UNKNOWN
-		reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
-		reply += struct.pack("<I", 0) * 1; # UNKNOWN
+		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
+		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
 		reply += struct.pack("<I", 0) * 2; # UNKNOWN
 		reply += struct.pack("<I", 0) * 8; # UNKNOWN
 		
-
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
@@ -98,12 +97,33 @@ class ClientHandler:
 		# ZC_START_GAME = 0x0C05, // Size: 26
 		reply  = struct.pack("<H", PacketType.ZC_START_GAME)
 		reply += struct.pack("<I", 1); # UNKNOWN
-		reply += struct.pack("<B", 1) * 20; # UNKNOWN
+		
+		reply += struct.pack("<f", 1.0); # Time multiplier - Not sure what it does
+		reply += struct.pack("<f", 0.0); # serverAppTimeOffset
+		reply += struct.pack("<f", 0.0); # globalAppTimeOffset
+		reply += struct.pack("<d", 0xC053939ED846D001); # serverDateTime
 		
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 		
 
+	def restSitHandler (self, packet):
+		# CZ_REST_SIT = 0x0C0E, Size: 10
+		print 'CZ_REST_SIT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		packetStream = io.BytesIO (packet);
+		packetType = stream_unpack ("<H", packetStream);
+		packetNum = stream_unpack ("<I", packetStream);
+		packetChecksum = stream_unpack ("<H", packetStream);
+		unk1 = stream_unpack ("<B", packetStream);
+		unk2 = stream_unpack ("<B", packetStream);
+		
+		# ZC_REST_SIT = 0x0BCB, Size: 11
+		reply  = struct.pack("<H", PacketType.ZC_REST_SIT);
+		reply += struct.pack("<B", 1) * 9;
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+		
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -129,6 +149,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_GAME_READY):
 				self.gameReadyHandler (packet);
+
+			elif (packetType == PacketType.CZ_REST_SIT):
+				self.restSitHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
