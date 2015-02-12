@@ -252,12 +252,11 @@ class ClientHandler:
 
 	def moveHandler (self, packet):
 		print 'CB_COMMANDER_MOVE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		sequenceNumber, checksum, unk, a, b, c, d, e, f, g, h, i = struct.unpack("<iI?hhhhhhhhh", packet[2:29])
+		sequenceNumber, checksum, unk, x, y, z, g, h, i = struct.unpack("<iI?fffhhh", packet[2:29])
 		print "nbPacket : " + str(sequenceNumber)
-		print "??????? a: " + str(a) + ", b: " + str(b) + ", c: " + str(c)
-		print "??????? d: " + str(d) + ", e: " + str(e) + ", f: " + str(f)
-		print "onClick g: " + str(g) + ", h: " + str(h) + ", i: " + str(i)
-		return;
+		print "unk : %d" % unk
+		print "Position : %f %f %f" % (x, y, z)
+		print "onClick g: %f %f %f" % (g, h, i)
 
 
 	def commanderDestroyHandler (self, packet):
