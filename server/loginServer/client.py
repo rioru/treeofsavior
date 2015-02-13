@@ -124,8 +124,8 @@ class ClientHandler:
 				reply += struct.pack("<I", itemId); # items
 
 			reply += struct.pack("<B", hairId); # Hairstyle
-			reply += struct.pack("<B", 0); # UNKNOWN - Something related with SpriteID (apparence related)
-			reply += struct.pack("<B", 0) * 2; # UNKNOWN
+			reply += struct.pack("<B", 0x00); # Return Value check CommanderCreatePacketData::CopyData
+			reply += struct.pack("<B", 0x00) * 2; # UNKNOWN
 
 			reply += struct.pack("<I", 0x000000FF); # PCID - Still need to understand how it works
 
@@ -212,8 +212,8 @@ class ClientHandler:
 			reply += struct.pack("<I", itemId); # items
 
 		reply += struct.pack("<B", hairId); # Hairstyle
-		reply += struct.pack("<B", 0); # UNKNOWN - Something related with SpriteID (apparence related)
-		reply += struct.pack("<B", 0) * 2; # UNKNOWN
+		reply += struct.pack("<B", 0x00); # Return Value check CommanderCreatePacketData::CopyData
+		reply += struct.pack("<B", 0x00) * 2; # UNKNOWN
 
 		reply += struct.pack("<I", 0x000000FF); # PCID - Still need to understand how it works
 

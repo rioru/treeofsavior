@@ -85,8 +85,8 @@ class ClientHandler:
 		reply += struct.pack("<I", 31337); # Max XP
 		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
-		reply += struct.pack("<B", 0); # UNKNOWN - Something related with SpriteID (apparence related)
-		reply += struct.pack("<B", 0) * 2; # UNKNOWN
+		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
+		reply += struct.pack("<I", 0) * 2; # UNKNOWN
 		reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN has something to do with the ability to move, when set to FF we receive move/click packets.
 
 		# Add dynamically the size of the packet
