@@ -130,7 +130,9 @@ class ClientHandler:
 			reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
 			reply += struct.pack("<B", 0) # UNKNOWN
 			reply += struct.pack("<H", mapId) # mapID
-			reply += struct.pack("<I", 0) * 3; # UNKNOWN
+			reply += struct.pack("<I", 1337); # Current XP
+			reply += struct.pack("<I", 31337); # Max XP
+			reply += struct.pack("<I", 0); # UNKNOWN
 			reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 			reply += struct.pack("<I", 0) * 1; # UNKNOWN
 			reply += struct.pack("<I", 0) * 2; # UNKNOWN
@@ -213,7 +215,9 @@ class ClientHandler:
 		reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
 		reply += struct.pack("<B", 0) # UNKNOWN
 		reply += struct.pack("<H", mapId) # mapID
-		reply += struct.pack("<I", 0) * 3; # UNKNOWN
+		reply += struct.pack("<I", 1337); # Current XP
+		reply += struct.pack("<I", 31337); # Max XP
+		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 		reply += struct.pack("<I", 0) * 1; # UNKNOWN
 		reply += struct.pack("<I", 0) * 2; # UNKNOWN
