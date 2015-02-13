@@ -61,7 +61,9 @@ class ClientHandler:
 		reply += "\x00" * (65 - len(charName));
 		reply += rightClick; # Right click description, not sure what it's for
 		reply += "\x00" * (65 - len(rightClick));
-		reply += struct.pack("<B", 0) * 14; # UNKNOWN
+		reply += struct.pack("<B", 0) * 6; # UNKNOWN
+		reply += struct.pack("<I", 0); # UNKNOWN
+		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<H", classId) # class id
 		reply += struct.pack("<H", 0) # UNKNOWN
 		reply += struct.pack("<H", jobId) # job id
@@ -71,7 +73,8 @@ class ClientHandler:
 		for itemId in itemsId: # Inventory : 20 items
 			reply += struct.pack("<I", itemId); # items
 		reply += struct.pack("<B", hairId); # Hairstyle
-		reply += struct.pack("<B",0x00) * 3; # UNKNOWN
+		reply += struct.pack("<B", 0x00); # Return Value check CommanderCreatePacketData::CopyData
+		reply += struct.pack("<B", 0x00) * 2; # UNKNOWN
 		reply += struct.pack("<I", PCID); # PCID - Still need to understand how it works
 		reply += struct.pack("<I", self.positionCharacterList) # Position in the character list
 		reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
@@ -82,8 +85,8 @@ class ClientHandler:
 		reply += struct.pack("<I", 31337); # Max XP
 		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
-		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
-		reply += struct.pack("<I", 0) * 2; # UNKNOWN
+		reply += struct.pack("<B", 0); # UNKNOWN - Something related with SpriteID (apparence related)
+		reply += struct.pack("<B", 0) * 2; # UNKNOWN
 		reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN has something to do with the ability to move, when set to FF we receive move/click packets.
 
 		# Add dynamically the size of the packet

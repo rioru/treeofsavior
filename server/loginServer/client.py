@@ -110,7 +110,9 @@ class ClientHandler:
 			reply += "\x00" * (65 - len(charName));
 			reply += rightClick; # Right click description, not sure what it's for
 			reply += "\x00" * (65 - len(rightClick));
-			reply += struct.pack("<B", 0) * 14; # UNKNOWN
+			reply += struct.pack("<B", 0) * 6; # UNKNOWN
+			reply += struct.pack("<I", 0); # UNKNOWN
+			reply += struct.pack("<I", 0); # UNKNOWN
 			reply += struct.pack("<H", classId) # class id
 			reply += struct.pack("<H", 0) # UNKNOWN
 			reply += struct.pack("<H", jobId) # job id
@@ -122,9 +124,10 @@ class ClientHandler:
 				reply += struct.pack("<I", itemId); # items
 
 			reply += struct.pack("<B", hairId); # Hairstyle
-			reply += struct.pack("<B",0x00) * 3; # UNKNOWN
+			reply += struct.pack("<B", 0); # UNKNOWN - Something related with SpriteID (apparence related)
+			reply += struct.pack("<B", 0) * 2; # UNKNOWN
 
-			reply += struct.pack("<I",0x000000FF); # PCID - Still need to understand how it works
+			reply += struct.pack("<I", 0x000000FF); # PCID - Still need to understand how it works
 
 			reply += struct.pack("<I", self.positionCharacterList) # Position in the character list
 			reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
@@ -145,12 +148,12 @@ class ClientHandler:
 		self.sock.send (reply);
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def currentBarrackHandler (self, packet):
 		# CB_CURRENT_BARRACK = 0x004E, // Size: 39
 		print 'CB_CURRENT_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 
-		
+
 	def barrackNameChangeHandler (self, packet):
 		# CB_BARRACKNAME_CHANGE = 0x000A, // Size: 74
 		print 'CB_BARRACKNAME_CHANGE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
@@ -164,7 +167,7 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def commanderCreateHandler (self, packet):
 		# CB_COMMANDER_CREATE = 0x0007, // Size: 91
 		print 'Expected CB_COMMANDER_CREATE. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -195,7 +198,9 @@ class ClientHandler:
 		reply += "\x00" * (65 - len(charName));
 		reply += rightClick; # Right click description, not sure what it's for
 		reply += "\x00" * (65 - len(rightClick));
-		reply += struct.pack("<B", 0) * 14; # UNKNOWN
+		reply += struct.pack("<B", 0) * 6; # UNKNOWN
+		reply += struct.pack("<I", 0); # UNKNOWN
+		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<H", classId) # class id
 		reply += struct.pack("<H", 0) # UNKNOWN
 		reply += struct.pack("<H", jobId) # job id
@@ -207,9 +212,10 @@ class ClientHandler:
 			reply += struct.pack("<I", itemId); # items
 
 		reply += struct.pack("<B", hairId); # Hairstyle
-		reply += struct.pack("<B",0x00) * 3; # UNKNOWN
+		reply += struct.pack("<B", 0); # UNKNOWN - Something related with SpriteID (apparence related)
+		reply += struct.pack("<B", 0) * 2; # UNKNOWN
 
-		reply += struct.pack("<I",0x000000FF); # PCID - Still need to understand how it works
+		reply += struct.pack("<I", 0x000000FF); # PCID - Still need to understand how it works
 
 		reply += struct.pack("<I", self.positionCharacterList) # Position in the character list
 		reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
@@ -270,51 +276,51 @@ class ClientHandler:
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_DESTROY);
 		reply += struct.pack("<I", 0xFFFFFFFF);
 		reply += struct.pack("<B", 0xFF); # 0xFF = Clear all characters
-		
+
 		self.nbCharacterBarrack = 0;
 		self.positionCharacterList = 0;
-		
+
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 
 	def singleInfoHandler (self, packet):
 		# BC_SINGLE_INFO = 0x0013 // Size: 337
-		
+
 		charName = "Rioru";
 
 		reply  = struct.pack("<H", PacketType.BC_SINGLE_INFO)
 		reply += struct.pack("<I", 0); # UNKNOWN
-		
+
 		reply += charName + "\x00" * (65 - len(charName)); # Character Name
-		
+
 		reply += "1Ac2Ac3Ac4Ac5Ac6"
 		reply += "Ac7A"
 		reply += struct.pack("<H", 0x1); # jobClassId
-		
+
 		reply += "Ac9Ad0"
 		itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
 				   0x0007A959, 0x0007D071, 0x00002710, 0x000933E0,  # Gloves   | Boots      |    ? (makes the head disappear xD) |  Bracelet
 				   0x00027D20, 0x00036511, 0x00098208, 0x00002710,  # Bow      | Shield     |   Costume                          |   ?
 				   0x0007F782, 0x00099562, 0x0007F3A1, 0x00081AAC, 	# ?        |  ?         |   Pants                            |   ?
 				   0x00002710, 0x00092C1A, 0x00092C1B, 0x0008DE0B];	# ?        | Ring left  |   Right right                      |  Necklace
-		
+
 		for itemId in itemsId: # Inventory : 20 items
 			reply += struct.pack("<I", itemId);
-			
+
 		reply += "7Af8" + "Af9A";
 		reply += "g0Ag" # startPosX - buffer
 		reply += "1Ag2" # startPosY - buffer
 		reply += "Ag3A" # startPosZ - buffer
 		reply += "g4Ag5Ag6Ag7Ag8Ag9Ah0Ah1A"
-		
+
 		reply += "h2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2";
-		
+
 		reply += "F" * 4; # dword
-		
+
 		reply += "6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6" + "\x00"; # string 31B + zero
 		reply += "C" * 4; # dword
-		
+
 		reply += "n3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao" + "\x00"; # string 40B + zero
 		reply += "E" # Byte
 
@@ -326,7 +332,7 @@ class ClientHandler:
 		spriteID = 0;
 		zoneServerDomainName = "127.0.0.1";
 		zoneServerPort = 4919;
-		
+
 		# CB_START_GAME = 0x0009 // Size: 13
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
 
@@ -345,7 +351,7 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def logoutHandler (self, packet):
 		# CB_LOGOUT = 0x0005 // Size: 10
 		print 'Expected CB_LOGOUT. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -353,7 +359,7 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -363,7 +369,7 @@ class ClientHandler:
 	def extractPacketType (self, data):
 		return struct.unpack("<H", data[:2])[0];
 
-		
+
 	def start (self):
 		while True:
 			data = self.sock.recv (self.PACKETSIZE_MAX);
@@ -397,7 +403,7 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CB_COMMANDER_MOVE):
 				self.moveHandler (packet);
-			
+
 			elif (packetType == PacketType.CB_START_GAME):
 				self.startGameHandler (packet);
 
