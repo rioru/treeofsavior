@@ -22,7 +22,7 @@ class ClientHandler:
 		print 'CZ_CONNECT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 
 		PCID = 0xFF;
-		
+
 		# ZC_CONNECT_OK = 0x0BBA, // Size: 0
 		reply  = struct.pack("<H", PacketType.ZC_CONNECT_OK)
 		reply += struct.pack("<I", 0); # UNKNOWN
@@ -38,7 +38,7 @@ class ClientHandler:
 		# Pc session
 		reply += struct.pack("<I", PCID); # PCID - Define a schrageID for the current PC - must *not* be zero
 		reply += "4Aa5"
-		
+
 		# CommanderCreatePacket
 		self.nbCharacterBarrack = 1;
 		self.positionCharacterList = 1;
@@ -77,12 +77,15 @@ class ClientHandler:
 		reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
 		reply += struct.pack("<B", 0) # UNKNOWN
 		reply += struct.pack("<H", mapId) # mapID
-		reply += struct.pack("<I", 0) * 3; # UNKNOWN
+
+		reply += struct.pack("<I", 1337); # Current XP
+		reply += struct.pack("<I", 31337); # Max XP
+		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
 		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
 		reply += struct.pack("<I", 0) * 2; # UNKNOWN
-		reply += struct.pack("<I", 0) * 8; # UNKNOWN
-		
+		reply += struct.pack("<I", 0xFF) * 8; # UNKNOWN has something to do with the ability to move, when set to FF we receive move/click packets.
+
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
@@ -97,15 +100,15 @@ class ClientHandler:
 		# ZC_START_GAME = 0x0C05, // Size: 26
 		reply  = struct.pack("<H", PacketType.ZC_START_GAME)
 		reply += struct.pack("<I", 1); # UNKNOWN
-		
+
 		reply += struct.pack("<f", 1.0); # Time multiplier - Not sure what it does
 		reply += struct.pack("<f", 0.0); # serverAppTimeOffset
 		reply += struct.pack("<f", 0.0); # globalAppTimeOffset
 		reply += struct.pack("<d", 0xC053939ED846D001); # serverDateTime
-		
+
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-		
+
 
 	def restSitHandler (self, packet):
 		# CZ_REST_SIT = 0x0C0E, Size: 10
@@ -116,14 +119,14 @@ class ClientHandler:
 		packetChecksum = stream_unpack ("<H", packetStream);
 		unk1 = stream_unpack ("<B", packetStream);
 		unk2 = stream_unpack ("<B", packetStream);
-		
+
 		# ZC_REST_SIT = 0x0BCB, Size: 11
 		reply  = struct.pack("<H", PacketType.ZC_REST_SIT);
 		reply += struct.pack("<B", 1) * 9;
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
