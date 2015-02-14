@@ -95,26 +95,42 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-	
+
 	def quickSlotListHandler (self, packet):
 		# ZC_QUICK_SLOT_LIST = 0x0C31, // Size: 0
 		reply  = struct.pack("<H", PacketType.ZC_QUICK_SLOT_LIST)
 		reply += struct.pack("<I", 0); # UNKNOWN
-		
+
 		reply += struct.pack("<I", 0); # 0 or zlib deflated data
-		
+
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
-		
+
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-		
+	def MyPCEnter (self, packet):
+		# ZC_QUICK_SLOT_LIST = 0x0C31, // Size: 0
+		reply  = struct.pack("<H", PacketType.ZC_MYPC_ENTER)
+		reply += struct.pack("<I", 0); # UNKNOWN
+
+		reply += struct.pack("<I", 0); # UNKNOWN
+		reply += struct.pack("<I", 0);
+		reply += struct.pack("<B", 0) * 2
+
+		# Add dynamically the size of the packet
+		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
+		reply = reply[:6] + size + reply[6:];
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+
 	def gameReadyHandler (self, packet):
 		# CZ_GAME_READY = 0x0BFD, // Size: 10
 		print 'CZ_GAME_READY expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		
+
 		# Add additional information
 		self.quickSlotListHandler (packet);
 
@@ -129,6 +145,7 @@ class ClientHandler:
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+		self.MyPCEnter(packet);
 
 
 	def restSitHandler (self, packet):
