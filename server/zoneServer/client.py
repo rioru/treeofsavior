@@ -101,7 +101,7 @@ class ClientHandler:
 		reply  = struct.pack("<H", PacketType.ZC_QUICK_SLOT_LIST)
 		reply += struct.pack("<I", 0); # UNKNOWN
 		
-		reply += struct.pack("<I", 4); # 0 or zlib deflated data
+		reply += struct.pack("<I", 0); # 0 or zlib deflated data
 		
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
