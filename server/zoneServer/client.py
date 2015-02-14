@@ -62,8 +62,7 @@ class ClientHandler:
 		reply += familyName; # Right click description, family name
 		reply += "\x00" * (65 - len(familyName));
 		reply += struct.pack("<B", 0) * 6; # UNKNOWN
-		reply += struct.pack("<I", 0); # UNKNOWN
-		reply += struct.pack("<I", 0); # UNKNOWN
+		reply += struct.pack("<q", 1000000); # account id
 		reply += struct.pack("<H", classId) # class id
 		reply += struct.pack("<H", 0) # UNKNOWN
 		reply += struct.pack("<H", jobId) # job id
