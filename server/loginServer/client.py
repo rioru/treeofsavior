@@ -136,8 +136,8 @@ class ClientHandler:
 			reply += struct.pack("<I", 31337); # Max XP
 			reply += struct.pack("<I", 0); # UNKNOWN
 			reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
-			reply += struct.pack("<I", 0) * 1; # UNKNOWN
-			reply += struct.pack("<I", 0) * 2; # UNKNOWN
+			reply += struct.pack("<I", 0) * 1; # Sprite Related
+			reply += struct.pack("<q", 1000000) * 2; # CID
 			reply += struct.pack("<I", 0) * 8; # UNKNOWN
 
 		# Add dynamically the size of the packet
@@ -223,8 +223,8 @@ class ClientHandler:
 		reply += struct.pack("<I", 31337); # Max XP
 		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
-		reply += struct.pack("<I", 0) * 1; # UNKNOWN
-		reply += struct.pack("<I", 0) * 2; # UNKNOWN
+		reply += struct.pack("<I", 0) * 1; # Sprite Related
+		reply += struct.pack("<q", 1000000) * 2; # CID
 		reply += struct.pack("<I", 0) * 8; # UNKNOWN
 
 		self.sock.send (reply)
