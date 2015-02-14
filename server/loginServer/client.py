@@ -137,7 +137,7 @@ class ClientHandler:
 			reply += struct.pack("<I", 0); # UNKNOWN
 			reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 			reply += struct.pack("<I", 0) * 1; # Sprite Related
-			reply += struct.pack("<q", 1000000) * 2; # CID
+			reply += struct.pack("<q", 1000000); # CID
 			reply += struct.pack("<I", 0) * 8; # UNKNOWN
 
 		# Add dynamically the size of the packet
@@ -224,7 +224,7 @@ class ClientHandler:
 		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 		reply += struct.pack("<I", 0) * 1; # Sprite Related
-		reply += struct.pack("<q", 1000000) * 2; # CID
+		reply += struct.pack("<q", 1000000); # CID
 		reply += struct.pack("<I", 0) * 8; # UNKNOWN
 
 		self.sock.send (reply)
@@ -294,7 +294,7 @@ class ClientHandler:
 
 		reply += "1Ac2Ac3Ac4Ac5Ac6"
 		reply += "Ac7A"
-		reply += struct.pack("<H", 0x1); # jobClassId
+		reply += struct.pack("<H", 0x1); # (SchrageID) SID_JOB = 1
 
 		reply += "Ac9Ad0"
 		itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
