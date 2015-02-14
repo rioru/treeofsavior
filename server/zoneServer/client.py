@@ -43,7 +43,7 @@ class ClientHandler:
 		self.nbCharacterBarrack = 1;
 		self.positionCharacterList = 1;
 		charName = "Rioru";
-		rightClick = "I'm displayed by a right click on the character";
+		familyName = "I'm displayed by a right click on the character";
 		classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 		jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
 		gender = 2;
@@ -59,8 +59,8 @@ class ClientHandler:
 		spriteID = 0; # max 18
 		reply += charName; # Character Name
 		reply += "\x00" * (65 - len(charName));
-		reply += rightClick; # Right click description, not sure what it's for
-		reply += "\x00" * (65 - len(rightClick));
+		reply += familyName; # Right click description, family name
+		reply += "\x00" * (65 - len(familyName));
 		reply += struct.pack("<B", 0) * 6; # UNKNOWN
 		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", 0); # UNKNOWN
