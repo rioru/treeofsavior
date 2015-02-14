@@ -138,7 +138,11 @@ class ClientHandler:
 			reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 			reply += struct.pack("<I", 0) * 1; # Sprite Related
 			reply += struct.pack("<q", 1000000); # CID
-			reply += struct.pack("<I", 0) * 8; # UNKNOWN
+			reply += struct.pack("<I", 4000); # Current HP
+			reply += struct.pack("<I", 4200); # Max HP
+			reply += struct.pack("<h", 1500); # Current SP
+			reply += struct.pack("<h", 1600); # Max SP
+			reply += struct.pack("<I", 0xFF) * 5;
 
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
@@ -225,7 +229,11 @@ class ClientHandler:
 		reply += struct.pack("<I", spriteID) * 1; # Apparence du sprite du corps
 		reply += struct.pack("<I", 0) * 1; # Sprite Related
 		reply += struct.pack("<q", 1000000); # CID
-		reply += struct.pack("<I", 0) * 8; # UNKNOWN
+		reply += struct.pack("<I", 4000); # Current HP
+		reply += struct.pack("<I", 4200); # Max HP
+		reply += struct.pack("<h", 1500); # Current SP
+		reply += struct.pack("<h", 1600); # Max SP
+		reply += struct.pack("<I", 0xFF) * 5;
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
