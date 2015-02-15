@@ -91,7 +91,7 @@ class ClientHandler:
 		reply += struct.pack("<I", 4200); # Max HP
 		reply += struct.pack("<h", 1500); # Current SP
 		reply += struct.pack("<h", 1600); # Max SP
-		reply += struct.pack("<I", 0xFF) * 5;
+		reply += struct.pack("<I", 0x00) * 5;
 
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
@@ -162,7 +162,9 @@ class ClientHandler:
 
 		# ZC_REST_SIT = 0x0BCB, Size: 11
 		reply  = struct.pack("<H", PacketType.ZC_REST_SIT);
-		reply += struct.pack("<B", 1) * 9;
+		reply += struct.pack("<I", 0);
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<B", 1);
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
@@ -197,16 +199,16 @@ class ClientHandler:
 		# 0d0c 2f000000 9a04 0000 00 a10b18c3 6a1f0243 0d4db6c1 ffff7fbf 00000000 987f
 		# 0d0c 33000000 7c06 0000 00 31a1a6c3 6a1f0243 6ce43442 ffff7fbf 00000000 2504
 		# 0d0c 33000000 7c06 0000 00 31a1a6c3 6a1f0243 6ce43442 ffff7fbf 00000000 2504
-		
+
 		"""
 		The *first* CZ_MOVE_STOP sent to the server is 78 or 80 bytes long :
-		CZ_MOVE_STOP expected. Received : 
+		CZ_MOVE_STOP expected. Received :
 		  0d0c 03000000 1000 0000 00 12000000 00000000 00000000 0000803f 00000000 56f8
 		                          0a 00100c04 00000018 0023000d 0c050000 00260000 0000
 								     12000000 00000000 00000000 0000803f 00000000 56f8 (78)
 		"""
 		print 'CZ_MOVE_STOP expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		
+
 		if (len(packet) == 33):
 			packetType, sequenceNumber, checksum, unk1, unk2, x, y, z, dirX, dirZ, unk3 = struct.unpack("<HIHH?fffffH", packet)
 			print "[CZ_MOVE_STOP] x:%.2f | y:%.2f | z:%.2f | dirX:%.2f | dirZ:%.2f | unk=%x" % (x, y, z, dirX, dirZ, unk3)
@@ -219,7 +221,6 @@ class ClientHandler:
 
 	def extractPacketType (self, data):
 		return struct.unpack("<H", data[:2])[0];
-
 
 	def start (self):
 		while True:
@@ -242,9 +243,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_KEYBOARD_MOVE):
 				self.keyboardMoveHandler (packet);
-				
+
 			elif (packetType == PacketType.CZ_MOVE_STOP):
-				self.moveStopHandler (packet); 
+				self.moveStopHandler (packet);
 
 			elif (packetType == PacketType.CZ_REST_SIT):
 				self.restSitHandler (packet);

@@ -303,7 +303,7 @@ class ClientHandler:
 		reply += struct.pack("<I", 0x12345678); # zone ID
 		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
-		reply += struct.pack("<I", 0x408); # mapId
+		reply += struct.pack("<I", 0x551); # mapId
 		reply += struct.pack("<B", 1); # Channel ID
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
 		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
