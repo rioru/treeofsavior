@@ -167,6 +167,17 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 
+	def logoutHandler (self, packet):
+		# CZ_LOGOUT = 0x0BFF                           # Size: 10
+		print 'CZ_LOGOUT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		
+		# ZC_LOGOUT_OK = 0x0C02                        # Size: 6
+		reply  = struct.pack("<H", PacketType.ZC_LOGOUT_OK);
+		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
+		
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -189,6 +200,9 @@ class ClientHandler:
 			# Packet handler
 			if (packetType == PacketType.CZ_CONNECT):
 				self.connectHandler (packet);
+
+			elif (packetType == PacketType.CZ_LOGOUT):
+				self.logoutHandler (packet);
 
 			elif (packetType == PacketType.CZ_GAME_READY):
 				self.gameReadyHandler (packet);
