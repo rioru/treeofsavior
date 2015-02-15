@@ -249,6 +249,21 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 		self.fixAnim(packet);
 
+	def jumpHandler (self,packet):
+		# CZ_JUMP = 0x0C0A, // Size: 11
+
+		# ZC_JUMP = 0x0BCC, // Size: 19
+		reply  = struct.pack("<H", PacketType.ZC_JUMP);
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<f", 300); # Height
+		reply += struct.pack("<I", 1); # UNKNOWN
+		reply += struct.pack("<B", 1); # UNKNOWN
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -291,6 +306,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_POSE):
 				self.poseHandler (packet);
+
+			elif (packetType == PacketType.CZ_JUMP):
+					self.jumpHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
