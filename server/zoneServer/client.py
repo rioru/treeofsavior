@@ -44,7 +44,7 @@ class ClientHandler:
 		self.nbCharacterBarrack = 1;
 		self.positionCharacterList = 1;
 		charName = "Rioru";
-		familyName = "I'm displayed by a right click on the character";
+		familyName = "FamilyName";
 		classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 		jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
 		gender = 2;

@@ -28,7 +28,7 @@ class ClientHandler:
 		reply += "\x00" * 8
 		reply += "\x01" * 1 # Send movements to server in barrack + allow mouse movements
 		reply += "\x00" * 24
-		reply += "\x00" * 1 # 0 = developper mode, otherwise normal mode
+		reply += "\xFF" * 1 # 0 = developper mode, otherwise normal mode
 		reply += "\x00" * 1
 
 		self.sock.send (reply)
@@ -89,7 +89,7 @@ class ClientHandler:
 			self.nbCharacterBarrack += 1;
 			self.positionCharacterList += 1;
 			charName = "Rioru";
-			familyName = "I'm displayed by a right click on the character";
+			familyName = "FamilyName";
 			classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 			jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
 			gender = 2;
@@ -179,7 +179,7 @@ class ClientHandler:
 		self.positionCharacterList += 1;
 		#charName = "Rioru";
 		charName = packet[11:76]
-		familyName = "I'm displayed by a right click on the character";
+		familyName = "FamilyName";
 		classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 		jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
 		gender = 2;
@@ -300,7 +300,7 @@ class ClientHandler:
 		# BC_START_GAMEOK = 0x0012 // Size: 60
 		reply  = struct.pack("<H", PacketType.BC_START_GAMEOK);
 		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
-		reply += struct.pack("<I", 0x12345678); # zone ID
+		reply += struct.pack("<I", 0); # zone ID
 		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", 0x408); # mapId
