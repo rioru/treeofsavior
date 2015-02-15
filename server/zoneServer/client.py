@@ -169,8 +169,9 @@ class ClientHandler:
 	def movementInfoHandler (self, packet):
 		# CZ_MOVEMENT_INFO = 0x0C11                           # Size: 23
 		print 'CZ_MOVEMENT_INFO expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		packetType, sequenceNumber, checksum, unk, x, y, z = struct.unpack("<HIH?fff", packet)
-		print "Position : %f %f %f" % (x, y, z)
+		packetType, sequenceNumber, checksum, unk1, unk2, x, y, zlowWord = struct.unpack("<HIHH?ffH", packet)
+		# There is only 2 bytes received for Z axis instead of 4. Really weird.
+		print "Position : x:%.2f | y:%.2f" % (x, y)
 
 	def logoutHandler (self, packet):
 		# CZ_LOGOUT = 0x0BFF                           # Size: 10
@@ -182,6 +183,13 @@ class ClientHandler:
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+	def keyboardMoveHandler (self, packet):
+		# CZ_KEYBOARD_MOVE = 0x0C08                    # Size: 41
+		print 'CZ_KEYBOARD_MOVE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+
+		packetType, sequenceNumber, checksum, unk1, unk2, x, y, z, dirX, dirZ, unk3, unk4 = struct.unpack("<HIHH?fffffII", packet)
+		print "Position : x:%.2f | y:%.2f | z:%.2f | dirX:%.2f | dirZ:%.2f" % (x, y, z, dirX, dirZ)
 
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
@@ -212,6 +220,9 @@ class ClientHandler:
 			elif (packetType == PacketType.CZ_GAME_READY):
 				self.gameReadyHandler (packet);
 
+			elif (packetType == PacketType.CZ_KEYBOARD_MOVE):
+				self.keyboardMoveHandler (packet);
+
 			elif (packetType == PacketType.CZ_REST_SIT):
 				self.restSitHandler (packet);
 
@@ -219,8 +230,8 @@ class ClientHandler:
 				self.movementInfoHandler (packet);
 
 			else:
-				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
-				print 'Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
+				# print 'Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
 
 
 	def __init__ (self, sock):
