@@ -40,7 +40,6 @@ class ClientHandler:
 		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 		self.serverEntryHandler (packet);
 		self.commanderListHandler (packet);
-		self.singleInfoHandler(packet);
 
 
 	def serverEntryHandler (self, packet):
@@ -287,50 +286,6 @@ class ClientHandler:
 		self.positionCharacterList = 0;
 
 		self.sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-
-
-	def singleInfoHandler (self, packet):
-		# BC_SINGLE_INFO = 0x0013 // Size: 337
-
-		charName = "Rioru";
-
-		reply  = struct.pack("<H", PacketType.BC_SINGLE_INFO)
-		reply += struct.pack("<I", 0); # UNKNOWN
-
-		reply += charName + "\x00" * (65 - len(charName)); # Character Name
-
-		reply += "1Ac2Ac3Ac4Ac5Ac6"
-		reply += "Ac7A"
-		reply += struct.pack("<H", 0x1); # (SchrageID) SID_JOB = 1
-
-		reply += "Ac9Ad0"
-		itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
-				   0x0007A959, 0x0007D071, 0x00002710, 0x000933E0,  # Gloves   | Boots      |    ? (makes the head disappear xD) |  Bracelet
-				   0x00027D20, 0x00036511, 0x00098208, 0x00002710,  # Bow      | Shield     |   Costume                          |   ?
-				   0x0007F782, 0x00099562, 0x0007F3A1, 0x00081AAC, 	# ?        |  ?         |   Pants                            |   ?
-				   0x00002710, 0x00092C1A, 0x00092C1B, 0x0008DE0B];	# ?        | Ring left  |   Right right                      |  Necklace
-
-		for itemId in itemsId: # Inventory : 20 items
-			reply += struct.pack("<I", itemId);
-
-		reply += "7Af8" + "Af9A";
-		reply += "g0Ag" # startPosX - buffer
-		reply += "1Ag2" # startPosY - buffer
-		reply += "Ag3A" # startPosZ - buffer
-		reply += "g4Ag5Ag6Ag7Ag8Ag9Ah0Ah1A"
-
-		reply += "h2Ah3Ah4Ah5Ah6Ah7Ah8Ah9Ai0Ai1Ai2";
-
-		reply += "F" * 4; # dword
-
-		reply += "6Ag7Ag8Ag9Ah0Ah1Ah2Ah3Ah4Ah5Ah6" + "\x00"; # string 31B + zero
-		reply += "C" * 4; # dword
-
-		reply += "n3An4An5An6An7An8An9Ao0Ao1Ao2Ao3Ao4Ao5Ao" + "\x00"; # string 40B + zero
-		reply += "E" # Byte
-
-		self.sock.send (reply);
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 

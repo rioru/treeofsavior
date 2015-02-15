@@ -115,6 +115,7 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+
 	def MyPCEnter (self, packet):
 		# ZC_MYPC_ENTER = 0x0CA4, // Size: 18
 		reply  = struct.pack("<H", PacketType.ZC_MYPC_ENTER)
@@ -130,6 +131,7 @@ class ClientHandler:
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 
 	def gameReadyHandler (self, packet):
 		# CZ_GAME_READY = 0x0BFD, // Size: 10
@@ -149,18 +151,14 @@ class ClientHandler:
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+		
+		# ===== The game starts from this point ===== 
 		self.MyPCEnter(packet);
 
 
 	def restSitHandler (self, packet):
 		# CZ_REST_SIT = 0x0C0E, Size: 10
 		print 'CZ_REST_SIT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		packetStream = io.BytesIO (packet);
-		packetType = stream_unpack ("<H", packetStream);
-		packetNum = stream_unpack ("<I", packetStream);
-		packetChecksum = stream_unpack ("<H", packetStream);
-		unk1 = stream_unpack ("<B", packetStream);
-		unk2 = stream_unpack ("<B", packetStream);
 
 		# ZC_REST_SIT = 0x0BCB, Size: 11
 		reply  = struct.pack("<H", PacketType.ZC_REST_SIT);
