@@ -116,7 +116,7 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def MyPCEnter (self, packet):
-		# ZC_QUICK_SLOT_LIST = 0x0C31, // Size: 0
+		# ZC_MYPC_ENTER = 0x0CA4, // Size: 18
 		reply  = struct.pack("<H", PacketType.ZC_MYPC_ENTER)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
