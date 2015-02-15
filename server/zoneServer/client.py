@@ -264,6 +264,27 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def onAirHandler (self, packet):
+		# CZ_ON_AIR = 0x0C0F                           # Size: 10
+		""" <packetType> <packetSequence> <checksum> 
+		0f0c 3b000000 2000
+		0f0c 3f000000 2400
+		0f0c 43000000 5800
+		"""
+		# print 'CZ_ON_AIR expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		return;
+
+	def onGroundHandler (self, packet):
+		# CZ_ON_GROUND = 0x0C10                        # Size: 10
+		""" <packetType> <packetSequence> <checksum> 
+		100c 3c000000 2000
+		100c 40000000 5c00
+		100c 44000000 5800
+		"""
+		# print 'CZ_ON_GROUND expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		return;
+
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -309,6 +330,13 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_JUMP):
 					self.jumpHandler (packet);
+
+			elif (packetType == PacketType.CZ_ON_AIR):
+				self.onAirHandler (packet);
+
+			elif (packetType == PacketType.CZ_ON_GROUND):
+				self.onGroundHandler (packet);
+
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
