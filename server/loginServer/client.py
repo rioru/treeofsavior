@@ -300,7 +300,7 @@ class ClientHandler:
 		# BC_START_GAMEOK = 0x0012 // Size: 60
 		reply  = struct.pack("<H", PacketType.BC_START_GAMEOK);
 		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
-		reply += struct.pack("<I", 0); # zone ID
+		reply += struct.pack("<I", 0x12345678); # zone ID
 		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", 0x408); # mapId
