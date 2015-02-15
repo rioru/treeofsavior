@@ -191,6 +191,26 @@ class ClientHandler:
 		packetType, sequenceNumber, checksum, unk1, unk2, x, y, z, dirX, dirZ, unk3, unk4 = struct.unpack("<HIHH?fffffII", packet)
 		print "Position : x:%.2f | y:%.2f | z:%.2f | dirX:%.2f | dirZ:%.2f" % (x, y, z, dirX, dirZ)
 
+	def moveStopHandler (self, packet):
+		# CZ_MOVE_STOP = 0x0C0D                        # Size: 35
+		# 0d0c 2c000000 8c04 0000 00 c73a70c2 6a1f0243 14fb33c1 ffff7fbf 00000000 331d
+		# 0d0c 2f000000 9a04 0000 00 a10b18c3 6a1f0243 0d4db6c1 ffff7fbf 00000000 987f
+		# 0d0c 33000000 7c06 0000 00 31a1a6c3 6a1f0243 6ce43442 ffff7fbf 00000000 2504
+		# 0d0c 33000000 7c06 0000 00 31a1a6c3 6a1f0243 6ce43442 ffff7fbf 00000000 2504
+		
+		"""
+		The *first* CZ_MOVE_STOP sent to the server is 78 or 80 bytes long :
+		CZ_MOVE_STOP expected. Received : 
+		  0d0c 03000000 1000 0000 00 12000000 00000000 00000000 0000803f 00000000 56f8
+		                          0a 00100c04 00000018 0023000d 0c050000 00260000 0000
+								     12000000 00000000 00000000 0000803f 00000000 56f8 (78)
+		"""
+		print 'CZ_MOVE_STOP expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		
+		if (len(packet) == 33):
+			packetType, sequenceNumber, checksum, unk1, unk2, x, y, z, dirX, dirZ, unk3 = struct.unpack("<HIHH?fffffH", packet)
+			print "[CZ_MOVE_STOP] x:%.2f | y:%.2f | z:%.2f | dirX:%.2f | dirZ:%.2f | unk=%x" % (x, y, z, dirX, dirZ, unk3)
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -222,6 +242,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_KEYBOARD_MOVE):
 				self.keyboardMoveHandler (packet);
+				
+			elif (packetType == PacketType.CZ_MOVE_STOP):
+				self.moveStopHandler (packet); 
 
 			elif (packetType == PacketType.CZ_REST_SIT):
 				self.restSitHandler (packet);
