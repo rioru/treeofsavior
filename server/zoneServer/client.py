@@ -153,6 +153,7 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 		# ===== The game starts from this point =====
+		self.moveSpeed(packet);
 		self.MyPCEnter(packet);
 
 
@@ -213,6 +214,41 @@ class ClientHandler:
 			packetType, sequenceNumber, checksum, unk1, unk2, x, y, z, dirX, dirZ, unk3 = struct.unpack("<HIHH?fffffH", packet)
 			print "[CZ_MOVE_STOP] x:%.2f | y:%.2f | z:%.2f | dirX:%.2f | dirZ:%.2f | unk=%x" % (x, y, z, dirX, dirZ, unk3)
 
+	def moveSpeed (self, packet):
+		# ZC_MOVE_SPEED = 0x0BC9, // Size: 18
+		reply  = struct.pack("<H", PacketType.ZC_MOVE_SPEED);
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<f", 100); # Movement Speed
+		reply += struct.pack("<f", 0.1); # UNKNOWN
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+	def poseHandler (self, packet):
+		# Be careful using it, still buggy. It doesn't reset the pose/play the animation correctly and you won't be able to do another pose after the first one (sit for example)
+
+		# CZ_POSE = 0x0C1B, // Size: 34
+		print 'CZ_POSE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		packetType, sequenceNumber, checksum, unk1, pose = struct.unpack("<HIHHI", packet[:14])
+		unk1 = packet[14:26]
+		unk2 = packet[26:]
+
+		# ZC_POSE = 0x0BEE, // Size: 34
+		# Maybe it isn't ZC_POSE we should send but ZC_PLAY_ANI
+		reply  = struct.pack("<H", PacketType.ZC_POSE);
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<I", pose); # Pose
+		reply += unk1;
+		reply += unk2;
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+		self.fixAnim(packet);
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -252,6 +288,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_MOVEMENT_INFO):
 				self.movementInfoHandler (packet);
+
+			elif (packetType == PacketType.CZ_POSE):
+				self.poseHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
