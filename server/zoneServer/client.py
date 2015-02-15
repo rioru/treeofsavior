@@ -151,8 +151,8 @@ class ClientHandler:
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-		
-		# ===== The game starts from this point ===== 
+
+		# ===== The game starts from this point =====
 		self.MyPCEnter(packet);
 
 
@@ -166,15 +166,20 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def movementInfoHandler (self, packet):
+		# CZ_MOVEMENT_INFO = 0x0C11                           # Size: 23
+		print 'CZ_MOVEMENT_INFO expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		packetType, sequenceNumber, checksum, unk, x, y, z = struct.unpack("<HIH?fff", packet)
+		print "Position : %f %f %f" % (x, y, z)
 
 	def logoutHandler (self, packet):
 		# CZ_LOGOUT = 0x0BFF                           # Size: 10
 		print 'CZ_LOGOUT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		
+
 		# ZC_LOGOUT_OK = 0x0C02                        # Size: 6
 		reply  = struct.pack("<H", PacketType.ZC_LOGOUT_OK);
 		reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
-		
+
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
@@ -209,6 +214,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_REST_SIT):
 				self.restSitHandler (packet);
+
+			elif (packetType == PacketType.CZ_MOVEMENT_INFO):
+				self.movementInfoHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
