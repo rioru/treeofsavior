@@ -4,6 +4,7 @@ import struct
 import time
 import socket
 import io
+import filetime;
 from PacketType import PacketType
 
 def stream_unpack (fmt, stream):
@@ -130,7 +131,6 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
-
 	def gameReadyHandler (self, packet):
 		# CZ_GAME_READY = 0x0BFD, // Size: 10
 		print 'CZ_GAME_READY expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
@@ -145,7 +145,7 @@ class ClientHandler:
 		reply += struct.pack("<f", 1.0); # Time multiplier - Not sure what it does
 		reply += struct.pack("<f", 0.0); # serverAppTimeOffset
 		reply += struct.pack("<f", 0.0); # globalAppTimeOffset
-		reply += struct.pack("<d", 0xC053939ED846D001); # serverDateTime
+		reply += struct.pack("<d", filetime.filetime_now()); # serverDateTime
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
