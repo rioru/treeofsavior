@@ -119,15 +119,11 @@ class ClientHandler:
 	def MyPCEnter (self, packet):
 		# ZC_MYPC_ENTER = 0x0CA4, // Size: 18
 		reply  = struct.pack("<H", PacketType.ZC_MYPC_ENTER)
-		reply += struct.pack("<I", 0); # UNKNOWN
+		reply += struct.pack("<I", 0); # sequence number
+		reply += struct.pack("<I", 0xFF); # currentActor related
 
 		reply += struct.pack("<I", 0); # UNKNOWN
 		reply += struct.pack("<I", 0);
-		reply += struct.pack("<B", 0) * 2
-
-		# Add dynamically the size of the packet
-		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
-		reply = reply[:6] + size + reply[6:];
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
