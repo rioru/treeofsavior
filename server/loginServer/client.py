@@ -255,10 +255,11 @@ class ClientHandler:
 
 		# BC_JUMP = 0x0056, // Size: 19
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
-		reply += struct.pack("<I", 0xAAAAAAAA); # UNKNOWN
-		reply += struct.pack("<I", 0xBBBBBBBB); # UNKNOWN
-		reply += struct.pack("<I", 0x00010000); # UNKNOWN - This value is checked in a conditionnal jump
-		reply += struct.pack("<I", 0); # UNKNOWN -This value is checked in a conditionnal jump
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<f", 300); # Height
+		reply += struct.pack("<I", 1); # UNKNOWN
 		reply += struct.pack("<B", 1); # Character Id Jumping
 
 		self.sock.send (reply)

@@ -247,7 +247,6 @@ class ClientHandler:
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-		self.fixAnim(packet);
 
 	def jumpHandler (self,packet):
 		# CZ_JUMP = 0x0C0A, // Size: 11
@@ -259,14 +258,14 @@ class ClientHandler:
 		reply += struct.pack("<I", 0xFF); # PCID
 		reply += struct.pack("<f", 300); # Height
 		reply += struct.pack("<I", 1); # UNKNOWN
-		reply += struct.pack("<B", 1); # UNKNOWN
+		reply += struct.pack("<B", 1); # Character Id Jumping
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def onAirHandler (self, packet):
 		# CZ_ON_AIR = 0x0C0F                           # Size: 10
-		""" <packetType> <packetSequence> <checksum> 
+		""" <packetType> <packetSequence> <checksum>
 		0f0c 3b000000 2000
 		0f0c 3f000000 2400
 		0f0c 43000000 5800
@@ -276,7 +275,7 @@ class ClientHandler:
 
 	def onGroundHandler (self, packet):
 		# CZ_ON_GROUND = 0x0C10                        # Size: 10
-		""" <packetType> <packetSequence> <checksum> 
+		""" <packetType> <packetSequence> <checksum>
 		100c 3c000000 2000
 		100c 40000000 5c00
 		100c 44000000 5800
