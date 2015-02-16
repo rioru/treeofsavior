@@ -19,7 +19,7 @@ class ClientHandler:
 	def LoginHandler (self, packetStr):
 		# CS_LOGIN = 0x0B55, Size: 48
 		print 'CS_LOGIN expected. Received : ' + binascii.hexlify (packetStr) + " (" + str(len(packetStr)) + ")";
-		
+
 		"""
 			struct CSLoginPacket {
 			  WORD type;			## 0b55
@@ -60,7 +60,7 @@ class ClientHandler:
 			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
 
 		# Don't know what to answer
-		
+
 	def extractPacketType (self, data):
 		return struct.unpack("<H", data[:2])[0];
 
@@ -71,14 +71,15 @@ class ClientHandler:
 				break; # Client exited
 
 			packetType = self.extractPacketType (packet);
-			
+
 			# Packet handler
 			if (packetType == PacketType.CS_LOGIN):
 				self.LoginHandler (packet);
-				
+
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x" % packetType;
-			
+				print 'Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+
 	def __init__ (self, sock):
 		self.sock = sock;
 		self.start ();

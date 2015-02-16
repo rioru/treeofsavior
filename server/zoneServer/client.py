@@ -250,6 +250,7 @@ class ClientHandler:
 
 	def jumpHandler (self,packet):
 		# CZ_JUMP = 0x0C0A, // Size: 11
+		print 'CZ_JUMP expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 
 		# ZC_JUMP = 0x0BCC, // Size: 19
 		reply  = struct.pack("<H", PacketType.ZC_JUMP);
