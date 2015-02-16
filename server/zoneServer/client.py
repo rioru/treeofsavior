@@ -155,6 +155,7 @@ class ClientHandler:
 		# ===== The game starts from this point =====
 		self.moveSpeed(packet);
 		self.MyPCEnter(packet);
+		self.setPos(packet, 1142.29, 1000, -32.42);
 
 
 	def restSitHandler (self, packet):
@@ -168,6 +169,7 @@ class ClientHandler:
 		reply += struct.pack("<B", 1);
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+		self.setPos(packet, 1142.29, 1000, -32.42);
 
 	def movementInfoHandler (self, packet):
 		# CZ_MOVEMENT_INFO = 0x0C11                           # Size: 23
@@ -284,6 +286,17 @@ class ClientHandler:
 		# print 'CZ_ON_GROUND expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 		return;
 
+	def setPos(self, packet, x, y, z):
+		# ZC_SET_POS = 0x0BD0, // Size: 22
+		reply  = struct.pack("<H", PacketType.ZC_SET_POS);
+		reply += struct.pack("<I", 0);
+		reply += struct.pack("<I", 0xFF); # PCID
+
+		reply += struct.pack("<f", x);
+		reply += struct.pack("<f", y);
+		reply += struct.pack("<f", z);
+		self.sock.send (reply)
+		print "[setPos] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
