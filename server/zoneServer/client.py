@@ -18,6 +18,11 @@ class ClientHandler:
 	# Configurations
 	PACKETSIZE_MAX = 8192
 
+	# Globals
+	X = 0
+	Y = 0
+	Z = 0
+
 	def connectHandler (self, packet):
 		# CZ_CONNECT = 0x0BB9, // Size: 54
 		print 'CZ_CONNECT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
@@ -165,7 +170,16 @@ class ClientHandler:
 		reply += struct.pack("<B", 1);
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-		self.setPos(packet, 1142.29, 1000, -32.42);
+		# For fun, remove it when you want
+		self.changeCamera(packet, 1, self.X + 600, self.Y, self.Z, 10, 0.7);
+		time.sleep(3.5)
+		self.changeCamera(packet, 1, self.X, self.Y, self.Z + 600, 10, 0.7);
+		time.sleep(3.5)
+		self.changeCamera(packet, 1, self.X - 600, self.Y, self.Z, 10, 0.7);
+		time.sleep(3.5)
+		self.changeCamera(packet, 1, self.X, self.Y, self.Z - 600, 10, 0.7);
+		time.sleep(3.5)
+		self.changeCamera(packet, 0);
 
 	def movementInfoHandler (self, packet):
 		# CZ_MOVEMENT_INFO = 0x0C11                           # Size: 23
@@ -211,6 +225,9 @@ class ClientHandler:
 		if (len(packet) == 33):
 			packetType, sequenceNumber, checksum, unk1, unk2, x, y, z, dirX, dirZ, unk3 = struct.unpack("<HIHH?fffffH", packet)
 			print "[CZ_MOVE_STOP] x:%.2f | y:%.2f | z:%.2f | dirX:%.2f | dirZ:%.2f | unk=%x" % (x, y, z, dirX, dirZ, unk3)
+			self.X = float("%.2f" % x)
+			self.Y = float("%.2f" % y)
+			self.Z = float("%.2f" % z)
 
 	def moveSpeed (self, packet):
 		# ZC_MOVE_SPEED = 0x0BC9, // Size: 18
@@ -308,7 +325,10 @@ class ClientHandler:
 	def rotateHandler(self, packet):
 		# CZ_ROTATE = 0x0C18, // Size: 18
 		print 'CZ_ROTATE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		packetType, sequenceNumber, checksum, x, z = struct.unpack("<HIHII", packet)
+		if len(packet) == 16:
+			packetType, sequenceNumber, checksum, x, z = struct.unpack("<HIHII", packet)
+		else:
+			return
 		print "Rotate : dirX:%f | dirZ:%f" % (x, z)
 		#180c b1000000 8602 0000f104 35bff204
 
@@ -321,6 +341,23 @@ class ClientHandler:
 		reply += struct.pack("<f", z); # z
 		reply += struct.pack("<B", 0); # UNKNOWN
 
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+	def changeCamera(self, packet, option, x = 0, y = 0, z = 0, fspd = 0, ispd = 0):
+		# ZC_CHANGE_CAMERA = 0x0C97, // Size: 31
+		# changeCameraSub(*(_BYTE *)(a1 + 6), a1 + 7, a1 + 11, *(float *)(a1 + 23), *(float *)(a1 + 27));
+		reply  = struct.pack("<H", PacketType.ZC_CHANGE_CAMERA);
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<B", option); # option 0, 1 or 2 | 0 = reset, 1, 2 = set then update ?
+
+		reply += struct.pack("<I", 0); # unk only used when option == 2
+		reply += struct.pack("<f", x); # x - Positions are only used with option 1
+		reply += struct.pack("<f", y); # y
+		reply += struct.pack("<f", z); # z
+		reply += struct.pack("<f", fspd); # Final camera speed
+		reply += struct.pack("<f", ispd); # Initial camera speed
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
