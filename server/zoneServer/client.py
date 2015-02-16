@@ -292,7 +292,18 @@ class ClientHandler:
 		reply += struct.pack("<f", y);
 		reply += struct.pack("<f", z);
 		self.sock.send (reply)
-		print "[setPos] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+	def moveBarrackHandler(self, packet):
+		# CZ_MOVE_BARRACK = 0x0C00, // Size: 10
+		print 'CZ_MOVE_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+
+		# ZC_MOVE_BARRACK = 0x0C01, // Size: 6
+		reply  = struct.pack("<H", PacketType.ZC_MOVE_BARRACK);
+		reply += struct.pack("<I", 0);
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
@@ -346,6 +357,8 @@ class ClientHandler:
 			elif (packetType == PacketType.CZ_ON_GROUND):
 				self.onGroundHandler (packet);
 
+			elif (packetType == PacketType.CZ_MOVE_BARRACK):
+				self.moveBarrackHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
