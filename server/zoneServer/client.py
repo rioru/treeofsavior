@@ -305,6 +305,25 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def rotateHandler(self, packet):
+		# CZ_ROTATE = 0x0C18, // Size: 18
+		print 'CZ_ROTATE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		packetType, sequenceNumber, checksum, x, z = struct.unpack("<HIHII", packet)
+		print "Rotate : dirX:%f | dirZ:%f" % (x, z)
+		#180c b1000000 8602 0000f104 35bff204
+
+		# ZC_ROTATE = 0x0BE9, // Size: 19
+		reply  = struct.pack("<H", PacketType.ZC_ROTATE);
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<f", x); # x
+		reply += struct.pack("<f", z); # z
+		reply += struct.pack("<B", 0); # UNKNOWN
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -359,6 +378,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_MOVE_BARRACK):
 				self.moveBarrackHandler (packet);
+
+			elif (packetType == PacketType.CZ_ROTATE):
+				self.rotateHandler (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
