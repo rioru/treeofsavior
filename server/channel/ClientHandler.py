@@ -60,6 +60,51 @@ class ClientHandler:
 			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
 
 		# Don't know what to answer
+		self.unkFunc(packet)
+		self.groupChat(packet)
+
+	def normalHeader(self, type):
+		# Handler at 0087B5F0
+		# SC_NORMAL = 0x0B56, // Size: 0
+		reply  = struct.pack("<H", PacketType.SC_NORMAL)
+		reply += struct.pack("<I", 0) # seqnum
+		reply += struct.pack("<H", 0) # checksum?
+		reply += struct.pack("<I", type) # type
+		# data after that
+		return reply;
+
+	def unkFunc(self, packet):
+		reply  = self.normalHeader(2);
+		reply += struct.pack("<I", 1)
+		reply += struct.pack("<I", 1)
+		reply += struct.pack("<I", 1)
+		reply += struct.pack("<I", 1)
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+	def groupChat(self, packet):
+		reply  = self.normalHeader(5);
+
+		# v1
+		reply += struct.pack("<B", 1)
+		reply += struct.pack("<I", 1)
+		reply += struct.pack("<B", 1) * 3
+
+		# v2
+		reply += struct.pack("<B", 1)
+		reply += struct.pack("<I", 1)
+		reply += struct.pack("<B", 1) * 3
+		reply += struct.pack("<I", 1)
+
+		# unk
+		reply += struct.pack("<B", 1) * 124
+
+		reply += "testhello"
+
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def extractPacketType (self, data):
 		return struct.unpack("<H", data[:2])[0];
