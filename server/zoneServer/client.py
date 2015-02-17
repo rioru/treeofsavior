@@ -268,6 +268,19 @@ class ClientHandler:
 			self.X = float("%.2f" % x)
 			self.Y = float("%.2f" % y)
 			self.Z = float("%.2f" % z)
+			
+			# ZC_MOVE_STOP = 0x0BCA # Size: 23
+			# If the PCID in this packet is the same than the PCID of the player, this packet is ignored by the client.
+			reply  = struct.pack("<H", PacketType.ZC_MOVE_STOP);
+			reply += struct.pack("<I", 0xFFFFFFFF); # UNKNOWN
+			reply += struct.pack("<I", 0x000000FF); # PCID
+			reply += struct.pack("<f", x); # x
+			reply += struct.pack("<f", y); # y
+			reply += struct.pack("<f", z); # z
+			reply += struct.pack("<B", 1); # UNKNOWN
+			
+			self.sock.send (reply)
+			print "[ZC_MOVE_STOP] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def moveSpeed (self, packet):
 		# ZC_MOVE_SPEED = 0x0BC9, // Size: 18
