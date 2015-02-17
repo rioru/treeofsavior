@@ -1,0 +1,29 @@
+# Tree Of Savior (Project R1) (CBT1) (IPF format)
+#
+# Written by Ekey (h4x0r)
+#
+# script for QuickBMS http://quickbms.aluigi.org
+
+comtype deflate
+goto -0x18
+get FILES short
+get TABLEOFFSET long
+get FLAG short
+goto TABLEOFFSET
+
+for i = 0 < FILES
+    get NSIZE short
+    get CRC long
+    get ZSIZE long
+    get SIZE long
+    get OFFSET long
+    get CSIZE short
+    getdstring COMMENT CSIZE
+    getdstring NAME NSIZE
+   
+    if ZSIZE == SIZE
+        log NAME OFFSET SIZE
+    else
+        clog NAME OFFSET ZSIZE SIZE
+    endif
+next i
