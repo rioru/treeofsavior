@@ -537,6 +537,7 @@ class PacketType (Enum):
     ZC_PING = 0x0D8D                             # Size: 10
     ZC_HACKSHIELD_BUFFER = 0x0D8E                # Size: 608
     CZ_HACKSHIELD_BUFFER = 0x0D8F                # Size: 612
+	
     ZG_START = 0x0065                            # Size: 0
     GZ_START = 0x0066                            # Size: 8
     GZ_STOP = 0x0067                             # Size: 8
