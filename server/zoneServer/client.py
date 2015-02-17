@@ -133,6 +133,28 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def startInfo (self, packet):
+		count_JOB_INFO = 10;
+		
+		# ZC_START_INFO = 0x0D0E                       # Size: 0
+		reply  = struct.pack("<H", PacketType.ZC_START_INFO)
+		reply += struct.pack("<I", 0); # UNKNOWN
+
+		reply += struct.pack("<I", count_JOB_INFO); # count_JOB_INFO
+		
+		for i in range (0, count_JOB_INFO): # 12 bytes each
+			reply += struct.pack("<H", 0xAAAA - i); # field_0
+			reply += struct.pack("<H", 0xEEEE - i); # unk2
+			reply += struct.pack("<I", 0xDDDDDDDD - i); # field_4
+			reply += struct.pack("<I", 0xCCCC - i); # field_8
+			reply += struct.pack("<I", 0xBBBB - i); # field_A
+
+		# Add dynamically the size of the packet
+		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
+		reply = reply[:6] + size + reply[6:];
+		
+		self.sock.send (reply)
+		print "[ZC_START_INFO] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def gameReadyHandler (self, packet):
 		# CZ_GAME_READY = 0x0BFD, // Size: 10
@@ -140,6 +162,7 @@ class ClientHandler:
 
 		# Add additional information
 		self.quickSlotListHandler (packet);
+		self.startInfo (packet);
 
 		# ZC_START_GAME = 0x0C05, // Size: 26
 		reply  = struct.pack("<H", PacketType.ZC_START_GAME)
