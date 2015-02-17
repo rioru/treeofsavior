@@ -157,6 +157,22 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "[ZC_START_INFO] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def message (self, packet):
+		messageCode = 0x42; # CF packet::ServerMsg (0x4DA330) for the message codes list
+	
+		# ZC_MESSAGE = 0x0C03                          # Size: 30
+		reply  = struct.pack("<H", PacketType.ZC_MESSAGE)
+		reply += struct.pack("<I", 0); # UNKNOWN
+
+		reply += struct.pack("<B", messageCode);
+		
+		# Add dynamically the size of the packet
+		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
+		reply = reply[:6] + size + reply[6:];
+		
+		self.sock.send (reply)
+		print "[ZC_MESSAGE] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 	def gameReadyHandler (self, packet):
 		# CZ_GAME_READY = 0x0BFD, // Size: 10
 		print 'CZ_GAME_READY expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
