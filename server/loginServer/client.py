@@ -32,7 +32,7 @@ class ClientHandler:
 		
 		reply += struct.pack("<H", 0); # UNKNOWN
 		# The following 8 bytes are information about the account
-		reply += struct.pack("<q", 0x1122334455667788); # CID
+		reply += struct.pack("<q", 0x1122334455667788); # AID
 		
 		reply += ChannelLogin + "\x00" * (17 - len(ChannelLogin)); # zero terminated string
 		reply += struct.pack("<I", 1); # accountPrivileges. If < 3, the character is GM.
