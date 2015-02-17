@@ -134,6 +134,7 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def startInfo (self, packet):
+		# This packet contains only information about JOB_INFO
 		count_JOB_INFO = 10;
 		
 		# ZC_START_INFO = 0x0D0E                       # Size: 0
@@ -142,7 +143,7 @@ class ClientHandler:
 
 		reply += struct.pack("<I", count_JOB_INFO); # count_JOB_INFO
 		
-		for i in range (0, count_JOB_INFO): # 12 bytes each
+		for i in range (0, count_JOB_INFO): # 12 bytes each - information about JOB_INFO
 			reply += struct.pack("<H", 0xAAAA - i); # field_0
 			reply += struct.pack("<H", 0xEEEE - i); # unk2
 			reply += struct.pack("<I", 0xDDDDDDDD - i); # field_4
