@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<uiframe name="cheatlist" x="0" y="0" width="1024" height="768">
+	<option closebuttonpos="0 35" hideable="true"/>
+	<frame title="{@st43}R1EMU Console{/}" titlepos="0 -14" snapclient="true" snapframe="true" layout_gravity="left center" margin="450 0 0 0" permission="operator"/>
+	<layer layerlevel="100"/>
+	<script CloseScp="CHEATLIST_UI_CLOSE"/>
+	<sound opensound="win_open" closesound="win_close"/>
+	<controls>
+		<groupbox name="r1emu_group" layout_gravity="left top" scrollbar="true" rect="0 0 940 730" margin="40 0 0 0" container="true"/>
+		<richtext name="dbgmsg" rect="0 0 900 80" layout_gravity="center top" textalign="left top" margin="0 27 0 0" caption="{@st43}Debug message 1{/}"/>
+	</controls>
+</uiframe>
