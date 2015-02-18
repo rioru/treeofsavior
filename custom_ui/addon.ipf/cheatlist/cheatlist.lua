@@ -8,7 +8,7 @@ function CHEATLIST_ON_INIT(addon, frame)
 end
 
 function addMsgConsole (grid, text)
-	ATTACH_TEXT_TO_OBJECT(grid, 'DBGMSG_' .. dbgMsgCount, text, 1, (dbgMsgCount * 25), 1000, 30, ui.LEFT, ui.TOP, 1, "left", "top");
+	ATTACH_TEXT_TO_OBJECT(grid, 'DBGMSG_' .. dbgMsgCount, text, 1, (dbgMsgCount * 25), 1000, 25, ui.LEFT, ui.TOP, 1, "left", "top");
 	dbgMsgCount = dbgMsgCount + 1;
 end
 
