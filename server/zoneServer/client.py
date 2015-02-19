@@ -34,12 +34,13 @@ class ClientHandler:
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		# reply += struct.pack("<H", X); # Size of the entire packet - Added dynamically at the end of the function
-		reply += struct.pack("<B", 1); # Exit Barrack ?
+		reply += struct.pack("<B", 0); # 0 = NormalMode, 1 = SingleMode
 		reply += struct.pack("<I", 1); # UNKNOWN
-		reply += struct.pack("<B", 1); # UNKNOWN - CF sub_6AE590 - set dword_165DCC0
+		reply += struct.pack("<B", 0); # AccountPrivileges (if < 3, the account is GM)
 
 		# 10 bytes = UNKNOWN
-		reply += "Aa0Aa1Aa2A"
+		reply += "Aa0" # Padding ?
+		reply += "Aa1Aa2A"
 
 		# Pc session
 		reply += struct.pack("<I", PCID); # PCID - Define a schrageID for the current PC - must *not* be zero
