@@ -23,17 +23,17 @@ class ClientHandler:
 	def loginByPasswordHandler (self, packet):
 		# CB_LOGIN_BY_PASSPORT = 0x0004, // Size: 531
 		print 'CB_LOGIN_BY_PASSPORT expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
-		
-		ChannelLogin = "ChannelLogin" # The string is sent in CS_LOGIN 
+
+		ChannelLogin = "ChannelLogin" # The string is sent in CS_LOGIN
 
 		# BC_LOGINOK = 0x000D                          # Size: 37
 		reply  = struct.pack("<H", PacketType.BC_LOGINOK)
 		reply += struct.pack("<I", 3); # UNKNOWN
-		
+
 		reply += struct.pack("<H", 0); # UNKNOWN
 		# The following 8 bytes are information about the account
 		reply += struct.pack("<q", 0x1122334455667788); # AID
-		
+
 		reply += ChannelLogin + "\x00" * (17 - len(ChannelLogin)); # zero terminated string
 		reply += struct.pack("<I", 1); # accountPrivileges. If < 3, the character is GM.
 

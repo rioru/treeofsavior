@@ -136,13 +136,13 @@ class ClientHandler:
 	def startInfo (self, packet):
 		# This packet contains only information about JOB_INFO
 		count_JOB_INFO = 10;
-		
+
 		# ZC_START_INFO = 0x0D0E                       # Size: 0
 		reply  = struct.pack("<H", PacketType.ZC_START_INFO)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		reply += struct.pack("<I", count_JOB_INFO); # count_JOB_INFO
-		
+
 		for i in range (0, count_JOB_INFO): # 12 bytes each - information about JOB_INFO
 			reply += struct.pack("<H", 0xAAAA - i); # field_0
 			reply += struct.pack("<H", 0xEEEE - i); # unk2
@@ -153,23 +153,23 @@ class ClientHandler:
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
-		
+
 		self.sock.send (reply)
 		print "[ZC_START_INFO] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def message (self, packet):
 		messageCode = 0x42; # CF packet::ServerMsg (0x4DA330) for the message codes list
-	
+
 		# ZC_MESSAGE = 0x0C03                          # Size: 30
 		reply  = struct.pack("<H", PacketType.ZC_MESSAGE)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		reply += struct.pack("<B", messageCode);
-		
+
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
-		
+
 		self.sock.send (reply)
 		print "[ZC_MESSAGE] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
@@ -211,15 +211,8 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 		# For fun, remove it when you want
-		self.changeCamera(packet, 1, self.X + 600, self.Y, self.Z, 10, 0.7);
-		time.sleep(3.5)
-		self.changeCamera(packet, 1, self.X, self.Y, self.Z + 600, 10, 0.7);
-		time.sleep(3.5)
-		self.changeCamera(packet, 1, self.X - 600, self.Y, self.Z, 10, 0.7);
-		time.sleep(3.5)
-		self.changeCamera(packet, 1, self.X, self.Y, self.Z - 600, 10, 0.7);
-		time.sleep(3.5)
-		self.changeCamera(packet, 0);
+		self.uiOpen(packet, "chat", 1); # Chat input
+		self.uiOpen(packet, "chatframe", 1); # Chat output
 
 	def movementInfoHandler (self, packet):
 		# CZ_MOVEMENT_INFO = 0x0C11                           # Size: 23
@@ -268,7 +261,7 @@ class ClientHandler:
 			self.X = float("%.2f" % x)
 			self.Y = float("%.2f" % y)
 			self.Z = float("%.2f" % z)
-			
+
 			# ZC_MOVE_STOP = 0x0BCA # Size: 23
 			# If the PCID in this packet is the same than the PCID of the player, this packet is ignored by the client.
 			reply  = struct.pack("<H", PacketType.ZC_MOVE_STOP);
@@ -278,7 +271,7 @@ class ClientHandler:
 			reply += struct.pack("<f", y); # y
 			reply += struct.pack("<f", z); # z
 			reply += struct.pack("<B", 1); # UNKNOWN
-			
+
 			self.sock.send (reply)
 			print "[ZC_MOVE_STOP] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
@@ -411,6 +404,17 @@ class ClientHandler:
 		reply += struct.pack("<f", z); # z
 		reply += struct.pack("<f", fspd); # Final camera speed
 		reply += struct.pack("<f", ispd); # Initial camera speed
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
+	def uiOpen(self, packet, ui, open):
+		# ZC_UI_OPEN = 0x0C95, // Size: 39
+		reply  = struct.pack("<H", PacketType.ZC_UI_OPEN);
+		reply += struct.pack("<I", 0);
+
+		reply += ui; # Max 32
+		reply += "\x00" * (32 - len(ui));
+		reply += struct.pack("<B", open); # 1 or 0, enable or disable
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
