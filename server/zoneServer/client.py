@@ -34,7 +34,7 @@ class ClientHandler:
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		# reply += struct.pack("<H", X); # Size of the entire packet - Added dynamically at the end of the function
-		reply += struct.pack("<B", 1); # 0 = NormalMode, 1 = SingleMode
+		reply += struct.pack("<B", 0); # 0 = NormalMode, 1 = SingleMode
 		reply += struct.pack("<I", 1); # UNKNOWN
 		reply += struct.pack("<B", 0); # AccountPrivileges (if < 3, the account is GM)
 
