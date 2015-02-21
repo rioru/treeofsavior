@@ -121,6 +121,39 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def uiInfoList (self, packet):
+		uiInfoListSize = 1
+		# ZC_UI_INFO_LIST = 0x0CCC, // Size: 0
+		reply  = struct.pack("<H", PacketType.ZC_UI_INFO_LIST)
+		reply += struct.pack("<I", 0); # UNKNOWN
+
+		reply += struct.pack("<I", uiInfoListSize); # nb list
+		reply += struct.pack("<I", 1); # UNKNOWN for loop after
+
+		test = 1
+		# ui info item, Size: 48
+		# if 20 >= 12
+		for i in range(0, uiInfoListSize):
+			reply += struct.pack("<I", test); # UNKNOWN 0
+			reply += struct.pack("<I", test); # UNKNOWN 4
+			reply += struct.pack("<I", test); # UNKNOWN 8
+			reply += struct.pack("<I", test); # UNKNOWN 12
+			reply += struct.pack("<I", test); # UNKNOWN 16
+			reply += struct.pack("<I", test); # UNKNOWN 20
+			reply += struct.pack("<I", test); # UNKNOWN 24
+			reply += struct.pack("<I", test); # UNKNOWN 28
+			reply += struct.pack("<I", test); # UNKNOWN 32
+			reply += struct.pack("<I", test); # UNKNOWN 36
+			reply += struct.pack("<I", test); # UNKNOWN 40
+			reply += struct.pack("<I", test); # UNKNOWN 44
+
+		# Add dynamically the size of the packet
+		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
+		reply = reply[:6] + size + reply[6:];
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 
 	def MyPCEnter (self, packet):
 		# ZC_MYPC_ENTER = 0x0CA4, // Size: 18
@@ -180,6 +213,7 @@ class ClientHandler:
 
 		# Add additional information
 		self.quickSlotListHandler (packet);
+		self.uiInfoList (packet);
 		self.startInfo (packet);
 
 		# ZC_START_GAME = 0x0C05, // Size: 26
@@ -198,7 +232,6 @@ class ClientHandler:
 		self.moveSpeed(packet);
 		self.MyPCEnter(packet);
 		self.setPos(packet, 1142.29, 1000, -32.42);
-
 
 	def restSitHandler (self, packet):
 		# CZ_REST_SIT = 0x0C0E, Size: 10
