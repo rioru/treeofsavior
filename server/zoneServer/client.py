@@ -322,23 +322,23 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def poseHandler (self, packet):
-		# Be careful using it, still buggy. It doesn't reset the pose/play the animation correctly and you won't be able to do another pose after the first one (sit for example)
-
 		# CZ_POSE = 0x0C1B, // Size: 34
 		print 'CZ_POSE expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 		packetType, sequenceNumber, checksum, unk1, pose = struct.unpack("<HIHHI", packet[:14])
-		unk1 = packet[14:26]
-		unk2 = packet[26:]
+		position = packet[14:26] # 12
+		direction = packet[26:] # 8
+		dir1, dir2 = struct.unpack("<Hf", direction)
 
 		# ZC_POSE = 0x0BEE, // Size: 34
-		# Maybe it isn't ZC_POSE we should send but ZC_PLAY_ANI
 		reply  = struct.pack("<H", PacketType.ZC_POSE);
 		reply += struct.pack("<I", 0);
 
 		reply += struct.pack("<I", 0xFF); # PCID
 		reply += struct.pack("<I", pose); # Pose
-		reply += unk1;
-		reply += unk2;
+		reply += position; # Position (x, y, z)
+		# Direction needs to be fixed
+		reply += struct.pack("<f", dir1);
+		reply += struct.pack("<f", dir2);
 
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
