@@ -122,37 +122,39 @@ class ClientHandler:
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def uiInfoList (self, packet):
-		uiInfoListSize = 1
 		# ZC_UI_INFO_LIST = 0x0CCC, // Size: 0
+		uiInfoListSize = 1
+		unkUiListSize  = 1
 		reply  = struct.pack("<H", PacketType.ZC_UI_INFO_LIST)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		reply += struct.pack("<I", uiInfoListSize); # nb list
-		reply += struct.pack("<I", 1); # UNKNOWN for loop after
+		reply += struct.pack("<I", unkUiListSize); # UNKNOWN for loop after
 
-		test = 1
-		# ui info item, Size: 48
-		# if 20 >= 12
+		# UI_FRAME_INFO, Size: 48
+		frameTitle = "chat";
 		for i in range(0, uiInfoListSize):
-			reply += struct.pack("<I", test); # UNKNOWN 0
-			reply += struct.pack("<I", test); # UNKNOWN 4
-			reply += struct.pack("<I", test); # UNKNOWN 8
-			reply += struct.pack("<I", test); # UNKNOWN 12
-			reply += struct.pack("<I", test); # UNKNOWN 16
-			reply += struct.pack("<I", test); # UNKNOWN 20
-			reply += struct.pack("<I", test); # UNKNOWN 24
-			reply += struct.pack("<I", test); # UNKNOWN 28
-			reply += struct.pack("<I", test); # UNKNOWN 32
-			reply += struct.pack("<I", test); # UNKNOWN 36
-			reply += struct.pack("<I", test); # UNKNOWN 40
-			reply += struct.pack("<I", test); # UNKNOWN 44
+			reply += struct.pack("<H", (i*2)); # groupID
+			reply += struct.pack("<H", (i*2)+1); # uiIndex
+			reply += struct.pack("<H", 100); # x
+			reply += struct.pack("<H", 100); # y
+			reply += struct.pack("<H", 500); # width
+			reply += struct.pack("<H", 500); # height
+			reply += frameTitle + "\x00" * (32 - len(frameTitle));
+			reply += struct.pack("<H", 0xAAAA); # numArg1
+			reply += struct.pack("<H", 0xBBBB); # numArg2
+
+		# Unknown vector 2
+		for i in range(0, unkUiListSize):
+			reply += struct.pack("<H", (i*2));   # id_1
+			reply += struct.pack("<H", (i*2)+1); # id_2
 
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
 		reply = reply[:6] + size + reply[6:];
 
 		self.sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+		print "[ZC_UI_INFO_LIST] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 
 	def MyPCEnter (self, packet):
