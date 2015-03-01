@@ -12,7 +12,25 @@ function addMsgConsole (grid, text)
 	dbgMsgCount = dbgMsgCount + 1;
 end
 
+function UI_INFO ()
+	local list = session.GetUIInfoList();
+	local cnt = list:Count();
+	EMUDBG (" --- UI_INFO --- ");
+	for i = 0 , cnt - 1 do
+		local info = list:Element(i);
+		EMUDBG ("=====[UiFrameInfo element n = " .. i .. "]==========");
+		EMUDBG ("groupID = " .. info.groupID);
+		EMUDBG ("uiindex = " .. info.uiindex);
+		EMUDBG ("x/y = " .. info.x .. " / " .. info.y);
+		EMUDBG ("width/height = " .. info.width .. " / " .. info.height);
+		-- EMUDBG ("title = " .. info.title); -- Not possible to access to "title" attribute directly
+		EMUDBG ("numArg1 = " .. info.numArg1);
+		EMUDBG ("numArg2 = " .. info.numArg2);
+	end
+end
+
 function EMUDBG (textDbg)
+
 	if cheatFrame == nil then
 		table.insert(notDisplayed, textDbg);
 		return;

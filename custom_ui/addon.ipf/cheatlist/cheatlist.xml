@@ -8,7 +8,7 @@
 	<controls>
 		<groupbox name="r1emu_console" rect="0 0 1000 115" margin="0 0 0 0" skin="pipwin_top" draw="true" hittestbox="false" layout_gravity="center top" scrollbar="false" resizebyparent="false"/>
 		<groupbox name="bg" rect="0 0 1024 650" margin="0 90 0 0" draw="true" hittestbox="false" layout_gravity="center top" scrollbar="false" resizebyparent="false" resizebyresolution="true"/>
-		<grid name="r1emu_grid" rect="0 0 980 650" layout_gravity="left top" margin="20 100 0 0" border="0 0 0 0" skin=" " scrollbar="true" slotsize="980 25" slotscp="0 0" resizebyparent="true"/>
+		<grid name="r1emu_grid" rect="0 0 980 650" layout_gravity="left top" margin="20 100 0 0" border="0 0 0 0" skin=" " scrollbar="false" slotsize="980 25" slotscp="0 0" resizebyparent="true"/>
 		<richtext name="title" rect="0 0 200 80" layout_gravity="center top" textalign="left top" margin="0 27 0 0" caption="{@st41b}DEBUG MESSAGES{/}"/>
 	</controls>
 </uiframe>
