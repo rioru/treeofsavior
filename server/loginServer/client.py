@@ -45,7 +45,22 @@ class ClientHandler:
 		print 'CB_START_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
 		self.serverEntryHandler (packet);
 		self.commanderListHandler (packet);
+		
+	def accountPropHandler (self, packet):
+		# BC_ACCOUNT_PROP = 0x004D, // Size: 0
+		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
+		reply += struct.pack("<I", 0); # UNKNOWN
 
+		reply += struct.pack("<H", 0); # UNKNOWN
+		
+		reply += struct.pack("<I", 0); # Field 1
+		reply += struct.pack("<I", 0); # Field 2 - Field 1 and 2 are used for visiting other barracks.
+
+		reply += struct.pack("<H", 4); # dataSize
+		reply += struct.pack("<I", 0x1234); # ShrageID
+
+		self.sock.send (reply)
+		print "[BC_ACCOUNT_PROP] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def serverEntryHandler (self, packet):
 		# BC_SERVER_ENTRY = 0x0057, // Size: 18
