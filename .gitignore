@@ -5,4 +5,8 @@
 clienthooks/HooksOfSavior/HooksOfSavior/log.txt
 clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.layout
 clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.depend
-clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.dll
+
+# LuaSavior project ignored files
+clienthooks/HooksOfSavior/LuaSavior/log.txt
+clienthooks/HooksOfSavior/LuaSavior/LuaSavior.layout
+clienthooks/HooksOfSavior/LuaSavior/LuaSavior.depend
