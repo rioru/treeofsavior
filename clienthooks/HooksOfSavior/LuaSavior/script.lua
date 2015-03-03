@@ -8,3 +8,17 @@ bpc = account:GetBySlot(1);
 actorPC = bpc:GetApc();
 print ("actorPC.mapID = " .. actorPC.mapID);
 print ("actorPC.channelID = " .. actorPC.channelID);
+
+-- Get zoneInsts information
+zoneInsts = session.serverState.GetMap(actorPC.mapID);
+if zoneInsts == nil then
+	print ("zoneInsts is NULL");
+else
+	local cnt = zoneInsts:GetZoneInstCount();
+	print ("zoneInsts count = " .. cnt);
+	for i = 0  , cnt - 1 do
+		local zoneInst = zoneInsts:GetZoneInstByIndex(i);
+		local str, gaugeString = GET_CHANNEL_STRING(zoneInst);
+		print ("Channel String = " .. str .. " | gaugeString = " .. gaugeString);
+	end
+end
