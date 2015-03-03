@@ -90,8 +90,7 @@ class ClientHandler:
 		reply += struct.pack("<I", 1337); # Current XP
 		reply += struct.pack("<I", 31337); # Max XP
 		reply += struct.pack("<I", 0); # UNKNOWN
-		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
-		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
+		reply += struct.pack("<q", spriteID); # Apparence du sprite du corps
 		reply += struct.pack("<q", 1000000); # CID
 		reply += struct.pack("<I", 4000); # Current HP
 		reply += struct.pack("<I", 4200); # Max HP
