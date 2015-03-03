@@ -3,13 +3,7 @@ import binascii
 import struct
 import time
 import socket
-import io
 from PacketType import PacketType
-
-def stream_unpack (fmt, stream):
-    size = struct.calcsize(fmt)
-    buf = stream.read(size)
-    return struct.unpack(fmt, buf)[0];
 
 # ==========================================================
 class ClientHandler:
@@ -261,18 +255,8 @@ class ClientHandler:
 	def jumpHandler (self, packet):
 		# CB_JUMP = 0x0055, // Size: 19
 		print 'Expected CB_JUMP. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
-		packetStream = io.BytesIO (packet);
-		packetType = stream_unpack ("<H", packetStream);
-		packetNum = stream_unpack ("<I", packetStream);
-		packetChecksum = stream_unpack ("<H", packetStream);
-		unk1 = stream_unpack ("<H", packetStream);
-		unk2 = stream_unpack ("<H", packetStream);
-		bIsJumping = stream_unpack ("<B", packetStream);
-		unk3 = stream_unpack ("<I", packetStream);
-
-		if packetStream.read (1):
-			print "WARNING : The packet still contains data sent from the client that hasn't been read.";
-
+		packetType, packetNum, packetChecksum, unk1, unk2, bIsJumping, unk3 = struct.unpack ("<HIHHHBI", packet);
+		
 		# BC_JUMP = 0x0056, // Size: 19
 		reply  = struct.pack("<H", PacketType.BC_JUMP);
 		reply += struct.pack("<I", 0);
