@@ -148,7 +148,8 @@ class ClientHandler:
 			reply += struct.pack("<I", 1337); # Current XP
 			reply += struct.pack("<I", 31337); # Max XP
 			reply += struct.pack("<I", 0); # UNKNOWN
-			reply += struct.pack("<q", spriteID); # Apparence du sprite du corps
+			reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
+			reply += struct.pack("<I", 2); # Sprite Related
 			reply += struct.pack("<q", 1000000); # CID
 			reply += struct.pack("<I", 4000); # Current HP
 			reply += struct.pack("<I", 4200); # Max HP
@@ -238,7 +239,8 @@ class ClientHandler:
 		reply += struct.pack("<I", 1337); # Current XP
 		reply += struct.pack("<I", 31337); # Max XP
 		reply += struct.pack("<I", 0); # UNKNOWN
-		reply += struct.pack("<q", spriteID) * 1; # Apparence du sprite du corps
+		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
+		reply += struct.pack("<I", 2); # Sprite Related
 		reply += struct.pack("<q", 1000000); # CID
 		reply += struct.pack("<I", 4000); # Current HP
 		reply += struct.pack("<I", 4200); # Max HP
@@ -308,7 +310,8 @@ class ClientHandler:
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", 0x551); # mapId
 		reply += struct.pack("<B", 1); # Channel ID
-		reply += struct.pack("<q", spriteID); # Apparence du sprite du corps
+		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
+		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
 		reply += "\x00" # Boolean : StartSingleMap
 
 		self.sock.send (reply)
