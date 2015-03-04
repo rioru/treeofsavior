@@ -200,7 +200,7 @@ class ClientHandler:
 		nbZoneServers = 5;
 		
 		reply  = self.normalHeader (0xB);
-		reply += struct.pack("<H", 1); # zlib header (if egal to 0xFA8D, it means the following packet is compressed)
+		reply += struct.pack("<H", 0); # zlib header (if egal to 0xFA8D, it means the following packet is compressed)
 		reply += struct.pack("<H", 100); # maxPcCount (all zones has the same value)
 		reply += struct.pack("<H", nbMapAvailable); # Count number of map objects
 		
