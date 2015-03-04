@@ -337,7 +337,9 @@ class ClientHandler:
 		mapId = 0x551;
 
 		# CB_START_GAME = 0x0009 // Size: 13
+		# 0900 08000000 0700 0000 04
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
+		packetType, packetNum, packetChecksum, unk1, channelID = struct.unpack ("<HIHHB", packet);
 
 		# BC_START_GAMEOK = 0x0012 // Size: 60
 		reply  = struct.pack("<H", PacketType.BC_START_GAMEOK);
@@ -346,7 +348,7 @@ class ClientHandler:
 		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", mapId); # mapId
-		reply += struct.pack("<B", 1); # Channel ID in the list
+		reply += struct.pack("<B", channelID); # Channel ID in the list
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
 		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
 		reply += "\x00" # Boolean : StartSingleMap
