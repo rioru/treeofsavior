@@ -454,6 +454,41 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+		
+	def normalHeader (self, type):
+		# Handler at 0x702FA0
+		# ZC_NORMAL = 0x0D27, // Size: 0
+		reply  = struct.pack("<H", PacketType.ZC_NORMAL)
+		reply += struct.pack("<I", 0) # seqnum
+		reply += struct.pack("<I", type) # type
+		
+		# data after that
+		return reply;
+
+	def reqChannelTraffics (self, packet):
+		# CZ_REQ_CHANNEL_TRAFFICS = 0x0C95, // Size: 10
+		print 'CZ_REQ_CHANNEL_TRAFFICS expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		
+		mapId = 0x551;
+		nbZoneServers = 10;
+		
+		reply = self.normalHeader (0xF8);
+		reply += struct.pack("<H", 0); # zlib header (if egal to 0xFA8D, it means the following packet is compressed)
+		reply += struct.pack("<H", mapId); # mapID
+		reply += struct.pack("<H", nbZoneServers); # Count of zone servers for this map
+		
+		# Zone traffic structure
+		for j in range(0, nbZoneServers):
+			reply += struct.pack("<B", j); # List ID the zone server
+			reply += struct.pack("<H", j * 10); # Zone server current players count
+
+		# Add dynamically the size of the packet
+		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
+		reply = reply[:6] + size + reply[6:];
+		
+		self.sock.send (reply)
+		print "[CZ_REQ_CHANNEL_TRAFFICS] Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+
 	def netDecrypt (self, data):
 		packetSize = struct.unpack("<H", data[:2]);
 		# print "PacketSize received : %d" % packetSize;
@@ -511,6 +546,9 @@ class ClientHandler:
 
 			elif (packetType == PacketType.CZ_ROTATE):
 				self.rotateHandler (packet);
+				
+			elif (packetType == PacketType.CZ_REQ_CHANNEL_TRAFFICS):
+				self.reqChannelTraffics (packet);
 
 			else:
 				print "[WARNING] Unhandled packet type = 0x%x (size=%d)" % (packetType, len(data));
