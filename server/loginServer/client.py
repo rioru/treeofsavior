@@ -346,7 +346,7 @@ class ClientHandler:
 		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
 		reply += struct.pack("<I", mapId); # mapId
-		reply += struct.pack("<B", 1); # Channel ID
+		reply += struct.pack("<B", 1); # Channel ID in the list
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
 		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
 		reply += "\x00" # Boolean : StartSingleMap
