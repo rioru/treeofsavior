@@ -196,12 +196,22 @@ class ClientHandler:
 	def createZoneTraffic (self):
 		mapId = 0x551;
 		
+		nbMapAvailable = 1;
+		nbZoneServers = 5;
+		
 		reply  = self.normalHeader (0xB);
-		reply += struct.pack("<H", 0x1234); # current PCCount
-		reply += struct.pack("<H", 0x9999); # max PCCount
-		reply += struct.pack("<H", 1); # number of zone servers in this packet
-		reply += struct.pack("<H", mapId); # mapID
-		reply += "TEST" + "\x00";
+		reply += struct.pack("<H", 1); # zlib header (if egal to 0xFA8D, it means the following packet is compressed)
+		reply += struct.pack("<H", 100); # maxPcCount (all zones has the same value)
+		reply += struct.pack("<H", nbMapAvailable); # Count number of map objects
+		
+		# Map traffic structure
+		for i in range(1, nbMapAvailable+1):
+			reply += struct.pack("<H", mapId); # mapID
+			reply += struct.pack("<H", nbZoneServers); # Count of zone servers for this map
+			# Zone traffic structure
+			for j in range(0, nbZoneServers):
+				reply += struct.pack("<B", j); # list ID the zone server
+				reply += struct.pack("<H", j * 20); # Zone server current players count
 		
 		# Add dynamically the size of the packet
 		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
@@ -223,7 +233,7 @@ class ClientHandler:
 		classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 		jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
 		gender = 2;
-		mapId = 0x408;
+		mapId = 0x551;
 		characterLevel = 1337;
 		# 0x2710 = no helmet (empty slot)
 		itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
@@ -412,4 +422,5 @@ class ClientHandler:
 		self.sock = sock;
 		self.nbCharacterBarrack = 0;
 		self.positionCharacterList = 0;
+		
 		self.start ();

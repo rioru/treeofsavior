@@ -18,7 +18,11 @@ else
 	print ("zoneInsts count = " .. cnt);
 	for i = 0  , cnt - 1 do
 		local zoneInst = zoneInsts:GetZoneInstByIndex(i);
-		local str, gaugeString = GET_CHANNEL_STRING(zoneInst);
-		print ("Channel String = " .. str .. " | gaugeString = " .. gaugeString);
+		if zoneInst ~= nil then
+			local str, gaugeString = GET_CHANNEL_STRING(zoneInst);
+			print ("Channel String = " .. str .. " | gaugeString = " .. gaugeString);
+		else
+			print ("Error : zoneInst is NULL");
+		end
 	end
 end
