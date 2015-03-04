@@ -42,7 +42,7 @@ class ClientHandler:
 		
 	def accountPropHandler (self, packet):
 		# BC_ACCOUNT_PROP = 0x004D, // Size: 0
-		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
+		reply  = struct.pack("<H", PacketType.BC_ACCOUNT_PROP)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
 		reply += struct.pack("<H", 0); # UNKNOWN
@@ -84,7 +84,6 @@ class ClientHandler:
 		reply  = struct.pack("<H", PacketType.BC_COMMANDER_LIST)
 		reply += struct.pack("<I", 0); # UNKNOWN
 
-		# reply += struct.pack("<H", X); # Size of the entire packet - Added dynamically at the end of the function
 		reply += struct.pack("<I", 0); # Field 2 -
 		reply += struct.pack("<I", 0); # Field 3 - Field 2 and 3 are used for visiting other barracks.
 
@@ -107,7 +106,7 @@ class ClientHandler:
 			classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
 			jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
 			gender = 2;
-			mapId = 0x408;
+			mapId = 0x551;
 			characterLevel = 1337;
 			# 0x2710 = no helmet (empty slot)
 			itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
@@ -168,6 +167,7 @@ class ClientHandler:
 	def currentBarrackHandler (self, packet):
 		# CB_CURRENT_BARRACK = 0x004E, // Size: 39
 		print 'CB_CURRENT_BARRACK expected. Received : ' + binascii.hexlify (packet) + " (" + str(len(packet)) + ")";
+		self.createZoneTraffic ();
 
 
 	def barrackNameChangeHandler (self, packet):
@@ -183,6 +183,32 @@ class ClientHandler:
 		self.sock.send (reply)
 		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
+	def normalHeader (self, type):
+		# Handler at 0087B5F0
+		# BC_NORMAL = 0x004F, // Size: 0
+		reply  = struct.pack("<H", PacketType.BC_NORMAL)
+		reply += struct.pack("<I", 0) # seqnum
+		reply += struct.pack("<I", type) # type
+		
+		# data after that
+		return reply;
+
+	def createZoneTraffic (self):
+		mapId = 0x551;
+		
+		reply  = self.normalHeader (0xB);
+		reply += struct.pack("<H", 0x1234); # current PCCount
+		reply += struct.pack("<H", 0x9999); # max PCCount
+		reply += struct.pack("<H", 1); # number of zone servers in this packet
+		reply += struct.pack("<H", mapId); # mapID
+		reply += "TEST" + "\x00";
+		
+		# Add dynamically the size of the packet
+		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
+		reply = reply[:6] + size + reply[6:];
+		
+		self.sock.send (reply)
+		print "[createZoneTraffic] : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
 
 	def commanderCreateHandler (self, packet):
 		# CB_COMMANDER_CREATE = 0x0007, // Size: 91
@@ -298,6 +324,7 @@ class ClientHandler:
 		spriteID = 0;
 		zoneServerDomainName = "127.0.0.1";
 		zoneServerPort = 4919;
+		mapId = 0x551;
 
 		# CB_START_GAME = 0x0009 // Size: 13
 		print 'Expected CB_START_GAME. Received : ' + binascii.hexlify(packet) + " (" + str(len(packet)) + ")";
@@ -308,7 +335,7 @@ class ClientHandler:
 		reply += struct.pack("<I", 0x12345678); # zone ID
 		reply += zoneServerDomainName + "\x00" * (32 - len(zoneServerDomainName));
 		reply += struct.pack("<I", zoneServerPort); # zoneServerPort
-		reply += struct.pack("<I", 0x551); # mapId
+		reply += struct.pack("<I", mapId); # mapId
 		reply += struct.pack("<B", 1); # Channel ID
 		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
 		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
