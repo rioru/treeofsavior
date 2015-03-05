@@ -1,5 +1,11 @@
 *.pyc
 *.o
+*.sdf
+*.opensdf
+*.obj
+*.ilk
+*.pdb
+*.exe
 
 # HooksOfSavior project ignored files
 clienthooks/HooksOfSavior/HooksOfSavior/log.txt
@@ -10,3 +16,9 @@ clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.depend
 clienthooks/HooksOfSavior/LuaSavior/log.txt
 clienthooks/HooksOfSavior/LuaSavior/LuaSavior.layout
 clienthooks/HooksOfSavior/LuaSavior/LuaSavior.depend
+
+# R1EMU project ignored files
+server/R1EMU/projects/vcproj-13/R1EMU/Debug/R1EMU.tlog
+server/R1EMU/projects/vcproj-13/R1EMU/Debug/R1EMU.log
+server/R1EMU/projects/vcproj-13/R1EMU/Debug/vc120.idb
+server/R1EMU/projects/vcproj-13/R1EMU/Debug/vc120.pdb
