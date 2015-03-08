@@ -6,19 +6,17 @@
 *.ilk
 *.pdb
 *.exe
+*.tlog
+*.log
+*.layout
+*.depend
+*.lastbuildstate
 
 # HooksOfSavior project ignored files
 clienthooks/HooksOfSavior/HooksOfSavior/log.txt
-clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.layout
-clienthooks/HooksOfSavior/HooksOfSavior/HooksOfSavior.depend
 
 # LuaSavior project ignored files
 clienthooks/HooksOfSavior/LuaSavior/log.txt
-clienthooks/HooksOfSavior/LuaSavior/LuaSavior.layout
-clienthooks/HooksOfSavior/LuaSavior/LuaSavior.depend
 
-# R1EMU project ignored files
-server/R1EMU/projects/vcproj-13/R1EMU/Debug/R1EMU.tlog
-server/R1EMU/projects/vcproj-13/R1EMU/Debug/R1EMU.log
-server/R1EMU/projects/vcproj-13/R1EMU/Debug/vc120.idb
-server/R1EMU/projects/vcproj-13/R1EMU/Debug/vc120.pdb
+# R1EMU doxygen documentation
+server/R1EMU/projects/codeblocks/R1EMU/doxygen
