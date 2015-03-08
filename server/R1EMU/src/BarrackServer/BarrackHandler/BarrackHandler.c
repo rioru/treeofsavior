@@ -17,13 +17,13 @@
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
-static bool BarrackHandler_loginByPassport (ClientSession *session, unsigned char *packet, size_t dataSize, zmsg_t *reply);
+static bool BarrackHandler_loginByPassport (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Starts the barrack : call other handlers for initializate the barrack */
-static bool BarrackHandler_startBarrack    (ClientSession *session, unsigned char *packet, size_t dataSize, zmsg_t *reply);
+static bool BarrackHandler_startBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Register new servers */
-static bool BarrackHandler_serverEntry     (ClientSession *session, unsigned char *packet, size_t dataSize, zmsg_t *reply);
+static bool BarrackHandler_serverEntry     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of commanders */
-static bool BarrackHandler_commanderList   (ClientSession *session, unsigned char *packet, size_t dataSize, zmsg_t *reply);
+static bool BarrackHandler_commanderList   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 
@@ -46,7 +46,7 @@ static bool
 BarrackHandler_loginByPassport (
     ClientSession *session,
     unsigned char *packet,
-    size_t dataSize,
+    size_t packetSize,
     zmsg_t *reply
 
 ) {
@@ -77,11 +77,11 @@ static bool
 BarrackHandler_startBarrack (
     ClientSession *session,
     unsigned char *packet,
-    size_t dataSize,
+    size_t packetSize,
     zmsg_t *reply
 ) {
-    BarrackHandler_serverEntry   (session, packet, dataSize, reply);
-    BarrackHandler_commanderList (session, packet, dataSize, reply);
+    BarrackHandler_serverEntry   (session, packet, packetSize, reply);
+    BarrackHandler_commanderList (session, packet, packetSize, reply);
 
     return false;
 }
@@ -90,7 +90,7 @@ static bool
 BarrackHandler_serverEntry (
     ClientSession *session,
     unsigned char *packet,
-    size_t dataSize,
+    size_t packetSize,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
@@ -121,7 +121,7 @@ static bool
 BarrackHandler_commanderList (
     ClientSession *session,
     unsigned char *packet,
-    size_t dataSize,
+    size_t packetSize,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)

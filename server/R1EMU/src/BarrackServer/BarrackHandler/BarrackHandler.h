@@ -27,14 +27,21 @@
 
 // ------ Structure declaration -------
 typedef bool (*BarrackHandlerFunction) (
+    /** Session of the current player */
     ClientSession *session,
+    /** Packet sent by the client */
     unsigned char *packet,
-    size_t dataSize,
+    /** Size of the packet sent by the client */
+    size_t packetSize,
+    /** Reply buffer. If you need to send multiple replies, add multiple frames to this zmsg_t */
     zmsg_t *reply
 );
 
+
 typedef struct _BarrackHandlers {
+    /** Function handler */
     BarrackHandlerFunction handler;
+    /** The packet name  */
     char *packetName;
 }   BarrackHandlers;
 
@@ -42,4 +49,5 @@ typedef struct _BarrackHandlers {
 
 // ----------- Functions ------------
 // Handlers
+/** Global table of handlers for the Barrack. It contains only the packets allowed. */
 extern const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE];
