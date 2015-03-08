@@ -30,6 +30,8 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
+			<Add option="-std=gnu99" />
+			<Add option="-Wno-pointer-sign" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
 			<Add directory="../../../src" />
