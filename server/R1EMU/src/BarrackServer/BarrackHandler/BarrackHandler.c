@@ -167,6 +167,7 @@ BarrackHandler_commanderCreate (
         uint32_t unk4;
         uint32_t unk5;
         uint32_t unk6;
+        uint8_t hairId;
     }  PacketCbCommanderCreate;
     #pragma pack(pop)
     PacketCbCommanderCreate *clientPacket = (PacketCbCommanderCreate *) packet;
@@ -203,7 +204,8 @@ BarrackHandler_commanderCreate (
     }
     replyPacket.commander.listPosition = 1;
     replyPacket.commander.charPosition = 1;
-    // Need to add hairType
+    replyPacket.commander.hairId = clientPacket->hairId;
+
     buffer_print (packet, packetSize, NULL);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
