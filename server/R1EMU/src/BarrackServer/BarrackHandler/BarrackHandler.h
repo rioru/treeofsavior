@@ -26,7 +26,15 @@
 
 
 // ------ Structure declaration -------
-typedef bool (*BarrackHandlerFunction) (
+/** Return state of the barrack handlers. */
+typedef enum BarrackHandlerState {
+    BARRACK_HANDLER_ERROR          = -1,
+    BARRACK_HANDLER_OK             = 0,
+    BARRACK_HANDLER_UPDATE_SESSION = 1,
+}   BarrackHandlerState;
+
+/** @return BarrackHandlerState (see above) */
+typedef BarrackHandlerState (*BarrackHandlerFunction) (
     /** Session of the current player */
     ClientSession *session,
     /** Packet sent by the client */

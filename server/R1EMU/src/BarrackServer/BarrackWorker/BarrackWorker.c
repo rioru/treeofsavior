@@ -28,9 +28,9 @@
  * @param[in] packet The packet sent by the client
  * @param[in] packetSize The size of the packet
  * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
- * @return bool, true if the session needs to be updated, false otherwise
+ * @return BarrackHandlerState
  */
-static bool
+static BarrackHandlerState
 BarrackWorker_buildReply (
     ClientSession *session,
     unsigned char *packet,
@@ -74,7 +74,7 @@ BarrackWorker_init (
 }
 
 
-static bool
+static BarrackHandlerState
 BarrackWorker_buildReply (
     ClientSession *session,
     unsigned char *packet,
@@ -87,7 +87,7 @@ BarrackWorker_buildReply (
     // Preconditions
     if (packetSize < sizeof (CryptPacketHeader)) {
         error ("The packet received is too small to be read. Ignore request.");
-        return false;
+        return BARRACK_HANDLER_ERROR;
     }
 
     // Unwrap the crypt packet header
@@ -97,14 +97,14 @@ BarrackWorker_buildReply (
         error ("The real packet size (%d) doesn't match with the packet size in the header (%d). Ignore request.",
             packetSize, cryptHeader.size);
         buffer_print (rawPacket, packetSize, NULL);
-        return false;
+        return BARRACK_HANDLER_ERROR;
     }
 
     // Uncrypt the packet
     if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
         error ("Cannot uncrypt the client packet. Ignore request.");
         buffer_print (rawPacket, packetSize, NULL);
-        return false;
+        return BARRACK_HANDLER_ERROR;
     }
 
     // Read the packet
@@ -116,7 +116,7 @@ BarrackWorker_buildReply (
     if (header.type > sizeof_array (barrackHandlers)) {
         error ("Invalid packet type. Ignore request.");
         buffer_print (rawPacket, packetSize, NULL);
-        return false;
+        return BARRACK_HANDLER_ERROR;
     }
 
     // Test if a handler is associated with the packet type requested.
@@ -126,7 +126,7 @@ BarrackWorker_buildReply (
                packetTypeInfo.packets[header.type].string : "UNKNOWN"
         );
         buffer_print (rawPacket, packetSize, NULL);
-        return false;
+        return BARRACK_HANDLER_ERROR;
     }
 
     // Call the handler
@@ -145,6 +145,7 @@ BarrackWorker_worker (
     zframe_t *requestSessionFromId;
     zframe_t *sessionFrame;
     zmsg_t *sessionMsg;
+    ClientSession sessionRollback;
 
     BarrackWorker * self = (BarrackWorker *) arg;
 
@@ -224,11 +225,27 @@ BarrackWorker_worker (
 
         /// Build the reply packet
         ClientSession *session = (ClientSession *) zframe_data (sessionFrame);
+        memcpy (&sessionRollback, session, sizeof (ClientSession));
 
         // Remove the client packet from the reply message, and add our frames to it
         zmsg_remove (packetMsg, packet);
-        if (BarrackWorker_buildReply (session, zframe_data (packet), zframe_size (packet), packetMsg)) {
-            // The session needs to be updated
+        switch (BarrackWorker_buildReply (session, zframe_data (packet), zframe_size (packet), packetMsg)) {
+            case BARRACK_HANDLER_ERROR:
+                // Don't process the packet : rollback the changes
+                memcpy (session, &sessionRollback, sizeof (ClientSession));
+            break;
+
+            case BARRACK_HANDLER_OK:
+            // Nothing much to do, everything is OK
+            break;
+
+            case BARRACK_HANDLER_UPDATE_SESSION:
+            // The session needs to be updated to the database
+            break;
+
+            default:
+                warning ("The barrack handler returned an unknown state");
+            break;
         }
 
         // We don't need the session anymore

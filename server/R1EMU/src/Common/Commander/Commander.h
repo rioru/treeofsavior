@@ -98,7 +98,7 @@ typedef enum COMMANDER_CLASS_ID
     COMMANDER_CLASS_MAGE    = 10003,
     COMMANDER_CLASS_CLERIC  = 10005
 
-}   COMMANDER_JOB_ID;
+}   COMMANDER_CLASS_ID;
 
 // ----------- Functions ------------
 
