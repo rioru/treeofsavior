@@ -37,9 +37,16 @@ _buffer_print (
     int bufferSize,
     char *prefix
 ) {
+    static bool isPrinting = false;
     int curPos = 0;
 
-    printf ("%s=================================================\n", prefix);
+    while (isPrinting) {
+        zclock_sleep (1);
+    }
+
+    isPrinting = true;
+
+    printf ("%s ===== [buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
     while (curPos < bufferSize) {
         int offset;
         printf ("%s", prefix);
@@ -63,4 +70,6 @@ _buffer_print (
         printf("\n");
     }
     printf ("%s=================================================\n", prefix);
+
+    isPrinting = false;
 }
