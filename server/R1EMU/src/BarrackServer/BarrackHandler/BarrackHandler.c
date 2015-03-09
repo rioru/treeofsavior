@@ -136,7 +136,7 @@ BarrackHandler_barracknameChange (
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
     buffer_print (packet, packetSize, NULL);
     dbg ("Current barrack name : %s", replyPacket.barrackName);
-    if (!replyPacket.barrackName)
+    if (!replyPacket.barrackName[0])
         dbg ("Wrong barrack name size in BC_BARRACKNAME_CHANGE");
     else
         zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -281,7 +281,7 @@ BarrackHandler_commanderList (
     PacketCommanderList replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Gives a random account
+    // Empty commander list
     replyPacket.variableSizeHeader.serverHeader.type = BC_COMMANDER_LIST;
     replyPacket.field2 = 0;
     replyPacket.field3 = 0;
