@@ -159,9 +159,12 @@ BarrackHandler_barracknameChange (
     }
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
 
+    // Update the session
+    strncpy (session->familyName, clientPacket->barrackName, sizeof (session->familyName));
+
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return BARRACK_HANDLER_UPDATE_SESSION;
 }
 
 static BarrackHandlerState

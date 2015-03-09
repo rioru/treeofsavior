@@ -30,9 +30,14 @@
  * This structure size must be kept as small as possible.
  * It shouldn't contain any pointer, because it is sent to others worker via TCP
  */
-struct ClientSession {
+struct ClientSession
+{
+    /** Family name (also called barrack name) */
+    unsigned char familyName [64];
+
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
+
     /** Unique account ID */
     uint64_t accountId;
 };
