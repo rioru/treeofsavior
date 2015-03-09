@@ -137,14 +137,23 @@ BarrackHandler_barracknameChange (
 
     replyPacket.header.type = BC_BARRACKNAME_CHANGE;
     strncpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
+
+    // Check if the barrack name is not empty and contains only ASCII characters
+    size_t barrackNameLen = strlen (clientPacket->barrackName);
+    if (barrackNameLen == 0) {
+        error ("Empty barrack name");
+        return BARRACK_HANDLER_ERROR;
+    }
+    for (int i = 0; i < barrackNameLen; i++) {
+         if (!isprint (clientPacket->barrackName[i])) {
+            dbg ("Wrong barrack name size in BC_BARRACKNAME_CHANGE");
+            return BARRACK_HANDLER_ERROR;
+         }
+    }
+
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
 
-    dbg ("Current barrack name : %s", replyPacket.barrackName);
-
-    if (!replyPacket.barrackName[0])
-        dbg ("Wrong barrack name size in BC_BARRACKNAME_CHANGE");
-    else
-        zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return BARRACK_HANDLER_OK;
 }
