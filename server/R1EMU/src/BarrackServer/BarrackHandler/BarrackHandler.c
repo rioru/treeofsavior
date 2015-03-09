@@ -188,19 +188,21 @@ BarrackHandler_commanderCreate (
     replyPacket.commander.gender = clientPacket->gender;
     switch (replyPacket.commander.jobId)
     {
-    default:
-    case 1:
-        replyPacket.commander.classId = 10001;
-        break ;
-    case 2:
-        replyPacket.commander.classId = 10006;
-        break ;
-    case 3:
-        replyPacket.commander.classId = 10003;
-        break ;
-    case 4:
-        replyPacket.commander.classId = 10005;
-        break ;
+        default:
+            error ("Unknown commander Job ID.");
+        break;
+        case COMMANDER_JOB_WARRIOR:
+            replyPacket.commander.classId = COMMANDER_CLASS_WARRIOR;
+            break ;
+        case COMMANDER_JOB_ARCHER:
+            replyPacket.commander.classId = COMMANDER_CLASS_ARCHER;
+            break ;
+        case COMMANDER_JOB_MAGE:
+            replyPacket.commander.classId = COMMANDER_CLASS_MAGE;
+            break ;
+        case COMMANDER_JOB_CLERIC:
+            replyPacket.commander.classId = COMMANDER_CLASS_CLERIC;
+            break ;
     }
     replyPacket.commander.listPosition = 1;
     replyPacket.commander.charPosition = 1;

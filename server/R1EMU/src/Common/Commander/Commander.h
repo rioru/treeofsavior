@@ -82,6 +82,24 @@ typedef struct CommanderInfo
     uint32_t unk12;
 }   CommanderInfo;
 
+typedef enum COMMANDER_JOB_ID
+{
+    COMMANDER_JOB_WARRIOR = 1,
+    COMMANDER_JOB_ARCHER  = 2,
+    COMMANDER_JOB_MAGE    = 3,
+    COMMANDER_JOB_CLERIC  = 4
+
+}   COMMANDER_JOB_ID;
+
+typedef enum COMMANDER_CLASS_ID
+{
+    COMMANDER_CLASS_WARRIOR = 10001,
+    COMMANDER_CLASS_ARCHER  = 10006,
+    COMMANDER_CLASS_MAGE    = 10003,
+    COMMANDER_CLASS_CLERIC  = 10005
+
+}   COMMANDER_JOB_ID;
+
 // ----------- Functions ------------
 
 CommanderInfo
