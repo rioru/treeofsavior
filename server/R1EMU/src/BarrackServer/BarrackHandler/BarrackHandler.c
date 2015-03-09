@@ -13,9 +13,9 @@
 
 // ---------- Includes ------------
 #include "BarrackHandler.h"
-#include "Packet/Packet.h"
-#include "Common/Commander.h"
-#include "Packet/PacketStream/PacketStream.h"
+#include "Common/Packet/Packet.h"
+#include "Common/Commander/Commander.h"
+#include "Common/Packet/PacketStream.h"
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */

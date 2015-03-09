@@ -17,7 +17,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "Packet/PacketType/PacketType.h"
+#include "Common/Packet/PacketType.h"
 #include "SessionServer/ClientSession/ClientSession.h"
 
 // ---------- Defines -------------

@@ -19,7 +19,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "PacketType/PacketType.h"
+#include "PacketType.h"
 
 // ---------- Defines -------------
 

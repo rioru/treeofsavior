@@ -54,25 +54,30 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/BarrackServer/BarrackWorker/BarrackWorker.h" />
-		<Unit filename="../../../src/Common/Commander.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/Common/Commander.h" />
-		<Unit filename="../../../src/Crypto/Crypto.c">
+		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/Common/Commander/Commander.h" />
+		<Unit filename="../../../src/Common/Crypto/Crypto.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Crypto/Crypto.h" />
+		<Unit filename="../../../src/Common/Packet/Packet.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/Packet.h" />
+		<Unit filename="../../../src/Common/Packet/PacketStream.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/PacketStream.h" />
+		<Unit filename="../../../src/Common/Packet/PacketType.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/PacketType.h" />
 		<Unit filename="../../../src/Crypto/Crypto.h" />
-		<Unit filename="../../../src/Packet/Packet.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/Packet/Packet.h" />
-		<Unit filename="../../../src/Packet/PacketStream/PacketStream.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/Packet/PacketStream/PacketStream.h" />
-		<Unit filename="../../../src/Packet/PacketType/PacketType.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/Packet/PacketType/PacketType.h" />
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />

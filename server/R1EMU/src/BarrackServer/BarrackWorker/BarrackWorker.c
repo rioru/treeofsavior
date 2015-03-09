@@ -14,8 +14,8 @@
 #include "BarrackWorker.h"
 #include "BarrackServer/BarrackServer.h"
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
-#include "Packet/Packet.h"
-#include "Crypto/Crypto.h"
+#include "Common/Packet/Packet.h"
+#include "Common/Crypto/Crypto.h"
 
 
 // ------ Structure declaration -------
