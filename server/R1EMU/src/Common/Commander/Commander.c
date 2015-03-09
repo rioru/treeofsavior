@@ -54,6 +54,7 @@ Commander_CreateBasicCommander (
     commander.ring_right = 0x00002710;
     commander.necklace = 0x00002710;
     commander.hairType = 2;
+    commander.spriteRelated = 2;
     commander.mapId = 0x551;
 
     return commander;

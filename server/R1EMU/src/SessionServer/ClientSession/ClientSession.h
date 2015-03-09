@@ -40,6 +40,12 @@ struct ClientSession
 
     /** Unique account ID */
     uint64_t accountId;
+
+    /** Unique current commander ID */
+    uint64_t currentCommanderId;
+
+    /** PCID of the current character */
+    uint32_t currentPCId;
 };
 
 typedef struct ClientSession ClientSession;

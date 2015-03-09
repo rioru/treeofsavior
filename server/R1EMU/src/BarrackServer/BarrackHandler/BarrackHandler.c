@@ -20,11 +20,11 @@
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
 static BarrackHandlerState BarrackHandler_loginByPassport   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Starts the barrack : call other handlers that initializes the barrack */
+/** Start the barrack : call other handlers that initializes the barrack */
 static BarrackHandlerState BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Starts the barrack : Once the commander list has been received, request to start the barrack */
+/** Once the commander list has been received, request to start the barrack */
 static BarrackHandlerState BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Changed a barrack name */
+/** Change a barrack name */
 static BarrackHandlerState BarrackHandler_barracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Create a commander */
 static BarrackHandlerState BarrackHandler_commanderCreate   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
@@ -235,19 +235,8 @@ BarrackHandler_commanderCreate (
     // FamilyName
     strncpy (replyPacket.commander.familyName, session->familyName, sizeof (replyPacket.commander.familyName));
 
-    // Gender
-    switch (clientPacket->gender) {
-        case COMMANDER_GENDER_MALE:
-        case COMMANDER_GENDER_FEMALE:
-            replyPacket.commander.gender = clientPacket->gender;
-            break;
-
-        case COMMANDER_GENDER_BOTH:
-        default:
-            error ("Invalid gender (%d)", clientPacket->gender);
-            return BARRACK_HANDLER_ERROR;
-            break;
-    }
+    // AccountID
+    replyPacket.commander.accountId = session->accountId;
 
     // JobID
     switch (replyPacket.commander.jobId)
@@ -270,6 +259,20 @@ BarrackHandler_commanderCreate (
             break ;
     }
     replyPacket.commander.jobId = clientPacket->jobId;
+
+    // Gender
+    switch (clientPacket->gender) {
+        case COMMANDER_GENDER_MALE:
+        case COMMANDER_GENDER_FEMALE:
+            replyPacket.commander.gender = clientPacket->gender;
+            break;
+
+        case COMMANDER_GENDER_BOTH:
+        default:
+            error ("Invalid gender (%d)", clientPacket->gender);
+            return BARRACK_HANDLER_ERROR;
+            break;
+    }
 
     // Character position
     replyPacket.commander.listPosition = session->charactersBarrackCount + 1;
@@ -296,8 +299,16 @@ BarrackHandler_commanderCreate (
         break;
     }
 
+    // PCID
+    replyPacket.commander.PCId = R1EMU_generate_random ();
+
+    // CommanderID
+    replyPacket.commander.commanderId = R1EMU_generate_random64 ();
+
     // Update the session
     session->charactersBarrackCount++;
+    session->currentPCId = replyPacket.commander.PCId;
+    session->currentCommanderId = replyPacket.commander.commanderId;
 
     // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
