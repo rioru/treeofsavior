@@ -24,7 +24,8 @@ static bool BarrackHandler_loginByPassport   (ClientSession *session, unsigned c
 static bool BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Starts the barrack : Once the commander list has been received, request to start the barrack */
 static bool BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-static bool BarrackHandler_BarracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Changed a barrack name */
+static bool BarrackHandler_barracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Create a commander */
 static bool BarrackHandler_commanderCreate   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Register new servers */
@@ -46,7 +47,7 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_LOGIN_BY_PASSPORT,  BarrackHandler_loginByPassport),
     REGISTER_PACKET_HANDLER (CB_START_BARRACK,      BarrackHandler_startBarrack),
     REGISTER_PACKET_HANDLER (CB_CURRENT_BARRACK,    BarrackHandler_currentBarrack),
-    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_BarracknameChange),
+    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_barracknameChange),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_CREATE,   BarrackHandler_commanderCreate),
 
     #undef REGISTER_PACKET_HANDLER
@@ -110,7 +111,7 @@ BarrackHandler_currentBarrack (
 }
 
 static bool
-BarrackHandler_BarracknameChange (
+BarrackHandler_barracknameChange (
     ClientSession *session,
     unsigned char *packet,
     size_t packetSize,
@@ -140,7 +141,10 @@ BarrackHandler_BarracknameChange (
     buffer_print (packet, packetSize, NULL);
     dbg ("Current barrack name : %s", replyPacket.barrackName);
 
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+    if (!replyPacket.barrackName[0])
+        dbg ("Wrong barrack name size in BC_BARRACKNAME_CHANGE");
+    else
+        zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return false;
 }
@@ -314,7 +318,7 @@ BarrackHandler_serverEntry (
     PacketServerEntry replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Gives a random account
+    // Connect to localhost:1337 and localhost:1338
     replyPacket.header.type        = BC_SERVER_ENTRY;
     replyPacket.ipClientNet        = *(uint32_t *) ((char []) {127, 0, 0, 1});
     replyPacket.ipVirtualClientNet = *(uint32_t *) ((char []) {127, 0, 0, 1});
@@ -344,7 +348,7 @@ BarrackHandler_commanderList (
     PacketCommanderList replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Gives a random account
+    // Empty commander list
     replyPacket.variableSizeHeader.serverHeader.type = BC_COMMANDER_LIST;
     replyPacket.field2 = 0;
     replyPacket.field3 = 0;
