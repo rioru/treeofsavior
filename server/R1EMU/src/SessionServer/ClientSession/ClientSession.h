@@ -33,6 +33,8 @@
 struct ClientSession {
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
+    /** Unique account ID */
+    uint64_t accountId;
 };
 
 typedef struct ClientSession ClientSession;

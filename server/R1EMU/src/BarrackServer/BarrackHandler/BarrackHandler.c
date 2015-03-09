@@ -83,9 +83,13 @@ BarrackHandler_loginByPassport (
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
     strncpy (replyPacket.channelString, "CHANNEL_STRING", sizeof (replyPacket.channelString));
 
+    // Update the session
+    session->accountId = replyPacket.accountId;
+
+    // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return BARRACK_HANDLER_UPDATE_SESSION;
 }
 
 static BarrackHandlerState
@@ -139,7 +143,7 @@ BarrackHandler_barracknameChange (
     PacketBarracknameChange replyPacket;
 
     replyPacket.header.type = BC_BARRACKNAME_CHANGE;
-    strncpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
+    memcpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
 
     // Check if the barrack name is not empty and contains only ASCII characters
     size_t barrackNameLen = strlen (clientPacket->barrackName);
