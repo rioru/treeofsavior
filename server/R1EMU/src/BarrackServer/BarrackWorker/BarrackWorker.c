@@ -126,6 +126,7 @@ BarrackWorker_buildReply (
     }
 
     // Call the handler
+    dbg ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
     return handler (session, packet, dataSize, reply);
 }
 

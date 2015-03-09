@@ -260,6 +260,9 @@ BarrackServer_backend (
         || (zmsg_size (msg) == 3 && zframe_size (secondFrame) == 0)) {
             // Simple message : [1 frame identity] + [1 frame data]
             // Or             : [1 frame identity] + [1 empty frame] + [1 frame data]
+
+            buffer_print (zframe_data (secondFrame), zframe_size (secondFrame), NULL);
+
             if (zmsg_send (&msg, self->frontend) != 0) {
                 error ("Cannot send message to the frontend. Message dropped");
                 return -1;
@@ -272,7 +275,9 @@ BarrackServer_backend (
             for (int i = 0; i < msgCount; i++) {
                 zmsg_t *subMsg = zmsg_new ();
                 zmsg_add (subMsg, zframe_dup (identity));
-                zmsg_add (subMsg, zmsg_pop (msg));
+                zframe_t *dataFrame = zmsg_pop (msg);
+                buffer_print (zframe_data (dataFrame), zframe_size (dataFrame), NULL);
+                zmsg_add (subMsg, dataFrame);
                 zmsg_send (&subMsg, self->frontend);
             }
             zframe_destroy (&identity);

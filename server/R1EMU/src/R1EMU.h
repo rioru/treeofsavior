@@ -48,6 +48,10 @@
 #define sizeof_array(array) \
     ((int)(sizeof(array) / sizeof(*(array))))
 
+// Size of structure member
+#define sizeof_struct_member(struct, member) \
+   (sizeof(((struct *)0)->member))
+
 // ----------- Functions ------------
 /**
  * @brief High precision timestamp.

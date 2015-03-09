@@ -57,9 +57,8 @@ typedef struct ServerPacketHeader
 #pragma pack(push, 1)
 typedef struct VariableSizePacketHeader
 {
-    uint16_t type;
-    uint32_t reserved;
-    uint32_t packetSize;
+    ServerPacketHeader serverHeader;
+    uint16_t packetSize;
 }   VariableSizePacketHeader;
 #pragma pack(pop)
 

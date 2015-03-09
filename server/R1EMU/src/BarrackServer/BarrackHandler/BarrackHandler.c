@@ -14,21 +14,24 @@
 // ---------- Includes ------------
 #include "BarrackHandler.h"
 #include "Packet/Packet.h"
+#include "Packet/PacketStream/PacketStream.h"
 
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
-static bool BarrackHandler_loginByPassport (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_loginByPassport   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Starts the barrack : call other handlers that initializes the barrack */
-static bool BarrackHandler_startBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Starts the barrack : Once the commander list has been received, request to start the barrack */
-static bool BarrackHandler_currentBarrack  (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Register new servers */
-static bool BarrackHandler_serverEntry     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_serverEntry       (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of commanders */
-static bool BarrackHandler_commanderList   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_commanderList     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
-static bool BarrackHandler_zoneTraffics    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Change the barrack name */
+static bool BarrackHandler_barrackNameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 
@@ -43,6 +46,7 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_LOGIN_BY_PASSPORT,  BarrackHandler_loginByPassport),
     REGISTER_PACKET_HANDLER (CB_START_BARRACK,      BarrackHandler_startBarrack),
     REGISTER_PACKET_HANDLER (CB_CURRENT_BARRACK,    BarrackHandler_currentBarrack),
+    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_barrackNameChange),
 
     #undef REGISTER_PACKET_HANDLER
 };
@@ -67,6 +71,7 @@ BarrackHandler_loginByPassport (
     #pragma pack(pop)
 
     PacketLoginOk replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Gives a random account
     replyPacket.header.type       = BC_LOGINOK;
@@ -105,6 +110,47 @@ BarrackHandler_currentBarrack (
 }
 
 static bool
+BarrackHandler_barrackNameChange (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct PacketBarrackNameChange {
+        uint16_t unk1;
+        unsigned char barrackName [62];
+    }   PacketBarrackNameChange;
+    #pragma pack(pop)
+    PacketBarrackNameChange *clientPacket = (PacketBarrackNameChange *) packet;
+
+    #pragma pack(push, 1)
+    typedef struct PacketBarrackNameChangeReply {
+        ServerPacketHeader header;
+        uint32_t unk1;
+        uint8_t unk2;
+        unsigned char barrackName [62];
+        uint16_t unk3;
+    } PacketBarrackNameChangeReply;
+    #pragma pack(pop)
+
+    PacketBarrackNameChangeReply replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = BC_BARRACKNAME_CHANGE;
+    replyPacket.unk1 = 0x01010101;
+    replyPacket.unk2 = 0x01;
+    memcpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (clientPacket->barrackName));
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    // Failed to bind Barrack Server ROUTER frontend to
+    // Worker started
+
+    return false;
+}
+
+static bool
 BarrackHandler_zoneTraffics (
     ClientSession *session,
     unsigned char *packet,
@@ -122,33 +168,36 @@ BarrackHandler_zoneTraffics (
     typedef struct PacketMapTraffic {
         uint16_t mapId;
         uint16_t zoneServerCount;
-        PacketZoneTraffic zones[0]; // variable length array
+        // PacketZoneTraffic zones[]; // variable length array
     }   PacketMapTraffic;
     #pragma pack(pop)
 
-    #pragma pack(push, 1)
+	#pragma pack(push, 1)
     typedef struct PacketZoneTraffics {
         BarrackPacketNormalHeader normalHeader;
         uint16_t zlibHeader;
-        uint16_t maxPcCount;
+        uint16_t zoneMaxPcCount;
         uint16_t mapAvailableCount;
-        PacketMapTraffic maps[0]; // variable length array
+        // PacketMapTraffic maps[]; // variable length array
     } PacketZoneTraffics;
     #pragma pack(pop)
 
-
     // === Data from the DB ===
+    int zlibHeader = 0;
+    int zoneMaxPcCount = 100;
     // Number of maps playable
     int mapAvailableCount = 1;
     // Array of zone server availables for each map
-    int zoneServerCounts [mapAvailableCount];
+	int *zoneServerCounts = alloca (sizeof (*zoneServerCounts) * mapAvailableCount);
     // Array of mapId for each map
-    int mapsId [mapAvailableCount];
+    int *mapsId = alloca (sizeof (*mapsId) * mapAvailableCount);
     // Fill the arrays here
     for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++) {
         zoneServerCounts [mapIndex] = 5;
         mapsId [mapIndex] = 0x551;
     }
+    // Number of players per zone
+    int currentPlayersCount = 10;
 
     // Count the total memory space needed for the reply packet
     int outPacketSize = sizeof (PacketZoneTraffics) + (sizeof (PacketMapTraffic) * mapAvailableCount);
@@ -157,24 +206,29 @@ BarrackHandler_zoneTraffics (
     }
 
     // Allocate on the stack the memory for the packet
-    unsigned char stackBuffer [outPacketSize];
+    unsigned char *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
     PacketZoneTraffics *replyPacket = (PacketZoneTraffics *) stackBuffer;
+    memset (replyPacket, 0, outPacketSize);
 
     // Construct the packet
-    replyPacket->zlibHeader = 0;
-    replyPacket->maxPcCount = 100;
-    replyPacket->mapAvailableCount = mapAvailableCount;
-    BarrackPacket_normalHeader (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, packetSize);
+    PacketStream stream;
+    PacketStream_init (&stream, (unsigned char *) replyPacket);
 
-    for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++) {
-        PacketMapTraffic *map = &replyPacket->maps[mapIndex];
-        map->mapId = mapsId [mapIndex];
-        map->zoneServerCount = zoneServerCounts [mapIndex];
+    BarrackPacket_normalHeader (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
+    PacketStream_addOffset (&stream, sizeof (replyPacket->normalHeader));
+
+    PacketStream_append (&stream, &zlibHeader, sizeof_struct_member (PacketZoneTraffics, zlibHeader));
+    PacketStream_append (&stream, &zoneMaxPcCount, sizeof_struct_member (PacketZoneTraffics, zoneMaxPcCount));
+    PacketStream_append (&stream, &mapAvailableCount, sizeof_struct_member (PacketZoneTraffics, mapAvailableCount));
+
+    for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++)
+    {
+        PacketStream_append (&stream, &mapsId [mapIndex], sizeof_struct_member (PacketMapTraffic, mapId));
+        PacketStream_append (&stream, &zoneServerCounts[mapIndex], sizeof_struct_member (PacketMapTraffic, zoneServerCount));
 
         for (int zoneServerIndex = 0; zoneServerIndex < zoneServerCounts[mapIndex]; zoneServerIndex++) {
-            PacketZoneTraffic *zone = &map->zones [zoneServerIndex];
-            zone->zoneListId = zoneServerIndex;
-            zone->currentPlayersCount = 10;
+            PacketStream_append (&stream, &zoneServerIndex, sizeof_struct_member (PacketZoneTraffic, zoneListId));
+            PacketStream_append (&stream, &currentPlayersCount, sizeof_struct_member (PacketZoneTraffic, currentPlayersCount));
         }
     }
 
@@ -201,11 +255,12 @@ BarrackHandler_serverEntry (
     #pragma pack(pop)
 
     PacketServerEntry replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Gives a random account
     replyPacket.header.type        = BC_SERVER_ENTRY;
-    replyPacket.ipClientNet        = *((char []) {127, 0, 0, 1});
-    replyPacket.ipVirtualClientNet = *((char []) {127, 0, 0, 1});
+    replyPacket.ipClientNet        = *(uint32_t *) ((char []) {127, 0, 0, 1});
+    replyPacket.ipVirtualClientNet = *(uint32_t *) ((char []) {127, 0, 0, 1});
     replyPacket.channelPort1       = 1337;
     replyPacket.channelPort2       = 1338;
 
@@ -223,22 +278,22 @@ BarrackHandler_commanderList (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        ServerPacketHeader header;
-        uint32_t packetLen;
+        VariableSizePacketHeader variableSizeHeader;
         uint32_t field2;
         uint32_t field3;
     } PacketCommanderList;
     #pragma pack(pop)
 
     PacketCommanderList replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Gives a random account
-    replyPacket.header.type = BC_COMMANDER_LIST;
+    replyPacket.variableSizeHeader.serverHeader.type = BC_COMMANDER_LIST;
     replyPacket.field2 = 0;
     replyPacket.field3 = 0;
 
 	// Add dynamically the size of the packet
-    replyPacket.packetLen = sizeof (PacketCommanderList);
+    replyPacket.variableSizeHeader.packetSize = sizeof (PacketCommanderList);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 

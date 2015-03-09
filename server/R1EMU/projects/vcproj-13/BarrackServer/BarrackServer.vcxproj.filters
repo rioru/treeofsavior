@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\..\src\R1EMU.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\Packet\PacketStream\PacketStream.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\R1EMU.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\Packet\PacketType\PacketType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Packet\PacketStream\PacketStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

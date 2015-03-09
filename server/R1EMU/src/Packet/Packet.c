@@ -48,8 +48,8 @@ BarrackPacket_normalHeader (
     uint32_t subtype,
     uint32_t packetSize
 ) {
-    normalHeader->variableSizeHeader.type = BC_NORMAL;
-    normalHeader->variableSizeHeader.reserved = 0;
+    normalHeader->variableSizeHeader.serverHeader.type = BC_NORMAL;
+    normalHeader->variableSizeHeader.serverHeader.reserved = 0;
     normalHeader->variableSizeHeader.packetSize = packetSize;
     normalHeader->subtype = subtype;
 }
