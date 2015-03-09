@@ -42,7 +42,7 @@ struct SessionServer
     /** Identity frames of the workers. */
     zframe_t **workers;
 
-    /** Count the number of workers registred in the array */
+    /** Count the number of workers registered in the array */
     int workersRegistredCount;
 
     /** Index of the worker in the worker array that is going to take the charge if there is an overload */
@@ -183,7 +183,7 @@ SessionServer_init (
         return false;
     }
 
-    // The workers will be registred in the backend once they are ready
+    // The workers will be registered in the backend once they are ready
     self->workersRegistredCount = 0;
 
     // By default, the first worker is going to take the charge
@@ -216,9 +216,9 @@ SessionServer_backend (
         return -1;
     }
 
-    // Register the identity of the workers if it hasn't been registred yet
+    // Register the identity of the workers if it hasn't been registered yet
     if (self->workersRegistredCount < self->workersCount) {
-        // Check if it hasn't been registred already
+        // Check if it hasn't been registered already
         bool isAlreadyRegistred = false;
         for (int i = 0; i < self->workersRegistredCount; i++) {
             if (zframe_eq (self->workers[i], workerIdentity)) {
@@ -300,7 +300,7 @@ SessionServer_frontend (
         zframe_destroy (&workerIdentity);
 
         if (self->workersRegistredCount == 0) {
-            error ("No worker has been registred yet. Message dropped.");
+            error ("No worker has been registered yet. Message dropped.");
             return 0;
         }
 
@@ -379,7 +379,7 @@ SessionServer_start (
 
     dbg ("SessionServer is ready and running.");
     if (zloop_start (reactor) != 0) {
-        error ("An error occured in the reactor.");
+        error ("An error occurred in the reactor.");
         return false;
     }
 

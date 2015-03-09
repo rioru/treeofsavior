@@ -24,7 +24,7 @@
 
 // ------ Structure declaration -------
 /**
- * @brief ClientSession is a session created when a client authentificates
+ * @brief ClientSession is a session created when a client authenticates
  *
  * ClientSession is created during the Barrack phase.
  * This structure size must be kept as small as possible.
@@ -37,7 +37,7 @@ struct ClientSession {
 typedef struct ClientSession ClientSession;
 
 /**
- * @brief ClientSessionPrivileges enumerates the differents level of privileges
+ * @brief ClientSessionPrivileges enumerates the different levels of privileges
  *  for an account.
  */
 typedef enum {
