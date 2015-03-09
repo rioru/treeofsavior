@@ -33,6 +33,15 @@ struct BarrackServer
     /** List of workers entities */
     zlist_t *readyWorkers;
 
+    /** Identity frames of the workers. */
+    zframe_t **workers;
+
+    /** Count the number of workers registred in the array */
+    int workersRegistredCount;
+
+    /** Index of the worker in the worker array that is going to take the charge if there is an overload */
+    int overloadWorker;
+
     // ----- Configuration -----
     /** Public ports exposed to the clients */
     int publicPorts[2];
@@ -170,6 +179,23 @@ BarrackServer_init (
         return false;
     }
 
+    // ==========================================================
+    //   The configuration file must be read entirely from here
+    // ==========================================================
+
+    // Allocate the workers array
+    if ((self->workers = malloc (sizeof (zframe_t *) * self->workersCount)) == NULL) {
+        error ("Cannot allocate the workers array.");
+        return false;
+    }
+
+    // The workers will be registred in the backend once they are ready
+    self->workersRegistredCount = 0;
+
+    // By default, the first worker is going to take the charge
+    self->overloadWorker = 0;
+
+
     return true;
 }
 
@@ -195,6 +221,22 @@ BarrackServer_backend (
     if (!(workerIdentity = zmsg_unwrap (msg))) {
         error ("Worker identity cannot be retrieved. Message dropped.");
         return -1;
+    }
+
+    // Register the identity of the workers if it hasn't been registred yet
+    if (self->workersRegistredCount < self->workersCount) {
+        // Check if it hasn't been registred already
+        bool isAlreadyRegistred = false;
+        for (int i = 0; i < self->workersRegistredCount; i++) {
+            if (zframe_eq (self->workers[i], workerIdentity)) {
+                isAlreadyRegistred = true;
+                break;
+            }
+        }
+        if (!isAlreadyRegistred) {
+            self->workers [self->workersRegistredCount] = zframe_dup (workerIdentity);
+            self->workersRegistredCount++;
+        }
     }
 
     // The worker finished its work; add it at the end of the list (round robin load balancing)
@@ -260,14 +302,19 @@ BarrackServer_frontend (
     // Retrieve a workerIdentity (round robin)
     if (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
         // All Barrack Workers seem to be busy.
-        warning ("All Barrack Workers seem to be busy. Waiting for one to be ready.");
-        // Naïve solution : Wait for one to be ready.
-        // We could create a new worker on demand, so the Barrack scales itself depending on the charge
-        // But let's keep it simple
-        while (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
-            zclock_sleep (1);
+        warning ("All Barrack Workers seem to be busy. Transfer the request to the overload worker.");
+        // Transfer the request to the overload worker
+        zframe_destroy (&workerIdentity);
+
+        if (self->workersRegistredCount == 0) {
+            error ("No worker has been registred yet. Message dropped.");
+            return 0;
         }
+
+        workerIdentity = zframe_dup (self->workers[self->overloadWorker]);
+        self->overloadWorker = (self->overloadWorker + 1) % self->workersRegistredCount;
     }
+
 
     // Wrap the worker's identity which receives the message
     zmsg_wrap (msg, workerIdentity);
@@ -336,7 +383,8 @@ BarrackServer_start (
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
         if ((barrackWorker = BarrackWorker_new (workerId, self->sessionServerFrontendPort))) {
             if (zthread_new (BarrackWorker_worker, barrackWorker) != 0) {
-                warning ("Cannot create Barrack Server worker thread ID %d.", workerId);
+                error ("Cannot create Barrack Server worker thread ID %d.", workerId);
+                return false;
             }
         } else {
             error ("Cannot allocate a new barrackWorker");
@@ -406,7 +454,13 @@ BarrackServer_destroy (
         zsock_destroy (&self->backend);
     }
 
-    zlist_destroy (&self->readyWorkers);
+    if (self->workers) {
+        free (self->workers);
+    }
+
+    if (self->readyWorkers) {
+        zlist_destroy (&self->readyWorkers);
+    }
 
     free (self);
     *_self = NULL;

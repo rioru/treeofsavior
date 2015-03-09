@@ -39,6 +39,15 @@ struct SessionServer
     /** List of workers entities */
     zlist_t *readyWorkers;
 
+    /** Identity frames of the workers. */
+    zframe_t **workers;
+
+    /** Count the number of workers registred in the array */
+    int workersRegistredCount;
+
+    /** Index of the worker in the worker array that is going to take the charge if there is an overload */
+    int overloadWorker;
+
     /** Hashtable of the sessions */
     zhash_t *sessions;
 
@@ -164,6 +173,22 @@ SessionServer_init (
         return false;
     }
 
+    // ==========================================================
+    //   The configuration file must be read entirely from here
+    // ==========================================================
+
+    // Allocate the workers array
+    if ((self->workers = malloc (sizeof (zframe_t *) * self->workersCount)) == NULL) {
+        error ("Cannot allocate the workers array.");
+        return false;
+    }
+
+    // The workers will be registred in the backend once they are ready
+    self->workersRegistredCount = 0;
+
+    // By default, the first worker is going to take the charge
+    self->overloadWorker = 0;
+
     return true;
 }
 
@@ -189,6 +214,22 @@ SessionServer_backend (
     if (!(workerIdentity = zmsg_unwrap (msg))) {
         error ("Worker identity cannot be retrieved. Message dropped.");
         return -1;
+    }
+
+    // Register the identity of the workers if it hasn't been registred yet
+    if (self->workersRegistredCount < self->workersCount) {
+        // Check if it hasn't been registred already
+        bool isAlreadyRegistred = false;
+        for (int i = 0; i < self->workersRegistredCount; i++) {
+            if (zframe_eq (self->workers[i], workerIdentity)) {
+                isAlreadyRegistred = true;
+                break;
+            }
+        }
+        if (!isAlreadyRegistred) {
+            self->workers [self->workersRegistredCount] = zframe_dup (workerIdentity);
+            self->workersRegistredCount++;
+        }
     }
 
     // The worker finished its work; add it at the end of the list (round robin load balancing)
@@ -253,14 +294,18 @@ SessionServer_frontend (
 
     // Retrieve a workerIdentity (round robin)
     if (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
-        // All Session Workers seem to be busy.
-        warning ("All Session Workers seem to be busy. Waiting for one to be ready.");
-        // Naïve solution : Wait for one to be ready.
-        // We could create a new worker on demand, so the Session scales itself depending on the charge
-        // But let's keep it simple
-        while (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
-            zclock_sleep (1);
+        // All Barrack Workers seem to be busy.
+        warning ("All Barrack Workers seem to be busy. Transfer the request to the overload worker.");
+        // Transfer the request to the overload worker
+        zframe_destroy (&workerIdentity);
+
+        if (self->workersRegistredCount == 0) {
+            error ("No worker has been registred yet. Message dropped.");
+            return 0;
         }
+
+        workerIdentity = zframe_dup (self->workers[self->overloadWorker]);
+        self->overloadWorker = (self->overloadWorker + 1) % self->workersRegistredCount;
     }
 
     // Wrap the worker's identity which receives the message
@@ -294,9 +339,12 @@ SessionServer_start (
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if (!(sessionWorker = SessionWorker_new (workerId, self->sessions))
-        ||  zthread_new (SessionWorker_worker, sessionWorker) != 0
-        ) {
+        if ((sessionWorker = SessionWorker_new (workerId, self->sessions))) {
+            if (zthread_new (SessionWorker_worker, sessionWorker) != 0) {
+                error ("Cannot create Session Server worker thread ID %d.", workerId);
+                return false;
+            }
+        } else {
             error ("Cannot allocate a new sessionWorker");
             return false;
         }
@@ -355,7 +403,13 @@ SessionServer_destroy (
         zsock_destroy (&self->backend);
     }
 
-    zlist_destroy (&self->readyWorkers);
+    if (self->workers) {
+        free (self->workers);
+    }
+
+    if (self->readyWorkers) {
+        zlist_destroy (&self->readyWorkers);
+    }
 
     free (self);
     *_self = NULL;
