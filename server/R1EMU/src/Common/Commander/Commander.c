@@ -55,5 +55,6 @@ Commander_CreateBasicCommander (
     commander.necklace = 0x00002710;
     commander.hairType = 2;
     commander.mapId = 0x551;
+
     return commander;
 }

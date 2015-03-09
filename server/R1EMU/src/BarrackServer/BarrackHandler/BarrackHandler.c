@@ -138,7 +138,7 @@ BarrackHandler_barracknameChange (
     replyPacket.header.type = BC_BARRACKNAME_CHANGE;
     strncpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
-    buffer_print (packet, packetSize, NULL);
+
     dbg ("Current barrack name : %s", replyPacket.barrackName);
 
     if (!replyPacket.barrackName[0])
@@ -167,7 +167,7 @@ BarrackHandler_commanderCreate (
         uint32_t unk4;
         uint32_t unk5;
         uint32_t unk6;
-        uint8_t hairId;
+        uint8_t hairType;
     }  PacketCbCommanderCreate;
     #pragma pack(pop)
     PacketCbCommanderCreate *clientPacket = (PacketCbCommanderCreate *) packet;
@@ -204,7 +204,7 @@ BarrackHandler_commanderCreate (
     }
     replyPacket.commander.listPosition = 1;
     replyPacket.commander.charPosition = 1;
-    replyPacket.commander.hairId = clientPacket->hairId;
+    replyPacket.commander.hairType = clientPacket->hairType;
 
     buffer_print (packet, packetSize, NULL);
 
