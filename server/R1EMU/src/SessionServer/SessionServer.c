@@ -227,6 +227,7 @@ SessionServer_backend (
                 zmsg_add (subMsg, zmsg_pop (msg));
                 zmsg_send (&subMsg, self->frontend);
             }
+            zframe_destroy (&identity);
         }
     }
 
