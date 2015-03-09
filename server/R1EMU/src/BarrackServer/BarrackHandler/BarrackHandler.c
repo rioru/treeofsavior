@@ -150,7 +150,6 @@ BarrackHandler_barracknameChange (
             return BARRACK_HANDLER_ERROR;
          }
     }
-
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -210,7 +209,7 @@ BarrackHandler_commanderCreate (
     switch (replyPacket.commander.jobId)
     {
         default:
-            error ("Invalid commander Job ID.");
+            error ("Invalid commander Job ID (%d)", replyPacket.commander.jobId);
             return BARRACK_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
@@ -245,7 +244,7 @@ BarrackHandler_commanderCreate (
         break;
 
         default:
-            dbg ("Invalid hairType = %d", clientPacket->hairType);
+            dbg ("Invalid hairType (%d)", clientPacket->hairType);
             return BARRACK_HANDLER_ERROR;
         break;
     }
