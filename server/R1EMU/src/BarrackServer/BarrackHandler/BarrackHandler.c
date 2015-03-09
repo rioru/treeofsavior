@@ -24,15 +24,13 @@ static bool BarrackHandler_loginByPassport   (ClientSession *session, unsigned c
 static bool BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Starts the barrack : Once the commander list has been received, request to start the barrack */
 static bool BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_BarracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Register new servers */
 static bool BarrackHandler_serverEntry       (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of commanders */
 static bool BarrackHandler_commanderList     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
 static bool BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Change the barrack name */
-static bool BarrackHandler_barrackNameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-
 
 
 // ------ Structure declaration -------
@@ -46,7 +44,7 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_LOGIN_BY_PASSPORT,  BarrackHandler_loginByPassport),
     REGISTER_PACKET_HANDLER (CB_START_BARRACK,      BarrackHandler_startBarrack),
     REGISTER_PACKET_HANDLER (CB_CURRENT_BARRACK,    BarrackHandler_currentBarrack),
-    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_barrackNameChange),
+    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_BarracknameChange),
 
     #undef REGISTER_PACKET_HANDLER
 };
@@ -58,7 +56,6 @@ BarrackHandler_loginByPassport (
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply
-
 ) {
     #pragma pack(push, 1)
     typedef struct {
@@ -110,7 +107,7 @@ BarrackHandler_currentBarrack (
 }
 
 static bool
-BarrackHandler_barrackNameChange (
+BarrackHandler_BarracknameChange (
     ClientSession *session,
     unsigned char *packet,
     size_t packetSize,
@@ -120,32 +117,29 @@ BarrackHandler_barrackNameChange (
     typedef struct PacketBarrackNameChange {
         uint16_t unk1;
         unsigned char barrackName [62];
-    }   PacketBarrackNameChange;
+    }  PacketBarrackNameChange;
     #pragma pack(pop)
     PacketBarrackNameChange *clientPacket = (PacketBarrackNameChange *) packet;
 
     #pragma pack(push, 1)
-    typedef struct PacketBarrackNameChangeReply {
+    typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
-        uint8_t unk2;
-        unsigned char barrackName [62];
-        uint16_t unk3;
-    } PacketBarrackNameChangeReply;
+        unsigned char unk1[5];
+        unsigned char barrackName[64];
+    } PacketBarracknameChange;
     #pragma pack(pop)
 
-    PacketBarrackNameChangeReply replyPacket;
-    memset (&replyPacket, 0, sizeof (replyPacket));
+    PacketBarracknameChange replyPacket;
 
     replyPacket.header.type = BC_BARRACKNAME_CHANGE;
-    replyPacket.unk1 = 0x01010101;
-    replyPacket.unk2 = 0x01;
-    memcpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (clientPacket->barrackName));
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-
-    // Failed to bind Barrack Server ROUTER frontend to
-    // Worker started
+    strncpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
+    strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
+    buffer_print (packet, packetSize, NULL);
+    dbg ("Current barrack name : %s", replyPacket.barrackName);
+    if (!replyPacket.barrackName)
+        dbg ("Wrong barrack name size in BC_BARRACKNAME_CHANGE");
+    else
+        zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return false;
 }
