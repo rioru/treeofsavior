@@ -62,6 +62,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Packet/Packet.h" />
+		<Unit filename="../../../src/Packet/PacketStream/PacketStream.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Packet/PacketStream/PacketStream.h" />
 		<Unit filename="../../../src/Packet/PacketType/PacketType.c">
 			<Option compilerVar="CC" />
 		</Unit>
