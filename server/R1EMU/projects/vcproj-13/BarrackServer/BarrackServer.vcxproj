@@ -18,6 +18,7 @@
     <ClCompile Include="..\..\..\src\Crypto\Crypto.c" />
     <ClCompile Include="..\..\..\src\dbg\dbg.c" />
     <ClCompile Include="..\..\..\src\Packet\Packet.c" />
+    <ClCompile Include="..\..\..\src\Packet\PacketStream\PacketStream.c" />
     <ClCompile Include="..\..\..\src\Packet\PacketType\PacketType.c" />
     <ClCompile Include="..\..\..\src\R1EMU.c" />
   </ItemGroup>
@@ -28,6 +29,7 @@
     <ClInclude Include="..\..\..\src\Crypto\Crypto.h" />
     <ClInclude Include="..\..\..\src\dbg\dbg.h" />
     <ClInclude Include="..\..\..\src\Packet\Packet.h" />
+    <ClInclude Include="..\..\..\src\Packet\PacketStream\PacketStream.h" />
     <ClInclude Include="..\..\..\src\Packet\PacketType.h" />
     <ClInclude Include="..\..\..\src\Packet\PacketType\PacketType.h" />
     <ClInclude Include="..\..\..\src\R1EMU.h" />

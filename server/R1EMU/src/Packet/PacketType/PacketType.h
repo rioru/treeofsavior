@@ -24,6 +24,12 @@
 
 // ------ Structure declaration -------
 
+typedef enum PacketTypeBarrackNormal {
+
+    BC_NORMAL_ZONE_TRAFFIC = 0xB
+
+}   PacketTypeBarrackNormal;
+
 /**
  * @brief PacketType enumerates all the packets used in the game between the client and the server
  */

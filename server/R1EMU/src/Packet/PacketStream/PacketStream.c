@@ -10,8 +10,9 @@
  * @license <license placeholder>
  */
 
+
 // ---------- Includes ------------
-#include "Packet.h"
+#include "PacketStream.h"
 
 
 // ------ Structure declaration -------
@@ -22,34 +23,61 @@
 
 // ------ Extern declaration -------
 
-void
-ClientPacket_unwrapHeader (
-    unsigned char **packet,
-    ClientPacketHeader *header
+PacketStream *
+PacketStream_new (
+    unsigned char *buffer
 ) {
-    memcpy (header, *packet, sizeof (*header));
+    PacketStream *self;
 
-    *packet = (*packet) + sizeof (*header);
+    if ((self = calloc (1, sizeof (PacketStream))) == NULL) {
+        return NULL;
+    }
+
+    if (!PacketStream_init (self, buffer)) {
+        PacketStream_destroy (&self);
+        error ("PacketStream failed to initialize.");
+        return NULL;
+    }
+
+    return self;
+}
+
+
+bool
+PacketStream_init (
+    PacketStream *self,
+    unsigned char *buffer
+) {
+    self->buffer = buffer;
+    self->position = 0;
+    return true;
 }
 
 void
-CryptPacket_unwrapHeader (
-    unsigned char **packet,
-    CryptPacketHeader *header
+PacketStream_append (
+    PacketStream *self,
+    void *data,
+    size_t dataSize
 ) {
-    memcpy (header, *packet, sizeof (*header));
+    memcpy (&self->buffer[self->position], data, dataSize);
+    self->position += dataSize;
+}
 
-    *packet = (*packet) + sizeof (*header);
+
+void
+PacketStream_addOffset (
+    PacketStream *self,
+    unsigned int offset
+) {
+    self->position += offset;
 }
 
 void
-BarrackPacket_normalHeader (
-    BarrackPacketNormalHeader *normalHeader,
-    uint32_t subtype,
-    uint32_t packetSize
+PacketStream_destroy (
+    PacketStream **_self
 ) {
-    normalHeader->variableSizeHeader.serverHeader.type = BC_NORMAL;
-    normalHeader->variableSizeHeader.serverHeader.reserved = 0;
-    normalHeader->variableSizeHeader.packetSize = packetSize;
-    normalHeader->subtype = subtype;
+    PacketStream *self = *_self;
+
+    free (self);
+    *_self = NULL;
 }
