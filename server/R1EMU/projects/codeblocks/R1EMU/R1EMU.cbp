@@ -75,6 +75,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Packet/PacketType.h" />
+		<Unit filename="../../../src/Common/dbg/dbg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/dbg/dbg.h" />
 		<Unit filename="../../../src/Crypto/Crypto.h" />
 		<Unit filename="../../../src/Packet/Packet.h" />
 		<Unit filename="../../../src/Packet/PacketStream/PacketStream.h" />
@@ -95,9 +99,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.h" />
-		<Unit filename="../../../src/dbg/dbg.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/dbg/dbg.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />

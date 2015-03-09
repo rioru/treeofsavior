@@ -27,7 +27,7 @@
 // Debugging environnement
 /** If defined, the debugging functions will be included in the executable */
 #define __DBG_ACTIVATED__ TRUE
-#include "dbg/dbg.h"
+#include "Common/dbg/dbg.h"
 
 // Configuration environnement
 #define DEFAULT_SERVER_CONF_PATH "../cfg/server.cfg"

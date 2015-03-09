@@ -1,80 +1,49 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\dbg\dbg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\BarrackServer\BarrackServer.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\BarrackServer\main.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Crypto\Crypto.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Packet\Packet.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Packet\PacketType\PacketType.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\R1EMU.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\src\Packet\PacketStream\PacketStream.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
+    <ClCompile Include="..\..\..\src\BarrackServer\BarrackServer.c" />
+    <ClCompile Include="..\..\..\src\BarrackServer\main.c" />
+    <ClCompile Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.c" />
+    <ClCompile Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.c" />
+    <ClCompile Include="..\..\..\src\Common\Commander\Commander.c" />
+    <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\Packet.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c" />
+    <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\src\R1EMU.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\dbg\dbg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Crypto\Crypto.h">
+    <ClInclude Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Packet\Packet.h">
+    <ClInclude Include="..\..\..\src\Common\Commander\Commander.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Packet\PacketType.h">
+    <ClInclude Include="..\..\..\src\Common\Crypto\Crypto.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Packet\PacketType\PacketType.h">
+    <ClInclude Include="..\..\..\src\Common\Packet\PacketType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\src\Packet\PacketStream\PacketStream.h">
+    <ClInclude Include="..\..\..\src\Common\Packet\Packet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\Packet\PacketStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\dbg\dbg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

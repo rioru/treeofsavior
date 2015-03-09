@@ -15,24 +15,23 @@
     <ClCompile Include="..\..\..\src\BarrackServer\BarrackServer.c" />
     <ClCompile Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.c" />
     <ClCompile Include="..\..\..\src\BarrackServer\main.c" />
-    <ClCompile Include="..\..\..\src\Crypto\Crypto.c" />
-    <ClCompile Include="..\..\..\src\dbg\dbg.c" />
-    <ClCompile Include="..\..\..\src\Packet\Packet.c" />
-    <ClCompile Include="..\..\..\src\Packet\PacketStream\PacketStream.c" />
-    <ClCompile Include="..\..\..\src\Packet\PacketType\PacketType.c" />
-    <ClCompile Include="..\..\..\src\R1EMU.c" />
+    <ClCompile Include="..\..\..\src\Common\Commander\Commander.c" />
+    <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c" />
+    <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\Packet.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.h" />
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h" />
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.h" />
-    <ClInclude Include="..\..\..\src\Crypto\Crypto.h" />
-    <ClInclude Include="..\..\..\src\dbg\dbg.h" />
-    <ClInclude Include="..\..\..\src\Packet\Packet.h" />
-    <ClInclude Include="..\..\..\src\Packet\PacketStream\PacketStream.h" />
-    <ClInclude Include="..\..\..\src\Packet\PacketType.h" />
-    <ClInclude Include="..\..\..\src\Packet\PacketType\PacketType.h" />
-    <ClInclude Include="..\..\..\src\R1EMU.h" />
+    <ClInclude Include="..\..\..\src\Common\Commander\Commander.h" />
+    <ClInclude Include="..\..\..\src\Common\Crypto\Crypto.h" />
+    <ClInclude Include="..\..\..\src\Common\dbg\dbg.h" />
+    <ClInclude Include="..\..\..\src\Common\Packet\Packet.h" />
+    <ClInclude Include="..\..\..\src\Common\Packet\PacketStream.h" />
+    <ClInclude Include="..\..\..\src\Common\Packet\PacketType.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EF0C8CBF-817A-42A5-AFEE-333AE85E459D}</ProjectGuid>

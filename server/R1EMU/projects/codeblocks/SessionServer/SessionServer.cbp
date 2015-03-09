@@ -43,6 +43,10 @@
 			<Add library="czmq" />
 			<Add directory="../../../lib" />
 		</Linker>
+		<Unit filename="../../../src/Common/dbg/dbg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/dbg/dbg.h" />
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -59,9 +63,6 @@
 		</Unit>
 		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.h" />
 		<Unit filename="../../../src/SessionServer/main.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/dbg/dbg.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/dbg/dbg.h" />
