@@ -34,6 +34,8 @@ static BarrackHandlerState BarrackHandler_serverEntry       (ClientSession *sess
 static BarrackHandlerState BarrackHandler_commanderList     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
 static BarrackHandlerState BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Send a list of zone servers */
+static BarrackHandlerState BarrackHandler_commanderDestroy   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
@@ -49,6 +51,7 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_CURRENT_BARRACK,    BarrackHandler_currentBarrack),
     REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_barracknameChange),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_CREATE,   BarrackHandler_commanderCreate),
+    REGISTER_PACKET_HANDLER (CB_COMMANDER_DESTROY,  BarrackHandler_commanderDestroy),
 
     #undef REGISTER_PACKET_HANDLER
 };
@@ -158,6 +161,33 @@ BarrackHandler_barracknameChange (
 }
 
 static BarrackHandlerState
+BarrackHandler_commanderDestroy (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    typedef struct {
+        ServerPacketHeader header;
+        uint8_t action;
+    } PacketCommanderDestroy;
+
+    PacketCommanderDestroy replyPacket = {
+        .header.type   = BC_COMMANDER_DESTROY,
+        .action = 0xFF // Destroy all characters!
+    };
+
+    // Update session
+    session->charactersBarrackCount = 0;
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return BARRACK_HANDLER_UPDATE_SESSION;
+}
+
+
+static BarrackHandlerState
 BarrackHandler_commanderCreate (
     ClientSession *session,
     unsigned char *packet,
@@ -227,8 +257,9 @@ BarrackHandler_commanderCreate (
     }
     replyPacket.commander.jobId = clientPacket->jobId;
 
-    replyPacket.commander.listPosition = 1;
-    replyPacket.commander.charPosition = 1;
+    replyPacket.commander.listPosition = session->charactersBarrackCount + 1;
+    replyPacket.commander.charPosition = session->charactersBarrackCount + 1;
+
     switch (clientPacket->hairType) {
         case COMMANDER_HAIR_ID1:
         case COMMANDER_HAIR_ID2:
@@ -249,9 +280,13 @@ BarrackHandler_commanderCreate (
         break;
     }
 
+    // Update the session
+    session->charactersBarrackCount++;
+
+    // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return BARRACK_HANDLER_UPDATE_SESSION;
 }
 
 static BarrackHandlerState

@@ -31,7 +31,8 @@
  * It shouldn't contain any pointer, because it is sent to others worker via TCP
  */
 struct ClientSession {
-    char familyName[17];
+    /** Number of characters registered in the barrack */
+    uint8_t charactersBarrackCount;
 };
 
 typedef struct ClientSession ClientSession;

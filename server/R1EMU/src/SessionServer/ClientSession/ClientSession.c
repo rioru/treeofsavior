@@ -43,8 +43,6 @@ bool
 ClientSession_init (
     ClientSession *self
 ) {
-    self->familyName[0] = '\0';
-
     return true;
 }
 
