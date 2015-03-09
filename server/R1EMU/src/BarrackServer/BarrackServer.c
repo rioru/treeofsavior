@@ -307,6 +307,7 @@ BarrackServer_start (
     ||  zframe_send (&pingPongFrame, sessionServerFrontend, 0) != 0
     ) {
         error ("Barrack Server cannot send a PING request to the Session Server.");
+        zsock_destroy (&sessionServerFrontend);
 		return false;
     }
 
@@ -314,9 +315,11 @@ BarrackServer_start (
     || memcmp (zframe_data (pingPongFrame), SESSION_SERVER_PONG, sizeof(SESSION_SERVER_PONG)) != 0
     ) {
         error ("Session Server didn't answer PONG correctly.");
+        zsock_destroy (&sessionServerFrontend);
 		return false;
     }
     zframe_destroy (&pingPongFrame);
+    zsock_destroy (&sessionServerFrontend);
 
     // ===================================
     //       Initialize backend
