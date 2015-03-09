@@ -109,17 +109,18 @@ int main (int argc, char ** argv)
     int baseAddress = get_baseaddr ("Client_tos.exe");
     printf ("BaseAddress = %x\n", baseAddress);
 
-    static unsigned char patchCode [29] = {
+    static unsigned char patchCode [] = {
         /*  55              push ebp                                      ; Client_tos.imcCrypt__NetEncrypt(guessed Arg1,Arg2,Arg3)
             8BEC            mov ebp, esp
             8B45 10         mov eax, [dword ss:ebp+10]                    ; &encryptedpacket->size
             8D58 02         lea ebx, [eax+2]                              ; &encryptedpacket->data
             8B7D 08         mov edi, [dword ss:ebp+8]                     ; plaintextSize
             66:8908         mov [word ds:eax], cx                         ; encryptedpacket->size = plaintextSize
+            83C7 02         add edi, 2
             57              push edi                                      ; size
             FF75 0C         push [dword ss:ebp+0C]                        ; src
             53              push ebx                                      ; dest
-            E8 9B3E5BFF     call Client_tos.memcpy                        ; Jump to MSVCR100.memcpy
+            E8 983E5BFF     call Client_tos.memcpy                        ; Jump to MSVCR100.memcpy
             89F8            mov eax, edi
             C9              leave
             C3              retn
@@ -130,18 +131,20 @@ int main (int argc, char ** argv)
         0x8D, 0x58, 0x02,
         0x8B, 0x7D, 0x08,
         0x66, 0x89, 0x08,
+        0x83, 0xC7, 0x02,
         0x57,
         0xFF, 0x75, 0x0C,
         0x53,
-        0xE8, 0x9B, 0x3E, 0x5B, 0xFF,
+        0xE8, 0x98, 0x3E, 0x5B, 0xFF,
         0x89, 0xF8,
         0xC9,
         0xC3
     };
 
-    static unsigned char originalCode [29] = {
+    static unsigned char originalCode[41] = {
         0x55, 0x8B, 0xEC, 0x83, 0x3D, 0xB4, 0x3C, 0xD3, 0x02, 0x00, 0x75, 0x20, 0x68, 0xAC, 0x0F, 0x52,
-        0x01, 0x6A, 0x49, 0x68, 0x68, 0x05, 0x4D, 0x01, 0x68, 0x54, 0x05, 0x4D, 0x01
+        0x01, 0x6A, 0x49, 0x68, 0x68, 0x05, 0x4D, 0x01, 0x68, 0x54, 0x05, 0x4D, 0x01, 0x68, 0xB8, 0x0F,
+        0x52, 0x01, 0x6A, 0x00, 0xE8, 0x77, 0x47, 0x5B, 0xFF
     };
 
     unsigned char opcode;
@@ -163,6 +166,4 @@ int main (int argc, char ** argv)
             printf ("Error, unexpected code found.\n");
         break;
     }
-
-    system("pause");
 }
