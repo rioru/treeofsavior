@@ -82,23 +82,47 @@ typedef struct CommanderInfo
     uint32_t unk12;
 }   CommanderInfo;
 
-typedef enum COMMANDER_JOB_ID
+typedef enum CommanderJobId
 {
     COMMANDER_JOB_WARRIOR = 1,
     COMMANDER_JOB_ARCHER  = 2,
     COMMANDER_JOB_MAGE    = 3,
     COMMANDER_JOB_CLERIC  = 4
 
-}   COMMANDER_JOB_ID;
+}   CommanderJobId;
 
-typedef enum COMMANDER_CLASS_ID
+typedef enum CommanderClassId
 {
     COMMANDER_CLASS_WARRIOR = 10001,
     COMMANDER_CLASS_ARCHER  = 10006,
     COMMANDER_CLASS_MAGE    = 10003,
     COMMANDER_CLASS_CLERIC  = 10005
 
-}   COMMANDER_CLASS_ID;
+}   CommanderClassId;
+
+
+typedef enum CommanderGender
+{
+    COMMANDER_GENDER_MALE   = 1,
+    COMMANDER_GENDER_FEMALE = 2,
+    COMMANDER_GENDER_BOTH   = 3,
+
+}   CommanderGender;
+
+
+typedef enum CommanderHair
+{
+    COMMANDER_HAIR_ID1  = 1, // http://puu.sh/gt8wV/4531dcbe29.jpg | http://puu.sh/gt8os/a75dfea0d8.jpg
+    COMMANDER_HAIR_ID2  = 2, // http://puu.sh/gt8xE/9eaa03d9a4.jpg | http://puu.sh/gt8nO/88a720bd23.jpg
+    COMMANDER_HAIR_ID3  = 3, // http://puu.sh/gt8y0/33a7e4275c.jpg | http://puu.sh/gt8nn/e22e910499.jpg
+    COMMANDER_HAIR_ID4  = 4, // http://puu.sh/gt8yp/683d434b60.jpg | http://puu.sh/gt8pc/63b723ca4d.jpg
+    COMMANDER_HAIR_ID5  = 5, // http://puu.sh/gt8A4/46531d2733.jpg | http://puu.sh/gt8pv/2b456a2625.jpg
+    COMMANDER_HAIR_ID6  = 6, // http://puu.sh/gt8As/3de6bbe4be.jpg | http://puu.sh/gt8pU/f1ab1d90eb.jpg
+    COMMANDER_HAIR_ID7  = 7, // http://puu.sh/gt8B3/8bde560d58.jpg | http://puu.sh/gt8qk/61f3b7baf0.jpg
+    COMMANDER_HAIR_ID8  = 8, // http://puu.sh/gt8Bw/6fe882c20b.jpg | http://puu.sh/gt8rz/9f4f4dae1b.jpg
+    COMMANDER_HAIR_ID9  = 9, // http://puu.sh/gt8BV/998b70d932.jpg | http://puu.sh/gt8sv/515b0aeff3.jpg
+    COMMANDER_HAIR_ID10 = 10,// http://puu.sh/gt8Ck/387055e450.jpg | http://puu.sh/gt8tc/b5e0f89e90.jpg
+}   CommanderHair;
 
 // ----------- Functions ------------
 

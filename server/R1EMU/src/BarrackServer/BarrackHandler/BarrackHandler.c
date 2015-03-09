@@ -184,13 +184,24 @@ BarrackHandler_commanderCreate (
     replyPacket.header.type = BC_COMMANDER_CREATE;
     replyPacket.commander = Commander_CreateBasicCommander();
     strncpy (replyPacket.commander.charName, clientPacket->charName, sizeof (replyPacket.commander.charName));
-    replyPacket.commander.jobId = clientPacket->jobId;
-    replyPacket.commander.gender = clientPacket->gender;
+
+    switch (clientPacket->gender) {
+        case COMMANDER_GENDER_MALE:
+        case COMMANDER_GENDER_FEMALE:
+            replyPacket.commander.gender = clientPacket->gender;
+            break;
+
+        case COMMANDER_GENDER_BOTH:
+        default:
+            error ("Invalid gender (%d)", clientPacket->gender);
+            return BARRACK_HANDLER_ERROR;
+            break;
+    }
 
     switch (replyPacket.commander.jobId)
     {
         default:
-            error ("Unknown commander Job ID.");
+            error ("Invalid commander Job ID.");
             return BARRACK_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
@@ -206,11 +217,29 @@ BarrackHandler_commanderCreate (
             replyPacket.commander.classId = COMMANDER_CLASS_CLERIC;
             break ;
     }
+    replyPacket.commander.jobId = clientPacket->jobId;
+
     replyPacket.commander.listPosition = 1;
     replyPacket.commander.charPosition = 1;
-    replyPacket.commander.hairType = clientPacket->hairType;
+    switch (clientPacket->hairType) {
+        case COMMANDER_HAIR_ID1:
+        case COMMANDER_HAIR_ID2:
+        case COMMANDER_HAIR_ID3:
+        case COMMANDER_HAIR_ID4:
+        case COMMANDER_HAIR_ID5:
+        case COMMANDER_HAIR_ID6:
+        case COMMANDER_HAIR_ID7:
+        case COMMANDER_HAIR_ID8:
+        case COMMANDER_HAIR_ID9:
+        case COMMANDER_HAIR_ID10:
+            replyPacket.commander.hairType = clientPacket->hairType;
+        break;
 
-    buffer_print (packet, packetSize, NULL);
+        default:
+            dbg ("Invalid hairType = %d", clientPacket->hairType);
+            return BARRACK_HANDLER_ERROR;
+        break;
+    }
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
