@@ -251,7 +251,7 @@ BarrackHandler_serverEntry (
     PacketServerEntry replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Gives a random account
+    // Connect to localhost:1337 and localhost:1338
     replyPacket.header.type        = BC_SERVER_ENTRY;
     replyPacket.ipClientNet        = *(uint32_t *) ((char []) {127, 0, 0, 1});
     replyPacket.ipVirtualClientNet = *(uint32_t *) ((char []) {127, 0, 0, 1});
