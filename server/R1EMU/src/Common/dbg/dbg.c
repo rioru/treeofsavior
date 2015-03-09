@@ -33,7 +33,7 @@ void _dbg (
  */
 void
 _buffer_print (
-    unsigned char *buffer,
+    void *buffer,
     int bufferSize,
     char *prefix
 ) {
@@ -51,7 +51,7 @@ _buffer_print (
         int offset;
         printf ("%s", prefix);
         for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            printf (" %02X", buffer[curPos]);
+            printf (" %02X", ((unsigned char *) buffer)[curPos]);
         }
         if (offset != 16) {
             for (int j = 0; j < 16 - offset; j++) {
@@ -63,7 +63,7 @@ _buffer_print (
         curPos -= offset;
 
         for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            unsigned char c = buffer[curPos];
+            unsigned char c = ((unsigned char *) buffer)[curPos];
             printf ("%c", isprint(c) ? c : '.');
         }
 

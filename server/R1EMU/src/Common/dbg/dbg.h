@@ -117,12 +117,12 @@ void _dbg (
  * @brief Dump a buffer in the standard output
  * @param buffer An allocated buffer to dump
  * @param bufferSize The buffer size
- * @param prefix A string printed before each line of the dump
+ * @param prefix A string printed before each line of the dump (optional)
  * @return
  */
 void
 _buffer_print (
-    unsigned char *buffer,
+    void *buffer,
     int bufferSize,
     char *prefix
 );
