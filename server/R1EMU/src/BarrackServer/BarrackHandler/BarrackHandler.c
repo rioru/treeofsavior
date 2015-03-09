@@ -225,8 +225,11 @@ BarrackHandler_commanderCreate (
 
     replyPacket.header.type = BC_COMMANDER_CREATE;
     replyPacket.commander = Commander_CreateBasicCommander();
+
+    // CharName
     strncpy (replyPacket.commander.charName, clientPacket->charName, sizeof (replyPacket.commander.charName));
 
+    // Gender
     switch (clientPacket->gender) {
         case COMMANDER_GENDER_MALE:
         case COMMANDER_GENDER_FEMALE:
@@ -240,6 +243,7 @@ BarrackHandler_commanderCreate (
             break;
     }
 
+    // JobID
     switch (replyPacket.commander.jobId)
     {
         default:
@@ -261,9 +265,11 @@ BarrackHandler_commanderCreate (
     }
     replyPacket.commander.jobId = clientPacket->jobId;
 
+    // Character position
     replyPacket.commander.listPosition = session->charactersBarrackCount + 1;
     replyPacket.commander.charPosition = session->charactersBarrackCount + 1;
 
+    // Hair type
     switch (clientPacket->hairType) {
         case COMMANDER_HAIR_ID1:
         case COMMANDER_HAIR_ID2:
