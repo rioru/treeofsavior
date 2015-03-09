@@ -85,7 +85,7 @@ BarrackWorker_buildReply (
 
     // Preconditions
     if (packetSize < sizeof (CryptPacketHeader)) {
-        error ("The packet received is too small to be read. Disconnect client.");
+        error ("The packet received is too small to be read. Ignore request.");
         return false;
     }
 
@@ -93,14 +93,14 @@ BarrackWorker_buildReply (
     CryptPacketHeader cryptHeader;
     CryptPacket_unwrapHeader (&packet, &cryptHeader);
     if (packetSize != cryptHeader.size) {
-        error ("The real packet size (%d) doesn't match with the packet size in the header (%d). Disconnect client.",
+        error ("The real packet size (%d) doesn't match with the packet size in the header (%d). Ignore request.",
             packetSize, cryptHeader.size);
         return false;
     }
 
     // Uncrypt the packet
     if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
-        error ("Cannot uncrypt the client packet. Disconnect client.");
+        error ("Cannot uncrypt the client packet. Ignore request.");
         return false;
     }
 
@@ -111,7 +111,7 @@ BarrackWorker_buildReply (
 
     // Get the corresponding packet handler
     if (header.type > sizeof_array (barrackHandlers)) {
-        error ("Invalid packet type. Disconnect the client");
+        error ("Invalid packet type. Ignore request.");
         return false;
     }
 
