@@ -81,6 +81,7 @@ BarrackWorker_buildReply (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    char *rawPacket = packet;
     BarrackHandlerFunction handler;
 
     // Preconditions
@@ -95,12 +96,14 @@ BarrackWorker_buildReply (
     if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
         error ("The real packet size (%d) doesn't match with the packet size in the header (%d). Ignore request.",
             packetSize, cryptHeader.size);
+        buffer_print (rawPacket, packetSize, NULL);
         return false;
     }
 
     // Uncrypt the packet
     if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
         error ("Cannot uncrypt the client packet. Ignore request.");
+        buffer_print (rawPacket, packetSize, NULL);
         return false;
     }
 
@@ -112,6 +115,7 @@ BarrackWorker_buildReply (
     // Get the corresponding packet handler
     if (header.type > sizeof_array (barrackHandlers)) {
         error ("Invalid packet type. Ignore request.");
+        buffer_print (rawPacket, packetSize, NULL);
         return false;
     }
 
@@ -121,7 +125,7 @@ BarrackWorker_buildReply (
             (header.type <PACKET_TYPES_MAX_INDEX) ?
                packetTypeInfo.packets[header.type].string : "UNKNOWN"
         );
-        buffer_print (packet, packetSize, NULL);
+        buffer_print (rawPacket, packetSize, NULL);
         return false;
     }
 
