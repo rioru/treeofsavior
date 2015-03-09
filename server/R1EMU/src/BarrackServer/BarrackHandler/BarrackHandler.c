@@ -232,6 +232,9 @@ BarrackHandler_commanderCreate (
     // CharName
     strncpy (replyPacket.commander.charName, clientPacket->charName, sizeof (replyPacket.commander.charName));
 
+    // FamilyName
+    strncpy (replyPacket.commander.familyName, session->familyName, sizeof (replyPacket.commander.familyName));
+
     // Gender
     switch (clientPacket->gender) {
         case COMMANDER_GENDER_MALE:
