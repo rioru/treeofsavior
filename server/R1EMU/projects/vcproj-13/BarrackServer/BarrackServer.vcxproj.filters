@@ -5,18 +5,45 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="Barrack">
+      <UniqueIdentifier>{bc03a2df-99d4-42b3-b574-f4c203e242d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{cffd3eee-01f0-4685-8158-15310edc782a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\BarrackServer\BarrackServer.c" />
     <ClCompile Include="..\..\..\src\BarrackServer\main.c" />
-    <ClCompile Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.c" />
-    <ClCompile Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.c" />
-    <ClCompile Include="..\..\..\src\Common\Commander\Commander.c" />
-    <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c" />
-    <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c" />
-    <ClCompile Include="..\..\..\src\Common\Packet\Packet.c" />
-    <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c" />
-    <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
+    <ClCompile Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.c">
+      <Filter>Barrack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\BarrackServer\BarrackServer.c">
+      <Filter>Barrack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.c">
+      <Filter>Barrack</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Commander\Commander.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\dbg\dbg.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Packet\Packet.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\R1EMU.c">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h">
@@ -44,6 +71,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\Common\dbg\dbg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\R1EMU.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

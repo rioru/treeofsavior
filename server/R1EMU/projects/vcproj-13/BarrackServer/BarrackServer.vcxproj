@@ -21,6 +21,7 @@
     <ClCompile Include="..\..\..\src\Common\Packet\Packet.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c" />
+    <ClCompile Include="..\..\..\src\R1EMU.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.h" />
@@ -32,6 +33,7 @@
     <ClInclude Include="..\..\..\src\Common\Packet\Packet.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\PacketStream.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\PacketType.h" />
+    <ClInclude Include="..\..\..\src\R1EMU.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EF0C8CBF-817A-42A5-AFEE-333AE85E459D}</ProjectGuid>
