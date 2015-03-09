@@ -5,6 +5,19 @@
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `barrack`
+--
+
+CREATE TABLE IF NOT EXISTS `barrack` (
+  `account_id` int(11) NOT NULL DEFAULT '0',
+  `barrack_name` varchar(63) NOT NULL,
+  `type` int(11) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`account_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `commander`
 --
 
