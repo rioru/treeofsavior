@@ -361,6 +361,7 @@ BarrackServer_start (
             error ("Failed to bind Barrack Server ROUTER frontend to the port %d.", self->publicPorts[i]);
             return false;
         }
+        dbg ("Frontend listening on port %d.", self->publicPorts[i]);
     }
 
     // ====================================

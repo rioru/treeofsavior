@@ -311,6 +311,7 @@ SessionServer_start (
         error ("Failed to bind Session Server ROUTER frontend to the port %d.", self->frontendPort);
         return false;
     }
+    dbg ("Frontend listening on port %d.", self->frontendPort);
 
     // ====================================
     //   Prepare a reactor and fire it up
