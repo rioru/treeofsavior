@@ -29,34 +29,49 @@
  * @brief ClientPacketHeader is the header of each packet sent by the client.
  */
 #pragma pack(push, 1)
-struct ClientPacketHeader
+typedef struct ClientPacketHeader
 {
     uint16_t type;
     uint32_t sequence;
     uint16_t checksum;
-};
+}   ClientPacketHeader;
 #pragma pack(pop)
 
 
 #pragma pack(push, 1)
-struct CryptPacketHeader
+typedef struct CryptPacketHeader
 {
     uint16_t size;
-};
+}   CryptPacketHeader;
 #pragma pack(pop)
 
 
 #pragma pack(push, 1)
-struct ServerPacketHeader
+typedef struct ServerPacketHeader
 {
     uint16_t type;
     uint32_t reserved;
-};
+}   ServerPacketHeader;
 #pragma pack(pop)
 
-typedef struct ClientPacketHeader ClientPacketHeader;
-typedef struct ServerPacketHeader ServerPacketHeader;
-typedef struct CryptPacketHeader CryptPacketHeader;
+#pragma pack(push, 1)
+typedef struct VariableSizePacketHeader
+{
+    uint16_t type;
+    uint32_t reserved;
+    uint32_t packetSize;
+}   VariableSizePacketHeader;
+#pragma pack(pop)
+
+
+#pragma pack(push, 1)
+typedef struct BarrackPacketNormalHeader
+{
+    VariableSizePacketHeader variableSizeHeader;
+    uint32_t subtype;
+}   BarrackPacketNormalHeader;
+#pragma pack(pop)
+
 
 // ----------- Functions ------------
 
@@ -82,4 +97,19 @@ void
 CryptPacket_unwrapHeader (
     unsigned char **packet,
     CryptPacketHeader *header
+);
+
+
+/**
+ * @brief Creates a barrack normal header based on the subtype argument
+ * @param[out] normalHeader An allocated normal header
+ * @param[in] subtype The subtype of the normal barrack packet
+ * @param[in] packetSize The total size of the packet
+ * @return
+ */
+void
+BarrackPacket_normalHeader (
+    BarrackPacketNormalHeader *normalHeader,
+    uint32_t subtype,
+    uint32_t packetSize
 );
