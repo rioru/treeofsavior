@@ -24,7 +24,7 @@ static bool BarrackHandler_loginByPassport   (ClientSession *session, unsigned c
 static bool BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Starts the barrack : Once the commander list has been received, request to start the barrack */
 static bool BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-static bool BarrackHandler_BarracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static bool BarrackHandler_barracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Register new servers */
 static bool BarrackHandler_serverEntry       (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of commanders */
@@ -44,7 +44,7 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_LOGIN_BY_PASSPORT,  BarrackHandler_loginByPassport),
     REGISTER_PACKET_HANDLER (CB_START_BARRACK,      BarrackHandler_startBarrack),
     REGISTER_PACKET_HANDLER (CB_CURRENT_BARRACK,    BarrackHandler_currentBarrack),
-    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_BarracknameChange),
+    REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_barracknameChange),
 
     #undef REGISTER_PACKET_HANDLER
 };
@@ -107,7 +107,7 @@ BarrackHandler_currentBarrack (
 }
 
 static bool
-BarrackHandler_BarracknameChange (
+BarrackHandler_barracknameChange (
     ClientSession *session,
     unsigned char *packet,
     size_t packetSize,
