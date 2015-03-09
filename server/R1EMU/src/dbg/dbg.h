@@ -25,7 +25,13 @@
 #if defined(__DBG_ACTIVATED__) && __DBG_ACTIVATED__ == TRUE
 
     /** Get the name of the module object from the filename. __FILE__ differs between GCC on MinGW and Linux. */
-    #define __FILENAME__ (((strrchr(__FILE__, '\\')) != NULL) ? &(strrchr(__FILE__, '\\'))[1] : __FILE__)
+    #define __FILENAME_WIN32__ (((strrchr(__FILE__, '\\')) != NULL) ? &(strrchr(__FILE__, '\\'))[1] : __FILE__)
+    #define __FILENAME_LINUX__ (((strrchr(__FILE__,  '/')) != NULL) ? &(strrchr(__FILE__,  '/'))[1] : __FILE__)
+    #ifdef WIN32
+    #define __FILENAME__ __FILENAME_WIN32__
+    #else
+    #define __FILENAME__ __FILENAME_LINUX__
+    #endif
 
     /** Debug line template */
     #define dbg_ex(output, format, ...)                                   \

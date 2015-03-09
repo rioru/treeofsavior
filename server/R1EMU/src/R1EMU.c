@@ -65,7 +65,7 @@ uint64_t zmq_clock_now ()
     //  Use POSIX gettimeofday function to get precise time.
     struct timeval tv;
     int rc = gettimeofday (&tv, NULL);
-    errno_assert (rc == 0);
+    assert (rc == 0);
     return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
 
 #endif
