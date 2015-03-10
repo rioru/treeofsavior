@@ -54,8 +54,8 @@ ClientSession_print (
     dbg ("==== Session %p ====", self);
     dbg ("familyName = %s", self->familyName);
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
-    dbg ("accountId = %" PRIu64, self->accountId);
-    dbg ("currentCommanderId = %" PRIu64, self->currentCommanderId);
+    dbg ("accountId = 0x%llX", self->accountId);
+    dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
     dbg ("currentPCId = %u", self->currentPCId);
 }
 

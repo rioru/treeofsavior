@@ -34,6 +34,7 @@ typedef struct ClientPacketHeader
     uint16_t type;
     uint32_t sequence;
     uint16_t checksum;
+    uint16_t unk1;
 }   ClientPacketHeader;
 #pragma pack(pop)
 

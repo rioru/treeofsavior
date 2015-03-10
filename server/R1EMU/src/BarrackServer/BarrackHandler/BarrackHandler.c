@@ -36,8 +36,10 @@ static BarrackHandlerState BarrackHandler_commanderList     (ClientSession *sess
 static BarrackHandlerState BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
 static BarrackHandlerState BarrackHandler_commanderDestroy  (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Send a list of zone servers */
+/** Change the commander position in the barrack */
 static BarrackHandlerState BarrackHandler_commanderMove     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Makes the commander jumps in the barrack */
+static BarrackHandlerState BarrackHandler_jump              (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
@@ -55,10 +57,39 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_COMMANDER_CREATE,   BarrackHandler_commanderCreate),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_DESTROY,  BarrackHandler_commanderDestroy),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_MOVE,     BarrackHandler_commanderMove),
+    REGISTER_PACKET_HANDLER (CB_JUMP,               BarrackHandler_jump),
 
     #undef REGISTER_PACKET_HANDLER
 };
 
+
+static BarrackHandlerState
+BarrackHandler_jump (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    buffer_print (packet, packetSize, "JUMP !");
+    #pragma pack(push, 1)
+    typedef struct {
+        uint32_t unk1;
+        uint32_t unk2;
+        uint8_t commanderListId;
+    } CbJumpPacket;
+    #pragma pack(pop)
+
+    if (sizeof (CbJumpPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CbJumpPacket));
+
+        return BARRACK_HANDLER_ERROR;
+    }
+
+    // CbJumpPacket *clientPacket = (CbJumpPacket *) packet;
+
+    return BARRACK_HANDLER_OK;
+}
 
 static BarrackHandlerState
 BarrackHandler_commanderMove (
@@ -69,7 +100,6 @@ BarrackHandler_commanderMove (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        uint16_t unk;
         uint8_t commanderListId;
         float x, y, z;
         float angleDestX, angleDestY;
@@ -83,11 +113,7 @@ BarrackHandler_commanderMove (
         return BARRACK_HANDLER_ERROR;
     }
 
-    CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
-
-    dbg ("commanderListId = %d", clientPacket->commanderListId);
-    dbg ("x / y / z = %f / %f / %f", clientPacket->x, clientPacket->y, clientPacket->z);
-    dbg ("angleDestX / angleDestY = %f / %f", clientPacket->angleDestX, clientPacket->angleDestY);
+    // CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
 
     // Nothing to reply
 
@@ -163,7 +189,6 @@ BarrackHandler_barracknameChange (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        uint16_t unk1;
         unsigned char barrackName [64];
     }  CbBarrackNameChangePacket;
     #pragma pack(pop)
@@ -248,7 +273,6 @@ BarrackHandler_commanderCreate (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        uint16_t unk1;
         uint8_t unk2;
         unsigned char charName[64];
         uint8_t unk3;
