@@ -85,6 +85,7 @@ void R1EMU_seed_random ()
 uint32_t R1EMU_generate_random ()
 {
     // Compensate for the fact that rand() returns signed integer.
+    //! FIXME : Use reentrant rand function on Windows
     uint32_t low = (uint32_t) rand ();
     uint32_t high = (uint32_t) rand ();
     high <<= (sizeof (high) * 8 - 1);
