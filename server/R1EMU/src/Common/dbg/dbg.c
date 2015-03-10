@@ -1,27 +1,58 @@
-#include "dbg.h"
+/**
+ *
+ *   ██████╗   ██╗ ███████╗ ███╗   ███╗ ██╗   ██╗
+ *   ██╔══██╗ ███║ ██╔════╝ ████╗ ████║ ██║   ██║
+ *   ██████╔╝ ╚██║ █████╗   ██╔████╔██║ ██║   ██║
+ *   ██╔══██╗  ██║ ██╔══╝   ██║╚██╔╝██║ ██║   ██║
+ *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
+ *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
+ *
+ * @license <license placeholder>
+ */
 
+// ---------- Includes ------------
+#include "dbg.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
-/**
- * @brief Output a formated message to a chosen stream
- * @param output A destination stream
- * @param format the format of the message
- * @return
- */
+// ------ Structure declaration -------
+
+
+// ------ Static declaration -------
+
+
+// ------ Extern function implementation ------
+
 void _dbg (
+    int level,
     FILE *output,
     char *format,
     ...
 ) {
     va_list args;
 
+    switch (level) {
+        #ifdef WIN32
+        case DBG_LEVEL_DEBUG: break;
+        case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0E); break;
+        case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0C); break;
+        #endif
+    }
+
     va_start (args, format);
         vfprintf (output, format, args);
         fflush (output);
     va_end (args);
+
+    switch (level) {
+        #ifdef WIN32
+        case DBG_LEVEL_DEBUG: break;
+        case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
+        case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
+        #endif
+    }
 }
 
 /**

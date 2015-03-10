@@ -48,6 +48,18 @@ ClientSession_init (
 
 
 void
+ClientSession_print (
+    ClientSession *self
+) {
+    dbg ("==== Session %p ====", self);
+    dbg ("familyName = %s", self->familyName);
+    dbg ("charactersBarrackCount = %d", self->charactersBarrackCount);
+    dbg ("accountId = %" PRIu64, self->accountId);
+    dbg ("currentCommanderId = %" PRIu64, self->currentCommanderId);
+    dbg ("currentPCId = %d", self->currentPCId);
+}
+
+void
 ClientSession_destroy (
     ClientSession **_self
 ) {

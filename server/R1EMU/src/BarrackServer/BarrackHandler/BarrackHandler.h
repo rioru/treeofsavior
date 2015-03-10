@@ -18,7 +18,7 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Packet/PacketType.h"
-#include "SessionServer/ClientSession/ClientSession.h"
+#include "Common/ClientSession/ClientSession.h"
 
 // ---------- Defines -------------
 #define BARRACK_HANDLER_MAX_ID      CB_DELETE_PET

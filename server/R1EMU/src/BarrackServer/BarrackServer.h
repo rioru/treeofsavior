@@ -30,11 +30,32 @@
 #define BARRACK_SERVER_PORT2_DEFAULT            2001
 #define BARRACK_SERVER_WORKERS_COUNT_DEFAULT    3
 
-// Signals
-#define BARRACK_SERVER_WORKER_READY             "\001" // Ready Signal
-#define BARRACK_SERVER_PING                     "\002" // PING Signal
-#define BARRACK_SERVER_PONG                     "\003" // PONG Signal
-#define BARRACK_SERVER_INVALID_PACKET           "\004" // Invalid packet Signal
+/** Enumeration of all the packets headers that the barrack server handles */
+// We want to differentiate the recv header from the send header, but we want to keep a list
+// with uniques header id. So let's declare all the ids here, and distribute them afterward
+typedef enum BarrackServerHeader {
+    _BARRACK_SERVER_WORKER_READY,            // Ready Signal
+    _BARRACK_SERVER_PING,                    // Ping Signal
+    _BARRACK_SERVER_PONG,                    // Pong Signal
+}   BarrackServerHeader;
+
+// Macro helper for the distribution
+#define DECL_BARRACK_SERVER_HEADER(x) \
+    x = _##x
+
+/** Enumeration of all the packets header that the barrack server accepts */
+typedef enum BarrackServerRecvHeader {
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_PING),
+}   BarrackServerRecvHeader;
+
+/** Enumeration of all the packets header that the barrack server sends */
+typedef enum BarrackServerSendHeader {
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_READY),
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_PONG),
+}   BarrackServerSendHeader;
+
+#undef DECL_BARRACK_SERVER_HEADER
+
 
 // ------ Structure declaration -------
 

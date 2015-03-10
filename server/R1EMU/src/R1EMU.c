@@ -21,7 +21,7 @@
 // ------ Static declaration -------
 
 
-// ------ Extern declaration -------
+// ------ Extern function implementation -------
 uint64_t zmq_clock_now ()
 {
 #if defined WIN32

@@ -20,7 +20,7 @@
 // ------ Static declaration -------
 
 
-// ------ Extern declaration -------
+// ------ Extern function implementation ------
 
 void
 ClientPacket_unwrapHeader (

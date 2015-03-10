@@ -21,7 +21,7 @@
 // ------ Static declaration -------
 
 
-// ------ Extern declaration -------
+// ------ Extern function implementation ------
 
 PacketStream *
 PacketStream_new (

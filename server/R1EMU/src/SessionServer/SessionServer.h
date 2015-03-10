@@ -28,11 +28,39 @@
 // Configuration default values
 #define SESSION_SERVER_PORT_DEFAULT         2002
 
-// Signals
-#define SESSION_SERVER_WORKER_READY             "\001" // READY Signal
-#define SESSION_SERVER_PING                     "\002" // PING Signal
-#define SESSION_SERVER_PONG                     "\003" // PONG Signal
-#define SESSION_SERVER_INVALID_PACKET           "\004" // Invalid packet Signal
+/** Enumeration of all the packets headers that the session server handles */
+// We want to differentiate the recv header from the send header, but we want to keep a list
+// with uniques header id. So let's declare all the ids here, and distribute them afterward
+typedef enum SessionServerHeader {
+    _SESSION_SERVER_WORKER_READY,            // Ready
+    _SESSION_SERVER_PING,                    // Ping
+    _SESSION_SERVER_PONG,                    // Pong
+    _SESSION_SERVER_REQUEST_SESSION,         // Request a session
+    _SESSION_SERVER_UPDATE_SESSION,          // Update a session
+    _SESSION_SERVER_UPDATE_SESSION_OK,       // Session update success
+    _SESSION_SERVER_UPDATE_SESSION_FAILED,   // Session update success
+}   SessionServerHeader;
+
+// Macro helper for the distribution
+#define DECL_SESSION_SERVER_HEADER(x) \
+    x = _##x
+
+/** Enumeration of all the packets header that the session server accepts */
+typedef enum SessionServerRecvHeader {
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_PING),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_REQUEST_SESSION),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION),
+}   SessionServerRecvHeader;
+
+/** Enumeration of all the packets header that the session server sends */
+typedef enum SessionServerSendHeader {
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_WORKER_READY),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_PONG),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION_OK),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION_FAILED),
+}   SessionServerSendHeader;
+
+#undef DECL_SESSION_SERVER_HEADER
 
 
 // ------ Structure declaration -------

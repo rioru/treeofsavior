@@ -38,6 +38,9 @@ struct SessionWorker
     /** The worker ID */
     int workerId;
 
+    /**< The worker socket connected to the backend. */
+    zsock_t *worker;
+
     /** The hashtable containing all the sessions.
      *  BE CAREFUL : It is shared between all the session workers.
      */

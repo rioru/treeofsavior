@@ -85,7 +85,18 @@ BarrackServer_backend (
 );
 
 
-// ------ Extern declaration ------
+/**
+ * @brief Waits for Session Server to be online and send a PONG reply
+ * @param self The barrackServer
+ * @return true on success, false otherwise
+ */
+static bool
+BarrackServer_waitForSessionServerOnline (
+    BarrackServer *self
+);
+
+
+// ------ Extern function implementation ------
 
 BarrackServer *
 BarrackServer_new (
@@ -219,7 +230,7 @@ BarrackServer_backend (
 
     // Retrieve the workerIdentity who sent the message
     if (!(workerIdentity = zmsg_unwrap (msg))) {
-        error ("Worker identity cannot be retrieved. Message dropped.");
+        error ("Worker identity cannot be retrieved.");
         return -1;
     }
 
@@ -244,12 +255,12 @@ BarrackServer_backend (
 
     // Get the content of the message
     if (!(packet = zmsg_first (msg))) {
-        error ("Frame data cannot be retrieved. Message dropped.");
+        error ("Frame data cannot be retrieved.");
         return -1;
     }
 
     // Forward the message to the frontend if it's not a READY signal
-    if (memcmp (zframe_data (packet), BARRACK_SERVER_WORKER_READY, sizeof(BARRACK_SERVER_WORKER_READY)) == 0) {
+    if (memcmp (zframe_data (packet), (int[]){BARRACK_SERVER_WORKER_READY}, sizeof(BARRACK_SERVER_WORKER_READY)) == 0) {
         zmsg_destroy (&msg);
     }
     else {
@@ -262,7 +273,7 @@ BarrackServer_backend (
             // Or             : [1 frame identity] + [1 empty frame] + [1 frame data]
 
             if (zmsg_send (&msg, self->frontend) != 0) {
-                error ("Cannot send message to the frontend. Message dropped");
+                error ("Cannot send message to the frontend.");
                 return -1;
             }
         } else {
@@ -308,7 +319,7 @@ BarrackServer_frontend (
         zframe_destroy (&workerIdentity);
 
         if (self->workersRegistredCount == 0) {
-            error ("No worker has been registered yet. Message dropped.");
+            error ("No worker has been registered yet.");
             return 0;
         }
 
@@ -330,45 +341,77 @@ BarrackServer_frontend (
 }
 
 
-bool
-BarrackServer_start (
+static bool
+BarrackServer_waitForSessionServerOnline (
     BarrackServer *self
 ) {
-    zloop_t *reactor;
     zsock_t *sessionServerFrontend;
-    BarrackWorker * barrackWorker;
-    zframe_t * pingPongFrame;
-
-    // =============================================
-    //    Wait for the session server to be alive
-    // =============================================
+    SessionServerSendHeader answer;
+    zmsg_t *msg;
+    zframe_t *frame;
 
     // Create and connect a socket to the session server frontend
     if (!(sessionServerFrontend = zsock_new (ZMQ_REQ))
     ||  zsock_connect (sessionServerFrontend, SESSION_SERVER_FRONTEND_ENDPOINT, self->sessionServerFrontendPort) == -1
     ) {
+        if (sessionServerFrontend) {
+            zsock_destroy (&sessionServerFrontend);
+        }
+
         error ("Barrack Server cannot connect to the Session Server.");
         return false;
     }
 
     // Test the connectivity : PING - PONG protocol
-    if (!(pingPongFrame = zframe_new (SESSION_SERVER_PING, sizeof (SESSION_SERVER_PING)))
-    ||  zframe_send (&pingPongFrame, sessionServerFrontend, 0) != 0
-    ) {
-        error ("Barrack Server cannot send a PING request to the Session Server.");
+    dbg ("Sending PING...");
+    if (!(msg = zmsg_new ())
+    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_PING), sizeof (SESSION_SERVER_PING)) != 0
+    ||  zmsg_send (&msg, sessionServerFrontend) != 0) {
+        if (msg) {
+            zmsg_destroy (&msg);
+        }
         zsock_destroy (&sessionServerFrontend);
+
+		error ("Barrack Server cannot send a PING request to the Session Server.");
+        return false;
+    }
+
+    dbg ("Waiting PONG...");
+    if (!(msg = zmsg_recv (sessionServerFrontend))
+    ||  !(frame = zmsg_first (msg))
+    ||  !(answer = *((SessionServerSendHeader *) zframe_data (frame)))
+    ||  !(answer == SESSION_SERVER_PONG)
+    ) {
+        if (msg) {
+            zmsg_destroy (&msg);
+        }
+        zsock_destroy (&sessionServerFrontend);
+
+        error ("Session Server didn't answer PONG correctly.");
 		return false;
     }
 
-    if (!(pingPongFrame = zframe_recv (sessionServerFrontend))
-    || memcmp (zframe_data (pingPongFrame), SESSION_SERVER_PONG, sizeof(SESSION_SERVER_PONG)) != 0
-    ) {
-        error ("Session Server didn't answer PONG correctly.");
-        zsock_destroy (&sessionServerFrontend);
-		return false;
-    }
-    zframe_destroy (&pingPongFrame);
+    zmsg_destroy (&msg);
     zsock_destroy (&sessionServerFrontend);
+
+    return true;
+}
+
+
+bool
+BarrackServer_start (
+    BarrackServer *self
+) {
+    zloop_t *reactor;
+    BarrackWorker * barrackWorker;
+
+    // =============================================
+    //    Wait for the session server to be alive
+    // =============================================
+    if (!BarrackServer_waitForSessionServerOnline (self)) {
+        error ("Cannot connect properly to the Session Server.");
+        return false;
+    }
 
     // ===================================
     //       Initialize backend
@@ -416,7 +459,6 @@ BarrackServer_start (
     // ====================================
     //   Prepare a reactor and fire it up
     // ====================================
-
     if (!(reactor = zloop_new ())) {
         error ("Cannot allocate a new reactor.");
         return false;

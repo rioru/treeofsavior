@@ -17,7 +17,7 @@
 // ------ Static declaration -------
 
 
-// ------ Extern declaration -------
+// ------ Extern function implementation ------
 
 bool
 Crypto_uncryptPacket (

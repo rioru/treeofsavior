@@ -14,7 +14,7 @@
 #include "BarrackWorker.h"
 #include "BarrackServer/BarrackServer.h"
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
-#include "SessionServer/ClientSession/ClientSession.h"
+#include "Common/ClientSession/ClientSession.h"
 #include "Common/Packet/Packet.h"
 #include "Common/Crypto/Crypto.h"
 
@@ -39,7 +39,72 @@ BarrackWorker_buildReply (
     zmsg_t *reply
 );
 
-// ------ Extern declaration -------
+/**
+ * @brief Handle a PING request from any entity.
+ *        This function only replace the "PING" signal to a "PONG" one in the message.
+ * @param headerFrame The header frame containing the "PING" request
+ */
+static void
+BarrackWorker_handlePingPacket (
+    zframe_t *headerFrame
+);
+
+
+/**
+ * @brief Handle a client request.
+ *        The first frame contains client entity, the second frame contains packet data.
+ * @param self An allocated BarrackWorker structure
+ * @param msg The message of the client
+ * @return
+ */
+static void
+BarrackWorker_processClientPacket (
+    BarrackWorker *self,
+    zmsg_t *msg
+);
+
+
+/**
+ * @brief Handle a intern packet request.
+ * @param self An allocated BarrackWorker structure
+ * @param msg The message to process
+ * @return true on success, false otherwise
+ */
+static void
+BarrackWorker_processInternPacket (
+    BarrackWorker *self,
+    zmsg_t *msg
+);
+
+
+/**
+ * @brief Request a session from the session server
+ * @param self An allocated BarrackWorker structure
+ * @param clientIdentity A frame containing the identity of the client
+ * @return a zframe_t containing a ClientSession on success, NULL otherwise
+ */
+static zframe_t *
+BarrackWorker_requestSession (
+    BarrackWorker *self,
+    zframe_t *clientIdentity
+);
+
+
+/**
+ * @brief Update a session for the session server
+ * @param self An allocated BarrackWorker structure
+ * @param clientIdentity A frame containing the identity of the client
+ * @param session An allocated session to update
+ * @return true on success, false otherwise
+ */
+static bool
+BarrackWorker_updateSession (
+    BarrackWorker *self,
+    zframe_t *clientIdentity,
+    ClientSession *session
+);
+
+// ------ Extern function implementation ------
 
 BarrackWorker *
 BarrackWorker_new (
@@ -82,7 +147,6 @@ BarrackWorker_buildReply (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    char *rawPacket = packet;
     BarrackHandlerFunction handler;
 
     // Preconditions
@@ -97,14 +161,12 @@ BarrackWorker_buildReply (
     if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
         error ("The real packet size (%d) doesn't match with the packet size in the header (%d). Ignore request.",
             packetSize, cryptHeader.size);
-        buffer_print (rawPacket, packetSize, NULL);
         return BARRACK_HANDLER_ERROR;
     }
 
     // Uncrypt the packet
     if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
         error ("Cannot uncrypt the client packet. Ignore request.");
-        buffer_print (rawPacket, packetSize, NULL);
         return BARRACK_HANDLER_ERROR;
     }
 
@@ -116,7 +178,6 @@ BarrackWorker_buildReply (
     // Get the corresponding packet handler
     if (header.type > sizeof_array (barrackHandlers)) {
         error ("Invalid packet type. Ignore request.");
-        buffer_print (rawPacket, packetSize, NULL);
         return BARRACK_HANDLER_ERROR;
     }
 
@@ -126,7 +187,6 @@ BarrackWorker_buildReply (
             (header.type <PACKET_TYPES_MAX_INDEX) ?
                packetTypeInfo.packets[header.type].string : "UNKNOWN"
         );
-        buffer_print (rawPacket, packetSize, NULL);
         return BARRACK_HANDLER_ERROR;
     }
 
@@ -135,40 +195,195 @@ BarrackWorker_buildReply (
     return handler (session, packet, dataSize, reply);
 }
 
+static void
+BarrackWorker_handlePingPacket (
+    zframe_t *headerFrame
+) {
+    zframe_reset (headerFrame, PACKET_HEADER (BARRACK_SERVER_PONG), sizeof (BARRACK_SERVER_PONG));
+}
+
+static zframe_t *
+BarrackWorker_requestSession (
+    BarrackWorker *self,
+    zframe_t *clientIdentity
+) {
+    ClientSession *session;
+    zframe_t *sessionFrame;
+    zmsg_t *msg;
+
+    // Build a session request message
+    if (!(msg = zmsg_new ())
+    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_REQUEST_SESSION), sizeof (SESSION_SERVER_REQUEST_SESSION)) != 0
+    ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
+    ||  zmsg_send (&msg, self->sessionServer) != 0
+    ) {
+        error ("Cannot build and send a session message for the session server");
+        return NULL;
+    }
+
+    // Wait for the session server answer
+    if (!(msg = zmsg_recv (self->sessionServer))) {
+        error ("Cannot receive a session from the session server");
+        return NULL;
+    }
+
+    // Extract the session from the answer
+    if (!(sessionFrame = zmsg_pop (msg))
+    ||  !(session = (ClientSession *) zframe_data (sessionFrame))
+    ||  !(sizeof (ClientSession) == zframe_size (sessionFrame))
+    ) {
+        error ("Cannot extract correctly the session from the session server");
+        return NULL;
+    }
+
+    zmsg_destroy (&msg);
+    return sessionFrame;
+}
+
+static bool
+BarrackWorker_updateSession (
+    BarrackWorker *self,
+    zframe_t *clientIdentity,
+    ClientSession *session
+) {
+    zframe_t *answerFrame;
+    SessionServerSendHeader answer;
+    zmsg_t *msg;
+
+    // Build the update sesion packet, and send it to the server
+    if (!(msg = zmsg_new ())
+    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION), sizeof (SESSION_SERVER_UPDATE_SESSION)) != 0
+    ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
+    ||  zmsg_addmem (msg, session, sizeof (ClientSession)) != 0
+    ||  zmsg_send (&msg, self->sessionServer) != 0
+    ) {
+        error ("Cannot build and send a session message for the session server");
+        return false;
+    }
+
+    // Wait for the answer of the session server
+    if (!(msg = zmsg_recv (self->sessionServer))) {
+        error ("Cannot receive a session from the session server");
+        return false;
+    }
+
+    // Extract the answer of the session server
+    if (!(answerFrame = zmsg_pop (msg))
+    ||  !(answer = *((SessionServerSendHeader *) zframe_data (answerFrame)))
+    ||  !(sizeof (answer) == zframe_size (answerFrame))
+    ) {
+        dbg ("answer = %d", answer);
+        dbg ("sizeof answer = %d", sizeof (answer));
+        if (answerFrame) {
+            zframe_print (answerFrame, "answerFrame = ");
+            zframe_destroy (&answerFrame);
+        }
+        zmsg_print (msg);
+        error ("Cannot extract correctly the answer from the session server");
+        return false;
+    }
+
+    // Verify the status code
+    if (answer != SESSION_SERVER_UPDATE_SESSION_OK) {
+        error ("The session server failed to update the session");
+        return false;
+    }
+
+    // Cleanup
+    zframe_destroy (&answerFrame);
+    zmsg_destroy (&msg);
+
+    return true;
+}
+
+static void
+BarrackWorker_processClientPacket (
+    BarrackWorker *self,
+    zmsg_t *msg
+) {
+    ClientSession *session;
+    zframe_t *sessionFrame;
+
+    zframe_t *clientIdentity = zmsg_first (msg);
+    zframe_t *packet = zmsg_next (msg);
+
+    sessionFrame = BarrackWorker_requestSession (self, clientIdentity);
+    session = (ClientSession *) zframe_data (sessionFrame);
+
+    zmsg_remove (msg, packet);
+
+    switch (BarrackWorker_buildReply (session, zframe_data (packet), zframe_size (packet), msg))
+    {
+        case BARRACK_HANDLER_ERROR:
+            error ("The following packet produced an error :");
+            buffer_print (zframe_data (packet), zframe_size (packet), NULL);
+        break;
+
+        case BARRACK_HANDLER_OK:
+        break;
+
+        case BARRACK_HANDLER_UPDATE_SESSION:
+            if (!BarrackWorker_updateSession (self, clientIdentity, session)) {
+                error ("Cannot update the following session");
+                ClientSession_print (session);
+            }
+        break;
+    }
+
+    zframe_destroy (&packet);
+}
+
+
+static void
+BarrackWorker_processInternPacket (
+    BarrackWorker *self,
+    zmsg_t *msg
+) {
+    zframe_t *clientIdentityFrame = zmsg_first (msg); (void) clientIdentityFrame;
+    zframe_t *headerFrame = zmsg_next (msg);
+    BarrackServerRecvHeader header = *((BarrackServerRecvHeader *) zframe_data (headerFrame));
+
+    switch (header)
+    {
+        case BARRACK_SERVER_PING:
+            BarrackWorker_handlePingPacket (headerFrame);
+        break;
+
+        default:
+            error ("Packet type %d not handled.", header);
+        break;
+    }
+}
+
 
 void *
 BarrackWorker_worker (
     void *arg
 ) {
-    zsock_t *worker, *sessionServerFrontend;
-    zmsg_t *packetMsg;
+    zmsg_t *msg;
     zframe_t *readyFrame;
-    zframe_t *requestSessionFromId;
-    zframe_t *sessionFrame;
-    zmsg_t *sessionMsg;
-    ClientSession sessionRollback;
 
     BarrackWorker * self = (BarrackWorker *) arg;
 
     // Create and connect a socket to the backend
-    if (!(worker = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (worker, BARRACK_SERVER_BACKEND_ENDPOINT) == -1
+    if (!(self->worker = zsock_new (ZMQ_REQ))
+    ||  zsock_connect (self->worker, BARRACK_SERVER_BACKEND_ENDPOINT) == -1
     ) {
         error ("Barrack worker ID = %d cannot connect to the backend socket.", self->workerId);
         return NULL;
     }
 
     // Create and connect a socket to the session server frontend
-    if (!(sessionServerFrontend = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (sessionServerFrontend, SESSION_SERVER_FRONTEND_ENDPOINT, self->sessionServerFrontendPort) == -1
+    if (!(self->sessionServer = zsock_new (ZMQ_REQ))
+    ||  zsock_connect (self->sessionServer, SESSION_SERVER_FRONTEND_ENDPOINT, self->sessionServerFrontendPort) == -1
     ) {
         error ("Barrack worker ID = %d cannot connect to the Session Server.", self->workerId);
         return NULL;
     }
 
     // Tell to the broker we're ready for work
-    if (!(readyFrame = zframe_new (BARRACK_SERVER_WORKER_READY, 1))
-    ||  zframe_send (&readyFrame, worker, 0) == -1
+    if (!(readyFrame = zframe_new (PACKET_HEADER (BARRACK_SERVER_WORKER_READY), sizeof (BARRACK_SERVER_WORKER_READY)))
+    ||  zframe_send (&readyFrame, self->worker, 0) == -1
     ) {
         error ("Barrack worker ID = %d cannot send a correct BARRACK_SERVER_WORKER_READY state.", self->workerId);
         return NULL;
@@ -176,95 +391,43 @@ BarrackWorker_worker (
 
     dbg ("Barrack worker ID %d is running and waiting for messages.", self->workerId);
 
-    while (true) {
-
+    while (true)
+    {
         // Process messages as they arrive
-        if (!(packetMsg = zmsg_recv (worker))) {
+        if (!(msg = zmsg_recv (self->worker))) {
             dbg ("Barrack worker ID %d stops working.", self->workerId);
             break; // Interrupted
         }
 
-        // Retrieve data from the message
-        zframe_t *clientIdentity = zmsg_first (packetMsg);
-        zframe_t *packet = zmsg_last (packetMsg);
-
-        /// Handle PING-PONG messages
-        if (memcmp (zframe_data (packet), BARRACK_SERVER_PING, sizeof (BARRACK_SERVER_PING)) == 0) {
-            zframe_reset (packet, BARRACK_SERVER_PONG, sizeof (BARRACK_SERVER_PONG));
-
-            // Send the reply back to the backend
-            if (zmsg_send (&packetMsg, worker) != 0) {
-                warning ("Barrack worker ID %d failed to send a message to the backend.", self->workerId);
-            }
-
+        // No message should be with less than 2 frames
+        if (zmsg_size (msg) < 2) {
+            error ("A malformed message has been received.");
+            zmsg_destroy (&msg);
             continue;
         }
 
-        /// Handle requests for the session from the session server
-        if (!(requestSessionFromId = zframe_dup (clientIdentity))) {
-            error ("Failed to duplicate the client identity. Request dropped.");
-            continue;
-        }
-        if (zframe_send (&requestSessionFromId, sessionServerFrontend, 0) != 0) {
-            error ("Cannot send the request to the session server. Request dropped.");
-            continue;
+        // Only ToS clients send messages with 2 frames
+        if (zmsg_size (msg) == 2) {
+            // The first frame is the client identity
+            // The second frame is the data of the packet
+            BarrackWorker_processClientPacket (self, msg);
         }
 
-        // Receive the session data
-        if (!(sessionMsg = zmsg_recv (sessionServerFrontend))) {
-            error ("Session server interrupted the request. Request dropped.");
-            continue;
+        else {
+            // This is a message from intern entities of the network
+            //! Nothing too much important should be here, as the clients
+            //! could craft a fake packet with 3 frames
+            BarrackWorker_processInternPacket (self, msg);
         }
 
-        if (!(sessionFrame = zmsg_pop (sessionMsg))) {
-            error ("Cannot get the session data from the session msg. Request dropped.");
-            zmsg_destroy (&sessionMsg);
-            continue;
-        }
-        zmsg_destroy (&sessionMsg);
-
-
-        /// Build the reply packet
-        ClientSession *session = (ClientSession *) zframe_data (sessionFrame);
-        memcpy (&sessionRollback, session, sizeof (ClientSession));
-
-        // Remove the client packet from the reply message, and add our frames to it
-        zmsg_remove (packetMsg, packet);
-        switch (BarrackWorker_buildReply (session, zframe_data (packet), zframe_size (packet), packetMsg)) {
-            case BARRACK_HANDLER_ERROR:
-                // Don't process the packet : rollback the changes
-                memcpy (session, &sessionRollback, sizeof (ClientSession));
-            break;
-
-            case BARRACK_HANDLER_OK:
-            // Nothing much to do, everything is OK
-            break;
-
-            case BARRACK_HANDLER_UPDATE_SESSION:
-            // The session needs to be updated to the database
-            break;
-
-            default:
-                warning ("The barrack handler returned an unknown state");
-            break;
-        }
-
-        // We don't need the session anymore
-        zframe_destroy (&sessionFrame);
-
-        // The client hasn't been allowed to receive a proper answer
-        if (zmsg_size (packetMsg) == 1) { // 1 = only the identity frame, no data frame
-            // We send to the client an invalid packet because the barrack backend is waiting for an answer
-            zframe_reset (packet, BARRACK_SERVER_INVALID_PACKET, sizeof (BARRACK_SERVER_INVALID_PACKET));
-        }
-
-        if (zmsg_send (&packetMsg, worker) != 0) {
-            warning ("Barrack worker ID %d failed to send a message to the backend.", self->workerId);
+        // Reply back to the sender
+        if (zmsg_send (&msg, self->worker) != 0) {
+            warning ("Barrack worker ID %d failed to send a message.", self->workerId);
         }
     }
 
-    zsock_destroy (&worker);
-    zsock_destroy (&sessionServerFrontend);
+    zsock_destroy (&self->worker);
+    zsock_destroy (&self->sessionServer);
 
     dbg ("Barrack worker ID %d exits.", self->workerId);
     return NULL;

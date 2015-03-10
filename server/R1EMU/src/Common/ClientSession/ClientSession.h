@@ -84,6 +84,15 @@ ClientSession_init (
 
 
 /**
+ * @brief Prints a ClientSession structure.
+ * @param self An allocated ClientSession
+ */
+void
+ClientSession_print (
+    ClientSession *self
+);
+
+/**
  * @brief Free an allocated ClientSession structure and nullify the content of the pointer.
  * @param self A pointer to an allocated ClientSession.
  */

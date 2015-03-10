@@ -18,7 +18,7 @@
 // ---------- Includes ------------
 #include "SessionServer.h"
 #include "SessionWorker/SessionWorker.h"
-#include "SessionServer/ClientSession/ClientSession.h"
+#include "Common/ClientSession/ClientSession.h"
 
 
 // ------ Structure declaration -------
@@ -91,7 +91,7 @@ SessionServer_backend (
 );
 
 
-// ------ Extern declaration ------
+// ------ Extern function implementation ------
 
 SessionServer *
 SessionServer_new (
@@ -212,7 +212,7 @@ SessionServer_backend (
 
     // Retrieve the workerIdentity who sent the message
     if (!(workerIdentity = zmsg_unwrap (msg))) {
-        error ("Worker identity cannot be retrieved. Message dropped.");
+        error ("Worker identity cannot be retrieved.");
         return -1;
     }
 
@@ -237,12 +237,12 @@ SessionServer_backend (
 
     // Get the content of the message
     if (!(packet = zmsg_first (msg))) {
-        error ("Frame data cannot be retrieved. Message dropped.");
+        error ("Frame data cannot be retrieved.");
         return -1;
     }
 
     // Forward the message to the frontend if it's not a READY signal
-    if (memcmp (zframe_data (packet), SESSION_SERVER_WORKER_READY, sizeof(SESSION_SERVER_WORKER_READY)) == 0) {
+    if (memcmp (zframe_data (packet), PACKET_HEADER (SESSION_SERVER_WORKER_READY), sizeof(SESSION_SERVER_WORKER_READY)) == 0) {
         zmsg_destroy (&msg);
     }
     else {
@@ -254,7 +254,7 @@ SessionServer_backend (
             // Simple message : [1 frame identity] + [1 frame data]
             // Or             : [1 frame identity] + [1 empty frame] + [1 frame data]
             if (zmsg_send (&msg, self->frontend) != 0) {
-                error ("Cannot send message to the frontend. Message dropped");
+                error ("Cannot send message to the frontend.");
                 return -1;
             }
         } else {
@@ -300,7 +300,7 @@ SessionServer_frontend (
         zframe_destroy (&workerIdentity);
 
         if (self->workersRegistredCount == 0) {
-            error ("No worker has been registered yet. Message dropped.");
+            error ("No worker has been registered yet.");
             return 0;
         }
 
