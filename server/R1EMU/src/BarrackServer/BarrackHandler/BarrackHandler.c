@@ -110,10 +110,10 @@ BarrackHandler_loginByPassport (
         uint64_t accountId;
         unsigned char channelString[17];
         uint32_t accountPrivileges;
-    } PacketLoginOk;
+    } BcLoginOkPacket;
     #pragma pack(pop)
 
-    PacketLoginOk replyPacket;
+    BcLoginOkPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Gives a random account
@@ -164,22 +164,23 @@ BarrackHandler_barracknameChange (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct PacketBarrackNameChange {
+    typedef struct {
         uint16_t unk1;
         unsigned char barrackName [62];
-    }  PacketBarrackNameChange;
+    }  CbBarrackNameChangePacket;
     #pragma pack(pop)
-    PacketBarrackNameChange *clientPacket = (PacketBarrackNameChange *) packet;
+    CbBarrackNameChangePacket *clientPacket = (CbBarrackNameChangePacket *) packet;
 
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
         unsigned char unk1[5];
         unsigned char barrackName[64];
-    } PacketBarracknameChange;
+    } BcBarrackNameChangePacket;
     #pragma pack(pop)
 
-    PacketBarracknameChange replyPacket;
+    BcBarrackNameChangePacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = BC_BARRACKNAME_CHANGE;
     memcpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
@@ -216,9 +217,9 @@ BarrackHandler_commanderDestroy (
     typedef struct {
         ServerPacketHeader header;
         uint8_t action;
-    } PacketCommanderDestroy;
+    } BcCommanderDestroyPacket;
 
-    PacketCommanderDestroy replyPacket = {
+    BcCommanderDestroyPacket replyPacket = {
         .header.type   = BC_COMMANDER_DESTROY,
         .action = 0xFF // Destroy all characters!
     };
@@ -241,7 +242,7 @@ BarrackHandler_commanderCreate (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct PacketCbCommanderCreate {
+    typedef struct {
         uint16_t unk1;
         uint8_t unk2;
         unsigned char charName[64];
@@ -252,18 +253,18 @@ BarrackHandler_commanderCreate (
         uint32_t unk5;
         uint32_t unk6;
         uint8_t hairType;
-    }  PacketCbCommanderCreate;
+    }  CbCommanderCreatePacket;
     #pragma pack(pop)
-    PacketCbCommanderCreate *clientPacket = (PacketCbCommanderCreate *) packet;
+    CbCommanderCreatePacket *clientPacket = (CbCommanderCreatePacket *) packet;
 
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
         CommanderInfo commander;
-    } PacketCommanderCreate;
+    } BcPacketCommanderCreate;
     #pragma pack(pop)
 
-    PacketCommanderCreate replyPacket;
+    BcPacketCommanderCreate replyPacket;
 
     replyPacket.header.type = BC_COMMANDER_CREATE;
     replyPacket.commander = Commander_CreateBasicCommander();
@@ -363,28 +364,28 @@ BarrackHandler_zoneTraffics (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct PacketZoneTraffic {
+    typedef struct {
         uint8_t zoneListId;
         uint16_t currentPlayersCount;
-    } PacketZoneTraffic;
+    } SingleZoneTraffic;
     #pragma pack(pop)
 
     #pragma pack(push, 1)
-    typedef struct PacketMapTraffic {
+    typedef struct {
         uint16_t mapId;
         uint16_t zoneServerCount;
-        // PacketZoneTraffic zones[]; // variable length array
-    }   PacketMapTraffic;
+        // SingleZoneTraffic zones[]; // variable length array
+    }   SingleMapTraffic;
     #pragma pack(pop)
 
 	#pragma pack(push, 1)
-    typedef struct PacketZoneTraffics {
+    typedef struct {
         BarrackPacketNormalHeader normalHeader;
         uint16_t zlibHeader;
         uint16_t zoneMaxPcCount;
         uint16_t mapAvailableCount;
-        // PacketMapTraffic maps[]; // variable length array
-    } PacketZoneTraffics;
+        // SingleMapTraffic maps[]; // variable length array
+    } ZoneTrafficsPacket;
     #pragma pack(pop)
 
     // === Data from the DB ===
@@ -405,14 +406,14 @@ BarrackHandler_zoneTraffics (
     int currentPlayersCount = 10;
 
     // Count the total memory space needed for the reply packet
-    int outPacketSize = sizeof (PacketZoneTraffics) + (sizeof (PacketMapTraffic) * mapAvailableCount);
+    int outPacketSize = sizeof (ZoneTrafficsPacket) + (sizeof (SingleMapTraffic) * mapAvailableCount);
     for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++) {
-        outPacketSize += sizeof (PacketZoneTraffic) * zoneServerCounts[mapIndex];
+        outPacketSize += sizeof (SingleZoneTraffic) * zoneServerCounts[mapIndex];
     }
 
     // Allocate on the stack the memory for the packet
     unsigned char *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
-    PacketZoneTraffics *replyPacket = (PacketZoneTraffics *) stackBuffer;
+    ZoneTrafficsPacket *replyPacket = (ZoneTrafficsPacket *) stackBuffer;
     memset (replyPacket, 0, outPacketSize);
 
     // Construct the packet
@@ -422,18 +423,18 @@ BarrackHandler_zoneTraffics (
     BarrackPacket_normalHeader (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
     PacketStream_addOffset (&stream, sizeof (replyPacket->normalHeader));
 
-    PacketStream_append (&stream, &zlibHeader, sizeof_struct_member (PacketZoneTraffics, zlibHeader));
-    PacketStream_append (&stream, &zoneMaxPcCount, sizeof_struct_member (PacketZoneTraffics, zoneMaxPcCount));
-    PacketStream_append (&stream, &mapAvailableCount, sizeof_struct_member (PacketZoneTraffics, mapAvailableCount));
+    PacketStream_append (&stream, &zlibHeader, sizeof_struct_member (ZoneTrafficsPacket, zlibHeader));
+    PacketStream_append (&stream, &zoneMaxPcCount, sizeof_struct_member (ZoneTrafficsPacket, zoneMaxPcCount));
+    PacketStream_append (&stream, &mapAvailableCount, sizeof_struct_member (ZoneTrafficsPacket, mapAvailableCount));
 
     for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++)
     {
-        PacketStream_append (&stream, &mapsId [mapIndex], sizeof_struct_member (PacketMapTraffic, mapId));
-        PacketStream_append (&stream, &zoneServerCounts[mapIndex], sizeof_struct_member (PacketMapTraffic, zoneServerCount));
+        PacketStream_append (&stream, &mapsId [mapIndex], sizeof_struct_member (SingleMapTraffic, mapId));
+        PacketStream_append (&stream, &zoneServerCounts[mapIndex], sizeof_struct_member (SingleMapTraffic, zoneServerCount));
 
         for (int zoneServerIndex = 0; zoneServerIndex < zoneServerCounts[mapIndex]; zoneServerIndex++) {
-            PacketStream_append (&stream, &zoneServerIndex, sizeof_struct_member (PacketZoneTraffic, zoneListId));
-            PacketStream_append (&stream, &currentPlayersCount, sizeof_struct_member (PacketZoneTraffic, currentPlayersCount));
+            PacketStream_append (&stream, &zoneServerIndex, sizeof_struct_member (SingleZoneTraffic, zoneListId));
+            PacketStream_append (&stream, &currentPlayersCount, sizeof_struct_member (SingleZoneTraffic, currentPlayersCount));
         }
     }
 
@@ -456,10 +457,10 @@ BarrackHandler_serverEntry (
         uint32_t ipVirtualClientNet;
         uint16_t channelPort1;
         uint16_t channelPort2;
-    } PacketServerEntry;
+    } BcServerEntryPacket;
     #pragma pack(pop)
 
-    PacketServerEntry replyPacket;
+    BcServerEntryPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Connect to localhost:1337 and localhost:1338
@@ -486,10 +487,10 @@ BarrackHandler_commanderList (
         VariableSizePacketHeader variableSizeHeader;
         uint32_t field2;
         uint32_t field3;
-    } PacketCommanderList;
+    } BcCommanderListPacket;
     #pragma pack(pop)
 
-    PacketCommanderList replyPacket;
+    BcCommanderListPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Empty commander list
@@ -498,7 +499,7 @@ BarrackHandler_commanderList (
     replyPacket.field3 = 0;
 
 	// Add dynamically the size of the packet
-    replyPacket.variableSizeHeader.packetSize = sizeof (PacketCommanderList);
+    replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
