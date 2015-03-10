@@ -236,7 +236,9 @@ BarrackWorker_requestSession (
         return NULL;
     }
 
+    // Cleanup
     zmsg_destroy (&msg);
+
     return sessionFrame;
 }
 
@@ -304,14 +306,16 @@ BarrackWorker_processClientPacket (
     ClientSession *session;
     zframe_t *sessionFrame;
 
+    // Read the message
     zframe_t *clientIdentity = zmsg_first (msg);
     zframe_t *packet = zmsg_next (msg);
 
+    // Request a session
     sessionFrame = BarrackWorker_requestSession (self, clientIdentity);
     session = (ClientSession *) zframe_data (sessionFrame);
 
+    // Build the reply
     zmsg_remove (msg, packet);
-
     switch (BarrackWorker_buildReply (session, zframe_data (packet), zframe_size (packet), msg))
     {
         case BARRACK_HANDLER_ERROR:
@@ -330,6 +334,7 @@ BarrackWorker_processClientPacket (
         break;
     }
 
+    // Cleanup
     zframe_destroy (&packet);
 }
 
@@ -339,10 +344,12 @@ BarrackWorker_processInternPacket (
     BarrackWorker *self,
     zmsg_t *msg
 ) {
+    // Read the message
     zframe_t *clientIdentityFrame = zmsg_first (msg); (void) clientIdentityFrame;
     zframe_t *headerFrame = zmsg_next (msg);
-    BarrackServerRecvHeader header = *((BarrackServerRecvHeader *) zframe_data (headerFrame));
 
+    // Handle the request
+    BarrackServerRecvHeader header = *((BarrackServerRecvHeader *) zframe_data (headerFrame));
     switch (header)
     {
         case BARRACK_SERVER_PING:
@@ -353,6 +360,8 @@ BarrackWorker_processInternPacket (
             error ("Packet type %d not handled.", header);
         break;
     }
+
+    // Cleanup
 }
 
 
@@ -426,6 +435,7 @@ BarrackWorker_worker (
         }
     }
 
+    // Cleanup
     zsock_destroy (&self->worker);
     zsock_destroy (&self->sessionServer);
 
