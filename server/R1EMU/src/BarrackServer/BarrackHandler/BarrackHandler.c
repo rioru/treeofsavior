@@ -67,8 +67,6 @@ BarrackHandler_commanderMove (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    buffer_print (packet, packetSize, "MOVE : ");
-
     #pragma pack(push, 1)
     typedef struct {
         uint16_t unk;
@@ -179,6 +177,13 @@ BarrackHandler_barracknameChange (
     } BcBarrackNameChangePacket;
     #pragma pack(pop)
 
+    if (sizeof (CbBarrackNameChangePacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CbBarrackNameChangePacket));
+
+        return BARRACK_HANDLER_ERROR;
+    }
+
     BcBarrackNameChangePacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
@@ -263,6 +268,13 @@ BarrackHandler_commanderCreate (
         CommanderInfo commander;
     } BcPacketCommanderCreate;
     #pragma pack(pop)
+
+    if (sizeof (CbCommanderCreatePacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CbCommanderCreatePacket));
+
+        return BARRACK_HANDLER_ERROR;
+    }
 
     BcPacketCommanderCreate replyPacket;
 
