@@ -75,6 +75,12 @@ _buffer_print (
     int bufferSize,
     char *prefix
 ) {
+    if (mutex == NULL) {
+        mutex = zmutex_new ();
+    }
+
+    zmutex_lock (mutex);
+
     int curPos = 0;
 
     printf ("%s ===== [buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
@@ -101,4 +107,6 @@ _buffer_print (
         printf("\n");
     }
     printf ("%s=================================================\n", prefix);
+
+    zmutex_unlock (mutex);
 }
