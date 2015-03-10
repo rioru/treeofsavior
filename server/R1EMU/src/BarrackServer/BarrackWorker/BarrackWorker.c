@@ -14,6 +14,7 @@
 #include "BarrackWorker.h"
 #include "BarrackServer/BarrackServer.h"
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
+#include "SessionServer/ClientSession/ClientSession.h"
 #include "Common/Packet/Packet.h"
 #include "Common/Crypto/Crypto.h"
 

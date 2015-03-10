@@ -21,7 +21,6 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "SessionServer/ClientSession/ClientSession.h"
 
 // ---------- Defines -------------
 /** This size is defined in the client, do not touch */
