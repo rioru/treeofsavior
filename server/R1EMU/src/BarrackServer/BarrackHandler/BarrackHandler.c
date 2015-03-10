@@ -239,7 +239,7 @@ BarrackHandler_commanderCreate (
     replyPacket.commander.accountId = session->accountId;
 
     // JobID
-    switch (replyPacket.commander.jobId)
+    switch (clientPacket->jobId)
     {
         default:
             error ("Invalid commander Job ID (%d)", replyPacket.commander.jobId);
