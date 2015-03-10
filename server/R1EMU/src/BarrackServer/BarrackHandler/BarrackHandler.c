@@ -164,7 +164,7 @@ BarrackHandler_barracknameChange (
     #pragma pack(push, 1)
     typedef struct {
         uint16_t unk1;
-        unsigned char barrackName [62];
+        unsigned char barrackName [64];
     }  CbBarrackNameChangePacket;
     #pragma pack(pop)
     CbBarrackNameChangePacket *clientPacket = (CbBarrackNameChangePacket *) packet;
