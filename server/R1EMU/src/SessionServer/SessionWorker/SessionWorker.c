@@ -307,6 +307,7 @@ SessionWorker_worker (
         }
     }
 
+    // Cleanup
     zsock_destroy (&self->worker);
 
     dbg ("Session worker ID = %d exits.", self->workerId);
