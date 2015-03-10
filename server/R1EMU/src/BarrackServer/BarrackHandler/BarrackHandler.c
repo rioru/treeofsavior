@@ -70,7 +70,6 @@ BarrackHandler_jump (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    buffer_print (packet, packetSize, "JUMP !");
     #pragma pack(push, 1)
     typedef struct {
         uint32_t unk1;
