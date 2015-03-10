@@ -35,7 +35,9 @@ static BarrackHandlerState BarrackHandler_commanderList     (ClientSession *sess
 /** Send a list of zone servers */
 static BarrackHandlerState BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
-static BarrackHandlerState BarrackHandler_commanderDestroy   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static BarrackHandlerState BarrackHandler_commanderDestroy  (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Send a list of zone servers */
+static BarrackHandlerState BarrackHandler_commanderMove     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
@@ -52,10 +54,47 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_BARRACKNAME_CHANGE, BarrackHandler_barracknameChange),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_CREATE,   BarrackHandler_commanderCreate),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_DESTROY,  BarrackHandler_commanderDestroy),
+    REGISTER_PACKET_HANDLER (CB_COMMANDER_MOVE,     BarrackHandler_commanderMove),
 
     #undef REGISTER_PACKET_HANDLER
 };
 
+
+static BarrackHandlerState
+BarrackHandler_commanderMove (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    buffer_print (packet, packetSize, "MOVE : ");
+
+    #pragma pack(push, 1)
+    typedef struct {
+        uint16_t unk;
+        uint8_t commanderListId;
+        float x, y, z;
+        float angleDestX, angleDestY;
+    } CbCommanderMovePacket;
+    #pragma pack(pop)
+
+    if (sizeof (CbCommanderMovePacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CbCommanderMovePacket));
+
+        return BARRACK_HANDLER_ERROR;
+    }
+
+    CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
+
+    dbg ("commanderListId = %d", clientPacket->commanderListId);
+    dbg ("x / y / z = %f / %f / %f", clientPacket->x, clientPacket->y, clientPacket->z);
+    dbg ("angleDestX / angleDestY = %f / %f", clientPacket->angleDestX, clientPacket->angleDestY);
+
+    // Nothing to reply
+
+    return BARRACK_HANDLER_OK;
+}
 
 static BarrackHandlerState
 BarrackHandler_loginByPassport (
