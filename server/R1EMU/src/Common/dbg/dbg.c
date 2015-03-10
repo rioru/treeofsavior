@@ -18,10 +18,9 @@
 #include <ctype.h>
 
 // ------ Structure declaration -------
-
+zmutex_t *mutex = NULL;
 
 // ------ Static declaration -------
-
 
 // ------ Extern function implementation ------
 
@@ -32,6 +31,12 @@ void _dbg (
     ...
 ) {
     va_list args;
+
+    if (mutex == NULL) {
+        mutex = zmutex_new ();
+    }
+
+    zmutex_lock (mutex);
 
     switch (level) {
         #ifdef WIN32
@@ -53,6 +58,8 @@ void _dbg (
         case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
         #endif
     }
+
+    zmutex_unlock (mutex);
 }
 
 /**
@@ -68,14 +75,7 @@ _buffer_print (
     int bufferSize,
     char *prefix
 ) {
-    static bool isPrinting = false;
     int curPos = 0;
-
-    while (isPrinting) {
-        zclock_sleep (1);
-    }
-
-    isPrinting = true;
 
     printf ("%s ===== [buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
     while (curPos < bufferSize) {
@@ -101,6 +101,4 @@ _buffer_print (
         printf("\n");
     }
     printf ("%s=================================================\n", prefix);
-
-    isPrinting = false;
 }

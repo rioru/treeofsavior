@@ -159,7 +159,7 @@ BarrackWorker_buildReply (
     CryptPacketHeader cryptHeader;
     CryptPacket_unwrapHeader (&packet, &cryptHeader);
     if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
-        error ("The real packet size (%d) doesn't match with the packet size in the header (%d). Ignore request.",
+        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
             packetSize, cryptHeader.size);
         return BARRACK_HANDLER_ERROR;
     }

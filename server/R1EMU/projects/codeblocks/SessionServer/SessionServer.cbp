@@ -43,14 +43,15 @@
 			<Add library="czmq" />
 			<Add directory="../../../lib" />
 		</Linker>
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/Common/dbg/dbg.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/dbg/dbg.h" />
 		<Unit filename="../../../src/R1EMU.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />

@@ -294,8 +294,8 @@ SessionServer_frontend (
 
     // Retrieve a workerIdentity (round robin)
     if (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
-        // All Barrack Workers seem to be busy.
-        warning ("All Barrack Workers seem to be busy. Transfer the request to the overload worker.");
+        // All Session Workers seem to be busy.
+        warning ("All Session Workers seem to be busy. Transfer the request to the overload worker.");
         // Transfer the request to the overload worker
         zframe_destroy (&workerIdentity);
 

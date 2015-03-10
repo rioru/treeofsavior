@@ -177,6 +177,8 @@ SessionWorker_updateRequestSession (
     memcpy (oldSession, newSession, sizeof (ClientSession));
     dbg ("Your session has been updated, USER_%s !", sessionKey);
 
+    ClientSession_print (newSession);
+
     return zframe_new (PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION_OK), sizeof (SESSION_SERVER_UPDATE_SESSION_OK));
 }
 
