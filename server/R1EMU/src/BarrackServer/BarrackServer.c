@@ -453,7 +453,7 @@ BarrackServer_start (
             error ("Failed to bind Barrack Server ROUTER frontend to the port %d.", self->publicPorts[i]);
             return false;
         }
-        dbg ("Frontend listening on port %d.", self->publicPorts[i]);
+        info ("Frontend listening on port %d.", self->publicPorts[i]);
     }
 
     // ====================================
@@ -471,7 +471,7 @@ BarrackServer_start (
         return false;
     }
 
-    dbg ("BarrackServer is ready and running.");
+    info ("BarrackServer is ready and running.");
     if (zloop_start (reactor) != 0) {
         error ("An error occurred in the reactor.");
         return false;

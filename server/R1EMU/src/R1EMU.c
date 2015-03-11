@@ -74,7 +74,7 @@ uint64_t zmq_clock_now ()
 
 void R1EMU_seed_random ()
 {
-    #if defined ZMQ_HAVE_WINDOWS
+    #ifdef WIN32
         int pid = (int) GetCurrentProcessId ();
     #else
         int pid = (int) getpid ();

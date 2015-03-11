@@ -40,6 +40,7 @@ void _dbg (
 
     switch (level) {
         #ifdef WIN32
+        case DBG_LEVEL_INFO:    SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0A); break;
         case DBG_LEVEL_DEBUG: break;
         case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0E); break;
         case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0C); break;
@@ -53,6 +54,7 @@ void _dbg (
 
     switch (level) {
         #ifdef WIN32
+        case DBG_LEVEL_INFO:    SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
         case DBG_LEVEL_DEBUG: break;
         case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
         case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;

@@ -359,7 +359,7 @@ SessionServer_start (
         error ("Failed to bind Session Server ROUTER frontend to the port %d.", self->frontendPort);
         return false;
     }
-    dbg ("Frontend listening on port %d.", self->frontendPort);
+    info ("Frontend listening on port %d.", self->frontendPort);
 
     // ====================================
     //   Prepare a reactor and fire it up
@@ -377,7 +377,7 @@ SessionServer_start (
         return false;
     }
 
-    dbg ("SessionServer is ready and running.");
+    info ("SessionServer is ready and running.");
     if (zloop_start (reactor) != 0) {
         error ("An error occurred in the reactor.");
         return false;
