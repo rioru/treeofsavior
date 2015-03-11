@@ -43,8 +43,11 @@ struct BarrackServer
     int overloadWorker;
 
     // ----- Configuration -----
+    /** Count of public ports exposed to the clients */
+    int publicPortsCount;
+
     /** Public ports exposed to the clients */
-    int publicPorts[2];
+    int *publicPorts;
 
     /** Number of workers allocated for the backend */
     int workersCount;
@@ -124,6 +127,7 @@ BarrackServer_init (
     const char *confFilePath
 ) {
     zconfig_t *conf;
+    char *ports;
 
     // ==================================
     //     Read the configuration file
@@ -135,34 +139,39 @@ BarrackServer_init (
         return false;
     }
 
-    // Read the ports
-    if (!(self->publicPorts[0] = atoi (zconfig_resolve (conf, "barrackServer/port1", STRINGIFY (BARRACK_SERVER_PORT1_DEFAULT))))
-    ||  !(self->publicPorts[1] = atoi (zconfig_resolve (conf, "barrackServer/port2", STRINGIFY (BARRACK_SERVER_PORT2_DEFAULT))))
-    ) {
-        warning ("Cannot read correctly the barrack server ports in the configuration file (%s). ", confFilePath);
+    // Read the ports array
+    if (!(ports = zconfig_resolve (conf, "barrackServer/port", NULL))) {
+        warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", BARRACK_SERVER_PORTS_DEFAULT);
+        ports = BARRACK_SERVER_PORTS_DEFAULT;
+    }
 
-        if (!self->publicPorts[0]) {
-            warning ("The default port = %d has been used.", BARRACK_SERVER_PORT1_DEFAULT);
-            self->publicPorts[0] = BARRACK_SERVER_PORT1_DEFAULT;
-        }
+    // Tokenize the ports array
+    char *port = strtok (ports, " ");
+    while (port != NULL) {
+        self->publicPortsCount++;
+        port = strtok (NULL, " ");
+    }
 
-        if (!self->publicPorts[1]) {
-            warning ("The default port = %d has been used.", BARRACK_SERVER_PORT2_DEFAULT);
-            self->publicPorts[1] = BARRACK_SERVER_PORT2_DEFAULT;
-        }
+    // Fill the server ports array
+    self->publicPorts = calloc (self->publicPortsCount, sizeof (int));
+    for (int portIndex = 0; portIndex < self->publicPortsCount; portIndex++) {
+        self->publicPorts[portIndex] = strtol (ports, &ports, 10);
+        ports++;
     }
 
     // Read the Session Server frontend port
-    if (!(self->sessionServerFrontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", STRINGIFY (SESSION_SERVER_PORT_DEFAULT))))
+    if (!(self->sessionServerFrontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", NULL)))
     ) {
         warning ("Cannot read correctly the session server port in the configuration file (%s). ", confFilePath);
         warning ("The default port = %d has been used.", SESSION_SERVER_PORT_DEFAULT);
+        self->sessionServerFrontendPort = SESSION_SERVER_PORT_DEFAULT;
     }
 
     // Read the number of barrack server workers
-    if (!(self->workersCount = atoi (zconfig_resolve (conf, "barrackServer/workers_count", STRINGIFY (BARRACK_SERVER_WORKERS_COUNT_DEFAULT))))) {
+    if (!(self->workersCount = atoi (zconfig_resolve (conf, "barrackServer/workers_count", NULL)))) {
         warning ("Cannot read correctly the barrack workers count in the configuration file (%s). ", confFilePath);
         warning ("The default worker count = %d has been used.", BARRACK_SERVER_WORKERS_COUNT_DEFAULT);
+        self->workersCount = BARRACK_SERVER_WORKERS_COUNT_DEFAULT;
     }
 
     // Close the configuration file
@@ -448,7 +457,7 @@ BarrackServer_start (
     zsock_set_router_raw (self->frontend, true);
 
     // Bind the 2 endpoints for the ROUTER frontend
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < self->publicPortsCount; i++) {
         if (zsock_bind (self->frontend, BARRACK_SERVER_FRONTEND_ENDPOINT, self->publicPorts[i]) == -1) {
             error ("Failed to bind Barrack Server ROUTER frontend to the port %d.", self->publicPorts[i]);
             return false;

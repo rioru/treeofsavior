@@ -26,8 +26,7 @@
 #define BARRACK_SERVER_BACKEND_ENDPOINT         "inproc://barrackServerWorkersBackend"
 
 // Configuration default values
-#define BARRACK_SERVER_PORT1_DEFAULT            2000
-#define BARRACK_SERVER_PORT2_DEFAULT            2001
+#define BARRACK_SERVER_PORTS_DEFAULT            (char []) {"2000 2001"}
 #define BARRACK_SERVER_WORKERS_COUNT_DEFAULT    3
 
 /** Enumeration of all the packets headers that the barrack server handles */
