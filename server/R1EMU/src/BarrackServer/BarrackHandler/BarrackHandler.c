@@ -40,6 +40,8 @@ static BarrackHandlerState BarrackHandler_commanderDestroy  (ClientSession *sess
 static BarrackHandlerState BarrackHandler_commanderMove     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Makes the commander jumps in the barrack */
 static BarrackHandlerState BarrackHandler_jump              (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Request for the player to enter in game */
+static BarrackHandlerState BarrackHandler_startGame         (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
@@ -58,11 +60,66 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_COMMANDER_DESTROY,  BarrackHandler_commanderDestroy),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_MOVE,     BarrackHandler_commanderMove),
     REGISTER_PACKET_HANDLER (CB_JUMP,               BarrackHandler_jump),
-
-    REGISTER_PACKET_HANDLER (CZ_LOGOUT,               BarrackHandler_jump),
+    REGISTER_PACKET_HANDLER (CB_START_GAME,         BarrackHandler_startGame),
 
     #undef REGISTER_PACKET_HANDLER
 };
+
+
+static BarrackHandlerState
+BarrackHandler_startGame (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        uint16_t unk1;
+        uint8_t channelListId;
+    } CbStartGamePacket;
+    #pragma pack(pop)
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t zoneId;
+        unsigned char zoneServerDomainName[32];
+        uint32_t zoneServerPort;
+        uint32_t mapId;
+        uint8_t channelListId;
+        uint32_t spriteId;
+        uint32_t spriteIdRelated;
+        uint8_t isSingleMap;
+    } BcStartGamePacket;
+    #pragma pack(pop)
+
+    if (sizeof (CbStartGamePacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CbStartGamePacket));
+
+        return BARRACK_HANDLER_ERROR;
+    }
+
+    CbStartGamePacket *clientPacket = (CbStartGamePacket *) packet;
+    BcStartGamePacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = BC_START_GAMEOK;
+    replyPacket.zoneId = 0x12345678;
+    strncpy (replyPacket.zoneServerDomainName, "127.0.0.1", sizeof (replyPacket.zoneServerDomainName));
+    replyPacket.zoneServerPort = 4919;
+    replyPacket.mapId = 0x551;
+    replyPacket.channelListId = clientPacket->channelListId;
+    replyPacket.spriteId = 0;
+    replyPacket.spriteIdRelated = 2;
+    replyPacket.isSingleMap = false;
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return BARRACK_HANDLER_OK;
+}
 
 
 static BarrackHandlerState
