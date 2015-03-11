@@ -229,7 +229,7 @@ BarrackServer_backend (
     }
 
     // Retrieve the workerIdentity who sent the message
-    if (!(workerIdentity = zmsg_unwrap (msg))) {
+    if (!(workerIdentity = zmsg_pop (msg))) {
         error ("Worker identity cannot be retrieved.");
         return -1;
     }
@@ -329,7 +329,7 @@ BarrackServer_frontend (
 
 
     // Wrap the worker's identity which receives the message
-    zmsg_wrap (msg, workerIdentity);
+    zmsg_push (msg, workerIdentity);
 
     // Forward message to backend
     if (zmsg_send (&msg, self->backend) != 0) {

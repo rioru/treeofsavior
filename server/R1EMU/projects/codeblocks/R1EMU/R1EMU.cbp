@@ -54,6 +54,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/BarrackServer/BarrackWorker/BarrackWorker.h" />
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/Common/Commander.h" />
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
@@ -87,9 +91,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/R1EMU.h" />
-		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/SessionServer/SessionServer.c">
 			<Option compilerVar="CC" />
