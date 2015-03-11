@@ -98,7 +98,7 @@ CommanderInfo_print (
     dbg ("hairType = %d (%x)", commander->hairType, commander->hairType);
     dbg ("unk4 = %d (%x)", commander->unk4, commander->unk4);
     dbg ("unk5 = %d (%x)", commander->unk5, commander->unk5);
-    dbg ("PCId = %d (%x)", commander->PCId, commander->PCId);
+    dbg ("pcId = %d (%x)", commander->pcId, commander->pcId);
     dbg ("listPosition = %d (%x)", commander->listPosition, commander->listPosition);
     dbg ("charPosition = %d (%x)", commander->charPosition, commander->charPosition);
     dbg ("unk6 = %d (%x)", commander->unk6, commander->unk6);

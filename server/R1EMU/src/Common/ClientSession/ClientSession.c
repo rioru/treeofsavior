@@ -56,7 +56,7 @@ ClientSession_print (
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
     dbg ("accountId = 0x%llX", self->accountId);
     dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
-    dbg ("currentPCId = %u", self->currentPCId);
+    dbg ("currentPcId = %u", self->currentPcId);
 }
 
 void

@@ -60,7 +60,7 @@ typedef struct CommanderInfo
     uint8_t hairType;
     unsigned char unk4;
     uint16_t unk5;
-    uint32_t PCId;
+    uint32_t pcId;
     uint32_t listPosition;
     uint8_t charPosition;
     unsigned char unk6;

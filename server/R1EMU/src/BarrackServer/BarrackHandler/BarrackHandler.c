@@ -59,6 +59,8 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_COMMANDER_MOVE,     BarrackHandler_commanderMove),
     REGISTER_PACKET_HANDLER (CB_JUMP,               BarrackHandler_jump),
 
+    REGISTER_PACKET_HANDLER (CZ_LOGOUT,               BarrackHandler_jump),
+
     #undef REGISTER_PACKET_HANDLER
 };
 
@@ -78,6 +80,15 @@ BarrackHandler_jump (
     } CbJumpPacket;
     #pragma pack(pop)
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        float jumpHeight;
+        uint64_t accountId;
+        uint8_t commanderListId;
+    } BcJumpPacket;
+    #pragma pack(pop)
+
     if (sizeof (CbJumpPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbJumpPacket));
@@ -85,7 +96,18 @@ BarrackHandler_jump (
         return BARRACK_HANDLER_ERROR;
     }
 
-    // CbJumpPacket *clientPacket = (CbJumpPacket *) packet;
+    CbJumpPacket *clientPacket = (CbJumpPacket *) packet;
+
+    BcJumpPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = BC_JUMP;
+    replyPacket.commanderListId = clientPacket->commanderListId;
+    replyPacket.jumpHeight = 1000.0;
+    replyPacket.accountId = session->accountId;
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return BARRACK_HANDLER_OK;
 }
@@ -375,14 +397,14 @@ BarrackHandler_commanderCreate (
     }
 
     // PCID
-    replyPacket.commander.PCId = R1EMU_generate_random ();
+    replyPacket.commander.pcId = R1EMU_generate_random ();
 
     // CommanderID
     replyPacket.commander.commanderId = R1EMU_generate_random64 ();
 
     // Update the session
     session->charactersBarrackCount++;
-    session->currentPCId = replyPacket.commander.PCId;
+    session->currentPcId = replyPacket.commander.pcId;
     session->currentCommanderId = replyPacket.commander.commanderId;
 
     // Send the message

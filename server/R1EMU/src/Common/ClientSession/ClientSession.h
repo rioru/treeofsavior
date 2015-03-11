@@ -45,7 +45,7 @@ struct ClientSession
     uint64_t currentCommanderId;
 
     /** PCID of the current character */
-    uint32_t currentPCId;
+    uint32_t currentPcId;
 };
 
 typedef struct ClientSession ClientSession;

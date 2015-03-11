@@ -21,7 +21,7 @@
 #include "Common/ClientSession/ClientSession.h"
 
 // ---------- Defines -------------
-#define BARRACK_HANDLER_MAX_ID      CB_DELETE_PET
+#define BARRACK_HANDLER_MAX_ID      CZ_LOGOUT
 #define BARRACK_HANDLER_ARRAY_SIZE  (BARRACK_HANDLER_MAX_ID + 1)
 
 
