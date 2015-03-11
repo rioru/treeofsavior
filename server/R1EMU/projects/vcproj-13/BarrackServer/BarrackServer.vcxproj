@@ -15,6 +15,7 @@
     <ClCompile Include="..\..\..\src\BarrackServer\BarrackServer.c" />
     <ClCompile Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.c" />
     <ClCompile Include="..\..\..\src\BarrackServer\main.c" />
+    <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c" />
     <ClCompile Include="..\..\..\src\Common\Commander\Commander.c" />
     <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c" />
     <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
@@ -27,6 +28,7 @@
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackHandler\BarrackHandler.h" />
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h" />
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackWorker\BarrackWorker.h" />
+    <ClInclude Include="..\..\..\src\Common\ClientSession\ClientSession.h" />
     <ClInclude Include="..\..\..\src\Common\Commander\Commander.h" />
     <ClInclude Include="..\..\..\src\Common\Crypto\Crypto.h" />
     <ClInclude Include="..\..\..\src\Common\dbg\dbg.h" />

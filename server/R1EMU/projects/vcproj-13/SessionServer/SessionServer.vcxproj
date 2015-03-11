@@ -11,14 +11,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c" />
     <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
     <ClCompile Include="..\..\..\src\R1EMU.c" />
-    <ClCompile Include="..\..\..\src\SessionServer\ClientSession\ClientSession.c" />
     <ClCompile Include="..\..\..\src\SessionServer\main.c" />
     <ClCompile Include="..\..\..\src\SessionServer\SessionServer.c" />
     <ClCompile Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\src\Common\ClientSession\ClientSession.h" />
     <ClInclude Include="..\..\..\src\Common\dbg\dbg.h" />
     <ClInclude Include="..\..\..\src\R1EMU.h" />
     <ClInclude Include="..\..\..\src\SessionServer\ClientSession\ClientSession.h" />

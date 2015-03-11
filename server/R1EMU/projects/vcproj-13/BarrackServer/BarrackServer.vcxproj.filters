@@ -44,6 +44,9 @@
     <ClCompile Include="..\..\..\src\R1EMU.c">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h">
@@ -74,6 +77,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\R1EMU.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\ClientSession\ClientSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

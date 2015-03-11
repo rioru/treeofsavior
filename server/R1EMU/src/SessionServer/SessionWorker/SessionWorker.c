@@ -219,7 +219,7 @@ SessionWorker_handleRequest (
     zframe_t *identityFrame = zmsg_pop (msg); (void) identityFrame;
     zframe_t *emptyFrame = zmsg_pop (msg); (void) emptyFrame;
     zframe_t *headerFrame = zmsg_pop (msg);
-    zframe_t *requestAnswer;
+    zframe_t *requestAnswer = NULL;
 
     SessionServerRecvHeader header = *((SessionServerRecvHeader *) zframe_data (headerFrame));
 

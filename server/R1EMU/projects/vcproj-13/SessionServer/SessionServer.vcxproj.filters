@@ -14,9 +14,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\SessionServer\main.c" />
-    <ClCompile Include="..\..\..\src\SessionServer\ClientSession\ClientSession.c">
-      <Filter>Session</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\SessionServer\SessionServer.c">
       <Filter>Session</Filter>
     </ClCompile>
@@ -27,6 +24,9 @@
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\R1EMU.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c">
       <Filter>Common</Filter>
     </ClCompile>
   </ItemGroup>
@@ -45,6 +45,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\src\R1EMU.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\ClientSession\ClientSession.h">
+      <Filter>Common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
