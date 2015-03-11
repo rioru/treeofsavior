@@ -66,7 +66,6 @@
 		<Unit filename="../../../src/SessionServer/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/dbg/dbg.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

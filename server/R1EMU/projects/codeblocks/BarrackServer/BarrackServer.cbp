@@ -58,7 +58,10 @@
 		<Unit filename="../../../src/BarrackServer/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Commander.h" />
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -83,16 +86,11 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/dbg/dbg.h" />
-		<Unit filename="../../../src/Crypto/Crypto.h" />
-		<Unit filename="../../../src/Packet/Packet.h" />
-		<Unit filename="../../../src/Packet/PacketStream/PacketStream.h" />
-		<Unit filename="../../../src/Packet/PacketType/PacketType.h" />
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/R1EMU.h" />
 		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />
-		<Unit filename="../../../src/dbg/dbg.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
