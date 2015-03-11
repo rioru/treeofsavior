@@ -136,10 +136,11 @@ SessionServer_init (
     }
 
     // Read the port
-    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", STRINGIFY (SESSION_SERVER_PORT_DEFAULT))))
+    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", NULL)))
     ) {
         warning ("Cannot read correctly the session server port in the configuration file (%s). ", confFilePath);
         warning ("The default port = %d has been used.", SESSION_SERVER_PORT_DEFAULT);
+        self->frontendPort = SESSION_SERVER_PORT_DEFAULT;
     }
 
     // Close the configuration file
