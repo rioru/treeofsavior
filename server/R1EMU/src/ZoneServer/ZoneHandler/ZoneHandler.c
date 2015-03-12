@@ -19,14 +19,14 @@
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static ZoneHandlerState ZoneHandler_connect (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_connect (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
 /**
  * @brief zoneHandlers is a global table containing all the zone handlers.
  */
-const ZoneHandlers zoneHandlers [ZONE_HANDLER_ARRAY_SIZE] = {
+const PacketHandler zoneHandlers [ZONE_HANDLER_ARRAY_SIZE] = {
     #define REGISTER_PACKET_HANDLER(packetName, handler) \
         [packetName] = {handler, STRINGIFY (packetName)}
 
@@ -37,7 +37,7 @@ const ZoneHandlers zoneHandlers [ZONE_HANDLER_ARRAY_SIZE] = {
 
 
 
-static ZoneHandlerState
+static PacketHandlerState
 ZoneHandler_connect (
     ClientSession *session,
     unsigned char *packet,
@@ -46,5 +46,5 @@ ZoneHandler_connect (
 ) {
     buffer_print (packet, packetSize, "CONNECT : ");
 
-    return ZONE_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }

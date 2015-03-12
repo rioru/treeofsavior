@@ -19,36 +19,36 @@
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
-static BarrackHandlerState BarrackHandler_loginByPassport   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_loginByPassport   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Start the barrack : call other handlers that initializes the barrack */
-static BarrackHandlerState BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_startBarrack      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Once the commander list has been received, request to start the barrack */
-static BarrackHandlerState BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_currentBarrack    (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Change a barrack name */
-static BarrackHandlerState BarrackHandler_barracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_barracknameChange (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Create a commander */
-static BarrackHandlerState BarrackHandler_commanderCreate   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderCreate   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Register new servers */
-static BarrackHandlerState BarrackHandler_serverEntry       (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_serverEntry       (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of commanders */
-static BarrackHandlerState BarrackHandler_commanderList     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderList     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
-static BarrackHandlerState BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_zoneTraffics      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
-static BarrackHandlerState BarrackHandler_commanderDestroy  (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderDestroy  (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Change the commander position in the barrack */
-static BarrackHandlerState BarrackHandler_commanderMove     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderMove     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Makes the commander jumps in the barrack */
-static BarrackHandlerState BarrackHandler_jump              (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_jump              (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Request for the player to enter in game */
-static BarrackHandlerState BarrackHandler_startGame         (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_startGame         (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
 /**
  * @brief barrackHandlers is a global table containing all the barrack handlers.
  */
-const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
+const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     #define REGISTER_PACKET_HANDLER(packetName, handler) \
         [packetName] = {handler, STRINGIFY (packetName)}
 
@@ -66,7 +66,7 @@ const BarrackHandlers barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
 };
 
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_startGame (
     ClientSession *session,
     unsigned char *packet,
@@ -98,7 +98,7 @@ BarrackHandler_startGame (
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbStartGamePacket));
 
-        return BARRACK_HANDLER_ERROR;
+        return PACKET_HANDLER_ERROR;
     }
 
     CbStartGamePacket *clientPacket = (CbStartGamePacket *) packet;
@@ -118,11 +118,11 @@ BarrackHandler_startGame (
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_jump (
     ClientSession *session,
     unsigned char *packet,
@@ -150,7 +150,7 @@ BarrackHandler_jump (
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbJumpPacket));
 
-        return BARRACK_HANDLER_ERROR;
+        return PACKET_HANDLER_ERROR;
     }
 
     CbJumpPacket *clientPacket = (CbJumpPacket *) packet;
@@ -166,10 +166,10 @@ BarrackHandler_jump (
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_commanderMove (
     ClientSession *session,
     unsigned char *packet,
@@ -188,17 +188,17 @@ BarrackHandler_commanderMove (
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbCommanderMovePacket));
 
-        return BARRACK_HANDLER_ERROR;
+        return PACKET_HANDLER_ERROR;
     }
 
     // CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
 
     // Nothing to reply
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_loginByPassport (
     ClientSession *session,
     unsigned char *packet,
@@ -230,10 +230,10 @@ BarrackHandler_loginByPassport (
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_UPDATE_SESSION;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_startBarrack (
     ClientSession *session,
     unsigned char *packet,
@@ -243,10 +243,10 @@ BarrackHandler_startBarrack (
     BarrackHandler_serverEntry   (session, packet, packetSize, reply);
     BarrackHandler_commanderList (session, packet, packetSize, reply);
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_currentBarrack (
     ClientSession *session,
     unsigned char *packet,
@@ -255,10 +255,10 @@ BarrackHandler_currentBarrack (
 ) {
     BarrackHandler_zoneTraffics (session, packet, packetSize, reply);
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_barracknameChange (
     ClientSession *session,
     unsigned char *packet,
@@ -284,7 +284,7 @@ BarrackHandler_barracknameChange (
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbBarrackNameChangePacket));
 
-        return BARRACK_HANDLER_ERROR;
+        return PACKET_HANDLER_ERROR;
     }
 
     BcBarrackNameChangePacket replyPacket;
@@ -297,12 +297,12 @@ BarrackHandler_barracknameChange (
     size_t barrackNameLen = strlen (clientPacket->barrackName);
     if (barrackNameLen == 0) {
         error ("Empty barrack name");
-        return BARRACK_HANDLER_ERROR;
+        return PACKET_HANDLER_ERROR;
     }
     for (int i = 0; i < barrackNameLen; i++) {
          if (!isprint (clientPacket->barrackName[i])) {
             dbg ("Wrong barrack name size in BC_BARRACKNAME_CHANGE");
-            return BARRACK_HANDLER_ERROR;
+            return PACKET_HANDLER_ERROR;
          }
     }
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
@@ -312,10 +312,10 @@ BarrackHandler_barracknameChange (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_UPDATE_SESSION;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_commanderDestroy (
     ClientSession *session,
     unsigned char *packet,
@@ -338,11 +338,11 @@ BarrackHandler_commanderDestroy (
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_UPDATE_SESSION;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_commanderCreate (
     ClientSession *session,
     unsigned char *packet,
@@ -375,7 +375,7 @@ BarrackHandler_commanderCreate (
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbCommanderCreatePacket));
 
-        return BARRACK_HANDLER_ERROR;
+        return PACKET_HANDLER_ERROR;
     }
 
     BcPacketCommanderCreate replyPacket;
@@ -397,7 +397,7 @@ BarrackHandler_commanderCreate (
     {
         default:
             error ("Invalid commander Job ID (%d)", replyPacket.commander.jobId);
-            return BARRACK_HANDLER_ERROR;
+            return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
             replyPacket.commander.classId = COMMANDER_CLASS_WARRIOR;
@@ -424,7 +424,7 @@ BarrackHandler_commanderCreate (
         case COMMANDER_GENDER_BOTH:
         default:
             error ("Invalid gender (%d)", clientPacket->gender);
-            return BARRACK_HANDLER_ERROR;
+            return PACKET_HANDLER_ERROR;
             break;
     }
 
@@ -449,7 +449,7 @@ BarrackHandler_commanderCreate (
 
         default:
             dbg ("Invalid hairType (%d)", clientPacket->hairType);
-            return BARRACK_HANDLER_ERROR;
+            return PACKET_HANDLER_ERROR;
         break;
     }
 
@@ -467,10 +467,10 @@ BarrackHandler_commanderCreate (
     // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_UPDATE_SESSION;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_zoneTraffics (
     ClientSession *session,
     unsigned char *packet,
@@ -554,10 +554,10 @@ BarrackHandler_zoneTraffics (
 
     zmsg_add (reply, zframe_new (replyPacket, outPacketSize));
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_serverEntry (
     ClientSession *session,
     unsigned char *packet,
@@ -586,10 +586,10 @@ BarrackHandler_serverEntry (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
-static BarrackHandlerState
+static PacketHandlerState
 BarrackHandler_commanderList (
     ClientSession *session,
     unsigned char *packet,
@@ -617,7 +617,7 @@ BarrackHandler_commanderList (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return BARRACK_HANDLER_OK;
+    return PACKET_HANDLER_OK;
 }
 
 

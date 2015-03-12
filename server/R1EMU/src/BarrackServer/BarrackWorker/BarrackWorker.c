@@ -14,31 +14,12 @@
 #include "BarrackWorker.h"
 #include "BarrackServer/BarrackServer.h"
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
-#include "Common/ClientSession/ClientSession.h"
-#include "Common/Packet/Packet.h"
-#include "Common/Crypto/Crypto.h"
 
 
 // ------ Structure declaration -------
 
 
 // ------ Static declaration -------
-/**
- * @brief
- * @param[in] session The session associated with the packet
- * @param[in] packet The packet sent by the client
- * @param[in] packetSize The size of the packet
- * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
- * @return BarrackHandlerState
- */
-static BarrackHandlerState
-BarrackWorker_buildReply (
-    ClientSession *session,
-    unsigned char *packet,
-    size_t packetSize,
-    zmsg_t *reply
-);
-
 /**
  * @brief Handle a PING request from any entity.
  *        This function only replace the "PING" signal to a "PONG" one in the message.
@@ -99,7 +80,6 @@ BarrackWorker_new (
     return self;
 }
 
-
 bool
 BarrackWorker_init (
     BarrackWorker *self,
@@ -110,62 +90,6 @@ BarrackWorker_init (
     self->sessionServerFrontendPort = sessionServerFrontendPort;
 
     return true;
-}
-
-
-static BarrackHandlerState
-BarrackWorker_buildReply (
-    ClientSession *session,
-    unsigned char *packet,
-    size_t packetSize,
-    zmsg_t *reply
-) {
-    BarrackHandlerFunction handler;
-
-    // Preconditions
-    if (packetSize < sizeof (CryptPacketHeader)) {
-        error ("The packet received is too small to be read. Ignore request.");
-        return BARRACK_HANDLER_ERROR;
-    }
-
-    // Unwrap the crypt packet header
-    CryptPacketHeader cryptHeader;
-    CryptPacket_unwrapHeader (&packet, &cryptHeader);
-    if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
-        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
-            packetSize, cryptHeader.size);
-        return BARRACK_HANDLER_ERROR;
-    }
-
-    // Uncrypt the packet
-    if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
-        error ("Cannot uncrypt the client packet. Ignore request.");
-        return BARRACK_HANDLER_ERROR;
-    }
-
-    // Read the packet
-    ClientPacketHeader header;
-    ClientPacket_unwrapHeader (&packet, &header);
-    size_t dataSize = packetSize - sizeof (CryptPacketHeader) - sizeof (ClientPacketHeader);
-
-    // Get the corresponding packet handler
-    if (header.type > sizeof_array (barrackHandlers)) {
-        error ("Invalid packet type. Ignore request.");
-        return BARRACK_HANDLER_ERROR;
-    }
-
-    // Test if a handler is associated with the packet type requested.
-    if (!(handler = barrackHandlers [header.type].handler)) {
-        error ("Cannot find handler for the requested packet type : %s",
-            (header.type <PACKET_TYPES_MAX_INDEX) ?
-               packetTypeInfo.packets[header.type].string : "UNKNOWN"
-        );
-        return BARRACK_HANDLER_ERROR;
-    }
-
-    // Call the handler
-    dbg ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
-    return handler (session, packet, dataSize, reply);
 }
 
 static void
@@ -193,17 +117,17 @@ BarrackWorker_processClientPacket (
 
     // Build the reply
     zmsg_remove (msg, packet);
-    switch (BarrackWorker_buildReply (session, zframe_data (packet), zframe_size (packet), msg))
+    switch (PacketHandler_buildReply (barrackHandlers, sizeof_array (barrackHandlers), session, zframe_data (packet), zframe_size (packet), msg))
     {
-        case BARRACK_HANDLER_ERROR:
+        case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
             buffer_print (zframe_data (packet), zframe_size (packet), NULL);
         break;
 
-        case BARRACK_HANDLER_OK:
+        case PACKET_HANDLER_OK:
         break;
 
-        case BARRACK_HANDLER_UPDATE_SESSION:
+        case PACKET_HANDLER_UPDATE_SESSION:
             if (!ClientSession_updateSession (self->sessionServer, clientIdentity, session)) {
                 error ("Cannot update the following session");
                 ClientSession_print (session);

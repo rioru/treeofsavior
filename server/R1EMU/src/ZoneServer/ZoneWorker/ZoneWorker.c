@@ -19,8 +19,6 @@
 #include "ZoneWorker.h"
 #include "ZoneServer/ZoneServer.h"
 #include "ZoneServer/ZoneHandler/ZoneHandler.h"
-#include "Common/Packet/Packet.h"
-#include "Common/Crypto/Crypto.h"
 
 
 // ------ Structure declaration -------
@@ -108,61 +106,6 @@ ZoneWorker_init (
 }
 
 
-static ZoneHandlerState
-ZoneWorker_buildReply (
-    ClientSession *session,
-    unsigned char *packet,
-    size_t packetSize,
-    zmsg_t *reply
-) {
-    ZoneHandlerFunction handler;
-
-    // Preconditions
-    if (packetSize < sizeof (CryptPacketHeader)) {
-        error ("The packet received is too small to be read. Ignore request.");
-        return ZONE_HANDLER_ERROR;
-    }
-
-    // Unwrap the crypt packet header
-    CryptPacketHeader cryptHeader;
-    CryptPacket_unwrapHeader (&packet, &cryptHeader);
-    if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
-        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
-            packetSize, cryptHeader.size);
-        return ZONE_HANDLER_ERROR;
-    }
-
-    // Uncrypt the packet
-    if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
-        error ("Cannot uncrypt the client packet. Ignore request.");
-        return ZONE_HANDLER_ERROR;
-    }
-
-    // Read the packet
-    ClientPacketHeader header;
-    ClientPacket_unwrapHeader (&packet, &header);
-    size_t dataSize = packetSize - sizeof (CryptPacketHeader) - sizeof (ClientPacketHeader);
-
-    // Get the corresponding packet handler
-    if (header.type > sizeof_array (zoneHandlers)) {
-        error ("Invalid packet type. Ignore request.");
-        return ZONE_HANDLER_ERROR;
-    }
-
-    // Test if a handler is associated with the packet type requested.
-    if (!(handler = zoneHandlers [header.type].handler)) {
-        error ("Cannot find handler for the requested packet type : %s",
-            (header.type <PACKET_TYPES_MAX_INDEX) ?
-               packetTypeInfo.packets[header.type].string : "UNKNOWN"
-        );
-        return ZONE_HANDLER_ERROR;
-    }
-
-    // Call the handler
-    dbg ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
-    return handler (session, packet, dataSize, reply);
-}
-
 static zframe_t *
 ZoneWorker_handlePingPacket (
     void
@@ -188,17 +131,17 @@ ZoneWorker_processClientPacket (
 
     // Build the reply
     zmsg_remove (msg, packet);
-    switch (ZoneWorker_buildReply (session, zframe_data (packet), zframe_size (packet), msg))
+    switch (PacketHandler_buildReply (zoneHandlers, sizeof_array(zoneHandlers), session, zframe_data (packet), zframe_size (packet), msg))
     {
-        case ZONE_HANDLER_ERROR:
+        case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
             buffer_print (zframe_data (packet), zframe_size (packet), NULL);
         break;
 
-        case ZONE_HANDLER_OK:
+        case PACKET_HANDLER_OK:
         break;
 
-        case ZONE_HANDLER_UPDATE_SESSION:
+        case PACKET_HANDLER_UPDATE_SESSION:
             if (!ClientSession_updateSession (self->sessionServer, clientIdentity, session)) {
                 error ("Cannot update the following session");
                 ClientSession_print (session);
