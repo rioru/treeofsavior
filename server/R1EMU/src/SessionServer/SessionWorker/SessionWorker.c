@@ -147,6 +147,7 @@ SessionWorker_requestSession (
         dbg ("Welcome USER_%s ! A new session has been created for you.", sessionKey);
         session = ClientSession_new ();
         zhash_insert (self->sessions, sessionKey, session);
+        zhash_freefn (self->sessions, sessionKey, ClientSession_free);
     } else {
         // Session already exist
         dbg ("Welcome back USER_%s !", sessionKey);
