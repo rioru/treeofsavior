@@ -113,6 +113,19 @@ ClientSession_updateSession (
 
 
 /**
+ * @brief Delete a session from the session server
+ * @param sessionServer An opened socket to the session server
+ * @param clientIdentity A frame containing the identity of the client
+ * @return true on success, false otherwise
+ */
+bool
+ClientSession_deleteSession (
+    zsock_t *sessionServer,
+    zframe_t *clientIdentity
+);
+
+
+/**
  * @brief Get a Session from the session hashtable
  * @param sessions The sessions hashtable
  * @param sessionId The sessionId of the session requested

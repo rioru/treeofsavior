@@ -121,7 +121,8 @@ BarrackWorker_processClientPacket (
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
-            buffer_print (zframe_data (packet), zframe_size (packet), NULL);
+            buffer_print (zframe_data (packet), zframe_size (packet), "PACKET : ");
+            ClientSession_print (session);
         break;
 
         case PACKET_HANDLER_OK:
@@ -133,9 +134,17 @@ BarrackWorker_processClientPacket (
                 ClientSession_print (session);
             }
         break;
+
+        case PACKET_HANDLER_DELETE_SESSION:
+            if (!ClientSession_deleteSession (self->sessionServer, clientIdentity)) {
+                error ("Cannot delete the following session");
+                ClientSession_print (session);
+            }
+        break;
     }
 
     // Cleanup
+    zframe_destroy (&sessionFrame);
     zframe_destroy (&packet);
 }
 

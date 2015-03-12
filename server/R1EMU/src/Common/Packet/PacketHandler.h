@@ -32,6 +32,7 @@ typedef enum {
     PACKET_HANDLER_ERROR          = -1,
     PACKET_HANDLER_OK             = 0,
     PACKET_HANDLER_UPDATE_SESSION = 1,
+    PACKET_HANDLER_DELETE_SESSION = 2
 }   PacketHandlerState;
 
 /** @return PacketHandlerState (see above) */

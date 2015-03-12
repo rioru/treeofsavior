@@ -147,7 +147,18 @@ ZoneWorker_processClientPacket (
                 ClientSession_print (session);
             }
         break;
+
+        case PACKET_HANDLER_DELETE_SESSION:
+            if (!ClientSession_deleteSession (self->sessionServer, clientIdentity)) {
+                error ("Cannot delete the following session");
+                ClientSession_print (session);
+            }
+        break;
     }
+
+    // Cleanup
+    zframe_destroy (&sessionFrame);
+    zframe_destroy (&packet);
 }
 
 static void
