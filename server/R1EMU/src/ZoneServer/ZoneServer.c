@@ -249,9 +249,6 @@ ZoneServer_frontend (
         return 0;
     }
 
-    dbg ("\n === ZONE RECV ===");
-    zmsg_print (msg);
-
     // Retrieve a workerIdentity (round robin)
     if (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
         // All Zone Workers seem to be busy.

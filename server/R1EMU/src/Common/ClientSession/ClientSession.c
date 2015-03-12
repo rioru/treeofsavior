@@ -66,6 +66,57 @@ ClientSession_getSessionKey (
         "%02X%02X%02X%02X%02X", sessionId[0], sessionId[1], sessionId[2], sessionId[3], sessionId[4]);
 }
 
+bool
+ClientSession_deleteSession (
+    zsock_t *sessionServer,
+    zframe_t *clientIdentity
+) {
+    zframe_t *answerFrame;
+    SessionServerSendHeader answer;
+    zmsg_t *msg;
+
+    // Build a session request message
+    if (!(msg = zmsg_new ())
+    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_DELETE_SESSION), sizeof (SESSION_SERVER_DELETE_SESSION)) != 0
+    ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
+    ||  zmsg_send (&msg, sessionServer) != 0
+    ) {
+        error ("Cannot build and send a session message for the session server");
+        return false;
+    }
+
+    // Wait for the session server answer
+    if (!(msg = zmsg_recv (sessionServer))) {
+        error ("Cannot receive a session from the session server");
+        return false;
+    }
+
+    // Extract the answer of the session server
+    if (!(answerFrame = zmsg_pop (msg))
+    ||  !(answer = *((SessionServerSendHeader *) zframe_data (answerFrame)))
+    ||  !(sizeof (answer) == zframe_size (answerFrame))
+    ) {
+        if (answerFrame) {
+            zframe_destroy (&answerFrame);
+        }
+        error ("Cannot extract correctly the answer from the session server");
+        return false;
+    }
+
+    // Verify the status code
+    if (answer != SESSION_SERVER_DELETE_SESSION_OK) {
+        error ("The session server failed to delete the session");
+        return false;
+    }
+
+    // Cleanup
+    zframe_destroy (&answerFrame);
+    zmsg_destroy (&msg);
+
+    return true;
+
+}
+
 zframe_t *
 ClientSession_getSession (
     zsock_t *sessionServer,
@@ -139,10 +190,8 @@ ClientSession_updateSession (
     ||  !(sizeof (answer) == zframe_size (answerFrame))
     ) {
         if (answerFrame) {
-            zframe_print (answerFrame, "answerFrame = ");
             zframe_destroy (&answerFrame);
         }
-        zmsg_print (msg);
         error ("Cannot extract correctly the answer from the session server");
         return false;
     }

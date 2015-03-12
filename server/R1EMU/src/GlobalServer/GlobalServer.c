@@ -243,9 +243,6 @@ GlobalServer_frontend (
         return 0;
     }
 
-    dbg ("\n === GLOBAL RECV ===");
-    zmsg_print (msg);
-
     // Forward message to the targeted zone server
     /*
     if (zmsg_send (&msg, self->backend) != 0) {

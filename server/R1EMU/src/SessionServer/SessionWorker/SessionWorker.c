@@ -35,6 +35,12 @@ SessionWorker_handlePingPacket (
     void
 );
 
+static zframe_t *
+SessionWorker_deleteSession (
+    SessionWorker *self,
+    zframe_t *sessionIdFrame
+);
+
 
 // ------ Extern function implementation -------
 
@@ -87,16 +93,6 @@ SessionWorker_lookupSession (
     return zhash_lookup (self->sessions, sessionKey);
 }
 
-static void
-SessionWorker_getSessionKey (
-    unsigned char *sessionId,
-    unsigned char *sessionKey,
-    size_t sessionKeySize
-) {
-    // Format the session key from the sessionId
-    snprintf (sessionKey, sessionKeySize,
-        "%02X%02X%02X%02X%02X", sessionId[0], sessionId[1], sessionId[2], sessionId[3], sessionId[4]);
-}
 
 static zframe_t *
 SessionWorker_updateSession (
@@ -109,7 +105,7 @@ SessionWorker_updateSession (
     unsigned char sessionKey[11];
 
     sessionId = zframe_data (sessionIdFrame);
-    SessionWorker_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
+    ClientSession_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
 
     newSession = (ClientSession *) zframe_data (sessionFrame);
 
@@ -130,6 +126,25 @@ SessionWorker_updateSession (
 }
 
 static zframe_t *
+SessionWorker_deleteSession (
+    SessionWorker *self,
+    zframe_t *sessionIdFrame
+) {
+    unsigned char *sessionId;
+    unsigned char sessionKey[11];
+
+    // Get hashtable key
+    sessionId = zframe_data (sessionIdFrame);
+    ClientSession_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
+
+    // Delete
+    zhash_delete (self->sessions, sessionKey);
+
+    return zframe_new (PACKET_HEADER (SESSION_SERVER_DELETE_SESSION_OK), sizeof (SESSION_SERVER_DELETE_SESSION_OK));
+}
+
+
+static zframe_t *
 SessionWorker_getSession (
     SessionWorker *self,
     zframe_t *sessionIdFrame
@@ -138,8 +153,9 @@ SessionWorker_getSession (
     unsigned char *sessionId;
     unsigned char sessionKey[11];
 
+    // Get hashtable key
     sessionId = zframe_data (sessionIdFrame);
-    SessionWorker_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
+    ClientSession_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
 
     // Search for it in the hashtable
     if (!(session = SessionWorker_lookupSession (self, sessionKey))) {
@@ -193,7 +209,7 @@ SessionWorker_handleRequest (
 
         case SESSION_SERVER_DELETE_SESSION: {
             zframe_t *clientIdentityFrame = zmsg_pop (msg);
-            // requestAnswer = SessionWorker_deleteSession (self, clientIdentityFrame);
+            requestAnswer = SessionWorker_deleteSession (self, clientIdentityFrame);
             zframe_destroy (&clientIdentityFrame);
         } break;
 
