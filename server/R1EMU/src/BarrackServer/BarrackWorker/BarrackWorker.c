@@ -77,33 +77,6 @@ BarrackWorker_processInternPacket (
 );
 
 
-/**
- * @brief Request a session from the session server
- * @param self An allocated BarrackWorker structure
- * @param clientIdentity A frame containing the identity of the client
- * @return a zframe_t containing a ClientSession on success, NULL otherwise
- */
-static zframe_t *
-BarrackWorker_requestSession (
-    BarrackWorker *self,
-    zframe_t *clientIdentity
-);
-
-
-/**
- * @brief Update a session for the session server
- * @param self An allocated BarrackWorker structure
- * @param clientIdentity A frame containing the identity of the client
- * @param session An allocated session to update
- * @return true on success, false otherwise
- */
-static bool
-BarrackWorker_updateSession (
-    BarrackWorker *self,
-    zframe_t *clientIdentity,
-    ClientSession *session
-);
-
 // ------ Extern function implementation ------
 
 BarrackWorker *
@@ -202,102 +175,6 @@ BarrackWorker_handlePingPacket (
     zframe_reset (headerFrame, PACKET_HEADER (BARRACK_SERVER_PONG), sizeof (BARRACK_SERVER_PONG));
 }
 
-static zframe_t *
-BarrackWorker_requestSession (
-    BarrackWorker *self,
-    zframe_t *clientIdentity
-) {
-    ClientSession *session;
-    zframe_t *sessionFrame;
-    zmsg_t *msg;
-
-    // Build a session request message
-    if (!(msg = zmsg_new ())
-    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_REQUEST_SESSION), sizeof (SESSION_SERVER_REQUEST_SESSION)) != 0
-    ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
-    ||  zmsg_send (&msg, self->sessionServer) != 0
-    ) {
-        error ("Cannot build and send a session message for the session server");
-        return NULL;
-    }
-
-    // Wait for the session server answer
-    if (!(msg = zmsg_recv (self->sessionServer))) {
-        error ("Cannot receive a session from the session server");
-        return NULL;
-    }
-
-    // Extract the session from the answer
-    if (!(sessionFrame = zmsg_pop (msg))
-    ||  !(session = (ClientSession *) zframe_data (sessionFrame))
-    ||  !(sizeof (ClientSession) == zframe_size (sessionFrame))
-    ) {
-        error ("Cannot extract correctly the session from the session server");
-        return NULL;
-    }
-
-    // Cleanup
-    zmsg_destroy (&msg);
-
-    return sessionFrame;
-}
-
-static bool
-BarrackWorker_updateSession (
-    BarrackWorker *self,
-    zframe_t *clientIdentity,
-    ClientSession *session
-) {
-    zframe_t *answerFrame;
-    SessionServerSendHeader answer;
-    zmsg_t *msg;
-
-    // Build the update sesion packet, and send it to the server
-    if (!(msg = zmsg_new ())
-    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION), sizeof (SESSION_SERVER_UPDATE_SESSION)) != 0
-    ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
-    ||  zmsg_addmem (msg, session, sizeof (ClientSession)) != 0
-    ||  zmsg_send (&msg, self->sessionServer) != 0
-    ) {
-        error ("Cannot build and send a session message for the session server");
-        return false;
-    }
-
-    // Wait for the answer of the session server
-    if (!(msg = zmsg_recv (self->sessionServer))) {
-        error ("Cannot receive a session from the session server");
-        return false;
-    }
-
-    // Extract the answer of the session server
-    if (!(answerFrame = zmsg_pop (msg))
-    ||  !(answer = *((SessionServerSendHeader *) zframe_data (answerFrame)))
-    ||  !(sizeof (answer) == zframe_size (answerFrame))
-    ) {
-        dbg ("answer = %d", answer);
-        dbg ("sizeof answer = %d", sizeof (answer));
-        if (answerFrame) {
-            zframe_print (answerFrame, "answerFrame = ");
-            zframe_destroy (&answerFrame);
-        }
-        zmsg_print (msg);
-        error ("Cannot extract correctly the answer from the session server");
-        return false;
-    }
-
-    // Verify the status code
-    if (answer != SESSION_SERVER_UPDATE_SESSION_OK) {
-        error ("The session server failed to update the session");
-        return false;
-    }
-
-    // Cleanup
-    zframe_destroy (&answerFrame);
-    zmsg_destroy (&msg);
-
-    return true;
-}
-
 static void
 BarrackWorker_processClientPacket (
     BarrackWorker *self,
@@ -311,7 +188,7 @@ BarrackWorker_processClientPacket (
     zframe_t *packet = zmsg_next (msg);
 
     // Request a session
-    sessionFrame = BarrackWorker_requestSession (self, clientIdentity);
+    sessionFrame = ClientSession_getSession (self->sessionServer, clientIdentity);
     session = (ClientSession *) zframe_data (sessionFrame);
 
     // Build the reply
@@ -327,7 +204,7 @@ BarrackWorker_processClientPacket (
         break;
 
         case BARRACK_HANDLER_UPDATE_SESSION:
-            if (!BarrackWorker_updateSession (self, clientIdentity, session)) {
+            if (!ClientSession_updateSession (self->sessionServer, clientIdentity, session)) {
                 error ("Cannot update the following session");
                 ClientSession_print (session);
             }

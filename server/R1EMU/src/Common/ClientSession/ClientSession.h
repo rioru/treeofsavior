@@ -83,6 +83,61 @@ ClientSession_init (
 );
 
 
+
+/**
+ * @brief Request a session from the session server
+ * @param sessionServer An opened socket to the session server
+ * @param clientIdentity A frame containing the identity of the client
+ * @return a zframe_t containing a ClientSession on success, NULL otherwise
+ */
+zframe_t *
+ClientSession_getSession (
+    zsock_t *sessionServer,
+    zframe_t *clientIdentity
+);
+
+
+/**
+ * @brief Update a session for the session server
+ * @param sessionServer An opened socket to the session server
+ * @param clientIdentity A frame containing the identity of the client
+ * @param session An allocated session to update
+ * @return true on success, false otherwise
+ */
+bool
+ClientSession_updateSession (
+    zsock_t *sessionServer,
+    zframe_t *clientIdentity,
+    ClientSession *session
+);
+
+
+/**
+ * @brief Get a Session from the session hashtable
+ * @param sessions The sessions hashtable
+ * @param sessionId The sessionId of the session requested
+ * @return An allocated ClientSession on success, false otherwise
+ */
+ClientSession *
+ClientSession_lookupSession (
+    zhash_t *sessions,
+    unsigned char *sessionId
+);
+
+/**
+ * @brief Format a session key from the session id
+ * @param sessionId The sessionId of the session requested
+ * @param[out] sessionKey The sessionKey generated
+ * @param sessionKeySize The sessionKey size
+ * @return
+ */
+void
+ClientSession_getSessionKey (
+    unsigned char *sessionId,
+    unsigned char *sessionKey,
+    size_t sessionKeySize
+);
+
 /**
  * @brief Prints a ClientSession structure.
  * @param self An allocated ClientSession

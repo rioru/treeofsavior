@@ -35,59 +35,6 @@ SessionWorker_handlePingPacket (
     void
 );
 
-/**
- * @brief Handle a session request. Creates a new session if the sessionId doesn't exist.
- * @param self The SessionWorker
- * @param sessionIdFrame The identity of the entity
- * @return a zframe_t containing the session. Never returns NULL.
- */
-static zframe_t *
-SessionWorker_handleRequestSession (
-    SessionWorker *self,
-    zframe_t *sessionIdFrame
-);
-
-
-/**
- * @brief Handle a session update.
- * @param self The SessionWorker
- * @param sessionIdFrame The identity of the entity
- * @param sessionFrame The session to update
- * @return a zframe_t containing the status code. Never returns NULL.
- */
-static zframe_t *
-SessionWorker_updateRequestSession (
-    SessionWorker *self,
-    zframe_t *sessionIdFrame,
-    zframe_t *sessionFrame
-);
-
-
-/**
- * @brief Get a Session from the session hashtable
- * @param self The SessionWorker
- * @param sessionId The sessionId of the session requested
- * @return An allocated ClientSession on success, false otherwise
- */
-static ClientSession *
-SessionWorker_getSession (
-    SessionWorker *self,
-    unsigned char *sessionId
-);
-
-/**
- * @brief Format a session key from the session id
- * @param sessionId The sessionId of the session requested
- * @param[out] sessionKey The sessionKey generated
- * @param sessionKeySize The sessionKey size
- * @return
- */
-static void
-SessionWorker_getSessionKey (
-    unsigned char *sessionId,
-    unsigned char *sessionKey,
-    size_t sessionKeySize
-);
 
 // ------ Extern function implementation -------
 
@@ -152,7 +99,7 @@ SessionWorker_getSessionKey (
 }
 
 static zframe_t *
-SessionWorker_updateRequestSession (
+SessionWorker_updateSession (
     SessionWorker *self,
     zframe_t *sessionIdFrame,
     zframe_t *sessionFrame
@@ -183,7 +130,7 @@ SessionWorker_updateRequestSession (
 }
 
 static zframe_t *
-SessionWorker_handleRequestSession (
+SessionWorker_requestSession (
     SessionWorker *self,
     zframe_t *sessionIdFrame
 ) {
@@ -198,7 +145,7 @@ SessionWorker_handleRequestSession (
     if (!(session = SessionWorker_getSession (self, sessionKey))) {
         // Create it if it doesn't exists
         dbg ("Welcome USER_%s ! A new session has been created for you.", sessionKey);
-        session = ClientSession_new (sessionKey);
+        session = ClientSession_new ();
         zhash_insert (self->sessions, sessionKey, session);
     } else {
         // Session already exist
@@ -231,16 +178,22 @@ SessionWorker_handleRequest (
 
         case SESSION_SERVER_REQUEST_SESSION: {
             zframe_t *clientIdentityFrame = zmsg_pop (msg);
-            requestAnswer = SessionWorker_handleRequestSession (self, clientIdentityFrame);
+            requestAnswer = SessionWorker_requestSession (self, clientIdentityFrame);
             zframe_destroy (&clientIdentityFrame);
         } break;
 
         case SESSION_SERVER_UPDATE_SESSION: {
             zframe_t *clientIdentityFrame = zmsg_pop (msg);
             zframe_t *sessionFrame = zmsg_pop (msg);
-            requestAnswer = SessionWorker_updateRequestSession (self, clientIdentityFrame, sessionFrame);
+            requestAnswer = SessionWorker_updateSession (self, clientIdentityFrame, sessionFrame);
             zframe_destroy (&clientIdentityFrame);
             zframe_destroy (&sessionFrame);
+        } break;
+
+        case SESSION_SERVER_DELETE_SESSION: {
+            zframe_t *clientIdentityFrame = zmsg_pop (msg);
+            // requestAnswer = SessionWorker_deleteSession (self, clientIdentityFrame);
+            zframe_destroy (&clientIdentityFrame);
         } break;
 
         default:

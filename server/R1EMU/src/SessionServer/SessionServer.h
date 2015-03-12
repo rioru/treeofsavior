@@ -39,6 +39,9 @@ typedef enum SessionServerHeader {
     _SESSION_SERVER_UPDATE_SESSION,          // Update a session
     _SESSION_SERVER_UPDATE_SESSION_OK,       // Session update success
     _SESSION_SERVER_UPDATE_SESSION_FAILED,   // Session update fail
+    _SESSION_SERVER_DELETE_SESSION,          // Delete a session
+    _SESSION_SERVER_DELETE_SESSION_OK,       // Session delete success
+    _SESSION_SERVER_DELETE_SESSION_FAILED,   // Session delete fail
 }   SessionServerHeader;
 
 // Macro helper for the distribution
@@ -50,6 +53,7 @@ typedef enum SessionServerRecvHeader {
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_PING),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_REQUEST_SESSION),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_DELETE_SESSION),
 }   SessionServerRecvHeader;
 
 /** Enumeration of all the packets header that the session server sends */
@@ -58,6 +62,8 @@ typedef enum SessionServerSendHeader {
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_PONG),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION_OK),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION_FAILED),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_DELETE_SESSION_OK),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_DELETE_SESSION_FAILED),
 }   SessionServerSendHeader;
 
 #undef DECL_SESSION_SERVER_HEADER
