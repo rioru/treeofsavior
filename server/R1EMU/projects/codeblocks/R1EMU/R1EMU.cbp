@@ -71,6 +71,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Packet/Packet.h" />
+		<Unit filename="../../../src/Common/Packet/PacketHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/PacketHandler.h" />
 		<Unit filename="../../../src/Common/Packet/PacketStream.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -83,15 +87,18 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/dbg/dbg.h" />
-		<Unit filename="../../../src/Crypto/Crypto.h" />
-		<Unit filename="../../../src/Packet/Packet.h" />
-		<Unit filename="../../../src/Packet/PacketStream/PacketStream.h" />
-		<Unit filename="../../../src/Packet/PacketType/PacketType.h" />
+		<Unit filename="../../../src/GlobalServer/GlobalServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
+		<Unit filename="../../../src/GlobalServer/GlobalWorker/GlobalWorker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/GlobalServer/GlobalWorker/GlobalWorker.h" />
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/R1EMU.h" />
-		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/SessionServer/SessionServer.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -100,7 +107,18 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.h" />
-		<Unit filename="../../../src/dbg/dbg.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneServer.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneWorker/ZoneWorker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneWorker/ZoneWorker.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -4,5 +4,6 @@
 		<Project filename="BarrackServer/BarrackServer.cbp" />
 		<Project filename="R1EMU/R1EMU.cbp" />
 		<Project filename="SessionServer/SessionServer.cbp" />
+		<Project filename="GlobalServer/GlobalServer.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>
