@@ -140,7 +140,7 @@ BarrackServer_init (
     }
 
     // Read the ports array
-    if (!(ports = zconfig_resolve (conf, "barrackServer/port", NULL))) {
+    if (!(ports = zconfig_resolve (conf, "barrackServer/portsArray", NULL))) {
         warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", BARRACK_SERVER_PORTS_DEFAULT);
         ports = BARRACK_SERVER_PORTS_DEFAULT;
     }
@@ -456,7 +456,7 @@ BarrackServer_start (
     // Set the ROUTER as a RAW socket.
     zsock_set_router_raw (self->frontend, true);
 
-    // Bind the 2 endpoints for the ROUTER frontend
+    // Bind the endpoints for the ROUTER frontend
     for (int i = 0; i < self->publicPortsCount; i++) {
         if (zsock_bind (self->frontend, BARRACK_SERVER_FRONTEND_ENDPOINT, self->publicPorts[i]) == -1) {
             error ("Failed to bind Barrack Server ROUTER frontend to the port %d.", self->publicPorts[i]);
