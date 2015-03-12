@@ -127,7 +127,7 @@ BarrackServer_init (
     const char *confFilePath
 ) {
     zconfig_t *conf;
-    char *ports;
+    char *portsArray;
 
     // ==================================
     //     Read the configuration file
@@ -140,13 +140,13 @@ BarrackServer_init (
     }
 
     // Read the ports array
-    if (!(ports = zconfig_resolve (conf, "barrackServer/portsArray", NULL))) {
+    if (!(portsArray = zconfig_resolve (conf, "barrackServer/portsArray", NULL))) {
         warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", BARRACK_SERVER_PORTS_DEFAULT);
-        ports = BARRACK_SERVER_PORTS_DEFAULT;
+        portsArray = BARRACK_SERVER_PORTS_DEFAULT;
     }
 
     // Tokenize the ports array
-    char *port = strtok (ports, " ");
+    char *port = strtok (portsArray, " ");
     while (port != NULL) {
         self->publicPortsCount++;
         port = strtok (NULL, " ");
@@ -155,8 +155,8 @@ BarrackServer_init (
     // Fill the server ports array
     self->publicPorts = calloc (self->publicPortsCount, sizeof (int));
     for (int portIndex = 0; portIndex < self->publicPortsCount; portIndex++) {
-        self->publicPorts[portIndex] = strtol (ports, &ports, 10);
-        ports++;
+        self->publicPorts[portIndex] = strtol (portsArray, &portsArray, 10);
+        portsArray++;
     }
 
     // Read the Session Server frontend port
@@ -431,6 +431,7 @@ BarrackServer_start (
         error ("Failed to bind Barrack Server ROUTER backend.");
         return false;
     }
+    info ("Backend listening on %s.", SESSION_SERVER_BACKEND_ENDPOINT);
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {

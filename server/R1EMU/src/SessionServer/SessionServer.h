@@ -38,7 +38,7 @@ typedef enum SessionServerHeader {
     _SESSION_SERVER_REQUEST_SESSION,         // Request a session
     _SESSION_SERVER_UPDATE_SESSION,          // Update a session
     _SESSION_SERVER_UPDATE_SESSION_OK,       // Session update success
-    _SESSION_SERVER_UPDATE_SESSION_FAILED,   // Session update success
+    _SESSION_SERVER_UPDATE_SESSION_FAILED,   // Session update fail
 }   SessionServerHeader;
 
 // Macro helper for the distribution

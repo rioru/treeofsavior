@@ -7,33 +7,32 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file SessionServer.h
- * @brief This module stores all the session of the clients
+ * @file ZoneServer.h
+ * @brief This module stores all the zone of the clients
  *
- * SessionServer detains the hashtable of all the sessions in a given system.
+ * ZoneServer detains the hashtable of all the zones in a given system.
  *
  * @license <license placeholder>
  */
 
 // ---------- Includes ------------
-#include "SessionServer.h"
-#include "SessionWorker/SessionWorker.h"
-#include "Common/ClientSession/ClientSession.h"
+#include "ZoneServer.h"
+#include "ZoneWorker/ZoneWorker.h"
 
 
 // ------ Structure declaration -------
 /**
- * @brief SessionServer is the representation of the session server system
- *
- * It stores all the session of the clients in the barrack phase
- *
+ * @brief ZoneServer is the representation of the zone server system
  */
-struct SessionServer
+struct ZoneServer
 {
-    /** Session server frontend socket. Listens to ports exposed to the clients */
+    /** Zone server ID */
+    int zoneServerId;
+
+    /** Zone server frontend socket. Listens to ports exposed to the clients */
     zsock_t *frontend;
 
-    /** Session server backend socket. Listens to "sessionWorkers" endpoint */
+    /** Zone server backend socket. Listens to "zoneWorkers" endpoint */
     zsock_t *backend;
 
     /** List of workers entities */
@@ -48,43 +47,43 @@ struct SessionServer
     /** Index of the worker in the worker array that is going to take the charge if there is an overload */
     int overloadWorker;
 
-    /** Hashtable of the sessions */
-    zhash_t *sessions;
-
     // ----- Configuration -----
     /** Public ports exposed to the clients */
     int frontendPort;
 
     /** Number of workers allocated for the backend */
     int workersCount;
+
+    /** Port of the session server */
+    int sessionServerFrontendPort;
 };
 
 
 // ------ Static declaration ------
 
 /**
- * @brief Frontend ROUTER handler of the Session Server
+ * @brief Frontend ROUTER handler of the Zone Server
  * @param loop The reactor handler
  * @param frontend The frontend socket
- * @param self The sessionServer
+ * @param self The zoneServer
  * @return 0 on success, -1 on error
  */
 static int
-SessionServer_frontend (
+ZoneServer_frontend (
     zloop_t *loop,
     zsock_t *frontend,
     void *self
 );
 
 /**
- * @brief Backend ROUTER handler of the Session Server
+ * @brief Backend ROUTER handler of the Zone Server
  * @param loop The reactor handler
  * @param backend The backend socket
- * @param self The sessionServer
+ * @param self The zoneServer
  * @return 0 on success, -1 on error
  */
 static int
-SessionServer_backend (
+ZoneServer_backend (
     zloop_t *loop,
     zsock_t *backend,
     void *self
@@ -93,19 +92,22 @@ SessionServer_backend (
 
 // ------ Extern function implementation ------
 
-SessionServer *
-SessionServer_new (
-    char *confFilePath
+ZoneServer *
+ZoneServer_new (
+    int zoneServerId,
+    int frontendPort,
+    int workersCount,
+    int sessionServerFrontendPort
 ) {
-    SessionServer *self;
+    ZoneServer *self;
 
-    if ((self = calloc (1, sizeof (SessionServer))) == NULL) {
+    if ((self = calloc (1, sizeof (ZoneServer))) == NULL) {
         return NULL;
     }
 
-    if (!SessionServer_init (self, confFilePath)) {
-        SessionServer_destroy (&self);
-        error ("SessionServer failed to initialize.");
+    if (!ZoneServer_init (self, zoneServerId, frontendPort, workersCount, sessionServerFrontendPort)) {
+        ZoneServer_destroy (&self);
+        error ("ZoneServer failed to initialize.");
         return NULL;
     }
 
@@ -114,63 +116,37 @@ SessionServer_new (
 
 
 bool
-SessionServer_init (
-    SessionServer *self,
-    char *confFilePath
+ZoneServer_init (
+    ZoneServer *self,
+    int zoneServerId,
+    int frontendPort,
+    int workersCount,
+    int sessionServerFrontendPort
 ) {
-    zconfig_t *conf;
-
-    // Only 1 worker for the session server.
-    // It may change later, but for the moment there is no way to share
-    // the hashtable containing all the sessions between multiple threads
-    self->workersCount = 1;
-
-    // ==================================
-    //     Read the configuration file
-    // ==================================
-
-    // Open the configuration file
-    if (!(conf = zconfig_load (confFilePath))) {
-        error ("Cannot read the session configuration file (%s).", confFilePath);
-        return false;
-    }
-
-    // Read the port
-    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", NULL)))
-    ) {
-        warning ("Cannot read correctly the session server port in the configuration file (%s). ", confFilePath);
-        warning ("The default port = %d has been used.", SESSION_SERVER_PORT_DEFAULT);
-        self->frontendPort = SESSION_SERVER_PORT_DEFAULT;
-    }
-
-    // Close the configuration file
-    zconfig_destroy (&conf);
+    self->zoneServerId = zoneServerId;
+    self->workersCount = workersCount;
+    self->frontendPort = frontendPort;
+    self->sessionServerFrontendPort = sessionServerFrontendPort;
 
     // ==========================
     //   Allocate ZMQ objects
     // ==========================
 
-    // The frontend listens to a 0MQ socket.
-    if (!(self->frontend = zsock_new (ZMQ_ROUTER))) {
-        error ("Cannot allocate Session Server ROUTER frontend");
+    // The frontend listens to a RAW socket, not a 0MQ socket.
+    if (!(self->frontend = zsock_new (ZMQ_RAW_ROUTER))) {
+        error ("Cannot allocate Zone Server ROUTER frontend");
         return false;
     }
 
     // Backend listens to a 0MQ socket.
     if (!(self->backend = zsock_new (ZMQ_ROUTER))) {
-        error ("Cannot allocate Session Server ROUTER backend");
+        error ("Cannot allocate Zone Server ROUTER backend");
         return false;
     }
 
     // Allocate the workers entity list
     if (!(self->readyWorkers = zlist_new ())) {
         error ("Cannot allocate ready workers list.");
-        return false;
-    }
-
-    // Allocate the sessions hashtable
-    if (!(self->sessions = zhash_new ())) {
-        error ("Cannot allocate a new hashtable for sessions.");
         return false;
     }
 
@@ -195,7 +171,7 @@ SessionServer_init (
 
 
 static int
-SessionServer_backend (
+ZoneServer_backend (
     zloop_t *loop,
     zsock_t *backend,
     void *_self
@@ -203,7 +179,7 @@ SessionServer_backend (
     zmsg_t *msg;
     zframe_t *workerIdentity;
     zframe_t *packet;
-    SessionServer *self = (SessionServer *) _self;
+    ZoneServer *self = (ZoneServer *) _self;
 
     // Receive the message from the backend router
     if (!(msg = zmsg_recv (backend))) {
@@ -243,7 +219,7 @@ SessionServer_backend (
     }
 
     // Forward the message to the frontend if it's not a READY signal
-    if (memcmp (zframe_data (packet), PACKET_HEADER (SESSION_SERVER_WORKER_READY), sizeof(SESSION_SERVER_WORKER_READY)) == 0) {
+    if (memcmp (zframe_data (packet), PACKET_HEADER (ZONE_SERVER_WORKER_READY), sizeof(ZONE_SERVER_WORKER_READY)) == 0) {
         zmsg_destroy (&msg);
     }
     else {
@@ -258,14 +234,14 @@ SessionServer_backend (
 
 
 static int
-SessionServer_frontend (
+ZoneServer_frontend (
     zloop_t *loop,
     zsock_t *frontend,
     void *_self
 ) {
     zmsg_t *msg;
     zframe_t *workerIdentity;
-    SessionServer *self = (SessionServer *) _self;
+    ZoneServer *self = (ZoneServer *) _self;
 
     // Receive the message from the frontend router
     if (!(msg = zmsg_recv (frontend))) {
@@ -273,10 +249,13 @@ SessionServer_frontend (
         return 0;
     }
 
+    dbg ("\n === ZONE RECV ===");
+    zmsg_print (msg);
+
     // Retrieve a workerIdentity (round robin)
     if (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
-        // All Session Workers seem to be busy.
-        warning ("All Session Workers seem to be busy. Transfer the request to the overload worker.");
+        // All Zone Workers seem to be busy.
+        warning ("All Zone Workers seem to be busy. Transfer the request to the overload worker.");
         // Transfer the request to the overload worker
         zframe_destroy (&workerIdentity);
 
@@ -301,34 +280,34 @@ SessionServer_frontend (
     return 0;
 }
 
-
-bool
-SessionServer_start (
-    SessionServer *self
+void *
+ZoneServer_start (
+    void *args
 ) {
     zloop_t *reactor;
-    SessionWorker * sessionWorker;
+    ZoneWorker * zoneWorker;
+    ZoneServer *self = (ZoneServer *) args;
 
     // ===================================
     //       Initialize backend
     // ===================================
 
-    if (zsock_bind (self->backend, SESSION_SERVER_BACKEND_ENDPOINT) == -1) {
-        error ("Failed to bind Session Server ROUTER backend.");
-        return false;
+    if (zsock_bind (self->backend, ZONE_SERVER_BACKEND_ENDPOINT, self->frontendPort) == -1) {
+        error ("Failed to bind Zone Server ROUTER backend.");
+        return NULL;
     }
-    info ("Backend listening on %s.", SESSION_SERVER_BACKEND_ENDPOINT);
+    info ("[%d] Backend listening on %s.", self->zoneServerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->frontendPort));
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((sessionWorker = SessionWorker_new (workerId, self->sessions))) {
-            if (zthread_new (SessionWorker_worker, sessionWorker) != 0) {
-                error ("Cannot create Session Server worker thread ID %d.", workerId);
-                return false;
+        if ((zoneWorker = ZoneWorker_new (workerId, self->zoneServerId, self->frontendPort, self->sessionServerFrontendPort))) {
+            if (zthread_new (ZoneWorker_worker, zoneWorker) != 0) {
+                error ("Cannot create Zone Server worker thread ID %d.", workerId);
+                return NULL;
             }
         } else {
-            error ("Cannot allocate a new sessionWorker");
-            return false;
+            error ("Cannot allocate a new zoneWorker");
+            return NULL;
         }
     }
 
@@ -336,12 +315,18 @@ SessionServer_start (
     //        Initialize frontend
     // ===================================
 
+    // Fill the client specifications :
+    // - It connects to zone server port given in BC_START_GAMEOK
+    // - It communicates with the zone server through a RAW socket.
+    // Set the ROUTER as a RAW socket.
+    zsock_set_router_raw (self->frontend, true);
+
     // Bind the endpoint for the ROUTER frontend
-    if (zsock_bind (self->frontend, SESSION_SERVER_FRONTEND_ENDPOINT, self->frontendPort) == -1) {
-        error ("Failed to bind Session Server ROUTER frontend to the port %d.", self->frontendPort);
-        return false;
+    if (zsock_bind (self->frontend, ZONE_SERVER_FRONTEND_ENDPOINT, self->frontendPort) == -1) {
+        error ("Failed to bind Zone Server ROUTER frontend to the port %d.", self->frontendPort);
+        return NULL;
     }
-    info ("Frontend listening on port %d.", self->frontendPort);
+    info ("[%d] Frontend listening on port %d.", self->zoneServerId, self->frontendPort);
 
     // ====================================
     //   Prepare a reactor and fire it up
@@ -349,33 +334,33 @@ SessionServer_start (
 
     if (!(reactor = zloop_new ())) {
         error ("Cannot allocate a new reactor.");
-        return false;
+        return NULL;
     }
 
-	if (zloop_reader (reactor, self->backend,  SessionServer_backend,  self) == -1
-    ||  zloop_reader (reactor, self->frontend, SessionServer_frontend, self) == -1
+	if (zloop_reader (reactor, self->backend,  ZoneServer_backend,  self) == -1
+    ||  zloop_reader (reactor, self->frontend, ZoneServer_frontend, self) == -1
     ) {
         error ("Cannot register the sockets with the reactor.");
-        return false;
+        return NULL;
     }
 
-    info ("SessionServer is ready and running.");
+    info ("[%d] ZoneServer is ready and running.", self->zoneServerId);
     if (zloop_start (reactor) != 0) {
         error ("An error occurred in the reactor.");
-        return false;
+        return NULL;
     }
 
     zloop_destroy (&reactor);
 
-    return true;
+    return NULL;
 }
 
 
 void
-SessionServer_destroy (
-    SessionServer **_self
+ZoneServer_destroy (
+    ZoneServer **_self
 ) {
-    SessionServer *self = *_self;
+    ZoneServer *self = *_self;
 
     if (self->frontend) {
         zsock_destroy (&self->frontend);

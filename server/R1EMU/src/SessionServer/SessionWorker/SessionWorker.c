@@ -295,7 +295,7 @@ SessionWorker_worker (
 
         // No message should be with less than 3 frames
         if (zmsg_size (msg) < 3) {
-            error ("A malformed message has been received.");
+            error ("Session worker ID = %d received a malformed message.", self->workerId);
             zmsg_destroy (&msg);
             continue;
         }

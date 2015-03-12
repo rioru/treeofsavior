@@ -35,13 +35,16 @@
  */
 typedef struct BarrackWorker
 {
+    /** ID of the barrack worker */
     int workerId;
+
+    /** Port of the session server */
     int sessionServerFrontendPort;
 
-    /**< The worker socket connected to the backend. */
+    /** The worker socket connected to the backend. */
     zsock_t *worker;
 
-    /**< The session server socket connected to the frontend. */
+    /** The session server socket connected to the frontend. */
     zsock_t *sessionServer;
 
 }   BarrackWorker;

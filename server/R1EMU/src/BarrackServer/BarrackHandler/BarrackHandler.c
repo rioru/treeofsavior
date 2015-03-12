@@ -83,7 +83,7 @@ BarrackHandler_startGame (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t zoneId;
+        uint32_t zoneServerId;
         unsigned char zoneServerDomainName[32];
         uint32_t zoneServerPort;
         uint32_t mapId;
@@ -106,9 +106,9 @@ BarrackHandler_startGame (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = BC_START_GAMEOK;
-    replyPacket.zoneId = 0x12345678;
+    replyPacket.zoneServerId = 0x12345678;
     strncpy (replyPacket.zoneServerDomainName, "127.0.0.1", sizeof (replyPacket.zoneServerDomainName));
-    replyPacket.zoneServerPort = 4919;
+    replyPacket.zoneServerPort = 2004;
     replyPacket.mapId = 0x551;
     replyPacket.channelListId = clientPacket->channelListId;
     replyPacket.spriteId = 0;
