@@ -20,6 +20,7 @@
     <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c" />
     <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\Packet.c" />
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketHandler.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c" />
     <ClCompile Include="..\..\..\src\R1EMU.c" />
@@ -33,6 +34,7 @@
     <ClInclude Include="..\..\..\src\Common\Crypto\Crypto.h" />
     <ClInclude Include="..\..\..\src\Common\dbg\dbg.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\Packet.h" />
+    <ClInclude Include="..\..\..\src\Common\Packet\PacketHandler.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\PacketStream.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\PacketType.h" />
     <ClInclude Include="..\..\..\src\R1EMU.h" />
@@ -79,7 +81,7 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>../../../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libczmq.lib;libzmq.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libczmq.lib;libzmq.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

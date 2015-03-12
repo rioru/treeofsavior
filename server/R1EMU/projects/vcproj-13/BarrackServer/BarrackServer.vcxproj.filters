@@ -47,6 +47,9 @@
     <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c">
       <Filter>Common</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Packet\PacketHandler.c">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h">
@@ -80,6 +83,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\Common\ClientSession\ClientSession.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\Packet\PacketHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
