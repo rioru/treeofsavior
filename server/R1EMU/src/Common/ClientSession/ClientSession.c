@@ -176,8 +176,13 @@ void
 ClientSession_destroy (
     ClientSession **_self
 ) {
-    ClientSession *self = *_self;
-
-    free (self);
+    ClientSession_free (*_self);
     *_self = NULL;
+}
+
+void
+ClientSession_free (
+    ClientSession *self
+) {
+    free (self);
 }

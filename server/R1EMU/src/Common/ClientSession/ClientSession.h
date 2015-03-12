@@ -156,3 +156,12 @@ ClientSession_destroy (
     ClientSession **self
 );
 
+
+/**
+ * @brief Free an allocated ClientSession structure
+ * @param self A pointer to an allocated ClientSession.
+ */
+void
+ClientSession_free (
+    ClientSession *self
+);
