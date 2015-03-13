@@ -278,7 +278,7 @@ BarrackServer_backend (
         }
     }
 
-	return 0;
+    return 0;
 }
 
 
@@ -391,7 +391,7 @@ BarrackServer_start (
         return false;
     }
 
-	if (zloop_reader (reactor, self->backend,  BarrackServer_backend,  self) == -1
+    if (zloop_reader (reactor, self->backend,  BarrackServer_backend,  self) == -1
     ||  zloop_reader (reactor, self->frontend, BarrackServer_frontend, self) == -1
     ) {
         error ("Cannot register the sockets with the reactor.");

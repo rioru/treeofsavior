@@ -272,7 +272,7 @@ ZoneServer_backend (
         }
     }
 
-	return 0;
+    return 0;
 }
 
 
@@ -384,7 +384,7 @@ ZoneServer_start (
         return NULL;
     }
 
-	if (zloop_reader (reactor, self->backend,  ZoneServer_backend,  self) == -1
+    if (zloop_reader (reactor, self->backend,  ZoneServer_backend,  self) == -1
     ||  zloop_reader (reactor, self->frontend, ZoneServer_frontend, self) == -1
     ) {
         error ("Cannot register the sockets with the reactor.");

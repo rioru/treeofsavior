@@ -232,7 +232,7 @@ SessionServer_backend (
         }
     }
 
-	return 0;
+    return 0;
 }
 
 
@@ -329,7 +329,7 @@ SessionServer_start (
         return false;
     }
 
-	if (zloop_reader (reactor, self->backend,  SessionServer_backend,  self) == -1
+    if (zloop_reader (reactor, self->backend,  SessionServer_backend,  self) == -1
     ||  zloop_reader (reactor, self->frontend, SessionServer_frontend, self) == -1
     ) {
         error ("Cannot register the sockets with the reactor.");
