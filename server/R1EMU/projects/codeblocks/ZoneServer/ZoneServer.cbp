@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="ZoneServer" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="../../../bin/ZoneServer" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../../bin/" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="../../../bin/ZoneServer" prefix_auto="1" extension_auto="1" />
+				<Option working_dir="../../../bin/" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-std=gnu99" />
+			<Add directory="../../../src" />
+			<Add directory="../../../include" />
+			<Add directory="../../../include/zmq" />
+		</Compiler>
+		<Linker>
+			<Add library="zmq" />
+			<Add library="czmq" />
+			<Add directory="../../../lib" />
+		</Linker>
+		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.h" />
+		<Unit filename="../../../src/BarrackServer/BarrackServer.h" />
+		<Unit filename="../../../src/BarrackServer/BarrackWorker/BarrackWorker.h" />
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/ClientSession/ClientSession.h" />
+		<Unit filename="../../../src/Common/Commander/Commander.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Commander/Commander.h" />
+		<Unit filename="../../../src/Common/Crypto/Crypto.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Crypto/Crypto.h" />
+		<Unit filename="../../../src/Common/Packet/Packet.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/Packet.h" />
+		<Unit filename="../../../src/Common/Packet/PacketHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/PacketHandler.h" />
+		<Unit filename="../../../src/Common/Packet/PacketStream.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/PacketStream.h" />
+		<Unit filename="../../../src/Common/Packet/PacketType.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Packet/PacketType.h" />
+		<Unit filename="../../../src/Common/dbg/dbg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/dbg/dbg.h" />
+		<Unit filename="../../../src/R1EMU.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/R1EMU.h" />
+		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />
+		<Unit filename="../../../src/SessionServer/SessionServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SessionServer/SessionServer.h" />
+		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneServer.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneWorker/ZoneWorker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneWorker/ZoneWorker.h" />
+		<Unit filename="../../../src/ZoneServer/main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<lib_finder disable_auto="1" />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general use_at_in_tags="1" />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
