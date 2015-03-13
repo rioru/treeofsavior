@@ -54,7 +54,5 @@ int main (int argc, char **argv)
     // Shutdown the CZMQ layer properly
     zsys_shutdown ();
 
-    system ("pause");
-
-	return 0;
+    return 0;
 }
