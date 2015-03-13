@@ -39,19 +39,16 @@ struct ZoneWorker
     int workerId;
 
     /** The zoneServer ID having autorithy on this worker */
-    int zoneServerId;
+    int serverId;
 
     /** The front end port of the zone server */
     int frontendPort;
 
-    /**< The worker socket connected to the backend. */
-    zsock_t *worker;
-
     /**< The session server socket connected to the frontend. */
     zsock_t *sessionServer;
 
-    /** Port of the session server */
-    int sessionServerFrontendPort;
+    /** Private port with the global server */
+    int globalPort;
 };
 
 typedef struct ZoneWorker ZoneWorker;
@@ -63,7 +60,7 @@ typedef struct ZoneWorker ZoneWorker;
  * @param workerId The worker ID.
  * @param zoneServerId The zoneServer ID having autorithy on this worker
  * @param frontendPort The port of the zone server frontend
- * @param sessionServerFrontendPort The port of the session server frontend
+ * @param globalPort The private port of the global server
  * @return A pointer to an allocated ZoneWorker.
  */
 ZoneWorker *
@@ -71,7 +68,7 @@ ZoneWorker_new (
     int workerId,
     int zoneServerId,
     int frontendPort,
-    int sessionServerFrontendPort
+    int globalPort
 );
 
 
@@ -80,8 +77,7 @@ ZoneWorker_new (
  * @param self An allocated ZoneWorker to initialize.
  * @param workerId The worker ID.
  * @param zoneServerId The zoneServer ID having autorithy on this worker
- * @param frontendPort The port of the zone server frontend
- * @param sessionServerFrontendPort The port of the session server frontend
+ * @param globalPort The private port of the global server
  * @return true on success, false otherwise.
  */
 bool
@@ -90,7 +86,7 @@ ZoneWorker_init (
     int workerId,
     int zoneServerId,
     int frontendPort,
-    int sessionServerFrontendPort
+    int globalPort
 );
 
 

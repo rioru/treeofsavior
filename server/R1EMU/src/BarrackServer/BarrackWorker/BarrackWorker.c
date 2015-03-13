@@ -62,8 +62,7 @@ BarrackWorker_processInternPacket (
 
 BarrackWorker *
 BarrackWorker_new (
-    int workerId,
-    int sessionServerFrontendPort
+    int workerId
 ) {
     BarrackWorker *self;
 
@@ -71,7 +70,7 @@ BarrackWorker_new (
         return NULL;
     }
 
-    if (!BarrackWorker_init (self, workerId, sessionServerFrontendPort)) {
+    if (!BarrackWorker_init (self, workerId)) {
         BarrackWorker_destroy (&self);
         error ("BarrackWorker failed to initialize.");
         return NULL;
@@ -83,11 +82,9 @@ BarrackWorker_new (
 bool
 BarrackWorker_init (
     BarrackWorker *self,
-    int workerId,
-    int sessionServerFrontendPort
+    int workerId
 ) {
     self->workerId = workerId;
-    self->sessionServerFrontendPort = sessionServerFrontendPort;
 
     return true;
 }
@@ -194,7 +191,7 @@ BarrackWorker_worker (
 
     // Create and connect a socket to the session server frontend
     if (!(self->sessionServer = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (self->sessionServer, SESSION_SERVER_FRONTEND_ENDPOINT, self->sessionServerFrontendPort) == -1
+    ||  zsock_connect (self->sessionServer, SESSION_SERVER_FRONTEND_ENDPOINT, 0) == -1
     ) {
         error ("Barrack worker ID = %d cannot connect to the Session Server.", self->workerId);
         return NULL;

@@ -24,6 +24,7 @@
 // ---------- Defines -------------
 #define BARRACK_SERVER_FRONTEND_ENDPOINT        "tcp://127.0.0.1:%d"
 #define BARRACK_SERVER_BACKEND_ENDPOINT         "inproc://barrackServerWorkersBackend"
+#define BARRACK_SERVER_ACTOR_ID                 0
 
 // Configuration default values
 #define BARRACK_SERVER_PORTS_DEFAULT            (char []) {"2000 2001"}

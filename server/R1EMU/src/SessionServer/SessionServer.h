@@ -22,11 +22,8 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-#define SESSION_SERVER_FRONTEND_ENDPOINT    "tcp://127.0.0.1:%d"
-#define SESSION_SERVER_BACKEND_ENDPOINT     "inproc://sessionServerWorkersBackend"
-
-// Configuration default values
-#define SESSION_SERVER_PORT_DEFAULT         2002
+#define SESSION_SERVER_FRONTEND_ENDPOINT        "inproc://sessionServerWorkersFrontend-%d"
+#define SESSION_SERVER_BACKEND_ENDPOINT         "inproc://sessionServerWorkersBackend-%d"
 
 /** Enumeration of all the packets headers that the session server handles */
 // We want to differentiate the recv header from the send header, but we want to keep a list
@@ -78,25 +75,25 @@ typedef struct SessionServer SessionServer;
 
 /**
  * @brief Allocate a new SessionServer structure.
- * @param confFilePath The path to the configuration file associated with the Session Server
+ * @param serverId The server ID using the session server
  * @return A pointer to an allocated SessionServer.
  */
 SessionServer *
 SessionServer_new (
-    char *confFilePath
+    int serverId
 );
 
 
 /**
  * @brief Initialize an allocated SessionServer structure.
  * @param self An allocated SessionServer to initialize.
- * @param confFilePath The path to the configuration file associated with the Session Server
+ * @param serverId The server ID using the session server
  * @return true on success, false otherwise.
  */
 bool
 SessionServer_init (
     SessionServer *self,
-    char *confFilePath
+    int serverId
 );
 
 
@@ -108,6 +105,7 @@ void
 SessionServer_destroy (
     SessionServer **self
 );
+
 
 
 /**

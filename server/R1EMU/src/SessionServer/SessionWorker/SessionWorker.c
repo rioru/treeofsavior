@@ -47,6 +47,7 @@ SessionWorker_deleteSession (
 SessionWorker *
 SessionWorker_new (
     int workerId,
+    int serverId,
     zhash_t *sessions
 ) {
     SessionWorker *self;
@@ -55,7 +56,7 @@ SessionWorker_new (
         return NULL;
     }
 
-    if (!SessionWorker_init (self, workerId, sessions)) {
+    if (!SessionWorker_init (self, workerId, serverId, sessions)) {
         SessionWorker_destroy (&self);
         error ("SessionWorker failed to initialize.");
         return NULL;
@@ -69,10 +70,12 @@ bool
 SessionWorker_init (
     SessionWorker *self,
     int workerId,
+    int serverId,
     zhash_t *sessions
 ) {
     self->workerId = workerId;
     self->sessions = sessions;
+    self->serverId  = serverId;
 
     return true;
 }
@@ -239,17 +242,18 @@ SessionWorker_worker (
 
     // Create and connect a socket to the backend
     if (!(self->worker = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (self->worker, SESSION_SERVER_BACKEND_ENDPOINT) == -1
+    ||  zsock_connect (self->worker, SESSION_SERVER_BACKEND_ENDPOINT, self->serverId) == -1
     ) {
-        error ("Session worker ID = %d cannot connect to the backend socket.", self->workerId);
+        error ("Session worker ID %d cannot connect to the backend socket.", self->workerId);
         return NULL;
     }
+    dbg ("Session worker ID %d connected to %s", self->workerId, zsys_sprintf (SESSION_SERVER_BACKEND_ENDPOINT, self->serverId));
 
     // Tell to the broker we're ready for work
     if (!(readyFrame = zframe_new (PACKET_HEADER (SESSION_SERVER_WORKER_READY), sizeof (SESSION_SERVER_WORKER_READY)))
     ||  zframe_send (&readyFrame, self->worker, 0) == -1
     ) {
-        error ("Session worker ID = %d cannot send a correct SESSION_WORKER_READY state.", self->workerId);
+        error ("Session worker ID %d cannot send a correct SESSION_WORKER_READY state.", self->workerId);
         return NULL;
     }
 
@@ -259,13 +263,13 @@ SessionWorker_worker (
 
         // Process messages as they arrive
         if (!(msg = zmsg_recv (self->worker))) {
-            dbg ("Session worker ID = %d stops working.", self->workerId);
+            dbg ("Session worker ID %d stops working.", self->workerId);
             break; // Interrupted
         }
 
         // No message should be with less than 3 frames
         if (zmsg_size (msg) < 3) {
-            error ("Session worker ID = %d received a malformed message.", self->workerId);
+            error ("Session worker ID %d received a malformed message.", self->workerId);
             zmsg_destroy (&msg);
             continue;
         }
@@ -275,14 +279,14 @@ SessionWorker_worker (
 
         // Reply back to the sender
         if (zmsg_send (&msg, self->worker) != 0) {
-            warning ("Session worker ID = %d failed to send a message to the backend.", self->workerId);
+            warning ("Session worker ID %d failed to send a message to the backend.", self->workerId);
         }
     }
 
     // Cleanup
     zsock_destroy (&self->worker);
 
-    dbg ("Session worker ID = %d exits.", self->workerId);
+    dbg ("Session worker ID %d exits.", self->workerId);
     return NULL;
 }
 

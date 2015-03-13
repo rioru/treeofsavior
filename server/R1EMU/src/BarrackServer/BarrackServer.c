@@ -51,9 +51,6 @@ struct BarrackServer
 
     /** Number of workers allocated for the backend */
     int workersCount;
-
-    /** Port of the session server */
-    int sessionServerFrontendPort;
 };
 
 
@@ -85,17 +82,6 @@ BarrackServer_backend (
     zloop_t *loop,
     zsock_t *backend,
     void *self
-);
-
-
-/**
- * @brief Waits for Session Server to be online and send a PONG reply
- * @param self The barrackServer
- * @return true on success, false otherwise
- */
-static bool
-BarrackServer_waitForSessionServerOnline (
-    BarrackServer *self
 );
 
 
@@ -157,14 +143,6 @@ BarrackServer_init (
     for (int portIndex = 0; portIndex < self->publicPortsCount; portIndex++) {
         self->publicPorts[portIndex] = strtol (portsArray, &portsArray, 10);
         portsArray++;
-    }
-
-    // Read the Session Server frontend port
-    if (!(self->sessionServerFrontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", NULL)))
-    ) {
-        warning ("Cannot read correctly the session server port in the configuration file (%s). ", confFilePath);
-        warning ("The default port = %d has been used.", SESSION_SERVER_PORT_DEFAULT);
-        self->sessionServerFrontendPort = SESSION_SERVER_PORT_DEFAULT;
     }
 
     // Read the number of barrack server workers
@@ -349,64 +327,6 @@ BarrackServer_frontend (
     return 0;
 }
 
-
-static bool
-BarrackServer_waitForSessionServerOnline (
-    BarrackServer *self
-) {
-    zsock_t *sessionServerFrontend;
-    SessionServerSendHeader answer;
-    zmsg_t *msg;
-    zframe_t *frame;
-
-    // Create and connect a socket to the session server frontend
-    if (!(sessionServerFrontend = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (sessionServerFrontend, SESSION_SERVER_FRONTEND_ENDPOINT, self->sessionServerFrontendPort) == -1
-    ) {
-        if (sessionServerFrontend) {
-            zsock_destroy (&sessionServerFrontend);
-        }
-
-        error ("Barrack Server cannot connect to the Session Server.");
-        return false;
-    }
-
-    // Test the connectivity : PING - PONG protocol
-    dbg ("Sending PING...");
-    if (!(msg = zmsg_new ())
-    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_PING), sizeof (SESSION_SERVER_PING)) != 0
-    ||  zmsg_send (&msg, sessionServerFrontend) != 0) {
-        if (msg) {
-            zmsg_destroy (&msg);
-        }
-        zsock_destroy (&sessionServerFrontend);
-
-		error ("Barrack Server cannot send a PING request to the Session Server.");
-        return false;
-    }
-
-    dbg ("Waiting PONG...");
-    if (!(msg = zmsg_recv (sessionServerFrontend))
-    ||  !(frame = zmsg_first (msg))
-    ||  !(answer = *((SessionServerSendHeader *) zframe_data (frame)))
-    ||  !(answer == SESSION_SERVER_PONG)
-    ) {
-        if (msg) {
-            zmsg_destroy (&msg);
-        }
-        zsock_destroy (&sessionServerFrontend);
-
-        error ("Session Server didn't answer PONG correctly.");
-		return false;
-    }
-
-    zmsg_destroy (&msg);
-    zsock_destroy (&sessionServerFrontend);
-
-    return true;
-}
-
-
 bool
 BarrackServer_start (
     BarrackServer *self
@@ -415,27 +335,24 @@ BarrackServer_start (
     BarrackWorker * barrackWorker;
 
     // =============================================
-    //    Wait for the session server to be alive
+    //  Launch the dedicated barrack session server
     // =============================================
-    if (!BarrackServer_waitForSessionServerOnline (self)) {
-        error ("Cannot connect properly to the Session Server.");
-        return false;
-    }
+    SessionServer *sessionServer = SessionServer_new (BARRACK_SERVER_ACTOR_ID);
+    zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer);
 
     // ===================================
     //       Initialize backend
     // ===================================
-
     // Create and connect a socket to the backend
     if (zsock_bind (self->backend, BARRACK_SERVER_BACKEND_ENDPOINT) == -1) {
         error ("Failed to bind Barrack Server ROUTER backend.");
         return false;
     }
-    info ("Backend listening on %s.", SESSION_SERVER_BACKEND_ENDPOINT);
+    info ("Backend listening on %s.", BARRACK_SERVER_BACKEND_ENDPOINT);
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((barrackWorker = BarrackWorker_new (workerId, self->sessionServerFrontendPort))) {
+        if ((barrackWorker = BarrackWorker_new (workerId))) {
             if (zthread_new (BarrackWorker_worker, barrackWorker) != 0) {
                 error ("Cannot create Barrack Server worker thread ID %d.", workerId);
                 return false;

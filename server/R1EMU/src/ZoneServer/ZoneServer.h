@@ -20,8 +20,10 @@
 #include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
-#define ZONE_SERVER_FRONTEND_ENDPOINT    "tcp://127.0.0.1:%d"
-#define ZONE_SERVER_BACKEND_ENDPOINT     "inproc://zoneServerWorkersBackend-%d"
+#define ZONE_SERVER_FRONTEND_ENDPOINT           "tcp://127.0.0.1:%d"
+#define ZONE_SERVER_GLOBAL_ENDPOINT             "tcp://127.0.0.1:%d"
+#define ZONE_SERVER_BACKEND_ENDPOINT            "inproc://zoneServerWorkersBackend-%d"
+#define ZONE_SERVER_EXECUTABLE_NAME             "ZoneServer"
 
 // Configuration default values
 #define ZONE_SERVER_PORTS_DEFAULT               (char []) {"2004 2005 2006"}
@@ -66,7 +68,7 @@ typedef struct ZoneServer ZoneServer;
  * @param zoneServerId The zone server ID
  * @param frontendPort The zone server port opened to the internet
  * @param workersCount Count of worker per zone server
- * @param sessionServerFrontendPort The port of the session server frontend
+ * @param privateGlobalPort The private port exposed to the global server
  * @return A pointer to an allocated ZoneServer.
  */
 ZoneServer *
@@ -74,7 +76,7 @@ ZoneServer_new (
     int zoneServerId,
     int frontendPort,
     int workersCount,
-    int sessionServerFrontendPort
+    int privateGlobalPort
 );
 
 
@@ -84,7 +86,6 @@ ZoneServer_new (
  * @param zoneServerId The zone server ID
  * @param frontendPort The zone server port opened to the internet
  * @param workersCount Count of worker per zone server
- * @param sessionServerFrontendPort The port of the session server frontend
  * @return true on success, false otherwise.
  */
 bool
@@ -93,7 +94,7 @@ ZoneServer_init (
     int zoneServerId,
     int frontendPort,
     int workersCount,
-    int sessionServerFrontendPort
+    int privateGlobalPort
 );
 
 
@@ -106,6 +107,15 @@ ZoneServer_destroy (
     ZoneServer **self
 );
 
+
+/**
+ * @brief Launch a new Zone Server
+ * @param self A pointer to an allocated ZoneServer.
+ */
+bool
+ZoneServer_launchZoneServer (
+    ZoneServer *self
+);
 
 /**
  * @brief Start the Zone Server main loop.

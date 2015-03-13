@@ -38,9 +38,6 @@ typedef struct BarrackWorker
     /** ID of the barrack worker */
     int workerId;
 
-    /** Port of the session server */
-    int sessionServerFrontendPort;
-
     /** The worker socket connected to the backend. */
     zsock_t *worker;
 
@@ -54,13 +51,11 @@ typedef struct BarrackWorker
 /**
  * @brief Allocate a new BarrackWorker structure.
  * @param worker The worker ID.
- * @param sessionServerFrontendPort The TCP port of the session server to connect to.
  * @return A pointer to an allocated BarrackWorker.
  */
 BarrackWorker *
 BarrackWorker_new (
-    int workerId,
-    int sessionServerFrontendPort
+    int workerId
 );
 
 
@@ -68,14 +63,12 @@ BarrackWorker_new (
  * @brief Initialize an allocated BarrackWorker structure.
  * @param self An allocated BarrackWorker to initialize.
  * @param worker The worker ID.
- * @param sessionServerFrontendPort The TCP port of the session server to connect to.
  * @return true on success, false otherwise.
  */
 bool
 BarrackWorker_init (
     BarrackWorker *self,
-    int workerId,
-    int sessionServerFrontendPort
+    int workerId
 );
 
 

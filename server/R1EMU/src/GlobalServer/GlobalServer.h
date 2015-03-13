@@ -22,8 +22,8 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-#define GLOBAL_SERVER_FRONTEND_ENDPOINT    "tcp://127.0.0.1:%d"
-#define GLOBAL_SERVER_BACKEND_ENDPOINT     "inproc://globalServerWorkersBackend"
+#define GLOBAL_SERVER_FRONTEND_ENDPOINT     "tcp://127.0.0.1:%d"
+#define GLOBAL_SERVER_BACKEND_ENDPOINT      "inproc://globalServerWorkersBackend"
 
 // Configuration default values
 #define GLOBAL_SERVER_PORT_DEFAULT         2003

@@ -95,6 +95,14 @@
 		</Unit>
 		<Unit filename="../../../src/R1EMU.h" />
 		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />
+		<Unit filename="../../../src/SessionServer/SessionServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SessionServer/SessionServer.h" />
+		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

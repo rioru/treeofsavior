@@ -51,10 +51,10 @@ struct SessionServer
     /** Hashtable of the sessions */
     zhash_t *sessions;
 
-    // ----- Configuration -----
-    /** Public ports exposed to the clients */
-    int frontendPort;
+    /** Actor Id using the session server */
+    int serverId;
 
+    // ----- Configuration -----
     /** Number of workers allocated for the backend */
     int workersCount;
 };
@@ -95,7 +95,7 @@ SessionServer_backend (
 
 SessionServer *
 SessionServer_new (
-    char *confFilePath
+    int serverId
 ) {
     SessionServer *self;
 
@@ -103,7 +103,7 @@ SessionServer_new (
         return NULL;
     }
 
-    if (!SessionServer_init (self, confFilePath)) {
+    if (!SessionServer_init (self, serverId)) {
         SessionServer_destroy (&self);
         error ("SessionServer failed to initialize.");
         return NULL;
@@ -116,35 +116,14 @@ SessionServer_new (
 bool
 SessionServer_init (
     SessionServer *self,
-    char *confFilePath
+    int serverId
 ) {
-    zconfig_t *conf;
-
     // Only 1 worker for the session server.
     // It may change later, but for the moment there is no way to share
     // the hashtable containing all the sessions between multiple threads
     self->workersCount = 1;
 
-    // ==================================
-    //     Read the configuration file
-    // ==================================
-
-    // Open the configuration file
-    if (!(conf = zconfig_load (confFilePath))) {
-        error ("Cannot read the session configuration file (%s).", confFilePath);
-        return false;
-    }
-
-    // Read the port
-    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", NULL)))
-    ) {
-        warning ("Cannot read correctly the session server port in the configuration file (%s). ", confFilePath);
-        warning ("The default port = %d has been used.", SESSION_SERVER_PORT_DEFAULT);
-        self->frontendPort = SESSION_SERVER_PORT_DEFAULT;
-    }
-
-    // Close the configuration file
-    zconfig_destroy (&conf);
+    self->serverId = serverId;
 
     // ==========================
     //   Allocate ZMQ objects
@@ -301,7 +280,6 @@ SessionServer_frontend (
     return 0;
 }
 
-
 bool
 SessionServer_start (
     SessionServer *self
@@ -313,15 +291,15 @@ SessionServer_start (
     //       Initialize backend
     // ===================================
 
-    if (zsock_bind (self->backend, SESSION_SERVER_BACKEND_ENDPOINT) == -1) {
+    if (zsock_bind (self->backend, SESSION_SERVER_BACKEND_ENDPOINT, self->serverId) == -1) {
         error ("Failed to bind Session Server ROUTER backend.");
         return false;
     }
-    info ("Backend listening on %s.", SESSION_SERVER_BACKEND_ENDPOINT);
+    info ("Backend listening on %s.", zsys_sprintf (SESSION_SERVER_BACKEND_ENDPOINT, self->serverId));
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((sessionWorker = SessionWorker_new (workerId, self->sessions))) {
+        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->sessions))) {
             if (zthread_new (SessionWorker_worker, sessionWorker) != 0) {
                 error ("Cannot create Session Server worker thread ID %d.", workerId);
                 return false;
@@ -335,13 +313,12 @@ SessionServer_start (
     // ===================================
     //        Initialize frontend
     // ===================================
-
     // Bind the endpoint for the ROUTER frontend
-    if (zsock_bind (self->frontend, SESSION_SERVER_FRONTEND_ENDPOINT, self->frontendPort) == -1) {
-        error ("Failed to bind Session Server ROUTER frontend to the port %d.", self->frontendPort);
+    if (zsock_bind (self->frontend, SESSION_SERVER_FRONTEND_ENDPOINT, self->serverId) == -1) {
+        error ("Failed to bind Session Server ROUTER frontend to the server ID %d.", self->serverId);
         return false;
     }
-    info ("Frontend listening on port %d.", self->frontendPort);
+    info ("Frontend listening %s.", zsys_sprintf (SESSION_SERVER_FRONTEND_ENDPOINT, self->serverId));
 
     // ====================================
     //   Prepare a reactor and fire it up
@@ -359,6 +336,8 @@ SessionServer_start (
         return false;
     }
 
+
+    // Wait for all workers to be registred
     info ("SessionServer is ready and running.");
     if (zloop_start (reactor) != 0) {
         error ("An error occurred in the reactor.");

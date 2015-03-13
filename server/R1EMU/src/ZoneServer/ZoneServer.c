@@ -18,6 +18,7 @@
 // ---------- Includes ------------
 #include "ZoneServer.h"
 #include "ZoneWorker/ZoneWorker.h"
+#include "SessionServer/SessionServer.h"
 
 
 // ------ Structure declaration -------
@@ -32,7 +33,7 @@ struct ZoneServer
     /** Zone server frontend socket. Listens to ports exposed to the clients */
     zsock_t *frontend;
 
-    /** Zone server backend socket. Listens to "zoneWorkers" endpoint */
+    /** Zone server backend socket. */
     zsock_t *backend;
 
     /** List of workers entities */
@@ -48,14 +49,14 @@ struct ZoneServer
     int overloadWorker;
 
     // ----- Configuration -----
-    /** Public ports exposed to the clients */
+    /** Public port exposed to the clients */
     int frontendPort;
+
+    /** Private port exposed to the global server */
+    int privateGlobalPort;
 
     /** Number of workers allocated for the backend */
     int workersCount;
-
-    /** Port of the session server */
-    int sessionServerFrontendPort;
 };
 
 
@@ -97,7 +98,7 @@ ZoneServer_new (
     int zoneServerId,
     int frontendPort,
     int workersCount,
-    int sessionServerFrontendPort
+    int privateGlobalPort
 ) {
     ZoneServer *self;
 
@@ -105,7 +106,7 @@ ZoneServer_new (
         return NULL;
     }
 
-    if (!ZoneServer_init (self, zoneServerId, frontendPort, workersCount, sessionServerFrontendPort)) {
+    if (!ZoneServer_init (self, zoneServerId, frontendPort, workersCount, privateGlobalPort)) {
         ZoneServer_destroy (&self);
         error ("ZoneServer failed to initialize.");
         return NULL;
@@ -121,12 +122,12 @@ ZoneServer_init (
     int zoneServerId,
     int frontendPort,
     int workersCount,
-    int sessionServerFrontendPort
+    int privateGlobalPort
 ) {
     self->zoneServerId = zoneServerId;
     self->workersCount = workersCount;
     self->frontendPort = frontendPort;
-    self->sessionServerFrontendPort = sessionServerFrontendPort;
+    self->privateGlobalPort = privateGlobalPort;
 
     // ==========================
     //   Allocate ZMQ objects
@@ -169,6 +170,48 @@ ZoneServer_init (
     return true;
 }
 
+bool
+ZoneServer_launchZoneServer (
+    ZoneServer *self
+) {
+    char *zoneServerIdArg = zsys_sprintf ("%d", self->zoneServerId);
+    char *zoneServerPortArg = zsys_sprintf ("%d", self->frontendPort);
+    char *zoneWorkersCountArg = zsys_sprintf ("%d", self->workersCount);
+
+    char *commandLine = zsys_sprintf ("%s %d %d %d %d",
+        ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->frontendPort, self->workersCount, self->privateGlobalPort);
+    info ("CommandLine : %s", commandLine);
+
+    #ifdef WIN32
+        STARTUPINFO si = {0};
+        PROCESS_INFORMATION pi = {0};
+        if (!CreateProcess (ZONE_SERVER_EXECUTABLE_NAME ".exe", commandLine, NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
+            error ("Cannot launch Zone Server executable : %s.", ZONE_SERVER_EXECUTABLE_NAME);
+            char *errorReason;
+            FormatMessage (FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(),
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &errorReason, 0, NULL
+            );
+            error ("Error reason : %s", errorReason);
+        }
+    #else
+    const char *argv[] = {
+        ZONE_SERVER_EXECUTABLE_NAME, self->zoneServerIdArg, self->zoneServerPortArg,
+        self->zoneWorkersCountArg, self->sessionServerFrontendPortArg, NULL
+    };
+    if (fork () == 0) {
+            if (execv (ZONE_SERVER_EXECUTABLE_NAME, argv) == -1) {
+                error ("Cannot launch Zone Server executable : %s.", ZONE_SERVER_EXECUTABLE_NAME);
+            }
+    }
+    #endif
+
+    zstr_free (&zoneServerIdArg);
+    zstr_free (&zoneServerPortArg);
+    zstr_free (&zoneWorkersCountArg);
+    zstr_free (&commandLine);
+
+    return true;
+}
 
 static int
 ZoneServer_backend (
@@ -285,19 +328,25 @@ ZoneServer_start (
     ZoneWorker * zoneWorker;
     ZoneServer *self = (ZoneServer *) args;
 
+    // =============================================
+    //  Launch the dedicated barrack session server
+    // =============================================
+    SessionServer *sessionServer = SessionServer_new (self->zoneServerId);
+    zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer);
+
     // ===================================
     //       Initialize backend
     // ===================================
 
-    if (zsock_bind (self->backend, ZONE_SERVER_BACKEND_ENDPOINT, self->frontendPort) == -1) {
+    if (zsock_bind (self->backend, ZONE_SERVER_BACKEND_ENDPOINT, self->zoneServerId) == -1) {
         error ("Failed to bind Zone Server ROUTER backend.");
         return NULL;
     }
-    info ("[%d] Backend listening on %s.", self->zoneServerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->frontendPort));
+    info ("[%d] Backend listening on %s.", self->zoneServerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->zoneServerId));
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((zoneWorker = ZoneWorker_new (workerId, self->zoneServerId, self->frontendPort, self->sessionServerFrontendPort))) {
+        if ((zoneWorker = ZoneWorker_new (workerId, self->zoneServerId, self->frontendPort, self->privateGlobalPort))) {
             if (zthread_new (ZoneWorker_worker, zoneWorker) != 0) {
                 error ("Cannot create Zone Server worker thread ID %d.", workerId);
                 return NULL;
@@ -324,6 +373,7 @@ ZoneServer_start (
         return NULL;
     }
     info ("[%d] Frontend listening on port %d.", self->zoneServerId, self->frontendPort);
+
 
     // ====================================
     //   Prepare a reactor and fire it up

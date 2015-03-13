@@ -36,14 +36,14 @@ struct GlobalServer
     /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
     int *zoneServersPorts;
 
+    /** Global servers private ports. They should *NOT* be opened to the internet */
+    int *privateGlobalPorts;
+
     /** Count of zone servers */
     int zoneServersCount;
 
     /** Count of worker for each zone servers */
     int zoneWorkersCount;
-
-    /** Port of the session server */
-    int sessionServerFrontendPort;
 };
 
 
@@ -106,7 +106,8 @@ GlobalServer_init (
     char *confFilePath
 ) {
     zconfig_t *conf;
-    char *portsArray;
+    char *publicPortsArray;
+    char *privatePortsArray;
 
     // ==================================
     //     Read the configuration file
@@ -126,14 +127,14 @@ GlobalServer_init (
         self->frontendPort = GLOBAL_SERVER_PORT_DEFAULT;
     }
 
-    // Read the zone ports array
-    if (!(portsArray = zconfig_resolve (conf, "zoneServer/portsArray", NULL))) {
+    // ==== Read the zone ports array ====
+    if (!(publicPortsArray = zconfig_resolve (conf, "zoneServer/publicPortsArray", NULL))) {
         warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", ZONE_SERVER_PORTS_DEFAULT);
-        portsArray = ZONE_SERVER_PORTS_DEFAULT;
+        publicPortsArray = ZONE_SERVER_PORTS_DEFAULT;
     }
 
     // Tokenize the ports array
-    char *port = strtok (portsArray, " ");
+    char *port = strtok (publicPortsArray, " ");
     while (port != NULL) {
         self->zoneServersCount++;
         port = strtok (NULL, " ");
@@ -142,16 +143,35 @@ GlobalServer_init (
     // Fill the server ports array
     self->zoneServersPorts = calloc (self->zoneServersCount, sizeof (int));
     for (int portIndex = 0; portIndex < self->zoneServersCount; portIndex++) {
-        self->zoneServersPorts[portIndex] = strtol (portsArray, &portsArray, 10);
-        portsArray++;
+        self->zoneServersPorts[portIndex] = strtol (publicPortsArray, &publicPortsArray, 10);
+        publicPortsArray++;
     }
 
-    // Read the Session Server frontend port
-    if (!(self->sessionServerFrontendPort = atoi (zconfig_resolve (conf, "sessionServer/port", NULL)))
-    ) {
-        warning ("Cannot read correctly the session server port in the configuration file (%s). ", confFilePath);
-        warning ("The default port = %d has been used.", SESSION_SERVER_PORT_DEFAULT);
-        self->sessionServerFrontendPort = SESSION_SERVER_PORT_DEFAULT;
+    // ==== Read the global ports array ====
+    if (!(privatePortsArray = zconfig_resolve (conf, "zoneServer/privatePortsArray", NULL))) {
+        warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", ZONE_SERVER_PORTS_DEFAULT);
+        privatePortsArray = ZONE_SERVER_PORTS_DEFAULT;
+    }
+
+    // Tokenize the ports array
+    int privatePortsCount = 0;
+    port = strtok (privatePortsArray, " ");
+    while (port != NULL) {
+        port = strtok (NULL, " ");
+        privatePortsCount++;
+    }
+
+    if (privatePortsCount != self->zoneServersCount) {
+        error ("Zone server configuration file have not the same amount of public ports and private ports.");
+        return false;
+    }
+
+    // Fill the server ports array
+    self->privateGlobalPorts = calloc (self->zoneServersCount, sizeof (int));
+    for (int portIndex = 0; portIndex < self->zoneServersCount; portIndex++) {
+        self->privateGlobalPorts[portIndex] = strtol (privatePortsArray, &privatePortsArray, 10);
+        privatePortsArray++;
+        dbg ("self->privateGlobalPorts[portIndex] = %d", self->privateGlobalPorts[portIndex]);
     }
 
     // Read the number of barrack server workers
@@ -273,10 +293,21 @@ GlobalServer_start (
 
     // Initialize N zone servers.
     for (int zoneServerId = 0; zoneServerId < self->zoneServersCount; zoneServerId++) {
-        ZoneServer *zoneServer = ZoneServer_new (
-            zoneServerId, self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->sessionServerFrontendPort
-        );
-        zthread_new (ZoneServer_start, zoneServer);
+        ZoneServer *zoneServer;
+
+        if (!(zoneServer = ZoneServer_new (
+                zoneServerId + 1, self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->privateGlobalPorts[zoneServerId]))
+        ) {
+            error ("Cannot create a new ZoneServer");
+            continue;
+        }
+
+        if (!(ZoneServer_launchZoneServer (zoneServer))) {
+            error ("Can't launch a new ZoneServer");
+            continue;
+        }
+
+        ZoneServer_destroy (&zoneServer);
     }
 
     // ====================================
