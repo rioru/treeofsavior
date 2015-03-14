@@ -105,7 +105,37 @@ ZoneHandler_MyPCEnter (
     ClientSession *session,
     zmsg_t *reply
 ) {
+    /*
+		# ZC_MYPC_ENTER = 0x0CA4, // Size: 18
+		reply  = struct.pack("<H", PacketType.ZC_MYPC_ENTER)
+		reply += struct.pack("<I", 0); # UNKNOWN
 
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<I", 0); # UNKNOWN - FSMActor.field_87
+		reply += struct.pack("<I", 0); # UNKNOWN - FSMActor.field_88
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+    */
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        float unk1; // FSMActor.field_87
+        float unk2; // FSMActor.field_88
+    } ZcMyPcEnter;
+    #pragma pack(pop)
+
+    ZcMyPcEnter replyPacket;
+
+    replyPacket.header.type = ZC_MYPC_ENTER;
+
+    replyPacket.pcId = session->currentPcId;
+    replyPacket.unk1 = 0;
+    replyPacket.unk2 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
@@ -113,20 +143,6 @@ ZoneHandler_moveSpeed (
     ClientSession *session,
     zmsg_t *reply
 ) {
-    /*
-	def moveSpeed (self, packet):
-		# ZC_MOVE_SPEED = 0x0BC9, // Size: 18
-		reply  = struct.pack("<H", PacketType.ZC_MOVE_SPEED);
-		reply += struct.pack("<I", 0);
-
-		reply += struct.pack("<I", 0xFF); # PCID
-		reply += struct.pack("<f", 100); # Movement Speed
-		reply += struct.pack("<f", 0.1); # UNKNOWN
-
-		self.sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-    */
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
