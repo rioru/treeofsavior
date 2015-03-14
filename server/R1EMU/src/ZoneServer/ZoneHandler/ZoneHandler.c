@@ -19,9 +19,21 @@
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static PacketHandlerState ZoneHandler_connect (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_connect   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Client is ready to enter the zone */
 static PacketHandlerState ZoneHandler_gameReady (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** Send information about quickslots */
+static void ZoneHandler_quickSlotListHandler    (ClientSession *session, zmsg_t *reply);
+/** Send information about the UI */
+static void ZoneHandler_uiInfoList              (ClientSession *session, zmsg_t *reply);
+/** Send information about Jobs */
+static void ZoneHandler_startInfo               (ClientSession *session, zmsg_t *reply);
+/** Send a commander movement speed */
+static void ZoneHandler_moveSpeed               (ClientSession *session, zmsg_t *reply);
+/** Alert the client that a new PC has entered */
+static void ZoneHandler_MyPCEnter               (ClientSession *session, zmsg_t *reply);
+/** Set the position of a commander */
+static void ZoneHandler_setPos                  (ClientSession *session, zmsg_t *reply, float x, float y, float z);
 
 
 // ------ Structure declaration -------
@@ -67,7 +79,77 @@ ZoneHandler_gameReady (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
+    // ===== The game starts from this point =====
+    // Add additional information
+    ZoneHandler_quickSlotListHandler (session, reply);
+    ZoneHandler_uiInfoList (session, reply);
+    ZoneHandler_startInfo (session, reply);
+    ZoneHandler_moveSpeed (session, reply);
+    ZoneHandler_MyPCEnter (session, reply);
+    ZoneHandler_setPos (session, reply, 1142.29, 1000, -32.42);
+
     return PACKET_HANDLER_OK;
+}
+
+static void
+ZoneHandler_setPos (
+    ClientSession *session,
+    zmsg_t *reply,
+    float x, float y, float z
+) {
+
+}
+
+static void
+ZoneHandler_MyPCEnter (
+    ClientSession *session,
+    zmsg_t *reply
+) {
+
+}
+
+static void
+ZoneHandler_moveSpeed (
+    ClientSession *session,
+    zmsg_t *reply
+) {
+}
+
+static void
+ZoneHandler_startInfo (
+    ClientSession *session,
+    zmsg_t *reply
+) {
+
+}
+
+static void
+ZoneHandler_uiInfoList (
+    ClientSession *session,
+    zmsg_t *reply
+) {
+
+}
+
+static void
+ZoneHandler_quickSlotListHandler (
+    ClientSession *session,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        VariableSizePacketHeader variableSizeHeader;
+        uint32_t zlibData; // 0 or zlib deflated data
+    } ZcQuickSlotList;
+    #pragma pack(pop)
+
+    ZcQuickSlotList replyPacket;
+
+    replyPacket.variableSizeHeader.serverHeader.type = ZC_QUICK_SLOT_LIST;
+    replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
+    replyPacket.zlibData = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 
@@ -120,87 +202,6 @@ ZoneHandler_connect (
 
     // AccountID
     replyPacket.commander.accountId = session->accountId;
-
-    /*
-		PCID = 0xFF;
-
-		# ZC_CONNECT_OK = 0x0BBA, // Size: 0
-		reply  = struct.pack("<H", PacketType.ZC_CONNECT_OK)
-		reply += struct.pack("<I", 0); # UNKNOWN
-
-		# reply += struct.pack("<H", X); # Size of the entire packet - Added dynamically at the end of the function
-		reply += struct.pack("<B", 0); # 0 = NormalMode, 1 = SingleMode
-		reply += struct.pack("<I", 1); # UNKNOWN
-		reply += struct.pack("<B", 0); # AccountPrivileges (if < 3, the account is GM)
-
-		# 10 bytes = UNKNOWN
-		reply += "Aa0" # Padding ?
-		reply += "Aa1Aa2A"
-
-		# Pc session
-		reply += struct.pack("<I", PCID); # PCID - Define a schrageID for the current PC - must *not* be zero
-		reply += "4Aa5"
-
-		# CommanderCreatePacket
-		self.nbCharacterBarrack = 1;
-		self.positionCharacterList = 1;
-		charName = "Rioru";
-		familyName = "FamilyName";
-		classId = 10005; # 10001 = Warrior, 10006 = Mage, 10003 = Archer, 10005 = Cleric
-		jobId = 4;       # 1     = Warrior, 2     = Mage, 3     = Archer, 4     = Cleric
-		gender = 2;
-		mapId = 0x408;
-		characterLevel = 1337;
-		# 0x2710 = no helmet (empty slot)
-		itemsId = [0x00002710, 0x00099536, 0x00002710, 0x00081E91,  # Head 1   | Head 2     |    ?                               |  Armor
-				   0x0007A959, 0x0007D071, 0x00002710, 0x000933E0,  # Gloves   | Boots      |    ? (makes the head disappear xD) |  Bracelet
-				   0x00027D20, 0x00036511, 0x00098208, 0x00002710,  # Bow      | Shield     |   Costume                          |   ?
-				   0x0007F782, 0x00099562, 0x0007F3A1, 0x00081AAC, 	# ?        |  ?         |   Pants                            |   ?
-				   0x00002710, 0x00092C1A, 0x00092C1B, 0x0008DE0B];	# ?        | Ring left  |   Right right                      |  Necklace
-		hairId = 3;
-		spriteID = 0; # max 18
-		reply += charName; # Character Name
-		reply += "\x00" * (65 - len(charName));
-		reply += familyName; # Right click description, family name
-		reply += "\x00" * (65 - len(familyName));
-		reply += struct.pack("<B", 0) * 6; # UNKNOWN
-		reply += struct.pack("<q", 1000000); # account id
-		reply += struct.pack("<H", classId) # class id
-		reply += struct.pack("<H", 0) # UNKNOWN
-		reply += struct.pack("<H", jobId) # job id
-		reply += struct.pack("<B", gender) # Gender
-		reply += struct.pack("<B", 1) # UNKNOWN
-		reply += struct.pack("<I", characterLevel); # Character level
-		for itemId in itemsId: # Inventory : 20 items
-			reply += struct.pack("<I", itemId); # items
-		reply += struct.pack("<B", hairId); # Hairstyle
-		reply += struct.pack("<B", 0x00); # Return Value check CommanderCreatePacketData::CopyData
-		reply += struct.pack("<B", 0x00) * 2; # UNKNOWN
-		reply += struct.pack("<I", PCID); # PCID - Still need to understand how it works
-		reply += struct.pack("<I", self.positionCharacterList) # Position in the character list
-		reply += struct.pack("<B", self.nbCharacterBarrack) # Character position in the character list
-		reply += struct.pack("<B", 0) # UNKNOWN
-		reply += struct.pack("<H", mapId) # mapID
-
-		reply += struct.pack("<I", 1337); # Current XP
-		reply += struct.pack("<I", 31337); # Max XP
-		reply += struct.pack("<I", 0); # UNKNOWN
-		reply += struct.pack("<I", spriteID); # Apparence du sprite du corps
-		reply += struct.pack("<I", 2); # UNKNOWN - Something related with SpriteID (apparence related)
-		reply += struct.pack("<q", 1000000); # CID
-		reply += struct.pack("<I", 4000); # Current HP
-		reply += struct.pack("<I", 4200); # Max HP
-		reply += struct.pack("<h", 1500); # Current SP
-		reply += struct.pack("<h", 1600); # Max SP
-		reply += struct.pack("<I", 0x00) * 5;
-
-		# Add dynamically the size of the packet
-		size = struct.pack("<H", len(reply) + 2); # +2 because it counts itself
-		reply = reply[:6] + size + reply[6:];
-
-		self.sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-    */
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
