@@ -35,6 +35,9 @@ struct ClientSession
     /** Family name (also called barrack name) */
     unsigned char familyName [64];
 
+    /** current commander name */
+    unsigned char currentCommanderName [64];
+
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
 

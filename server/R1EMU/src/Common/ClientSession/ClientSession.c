@@ -214,7 +214,7 @@ ClientSession_print (
     ClientSession *self
 ) {
     dbg ("==== Session %p ====", self);
-    dbg ("familyName = %s", self->familyName);
+    // dbg ("familyName = %s", self->familyName);
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
     dbg ("accountId = 0x%llX", self->accountId);
     dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);

@@ -368,7 +368,7 @@ BarrackHandler_commanderCreate (
     typedef struct {
         ServerPacketHeader header;
         CommanderInfo commander;
-    } BcPacketCommanderCreate;
+    } BcCommanderCreatePacket;
     #pragma pack(pop)
 
     if (sizeof (CbCommanderCreatePacket) != packetSize) {
@@ -378,7 +378,7 @@ BarrackHandler_commanderCreate (
         return PACKET_HANDLER_ERROR;
     }
 
-    BcPacketCommanderCreate replyPacket;
+    BcCommanderCreatePacket replyPacket;
 
     replyPacket.header.type = BC_COMMANDER_CREATE;
     replyPacket.commander = Commander_CreateBasicCommander();
