@@ -13,89 +13,86 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-
+#include <sys/time.h>
 
 // ------ Structure declaration -------
 
 
 // ------ Static declaration -------
 
-
-// ------ Extern function implementation -------
-uint64_t zmq_clock_now ()
+// http://www.concentric.net/~Ttwang/tech/inthash.htm
+static uint32_t mix (uint32_t a, uint32_t b, uint32_t c)
 {
-#if defined WIN32
-
-    //  Get the high resolution counter's accuracy.
-    LARGE_INTEGER ticksPerSecond;
-    QueryPerformanceFrequency (&ticksPerSecond);
-
-    //  What time is it?
-    LARGE_INTEGER tick;
-    QueryPerformanceCounter (&tick);
-
-    //  Convert the tick number into the number of seconds
-    //  since the system was started.
-    double ticks_div = ticksPerSecond.QuadPart / 1000000.0;
-    return (uint64_t) (tick.QuadPart / ticks_div);
-
-#elif defined HAVE_CLOCK_GETTIME && defined CLOCK_MONOTONIC
-
-    //  Use POSIX clock_gettime function to get precise monotonic time.
-    struct timespec tv;
-    int rc = clock_gettime (CLOCK_MONOTONIC, &tv);
-        // Fix case where system has clock_gettime but CLOCK_MONOTONIC is not supported.
-        // This should be a configuration check, but I looked into it and writing an
-        // AC_FUNC_CLOCK_MONOTONIC seems beyond my powers.
-        if( rc != 0) {
-            //  Use POSIX gettimeofday function to get precise time.
-            struct timeval tv;
-            int rc = gettimeofday (&tv, NULL);
-            errno_assert (rc == 0);
-            return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
-        }
-    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_nsec / 1000);
-
-#elif defined HAVE_GETHRTIME
-
-    return (gethrtime () / 1000);
-
-#else
-
-    //  Use POSIX gettimeofday function to get precise time.
-    struct timeval tv;
-    int rc = gettimeofday (&tv, NULL);
-    assert (rc == 0);
-    return (tv.tv_sec * (uint64_t) 1000000 + tv.tv_usec);
-
-#endif
+    a=a-b;  a=a-c;  a=a^(c >> 13);
+    b=b-c;  b=b-a;  b=b^(a << 8);
+    c=c-a;  c=c-b;  c=c^(b >> 13);
+    a=a-b;  a=a-c;  a=a^(c >> 12);
+    b=b-c;  b=b-a;  b=b^(a << 16);
+    c=c-a;  c=c-b;  c=c^(b >> 5);
+    a=a-b;  a=a-c;  a=a^(c >> 3);
+    b=b-c;  b=b-a;  b=b^(a << 10);
+    c=c-a;  c=c-b;  c=c^(b >> 15);
+    return c;
 }
 
 
-void R1EMU_seed_random ()
-{
-    #ifdef WIN32
-        int pid = (int) GetCurrentProcessId ();
+// ------ Extern function implementation
+int
+rand_r (
+    unsigned int *seed
+) {
+    // http://fossies.org/dox/glibc-2.21/rand__r_8c_source.html
+    unsigned int next = *seed;
+    int result;
+    next *= 1103515245;
+    next += 12345;
+    result = (unsigned int) (next / 65536) % 2048;
+    next *= 1103515245;
+    next += 12345;
+    result <<= 10;
+    result ^= (unsigned int) (next / 65536) % 1024;
+    next *= 1103515245;
+    next += 12345;
+    result <<= 10;
+    result ^= (unsigned int) (next / 65536) % 1024;
+    *seed = next;
+    return result;
+}
+
+uint32_t
+R1EMU_seed_random (
+    uint32_t customData
+) {
+    int pid, tid;
+    #if WIN32
+        pid = (int) GetCurrentProcessId ();
+        tid = (int) GetCurrentThreadId ();
     #else
-        int pid = (int) getpid ();
+        pid = (int) getpid ();
+        tid = (int) pthread_self ();
     #endif
-    srand ((unsigned int) (zmq_clock_now () + pid));
+
+    struct timeval tv;
+    gettimeofday (&tv, NULL);
+
+    uint32_t seed = mix (clock(), tv.tv_usec, pid + tid + customData);
+
+    return seed;
 }
 
-uint32_t R1EMU_generate_random ()
-{
-    // Compensate for the fact that rand() returns signed integer.
-    //! FIXME : Use reentrant rand function on Windows
-    uint32_t low = (uint32_t) rand ();
-    uint32_t high = (uint32_t) rand ();
-    high <<= (sizeof (high) * 8 - 1);
-    return high | low;
+uint32_t
+R1EMU_generate_random (
+    uint32_t *seed
+) {
+    return rand_r (seed);
 }
 
-uint64_t R1EMU_generate_random64 ()
-{
-    uint32_t low  = R1EMU_generate_random ();
-    uint32_t high = R1EMU_generate_random ();
-    high <<= (sizeof (high) * 8 - 1);
+uint64_t
+R1EMU_generate_random64 (
+    uint32_t *seed
+) {
+    uint32_t low  = R1EMU_generate_random (seed);
+    uint64_t high = R1EMU_generate_random (seed);
+    high <<= (sizeof (uint32_t) * 8 - 1);
     return high | low;
 }

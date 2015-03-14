@@ -32,6 +32,12 @@
 // Configuration environnement
 #define DEFAULT_SERVER_CONF_PATH "../cfg/server.cfg"
 
+#ifdef WIN32
+
+#else
+#include <pthread.h>
+#endif
+
 // Utils
 #define STRINGIFY(x) # x
 #ifndef bool
@@ -61,16 +67,32 @@ uint64_t zmq_clock_now ();
 
 
 /**
- * @brief Seeds the random number generator.
+ * @brief Return a unique seed for the random number generator.
+ * @param customData A user data
+ * @return a unique seed
  */
-void R1EMU_seed_random ();
+uint32_t
+R1EMU_seed_random (
+    uint32_t customData
+);
 
 /**
  * @brief Generates random 32 bits value.
  */
-uint32_t R1EMU_generate_random ();
+uint32_t
+R1EMU_generate_random (
+    uint32_t *seed
+);
 
 /**
  * @brief Generates random 64 bits value.
  */
-uint64_t R1EMU_generate_random64 ();
+uint64_t
+R1EMU_generate_random64 (
+    uint32_t *seed
+);
+
+int
+rand_r (
+    unsigned int *seed
+);

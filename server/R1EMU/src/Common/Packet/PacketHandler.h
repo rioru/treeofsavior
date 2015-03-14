@@ -44,7 +44,9 @@ typedef PacketHandlerState (*PacketHandlerFunction) (
     /** Size of the packet sent by the client */
     size_t packetSize,
     /** Reply buffer. If you need to send multiple replies, add multiple frames to this zmsg_t */
-    zmsg_t *reply
+    zmsg_t *reply,
+    /** Generic pointer to any data */
+    void *arg
 );
 
 
@@ -67,6 +69,7 @@ typedef struct {
  * @param[in] packet The packet sent by the client
  * @param[in] packetSize The size of the packet
  * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
+ * @param[in] arg A generic pointer to any data
  * @return PacketHandlerState
  */
 PacketHandlerState
@@ -76,5 +79,6 @@ PacketHandler_buildReply (
     ClientSession *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *reply,
+    void *arg
 );

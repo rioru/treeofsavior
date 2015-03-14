@@ -19,9 +19,9 @@
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static PacketHandlerState ZoneHandler_connect   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_connect   (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Client is ready to enter the zone */
-static PacketHandlerState ZoneHandler_gameReady (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_gameReady (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Send information about quickslots */
 static void ZoneHandler_quickSlotListHandler    (ClientSession *session, zmsg_t *reply);
 /** Send information about the UI */
@@ -57,7 +57,8 @@ ZoneHandler_gameReady (
     ClientSession *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *reply,
+    void *arg
 ) {
     #pragma pack(push, 1)
     typedef struct {
@@ -90,6 +91,79 @@ ZoneHandler_gameReady (
 
     return PACKET_HANDLER_OK;
 }
+
+
+static PacketHandlerState
+ZoneHandler_connect (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply,
+    void *arg
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        uint32_t unk1;
+        uint64_t accountId;
+        uint32_t unk2;
+        uint32_t commanderListId;
+        unsigned char channelString[17];
+        uint32_t zoneServerId;
+        uint16_t unk3;
+        uint8_t channelListId;
+    } CzConnectPacket;
+    #pragma pack(pop)
+
+    #pragma pack(push, 1)
+    typedef struct {
+        VariableSizePacketHeader variableSizeHeader;
+        uint8_t gameMode; // 0 = NormalMode, 1 = SingleMode
+        uint32_t unk1;
+        uint8_t accountPrivileges;
+        uint8_t unk2[3];
+        uint8_t unk3[7];
+        uint32_t pcId;
+        uint32_t unk4;
+        CommanderInfo commander;
+
+    } ZcConnectPacket;
+    #pragma pack(pop)
+
+    if (sizeof (CzConnectPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CzConnectPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
+    ZcConnectPacket replyPacket;
+
+    dbg ("UserAccount %llx connected.", clientPacket->accountId);
+
+    replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
+    replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
+
+    replyPacket.gameMode = 0;
+    replyPacket.accountPrivileges = 1;
+    replyPacket.pcId = session->currentPcId;
+
+    replyPacket.commander = Commander_CreateBasicCommander ();
+
+    // CharName
+    strncpy (replyPacket.commander.charName, session->currentCommanderName, sizeof (replyPacket.commander.charName));
+
+    // FamilyName
+    strncpy (replyPacket.commander.familyName, session->familyName, sizeof (replyPacket.commander.familyName));
+
+    // AccountID
+    replyPacket.commander.accountId = session->accountId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return PACKET_HANDLER_OK;
+}
+
 
 static void
 ZoneHandler_setPos (
@@ -202,73 +276,4 @@ ZoneHandler_quickSlotListHandler (
     replyPacket.zlibData = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-}
-
-
-static PacketHandlerState
-ZoneHandler_connect (
-    ClientSession *session,
-    unsigned char *packet,
-    size_t packetSize,
-    zmsg_t *reply
-) {
-    buffer_print (packet, packetSize, "CONNECt : ");
-    /*
-     ===== [buffer size = 44 (0x2c) ================
-     23 04 00 00 29 00 00 80 00 00 00 00 00 00 00 00 | #...)...........
-     02 00 00 00 43 48 41 4E 4E 45 4C 5F 53 54 52 49 | ....CHANNEL_STRI
-     4E 47 00 F7 18 78 56 34 12 00 00 01             | NG...xV4....
-    =================================================
-    */
-    #pragma pack(push, 1)
-    typedef struct {
-
-    } CzConnectPacket;
-    #pragma pack(pop)
-
-    #pragma pack(push, 1)
-    typedef struct {
-        VariableSizePacketHeader variableSizeHeader;
-        uint8_t gameMode; // 0 = NormalMode, 1 = SingleMode
-        uint32_t unk1;
-        uint8_t accountPrivileges;
-        uint8_t unk2[3];
-        uint8_t unk3[7];
-        uint32_t pcId;
-        uint32_t unk4;
-        CommanderInfo commander;
-
-    } ZcConnectPacket;
-    #pragma pack(pop)
-
-    if (sizeof (CzConnectPacket) != packetSize) {
-        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (CzConnectPacket));
-
-        return PACKET_HANDLER_ERROR;
-    }
-
-    ZcConnectPacket replyPacket;
-
-    replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
-    replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
-
-    replyPacket.gameMode = 0;
-    replyPacket.accountPrivileges = 1;
-    replyPacket.pcId = session->currentPcId;
-
-    replyPacket.commander = Commander_CreateBasicCommander ();
-
-    // CharName
-    strncpy (replyPacket.commander.charName, session->currentCommanderName, sizeof (replyPacket.commander.charName));
-
-    // FamilyName
-    strncpy (replyPacket.commander.familyName, session->familyName, sizeof (replyPacket.commander.familyName));
-
-    // AccountID
-    replyPacket.commander.accountId = session->accountId;
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-
-    return PACKET_HANDLER_OK;
 }

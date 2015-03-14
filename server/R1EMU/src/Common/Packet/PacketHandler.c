@@ -31,7 +31,8 @@ PacketHandler_buildReply (
     ClientSession *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *reply,
+    void *arg
 ) {
     PacketHandlerFunction handler;
 
@@ -78,5 +79,5 @@ PacketHandler_buildReply (
 
     // Call the handler
     dbg ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
-    return handler (session, packet, dataSize, reply);
+    return handler (session, packet, dataSize, reply, arg);
 }

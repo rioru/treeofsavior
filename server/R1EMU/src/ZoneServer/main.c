@@ -33,9 +33,6 @@ int main (int argc, char **argv)
     int workersCount = atoi (argv[3]);
     int privateGlobalPort = atoi (argv[4]);
 
-    // Initialize seed
-    R1EMU_seed_random ();
-
     // Initialize the Zone Server
     if ((ZoneServer = ZoneServer_new (zoneServerId, frontendPort, workersCount, privateGlobalPort))) {
 

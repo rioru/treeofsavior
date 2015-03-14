@@ -214,11 +214,12 @@ ClientSession_print (
     ClientSession *self
 ) {
     dbg ("==== Session %p ====", self);
-    // dbg ("familyName = %s", self->familyName);
+    dbg ("familyName = <%s>", self->familyName);
+    dbg ("currentCommanderName = <%s>", self->currentCommanderName);
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
     dbg ("accountId = 0x%llX", self->accountId);
     dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
-    dbg ("currentPcId = %u", self->currentPcId);
+    dbg ("currentPcId = 0x%X", self->currentPcId);
 }
 
 void

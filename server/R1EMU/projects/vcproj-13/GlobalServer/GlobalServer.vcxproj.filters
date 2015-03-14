@@ -57,6 +57,12 @@
     <ClInclude Include="..\..\..\src\ZoneServer\ZoneWorker\ZoneWorker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\src\SessionServer\SessionServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\src\GlobalServer\main.c">
@@ -102,6 +108,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\ZoneServer\ZoneWorker\ZoneWorker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\SessionServer\SessionServer.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

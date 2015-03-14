@@ -29,9 +29,6 @@ int main (int argc, char **argv)
         confFilePath = DEFAULT_SERVER_CONF_PATH;
     }
 
-    // Initialize seed
-    R1EMU_seed_random ();
-
     // Initialize the Barrack Server
     if ((barrackServer = BarrackServer_new (confFilePath))) {
 

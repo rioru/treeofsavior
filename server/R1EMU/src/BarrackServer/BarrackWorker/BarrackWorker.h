@@ -44,6 +44,9 @@ typedef struct BarrackWorker
     /** The session server socket connected to the frontend. */
     zsock_t *sessionServer;
 
+    /** Seed for the random generator */
+    uint32_t seed;
+
 }   BarrackWorker;
 
 // ----------- Functions ------------

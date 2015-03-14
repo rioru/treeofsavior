@@ -84,6 +84,10 @@ BarrackWorker_init (
     BarrackWorker *self,
     int workerId
 ) {
+    // Initialize seed
+    self->seed = R1EMU_seed_random (workerId);
+    error ("SEED = %x", self->seed);
+
     self->workerId = workerId;
 
     return true;
@@ -114,7 +118,7 @@ BarrackWorker_processClientPacket (
 
     // Build the reply
     zmsg_remove (msg, packet);
-    switch (PacketHandler_buildReply (barrackHandlers, sizeof_array (barrackHandlers), session, zframe_data (packet), zframe_size (packet), msg))
+    switch (PacketHandler_buildReply (barrackHandlers, sizeof_array (barrackHandlers), session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");

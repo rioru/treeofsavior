@@ -167,7 +167,7 @@ ZoneWorker_processClientPacket (
 
     // Build the reply
     zmsg_remove (msg, packet);
-    switch (PacketHandler_buildReply (zoneHandlers, sizeof_array (zoneHandlers), session, zframe_data (packet), zframe_size (packet), msg))
+    switch (PacketHandler_buildReply (zoneHandlers, sizeof_array (zoneHandlers), session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");

@@ -46,6 +46,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/ClientSession/ClientSession.h" />
+		<Unit filename="../../../src/Common/Commander/Commander.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Commander/Commander.h" />
 		<Unit filename="../../../src/Common/Crypto/Crypto.c">
 			<Option compilerVar="CC" />
 		</Unit>
