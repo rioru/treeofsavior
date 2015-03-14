@@ -113,6 +113,38 @@ ZoneHandler_moveSpeed (
     ClientSession *session,
     zmsg_t *reply
 ) {
+    /*
+	def moveSpeed (self, packet):
+		# ZC_MOVE_SPEED = 0x0BC9, // Size: 18
+		reply  = struct.pack("<H", PacketType.ZC_MOVE_SPEED);
+		reply += struct.pack("<I", 0);
+
+		reply += struct.pack("<I", 0xFF); # PCID
+		reply += struct.pack("<f", 100); # Movement Speed
+		reply += struct.pack("<f", 0.1); # UNKNOWN
+
+		self.sock.send (reply)
+		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
+    */
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        float movementSpeed;
+        float unk1;
+    } ZcMoveSpeed;
+    #pragma pack(pop)
+
+    ZcMoveSpeed replyPacket;
+
+    replyPacket.header.type = ZC_MOVE_SPEED;
+
+    replyPacket.pcId = session->currentPcId;
+    replyPacket.movementSpeed = 100.0;
+    replyPacket.unk1 = 0.1;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
