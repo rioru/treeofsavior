@@ -33,7 +33,7 @@ static void ZoneHandler_moveSpeed               (ClientSession *session, zmsg_t 
 /** Alert the client that a new PC has entered */
 static void ZoneHandler_MyPCEnter               (ClientSession *session, zmsg_t *reply);
 /** Set the position of a commander */
-static void ZoneHandler_setPos                  (ClientSession *session, zmsg_t *reply, float x, float y, float z);
+static void ZoneHandler_setPos                  (ClientSession *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
 
 
 // ------ Structure declaration -------
@@ -86,7 +86,7 @@ ZoneHandler_gameReady (
     ZoneHandler_startInfo (session, reply);
     ZoneHandler_moveSpeed (session, reply);
     ZoneHandler_MyPCEnter (session, reply);
-    ZoneHandler_setPos (session, reply, 1142.29, 1000, -32.42);
+    ZoneHandler_setPos (session, reply, session->currentPcId, 1142.29, 1000, -32.42);
 
     return PACKET_HANDLER_OK;
 }
@@ -95,9 +95,26 @@ static void
 ZoneHandler_setPos (
     ClientSession *session,
     zmsg_t *reply,
+    uint32_t pcId,
     float x, float y, float z
 ) {
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        float x, y, z;
+    } ZcSetPos;
+    #pragma pack(pop)
 
+    ZcSetPos replyPacket;
+
+    replyPacket.header.type = ZC_SET_POS;
+    replyPacket.pcId = pcId;
+    replyPacket.x = x;
+    replyPacket.y = y;
+    replyPacket.z = z;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
@@ -105,19 +122,6 @@ ZoneHandler_MyPCEnter (
     ClientSession *session,
     zmsg_t *reply
 ) {
-    /*
-		# ZC_MYPC_ENTER = 0x0CA4, // Size: 18
-		reply  = struct.pack("<H", PacketType.ZC_MYPC_ENTER)
-		reply += struct.pack("<I", 0); # UNKNOWN
-
-		reply += struct.pack("<I", 0xFF); # PCID
-		reply += struct.pack("<I", 0); # UNKNOWN - FSMActor.field_87
-		reply += struct.pack("<I", 0); # UNKNOWN - FSMActor.field_88
-
-		self.sock.send (reply)
-		print "Sent : " + binascii.hexlify (reply) + " (" + str(len(reply)) + ")";
-    */
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
