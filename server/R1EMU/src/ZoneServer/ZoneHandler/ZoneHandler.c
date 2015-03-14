@@ -66,10 +66,10 @@ ZoneHandler_gameReady (
         float serverAppTimeOffset;
         float globalAppTimeOffset;
         double serverDateTime;
-    } ZcStartGame;
+    } ZcStartGamePacket;
     #pragma pack(pop)
 
-    ZcStartGame replyPacket;
+    ZcStartGamePacket replyPacket;
 
     replyPacket.header.type = ZC_START_GAME;
     replyPacket.timeMultiplier = 1.0;
@@ -103,10 +103,10 @@ ZoneHandler_setPos (
         ServerPacketHeader header;
         uint32_t pcId;
         float x, y, z;
-    } ZcSetPos;
+    } ZcSetPosPacket;
     #pragma pack(pop)
 
-    ZcSetPos replyPacket;
+    ZcSetPosPacket replyPacket;
 
     replyPacket.header.type = ZC_SET_POS;
     replyPacket.pcId = pcId;
@@ -128,10 +128,10 @@ ZoneHandler_MyPCEnter (
         uint32_t pcId;
         float unk1; // FSMActor.field_87
         float unk2; // FSMActor.field_88
-    } ZcMyPcEnter;
+    } ZcMyPcEnterPacket;
     #pragma pack(pop)
 
-    ZcMyPcEnter replyPacket;
+    ZcMyPcEnterPacket replyPacket;
 
     replyPacket.header.type = ZC_MYPC_ENTER;
 
@@ -153,10 +153,10 @@ ZoneHandler_moveSpeed (
         uint32_t pcId;
         float movementSpeed;
         float unk1;
-    } ZcMoveSpeed;
+    } ZcMoveSpeedPacket;
     #pragma pack(pop)
 
-    ZcMoveSpeed replyPacket;
+    ZcMoveSpeedPacket replyPacket;
 
     replyPacket.header.type = ZC_MOVE_SPEED;
 
@@ -192,10 +192,10 @@ ZoneHandler_quickSlotListHandler (
     typedef struct {
         VariableSizePacketHeader variableSizeHeader;
         uint32_t zlibData; // 0 or zlib deflated data
-    } ZcQuickSlotList;
+    } ZcQuickSlotListPacket;
     #pragma pack(pop)
 
-    ZcQuickSlotList replyPacket;
+    ZcQuickSlotListPacket replyPacket;
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_QUICK_SLOT_LIST;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
@@ -212,6 +212,7 @@ ZoneHandler_connect (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    buffer_print (packet, packetSize, "CONNECt : ");
     /*
      ===== [buffer size = 44 (0x2c) ================
      23 04 00 00 29 00 00 80 00 00 00 00 00 00 00 00 | #...)...........
@@ -219,6 +220,11 @@ ZoneHandler_connect (
      4E 47 00 F7 18 78 56 34 12 00 00 01             | NG...xV4....
     =================================================
     */
+    #pragma pack(push, 1)
+    typedef struct {
+
+    } CzConnectPacket;
+    #pragma pack(pop)
 
     #pragma pack(push, 1)
     typedef struct {
@@ -232,10 +238,17 @@ ZoneHandler_connect (
         uint32_t unk4;
         CommanderInfo commander;
 
-    } ZcCommanderCreatePacket;
+    } ZcConnectPacket;
     #pragma pack(pop)
 
-    ZcCommanderCreatePacket replyPacket;
+    if (sizeof (CzConnectPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CzConnectPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    ZcConnectPacket replyPacket;
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
