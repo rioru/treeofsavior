@@ -18,7 +18,7 @@
 // ---------- Includes ------------
 #include "SessionServer.h"
 #include "SessionWorker/SessionWorker.h"
-#include "Common/ClientSession/ClientSession.h"
+#include "Common/Session/SessionTable.h"
 
 
 // ------ Structure declaration -------
@@ -49,7 +49,7 @@ struct SessionServer
     int overloadWorker;
 
     /** Hashtable of the sessions */
-    zhash_t *sessions;
+    SessionTable *sessionsTable;
 
     /** Actor Id using the session server */
     int serverId;
@@ -148,8 +148,8 @@ SessionServer_init (
     }
 
     // Allocate the sessions hashtable
-    if (!(self->sessions = zhash_new ())) {
-        error ("Cannot allocate a new hashtable for sessions.");
+    if (!(self->sessionsTable = SessionTable_new ())) {
+        error ("Cannot allocate a new sessionTable.");
         return false;
     }
 
@@ -299,7 +299,7 @@ SessionServer_start (
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->sessions))) {
+        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->sessionsTable))) {
             if (zthread_new (SessionWorker_worker, sessionWorker) != 0) {
                 error ("Cannot create Session Server worker thread ID %d.", workerId);
                 return false;

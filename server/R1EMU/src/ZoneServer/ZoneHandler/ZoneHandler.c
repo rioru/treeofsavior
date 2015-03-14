@@ -16,6 +16,7 @@
 #include "Common/Packet/Packet.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"
+#include "ZoneServer/ZoneWorker/ZoneWorker.h"
 
 // ------ Static declaration -------
 /** Connect to the zone server */
@@ -101,6 +102,10 @@ ZoneHandler_connect (
     zmsg_t *reply,
     void *arg
 ) {
+    zframe_t *barrackSessionFrame;
+    ClientSession *barrackSession;
+    ZoneWorker *self = (ZoneWorker *) arg;
+
     #pragma pack(push, 1)
     typedef struct {
         uint32_t unk1;
@@ -139,7 +144,15 @@ ZoneHandler_connect (
     CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
     ZcConnectPacket replyPacket;
 
-    dbg ("UserAccount %llx connected.", clientPacket->accountId);
+    // A new user just connected to the zone server
+    // Its session is empty and must be updated from the barrack server.
+    // Ask for the session to the barrack server
+    if (!(barrackSessionFrame = ZoneWorker_getBarrackSession (self, clientPacket->accountId))) {
+        error ("Cannot retrieve the session from the barrack server.");
+        return PACKET_HANDLER_ERROR;
+    }
+
+    barrackSession = (ClientSession *) zframe_data (barrackSessionFrame);
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);

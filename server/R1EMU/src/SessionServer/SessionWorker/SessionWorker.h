@@ -24,6 +24,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Session/SessionTable.h"
 
 // ---------- Defines -------------
 
@@ -44,10 +45,10 @@ struct SessionWorker
     /**< The worker socket connected to the backend. */
     zsock_t *worker;
 
-    /** The hashtable containing all the sessions.
+    /** The table containing all the sessions.
      *  BE CAREFUL : It is shared between all the session workers of the same server.
      */
-    zhash_t *sessions;
+    SessionTable *sessionsTable;
 };
 
 typedef struct SessionWorker SessionWorker;
@@ -58,14 +59,14 @@ typedef struct SessionWorker SessionWorker;
  * @brief Allocate a new SessionWorker structure.
  * @param workerId The worker ID.
  * @param serverId The server ID.
- * @param sessions The hashtable containing all the sessions
+ * @param sessionsTable The table containing all the sessions
  * @return A pointer to an allocated SessionWorker.
  */
 SessionWorker *
 SessionWorker_new (
     int workerId,
     int serverId,
-    zhash_t *sessions
+    SessionTable *sessionsTable
 );
 
 
@@ -74,7 +75,7 @@ SessionWorker_new (
  * @param self An allocated SessionWorker to initialize.
  * @param workerId The worker ID.
  * @param serverId The server ID.
- * @param sessions The hashtable containing all the sessions
+ * @param sessionsTable The table containing all the sessions
  * @return true on success, false otherwise.
  */
 bool
@@ -82,9 +83,8 @@ SessionWorker_init (
     SessionWorker *self,
     int workerId,
     int serverId,
-    zhash_t *sessions
+    SessionTable *sessionsTable
 );
-
 
 /**
  * @brief Worker routine for the session server.

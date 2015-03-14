@@ -26,7 +26,8 @@
 #define GLOBAL_SERVER_BACKEND_ENDPOINT      "inproc://globalServerWorkersBackend"
 
 // Configuration default values
-#define GLOBAL_SERVER_PORT_DEFAULT         2003
+#define GLOBAL_SERVER_CLI_PORT_DEFAULT         2003
+#define GLOBAL_SERVER_ZONES_PORT_DEFAULT       2007
 
 /** Enumeration of all the packets headers that the global server handles */
 // We want to differentiate the recv header from the send header, but we want to keep a list

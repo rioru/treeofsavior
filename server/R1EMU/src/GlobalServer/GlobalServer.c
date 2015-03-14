@@ -36,14 +36,14 @@ struct GlobalServer
     /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
     int *zoneServersPorts;
 
-    /** Global servers private ports. They should *NOT* be opened to the internet */
-    int *privateGlobalPorts;
-
     /** Count of zone servers */
     int zoneServersCount;
 
     /** Count of worker for each zone servers */
     int zoneWorkersCount;
+
+    /** Port for communicating with the zones */
+    int zonesPort;
 };
 
 
@@ -107,7 +107,6 @@ GlobalServer_init (
 ) {
     zconfig_t *conf;
     char *publicPortsArray;
-    char *privatePortsArray;
 
     // ==================================
     //     Read the configuration file
@@ -120,16 +119,24 @@ GlobalServer_init (
     }
 
     // Read the frontend port
-    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "globalServer/port", NULL)))
+    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "globalServer/CLIport", NULL)))
     ) {
-        warning ("Cannot read correctly the global server port in the configuration file (%s). ", confFilePath);
-        warning ("The default port = %d has been used.", GLOBAL_SERVER_PORT_DEFAULT);
-        self->frontendPort = GLOBAL_SERVER_PORT_DEFAULT;
+        warning ("Cannot read correctly the CLI port in the configuration file (%s). ", confFilePath);
+        warning ("The default port = %d has been used.", GLOBAL_SERVER_CLI_PORT_DEFAULT);
+        self->frontendPort = GLOBAL_SERVER_CLI_PORT_DEFAULT;
+    }
+
+    // Read the zones port
+    if (!(self->zonesPort = atoi (zconfig_resolve (conf, "globalServer/zonesPort", NULL)))
+    ) {
+        warning ("Cannot read correctly the zones port port in the configuration file (%s). ", confFilePath);
+        warning ("The default port = %d has been used.", GLOBAL_SERVER_ZONES_PORT_DEFAULT);
+        self->zonesPort = GLOBAL_SERVER_ZONES_PORT_DEFAULT;
     }
 
     // ==== Read the zone ports array ====
     if (!(publicPortsArray = zconfig_resolve (conf, "zoneServer/publicPortsArray", NULL))) {
-        warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", ZONE_SERVER_PORTS_DEFAULT);
+        warning ("Public Zone ports cannot be read for Global Server. Defaults ports have been used : %s", ZONE_SERVER_PORTS_DEFAULT);
         publicPortsArray = ZONE_SERVER_PORTS_DEFAULT;
     }
 
@@ -145,33 +152,6 @@ GlobalServer_init (
     for (int portIndex = 0; portIndex < self->zoneServersCount; portIndex++) {
         self->zoneServersPorts[portIndex] = strtol (publicPortsArray, &publicPortsArray, 10);
         publicPortsArray++;
-    }
-
-    // ==== Read the global ports array ====
-    if (!(privatePortsArray = zconfig_resolve (conf, "zoneServer/privatePortsArray", NULL))) {
-        warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", ZONE_SERVER_PORTS_DEFAULT);
-        privatePortsArray = ZONE_SERVER_PORTS_DEFAULT;
-    }
-
-    // Tokenize the ports array
-    int privatePortsCount = 0;
-    port = strtok (privatePortsArray, " ");
-    while (port != NULL) {
-        port = strtok (NULL, " ");
-        privatePortsCount++;
-    }
-
-    if (privatePortsCount != self->zoneServersCount) {
-        error ("Zone server configuration file have not the same amount of public ports and private ports.");
-        return false;
-    }
-
-    // Fill the server ports array
-    self->privateGlobalPorts = calloc (self->zoneServersCount, sizeof (int));
-    for (int portIndex = 0; portIndex < self->zoneServersCount; portIndex++) {
-        self->privateGlobalPorts[portIndex] = strtol (privatePortsArray, &privatePortsArray, 10);
-        privatePortsArray++;
-        dbg ("self->privateGlobalPorts[portIndex] = %d", self->privateGlobalPorts[portIndex]);
     }
 
     // Read the number of barrack server workers
@@ -295,9 +275,7 @@ GlobalServer_start (
     for (int zoneServerId = 0; zoneServerId < self->zoneServersCount; zoneServerId++) {
         ZoneServer *zoneServer;
 
-        if (!(zoneServer = ZoneServer_new (
-                zoneServerId + 1, self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->privateGlobalPorts[zoneServerId]))
-        ) {
+        if (!(zoneServer = ZoneServer_new (zoneServerId + 1, self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->zonesPort))) {
             error ("Cannot create a new ZoneServer");
             continue;
         }

@@ -197,6 +197,17 @@ ZoneWorker_processClientPacket (
     zframe_destroy (&packet);
 }
 
+zframe_t *
+ZoneWorker_getBarrackSession (
+    ZoneWorker *self,
+    uint64_t accountId
+) {
+
+
+    return NULL;
+}
+
+
 static void
 ZoneWorker_processInternPacket (
     ZoneWorker *self,
@@ -259,13 +270,13 @@ ZoneWorker_worker (
     dbg ("Session worker ID %d connected to %s", self->workerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->serverId));
 
     // Create and listen to a socket with the global server
-    if (!(global = zsock_new (ZMQ_REP))
-    ||  zsock_bind (global, ZONE_SERVER_GLOBAL_ENDPOINT, self->globalPort) == -1
+    if (!(global = zsock_new (ZMQ_REQ))
+    ||  zsock_connect (global, ZONE_SERVER_GLOBAL_ENDPOINT, self->globalPort) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot bind to the port %d.", self->serverId, self->workerId);
+        error ("[%d] Zone worker ID = %d cannot bind to the port %d.", self->serverId, self->globalPort);
         return NULL;
     }
-    info ("[%d] Zone worker ID = %d listening to the private port %d.", self->serverId, self->workerId, self->globalPort);
+    info ("[%d] Zone worker ID = %d connected to the private global port %d.", self->serverId, self->workerId, self->globalPort);
 
     // Create and connect a socket to the session server frontend
     if (!(self->sessionServer = zsock_new (ZMQ_REQ))

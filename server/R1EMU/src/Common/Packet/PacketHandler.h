@@ -19,7 +19,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "Common/ClientSession/ClientSession.h"
+#include "Common/Session/ClientSession.h"
 
 // ---------- Defines -------------
 

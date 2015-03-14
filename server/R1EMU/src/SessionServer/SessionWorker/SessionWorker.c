@@ -18,7 +18,7 @@
 // ---------- Includes ------------
 #include "SessionWorker.h"
 #include "SessionServer/SessionServer.h"
-#include "Common/ClientSession/ClientSession.h"
+#include "Common/Session/ClientSession.h"
 
 
 // ------ Structure declaration -------
@@ -48,7 +48,7 @@ SessionWorker *
 SessionWorker_new (
     int workerId,
     int serverId,
-    zhash_t *sessions
+    SessionTable *sessionsTable
 ) {
     SessionWorker *self;
 
@@ -56,7 +56,7 @@ SessionWorker_new (
         return NULL;
     }
 
-    if (!SessionWorker_init (self, workerId, serverId, sessions)) {
+    if (!SessionWorker_init (self, workerId, serverId, sessionsTable)) {
         SessionWorker_destroy (&self);
         error ("SessionWorker failed to initialize.");
         return NULL;
@@ -71,10 +71,10 @@ SessionWorker_init (
     SessionWorker *self,
     int workerId,
     int serverId,
-    zhash_t *sessions
+    SessionTable *sessionsTable
 ) {
     self->workerId = workerId;
-    self->sessions = sessions;
+    self->sessionsTable = sessionsTable;
     self->serverId  = serverId;
 
     return true;
@@ -87,15 +87,6 @@ SessionWorker_handlePingPacket (
 ) {
     return zframe_new (PACKET_HEADER (SESSION_SERVER_PONG), sizeof (SESSION_SERVER_PONG));
 }
-
-static ClientSession *
-SessionWorker_lookupSession (
-    SessionWorker *self,
-    unsigned char *sessionKey
-) {
-    return zhash_lookup (self->sessions, sessionKey);
-}
-
 
 static zframe_t *
 SessionWorker_updateSession (
@@ -113,7 +104,7 @@ SessionWorker_updateSession (
     newSession = (ClientSession *) zframe_data (sessionFrame);
 
     // Search for it in the hashtable
-    if (!(oldSession = SessionWorker_lookupSession (self, sessionKey))) {
+    if (!(oldSession = SessionTable_lookup (self->sessionsTable, sessionKey))) {
         // It doesn't exist, throw an error
         error ("The session server cannot update a session that doesn't exist.");
         return zframe_new (PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION_FAILED), sizeof (SESSION_SERVER_UPDATE_SESSION_FAILED));
@@ -141,11 +132,10 @@ SessionWorker_deleteSession (
     ClientSession_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
 
     // Delete
-    zhash_delete (self->sessions, sessionKey);
+    SessionTable_delete (self->sessionsTable, sessionKey);
 
     return zframe_new (PACKET_HEADER (SESSION_SERVER_DELETE_SESSION_OK), sizeof (SESSION_SERVER_DELETE_SESSION_OK));
 }
-
 
 static zframe_t *
 SessionWorker_getSession (
@@ -161,12 +151,10 @@ SessionWorker_getSession (
     ClientSession_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
 
     // Search for it in the hashtable
-    if (!(session = SessionWorker_lookupSession (self, sessionKey))) {
+    if (!(session = SessionTable_lookup (self->sessionsTable, sessionKey))) {
         // Create it if it doesn't exists
         dbg ("Welcome USER_%s ! A new session has been created for you.", sessionKey);
-        session = ClientSession_new ();
-        zhash_insert (self->sessions, sessionKey, session);
-        zhash_freefn (self->sessions, sessionKey, (zhash_free_fn *) ClientSession_free);
+        session = SessionTable_create (self->sessionsTable, sessionKey);
     } else {
         // Session already exist
         dbg ("Welcome back USER_%s !", sessionKey);

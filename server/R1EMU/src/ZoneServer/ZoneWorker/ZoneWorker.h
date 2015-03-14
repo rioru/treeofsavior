@@ -101,6 +101,20 @@ ZoneWorker_worker (
 );
 
 
+
+/**
+ * @brief Request a session from the Barrack server
+ * @param self An allocated ZoneWorker
+ * @param accountId The account ID of the session
+ * @return a zframe_t on success, NULL otherwise
+ */
+zframe_t *
+ZoneWorker_getBarrackSession (
+    ZoneWorker *self,
+    uint64_t accountId
+);
+
+
 /**
  * @brief Free an allocated ZoneWorker structure and nullify the content of the pointer.
  * @param self A pointer to an allocated ZoneWorker.
