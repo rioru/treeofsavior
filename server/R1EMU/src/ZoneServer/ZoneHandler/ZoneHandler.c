@@ -153,6 +153,7 @@ ZoneHandler_connect (
     }
 
     barrackSession = (ClientSession *) zframe_data (barrackSessionFrame);
+    (void) barrackSession;
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
