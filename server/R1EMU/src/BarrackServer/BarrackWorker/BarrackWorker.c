@@ -86,8 +86,6 @@ BarrackWorker_init (
 ) {
     // Initialize seed
     self->seed = R1EMU_seed_random (workerId);
-    error ("SEED = %x", self->seed);
-
     self->workerId = workerId;
 
     return true;
