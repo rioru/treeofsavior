@@ -42,10 +42,6 @@
 			<Add library="czmq" />
 			<Add directory="../../../lib" />
 		</Linker>
-		<Unit filename="../../../src/Common/ClientSession/ClientSession.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/Common/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -70,6 +66,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Packet/PacketType.h" />
+		<Unit filename="../../../src/Common/Session/ClientSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Session/ClientSession.h" />
+		<Unit filename="../../../src/Common/Session/SessionTable.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Session/SessionTable.h" />
 		<Unit filename="../../../src/Common/dbg/dbg.c">
 			<Option compilerVar="CC" />
 		</Unit>
