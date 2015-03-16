@@ -67,7 +67,7 @@ ZoneWorker_processInternPacket (
  * @brief Handle a request from the public ports
  * @param self An allocated ZoneWorker structure
  * @param worker The socket listening on the public port
- * @return 0 on end of stream, -1 on error, 1 on success
+ * @return -2 on end of stream, -1 on error, 0 on success
 */
 static int
 ZoneWorker_handlePublicRequest (
@@ -79,7 +79,7 @@ ZoneWorker_handlePublicRequest (
  * @brief Handle a request from the private ports (coming from global server)
  * @param self An allocated ZoneWorker structure
  * @param worker The socket listening on the public port
- * @return 0 on end of stream, -1 on error, 1 on success
+ * @return -2 on end of stream, -1 on error, 0 on success
 */
 static int
 ZoneWorker_handlePrivateRequest (
@@ -257,6 +257,7 @@ ZoneWorker_worker (
     zframe_t *readyFrame;
     zsock_t *worker, *global;
     zpoller_t *poller;
+    bool isRunning = true;
 
     ZoneWorker *self = (ZoneWorker *) arg;
 
@@ -302,16 +303,31 @@ ZoneWorker_worker (
 
     dbg ("[%d] Zone worker ID %d is running and waiting for messages.", self->serverId, self->workerId);
 
-    while (true) {
+    while (isRunning) {
 
         zsock_t *actor = zpoller_wait (poller, -1);
+        typedef int (*ZoneWorkerRequestHandler) (ZoneWorker *self, zsock_t *actor);
+        ZoneWorkerRequestHandler handler;
 
+        // Get the correct handler based on the actor
         if (actor == worker) {
-            ZoneWorker_handlePublicRequest (self, worker);
+            handler = ZoneWorker_handlePublicRequest;
         } else if (actor == global) {
-            ZoneWorker_handlePrivateRequest (self, global);
-        } else {
+            handler = ZoneWorker_handlePrivateRequest;
+        }
+        else {
             error ("[%d] Unknown actor talked to the ZoneWorker ID = %d.", self->serverId, self->workerId);
+            continue;
+        }
+
+        switch (handler (self, actor)) {
+            case -1: // ERROR
+                error ("[%d] Zone worker ID %d encountered an error when handling a request.", self->serverId, self->workerId);
+            case -2: // Connection stopped
+                isRunning = false;
+            break;
+
+            case 0: /* OK */ break;
         }
     }
 
@@ -332,7 +348,7 @@ ZoneWorker_handlePrivateRequest (
     // Process messages as they arrive
     if (!(msg = zmsg_recv (global))) {
         dbg ("[%d] Zone worker ID = %d stops working.", self->serverId, self->workerId);
-        return 0;
+        return -2;
     }
 
     ZoneWorker_processGlobalPacket (self, msg);
@@ -340,9 +356,10 @@ ZoneWorker_handlePrivateRequest (
     // Reply back to the sender
     if (zmsg_send (&msg, global) != 0) {
         warning ("[%d] Zone worker ID = %d failed to send a message to the backend.", self->serverId, self->workerId);
+        return -1;
     }
 
-    return 1;
+    return 0;
 }
 
 static void
@@ -384,7 +401,7 @@ ZoneWorker_handlePublicRequest (
     // Process messages as they arrive
     if (!(msg = zmsg_recv (worker))) {
         dbg ("[%d] Zone worker ID = %d stops working.", self->serverId, self->workerId);
-        return 0;
+        return -2;
     }
 
     // No message should be with less than 3 frames
@@ -415,7 +432,7 @@ ZoneWorker_handlePublicRequest (
         warning ("[%d] Zone worker ID = %d failed to send a message to the backend.", self->serverId, self->workerId);
     }
 
-    return 1;
+    return 0;
 }
 
 void

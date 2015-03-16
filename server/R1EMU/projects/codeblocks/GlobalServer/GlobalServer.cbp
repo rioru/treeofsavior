@@ -82,10 +82,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
-		<Unit filename="../../../src/GlobalServer/GlobalWorker/GlobalWorker.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/GlobalServer/GlobalWorker/GlobalWorker.h" />
 		<Unit filename="../../../src/GlobalServer/main.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -12,26 +12,32 @@
 
 // ---------- Includes ------------
 #include "GlobalServer.h"
-#include "GlobalWorker/GlobalWorker.h"
 #include "ZoneServer/ZoneServer.h"
 
 
 // ------ Structure declaration -------
+typedef struct {
+    int sessionPort;
+} ServerInformation;
+
 /**
  * @brief GlobalServer detains the authority on all the zone servers
  * It communicates with the nodes that need to communicates with all the zone servers.
  */
 struct GlobalServer
 {
-    /** Barrack server frontend socket. Listens to ports exposed to the clients */
-    zsock_t *frontend;
+    /** Table of barrack and zone servers information. */
+    ServerInformation *serversInformation;
 
-    /** Barrack server backend socket. Listens to "barrackWorkers" endpoint */
-    zsock_t *backend;
+    /** Socket listening to the CLI */
+    zsock_t *cliConnection;
+
+    /** Socket talking to the zones */
+    zsock_t *zonesConnection;
 
     // ----- Configuration -----
     /** Frontend port of the global server. It shouldn't be opened on internet. */
-    int frontendPort;
+    int cliPort;
 
     /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
     int *zoneServersPorts;
@@ -48,34 +54,6 @@ struct GlobalServer
 
 
 // ------ Static declaration ------
-
-/**
- * @brief Frontend ROUTER handler of the Global Server
- * @param loop The reactor handler
- * @param frontend The frontend socket
- * @param self The globalServer
- * @return 0 on success, -1 on error
- */
-static int
-GlobalServer_frontend (
-    zloop_t *loop,
-    zsock_t *frontend,
-    void *self
-);
-
-/**
- * @brief Backend ROUTER handler of the Global Server
- * @param loop The reactor handler
- * @param backend The backend socket
- * @param self The globalServer
- * @return 0 on success, -1 on error
- */
-static int
-GlobalServer_backend (
-    zloop_t *loop,
-    zsock_t *backend,
-    void *self
-);
 
 
 // ------ Extern function implementation ------
@@ -119,11 +97,11 @@ GlobalServer_init (
     }
 
     // Read the frontend port
-    if (!(self->frontendPort = atoi (zconfig_resolve (conf, "globalServer/CLIport", NULL)))
+    if (!(self->cliPort = atoi (zconfig_resolve (conf, "globalServer/CLIport", NULL)))
     ) {
         warning ("Cannot read correctly the CLI port in the configuration file (%s). ", confFilePath);
         warning ("The default port = %d has been used.", GLOBAL_SERVER_CLI_PORT_DEFAULT);
-        self->frontendPort = GLOBAL_SERVER_CLI_PORT_DEFAULT;
+        self->cliPort = GLOBAL_SERVER_CLI_PORT_DEFAULT;
     }
 
     // Read the zones port
@@ -164,92 +142,56 @@ GlobalServer_init (
     // Close the configuration file
     zconfig_destroy (&conf);
 
-    // ==========================
-    //   Allocate ZMQ objects
-    // ==========================
-
-    // The frontend listens to a 0MQ socket.
-    if (!(self->frontend = zsock_new (ZMQ_ROUTER))) {
-        error ("Cannot allocate Global Server ROUTER frontend");
+    // ================================
+    //    Allocate server information
+    // ================================
+    // + 1 because it counts the barrack server
+    if (!(self->serversInformation = calloc (self->zoneServersCount + 1, sizeof (ServerInformation)))) {
+        error ("Cannot allocate servers information array.");
         return false;
     }
 
-    // Backend listens to a 0MQ socket.
-    if (!(self->backend = zsock_new (ZMQ_ROUTER))) {
-        error ("Cannot allocate Global Server ROUTER backend");
+    // ==========================
+    //   Allocate ZMQ objects
+    // ==========================
+    if (!(self->cliConnection = zsock_new (ZMQ_RAW_ROUTER))) {
+        error ("Cannot allocate a new CLI zsock.");
+        return false;
+    }
+    if (!(self->zonesConnection = zsock_new (ZMQ_REQ))) {
+        error ("Cannot allocate a new zones zsock.");
         return false;
     }
 
     return true;
 }
 
-
-static int
-GlobalServer_backend (
-    zloop_t *loop,
-    zsock_t *backend,
-    void *_self
+int
+GlobalServer_handleZonesRequest (
+    GlobalServer *self,
+    zsock_t *zone
 ) {
     zmsg_t *msg;
-    zframe_t *identity;
-    zframe_t *packet;
-    GlobalServer *self = (GlobalServer *) _self;
 
-    // Receive the message from the backend router
-    if (!(msg = zmsg_recv (backend))) {
-        // Interrupt
-        return 0;
+    if (!(msg = zmsg_recv (zone))) {
+        dbg ("Global Server stops working.");
+        return -2;
     }
 
-    // Retrieve the identity who sent the message
-    if (!(identity = zmsg_unwrap (msg))) {
-        error ("Worker identity cannot be retrieved.");
-        return -1;
-    }
-
-    // Get the content of the message
-    if (!(packet = zmsg_first (msg))) {
-        error ("Frame data cannot be retrieved.");
-        return -1;
-    }
-
-    // Forward the message to the frontend if it's not a READY signal
-    if (memcmp (zframe_data (packet), PACKET_HEADER (GLOBAL_SERVER_WORKER_READY), sizeof(GLOBAL_SERVER_WORKER_READY)) == 0) {
-        zmsg_destroy (&msg);
-    }
-    else {
-        if (zmsg_send (&msg, self->frontend) != 0) {
-            error ("Cannot send message to the frontend.");
-            return -1;
-        }
-    }
-
-	return 0;
+    return 0;
 }
 
-
-static int
-GlobalServer_frontend (
-    zloop_t *loop,
-    zsock_t *frontend,
-    void *_self
+int
+GlobalServer_handleCliRequest (
+    GlobalServer *self,
+    zsock_t *zone
 ) {
     zmsg_t *msg;
-    // GlobalServer *self = (GlobalServer *) _self;
 
-    // Receive the message from the frontend router
-    if (!(msg = zmsg_recv (frontend))) {
-        // Interrupt
-        return 0;
+    if (!(msg = zmsg_recv (zone))) {
+        dbg ("Global Server stops working.");
+        return -2;
     }
-
-    // Forward message to the targeted zone server
-    /*
-    if (zmsg_send (&msg, self->backend) != 0) {
-        error ("Frontend cannot send message to the backend");
-        return -1;
-    }
-    */
 
     return 0;
 }
@@ -259,19 +201,36 @@ bool
 GlobalServer_start (
     GlobalServer *self
 ) {
-    zloop_t *reactor;
+    zpoller_t *poller;
+    bool isRunning = true;
 
     // ===================================
-    //       Initialize backend
+    //     Initialize CLI connection
     // ===================================
+    // CLI should communicates through BSD sockets
+    zsock_set_router_raw (self->cliConnection, true);
 
-    if (zsock_bind (self->backend, GLOBAL_SERVER_BACKEND_ENDPOINT) == -1) {
-        error ("Failed to bind Global Server ROUTER backend.");
+    if (zsock_bind (self->cliConnection, GLOBAL_SERVER_CLI_ENDPOINT, self->cliPort) == -1) {
+        error ("Failed to bind CLI port.");
         return false;
     }
-    info ("Backend listening on %s.", GLOBAL_SERVER_BACKEND_ENDPOINT);
+    info ("CLI connection binded on port %s.", zsys_sprintf (GLOBAL_SERVER_CLI_ENDPOINT, self->cliPort));
 
-    // Initialize N zone servers.
+
+    // ===================================
+    //     Initialize Zones connection
+    // ===================================
+    if (zsock_bind (self->zonesConnection, GLOBAL_SERVER_ZONES_ENDPOINT, self->zonesPort) == -1) {
+        error ("Failed to bind zones port.");
+        return false;
+    }
+    info ("Zones connection binded on port %s.", zsys_sprintf (GLOBAL_SERVER_ZONES_ENDPOINT, self->zonesPort));
+
+
+    // ===================================
+    //     Initialize N zone servers
+    // ===================================
+
     for (int zoneServerId = 0; zoneServerId < self->zoneServersCount; zoneServerId++) {
         ZoneServer *zoneServer;
 
@@ -288,29 +247,42 @@ GlobalServer_start (
         ZoneServer_destroy (&zoneServer);
     }
 
-    // ====================================
-    //   Prepare a reactor and fire it up
-    // ====================================
-
-    if (!(reactor = zloop_new ())) {
-        error ("Cannot allocate a new reactor.");
-        return false;
+    // Define a poller with the zones and the CLI sockets
+    if (!(poller = zpoller_new (self->cliConnection, self->zonesConnection, NULL))) {
+        error ("Global server cannot create a poller.");
+        return NULL;
     }
 
-	if (zloop_reader (reactor, self->backend,  GlobalServer_backend,  self) == -1
-    ||  zloop_reader (reactor, self->frontend, GlobalServer_frontend, self) == -1
-    ) {
-        error ("Cannot register the sockets with the reactor.");
-        return false;
-    }
-
+    // Listens to requests
     info ("GlobalServer is ready and running.");
-    if (zloop_start (reactor) != 0) {
-        error ("An error occurred in the reactor.");
-        return false;
-    }
 
-    zloop_destroy (&reactor);
+    while (isRunning) {
+        zsock_t *actor = zpoller_wait (poller, -1);
+        typedef int (*GlobalServerRequestHandler) (GlobalServer *self, zsock_t *actor);
+        GlobalServerRequestHandler handler;
+
+        // Get the correct handler based on the actor
+        if (actor == self->zonesConnection) {
+            handler = GlobalServer_handleZonesRequest;
+        } else if (actor == self->cliConnection) {
+            handler = GlobalServer_handleCliRequest;
+        }
+        else {
+            error ("Unknown actor talked to the Global Server.");
+            continue;
+        }
+
+        switch (handler (self, actor)) {
+            case -1: // ERROR
+                error ("Global Server encountered an error when handling a request.");
+            case -2: // Connection stopped
+                isRunning = false;
+            break;
+
+            case 0: // OK
+            break;
+        }
+    }
 
     return true;
 }
@@ -322,12 +294,8 @@ GlobalServer_destroy (
 ) {
     GlobalServer *self = *_self;
 
-    if (self->frontend) {
-        zsock_destroy (&self->frontend);
-    }
-
-    if (self->backend) {
-        zsock_destroy (&self->backend);
+    if (self->serversInformation) {
+        free (self->serversInformation);
     }
 
     free (self);

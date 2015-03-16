@@ -22,8 +22,8 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-#define GLOBAL_SERVER_FRONTEND_ENDPOINT     "tcp://127.0.0.1:%d"
-#define GLOBAL_SERVER_BACKEND_ENDPOINT      "inproc://globalServerWorkersBackend"
+#define GLOBAL_SERVER_CLI_ENDPOINT        "tcp://127.0.0.1:%d"
+#define GLOBAL_SERVER_ZONES_ENDPOINT      "tcp://127.0.0.1:%d"
 
 // Configuration default values
 #define GLOBAL_SERVER_CLI_PORT_DEFAULT         2003
@@ -33,7 +33,6 @@
 // We want to differentiate the recv header from the send header, but we want to keep a list
 // with uniques header id. So let's declare all the ids here, and distribute them afterward
 typedef enum GlobalServerHeader {
-    _GLOBAL_SERVER_WORKER_READY,            // Ready
     _GLOBAL_SERVER_PING,                    // Ping
     _GLOBAL_SERVER_PONG,                    // Pong
 }   GlobalServerHeader;
@@ -49,7 +48,6 @@ typedef enum GlobalServerRecvHeader {
 
 /** Enumeration of all the packets header that the global server sends */
 typedef enum GlobalServerSendHeader {
-    DECL_GLOBAL_SERVER_HEADER (GLOBAL_SERVER_WORKER_READY),
     DECL_GLOBAL_SERVER_HEADER (GLOBAL_SERVER_PONG),
 }   GlobalServerSendHeader;
 
