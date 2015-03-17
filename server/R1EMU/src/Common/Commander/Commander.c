@@ -27,6 +27,7 @@ Commander_CreateBasicCommander (
     void
 ) {
     CommanderInfo commander;
+    memset (&commander, 0, sizeof (commander));
 
     commander.classId = 10001;
     commander.jobId = 1;

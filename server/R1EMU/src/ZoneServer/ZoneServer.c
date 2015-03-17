@@ -266,9 +266,30 @@ ZoneServer_backend (
         zmsg_destroy (&msg);
     }
     else {
-        if (zmsg_send (&msg, self->frontend) != 0) {
-            error ("Cannot send message to the frontend.");
-            return -1;
+        zmsg_first (msg);
+        zframe_t * secondFrame = zmsg_next (msg);
+
+        if (zmsg_size (msg) == 2
+        || (zmsg_size (msg) == 3 && zframe_size (secondFrame) == 0)) {
+            // Simple message : [1 frame identity] + [1 frame data]
+            // Or             : [1 frame identity] + [1 empty frame] + [1 frame data]
+
+            if (zmsg_send (&msg, self->frontend) != 0) {
+                error ("Cannot send message to the frontend.");
+                return -1;
+            }
+        } else {
+            // Multiple messages : [1 frame identity] + [1 frame data] + [1 frame data] + ... + [1 frame data]
+            // Send N messages [1 frame identity] + [1 frame data]
+            zframe_t *identity = zmsg_pop (msg);
+            int msgCount = zmsg_size (msg);
+            for (int i = 0; i < msgCount; i++) {
+                zmsg_t *subMsg = zmsg_new ();
+                zmsg_add (subMsg, zframe_dup (identity));
+                zmsg_add (subMsg, zmsg_pop (msg));
+                zmsg_send (&subMsg, self->frontend);
+            }
+            zframe_destroy (&identity);
         }
     }
 

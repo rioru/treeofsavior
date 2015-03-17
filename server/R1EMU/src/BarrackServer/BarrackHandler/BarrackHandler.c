@@ -392,6 +392,7 @@ BarrackHandler_commanderCreate (
     }
 
     BcCommanderCreatePacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = BC_COMMANDER_CREATE;
     replyPacket.commander = Commander_CreateBasicCommander();

@@ -72,14 +72,13 @@ ZoneHandler_gameReady (
     #pragma pack(pop)
 
     ZcStartGamePacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_START_GAME;
     replyPacket.timeMultiplier = 1.0;
     replyPacket.serverAppTimeOffset = 0.0;
     replyPacket.globalAppTimeOffset = 0.0;
     replyPacket.serverDateTime = 0.0;
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     // ===== The game starts from this point =====
     // Add additional information
@@ -89,6 +88,8 @@ ZoneHandler_gameReady (
     ZoneHandler_moveSpeed (session, reply);
     ZoneHandler_MyPCEnter (session, reply);
     ZoneHandler_setPos (session, reply, session->currentPcId, 1142.29, 1000, -32.42);
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return PACKET_HANDLER_OK;
 }
@@ -143,10 +144,12 @@ ZoneHandler_connect (
 
     CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
     ZcConnectPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     // A new user just connected to the zone server
     // Its session is empty and must be updated from the barrack server.
     // Ask for the session to the barrack server
+    /*
     if (!(barrackSessionFrame = ZoneWorker_getBarrackSession (self, clientPacket->accountId))) {
         error ("Cannot retrieve the session from the barrack server.");
         return PACKET_HANDLER_ERROR;
@@ -154,6 +157,7 @@ ZoneHandler_connect (
 
     barrackSession = (ClientSession *) zframe_data (barrackSessionFrame);
     (void) barrackSession;
+    */
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
@@ -195,6 +199,7 @@ ZoneHandler_setPos (
     #pragma pack(pop)
 
     ZcSetPosPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_SET_POS;
     replyPacket.pcId = pcId;
@@ -220,6 +225,7 @@ ZoneHandler_MyPCEnter (
     #pragma pack(pop)
 
     ZcMyPcEnterPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_MYPC_ENTER;
 
@@ -245,6 +251,7 @@ ZoneHandler_moveSpeed (
     #pragma pack(pop)
 
     ZcMoveSpeedPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_MOVE_SPEED;
 
@@ -284,6 +291,7 @@ ZoneHandler_quickSlotListHandler (
     #pragma pack(pop)
 
     ZcQuickSlotListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_QUICK_SLOT_LIST;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
