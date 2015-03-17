@@ -159,6 +159,15 @@ ZoneHandler_connect (
     (void) barrackSession;
     */
 
+    // === Fake a correct session ===
+    session->currentPcId = 0xFF;
+    session->currentCommanderId = 0xBADBADBADBADBAD;
+    session->charactersBarrackCount = 1;
+    session->accountId = 0xDEADDEADDEADDEAD;
+    strcpy (session->familyName, "FamilyName");
+    strcpy (session->currentCommanderName, "Rioru");
+    // ===============================
+
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
 
@@ -177,9 +186,19 @@ ZoneHandler_connect (
     // AccountID
     replyPacket.commander.accountId = session->accountId;
 
+    // PCID
+    replyPacket.commander.pcId = session->currentPcId;
+
+    // CommanderID
+    replyPacket.commander.commanderId = session->currentCommanderId;
+
+    // Character position
+    replyPacket.commander.listPosition = session->charactersBarrackCount + 1;
+    replyPacket.commander.charPosition = session->charactersBarrackCount + 1;
+
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return PACKET_HANDLER_OK;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 

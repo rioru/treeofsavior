@@ -58,6 +58,15 @@ Commander_CreateBasicCommander (
     commander.spriteRelated = 2;
     commander.mapId = 0x551;
 
+    // Fill with dummy stats
+    commander.currentXP = 6000;
+    commander.maxXP = 12000;
+    commander.currentHP = 6000;
+    commander.maxHP = 12000;
+    commander.currentSP = 6000;
+    commander.maxSP = 12000;
+    commander.level = 10;
+
     return commander;
 }
 
