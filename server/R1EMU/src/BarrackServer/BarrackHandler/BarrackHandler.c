@@ -86,7 +86,7 @@ BarrackHandler_startGame (
     typedef struct {
         ServerPacketHeader header;
         uint32_t zoneServerId;
-        unsigned char zoneServerDomainName[32];
+        unsigned char zoneServerIp[32];
         uint32_t zoneServerPort;
         uint32_t mapId;
         uint8_t channelListId;
@@ -95,6 +95,8 @@ BarrackHandler_startGame (
         uint8_t isSingleMap;
     } BcStartGamePacket;
     #pragma pack(pop)
+
+
 
     if (sizeof (CbStartGamePacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
@@ -107,9 +109,20 @@ BarrackHandler_startGame (
     BcStartGamePacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
+
+    // Retrieve zone servers IPs from global server
+    char *zoneServerIps[] = {
+        "127.0.0.1",
+        "127.0.0.1",
+        "172.28.128.3"
+    };
+    //! TODO : Check BOF
+    char *zoneServerIp = zoneServerIps [clientPacket->channelListId];
+
+
     replyPacket.header.type = BC_START_GAMEOK;
     replyPacket.zoneServerId = 0x12345678;
-    strncpy (replyPacket.zoneServerDomainName, "127.0.0.1", sizeof (replyPacket.zoneServerDomainName));
+    strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));
     replyPacket.zoneServerPort = 2004;
     replyPacket.mapId = 0x551;
     replyPacket.channelListId = clientPacket->channelListId;
