@@ -43,6 +43,9 @@ struct BarrackServer
     int overloadWorker;
 
     // ----- Configuration -----
+    /** The IP of the server */
+    char *serverIp;
+
     /** Count of public ports exposed to the clients */
     int publicPortsCount;
 
@@ -146,10 +149,17 @@ BarrackServer_init (
     }
 
     // Read the number of barrack server workers
-    if (!(self->workersCount = atoi (zconfig_resolve (conf, "barrackServer/workers_count", NULL)))) {
+    if (!(self->workersCount = atoi (zconfig_resolve (conf, "barrackServer/workersCount", NULL)))) {
         warning ("Cannot read correctly the barrack workers count in the configuration file (%s). ", confFilePath);
         warning ("The default worker count = %d has been used.", BARRACK_SERVER_WORKERS_COUNT_DEFAULT);
         self->workersCount = BARRACK_SERVER_WORKERS_COUNT_DEFAULT;
+    }
+
+    // Read the server interface IP
+    if (!(self->serverIp = strdup (zconfig_resolve (conf, "barrackServer/serverIP", NULL)))) {
+        warning ("Cannot read correctly the barrack interface IP in the configuration file (%s). ", confFilePath);
+        warning ("The default IP = %s has been used.", BARRACK_SERVER_FRONTEND_IP_DEFAULT);
+        self->serverIp = BARRACK_SERVER_FRONTEND_IP_DEFAULT;
     }
 
     // Close the configuration file
@@ -159,8 +169,8 @@ BarrackServer_init (
     //   Allocate ZMQ objects
     // ==========================
 
-    // The frontend listens to a RAW socket, not a 0MQ socket.
-    if (!(self->frontend = zsock_new (ZMQ_RAW_ROUTER))) {
+    // The frontend listens to a BSD socket, not a 0MQ socket.
+    if (!(self->frontend = zsock_new (ZMQ_STREAM))) {
         error ("Cannot allocate Barrack Server ROUTER frontend");
         return false;
     }
@@ -372,15 +382,12 @@ BarrackServer_start (
 
     // Fill the client specifications :
     // - It connects to port 2000 and 2001 by default (configurable in serverlist_recent.xml)
-    // - It communicates with the server through a RAW socket.
-
-    // Set the ROUTER as a RAW socket.
-    zsock_set_router_raw (self->frontend, true);
+    // - It communicates with the server through a BSD socket.
 
     // Bind the endpoints for the ROUTER frontend
     for (int i = 0; i < self->publicPortsCount; i++) {
-        if (zsock_bind (self->frontend, BARRACK_SERVER_FRONTEND_ENDPOINT, self->publicPorts[i]) == -1) {
-            error ("Failed to bind Barrack Server ROUTER frontend to the port %d.", self->publicPorts[i]);
+        if (zsock_bind (self->frontend, BARRACK_SERVER_FRONTEND_ENDPOINT, self->serverIp, self->publicPorts[i]) == -1) {
+            error ("Failed to bind Barrack Server frontend to the endpoint : %s:%d.", self->serverIp, self->publicPorts[i]);
             return false;
         }
         info ("Frontend listening on port %d.", self->publicPorts[i]);

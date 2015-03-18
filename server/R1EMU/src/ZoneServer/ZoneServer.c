@@ -49,6 +49,9 @@ struct ZoneServer
     int overloadWorker;
 
     // ----- Configuration -----
+    /** The IP of the server */
+    char *serverIp;
+
     /** Public port exposed to the clients */
     int frontendPort;
 
@@ -96,6 +99,7 @@ ZoneServer_backend (
 ZoneServer *
 ZoneServer_new (
     int zoneServerId,
+    char *serverIp,
     int frontendPort,
     int workersCount,
     int privateGlobalPort
@@ -106,7 +110,7 @@ ZoneServer_new (
         return NULL;
     }
 
-    if (!ZoneServer_init (self, zoneServerId, frontendPort, workersCount, privateGlobalPort)) {
+    if (!ZoneServer_init (self, zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort)) {
         ZoneServer_destroy (&self);
         error ("ZoneServer failed to initialize.");
         return NULL;
@@ -120,6 +124,7 @@ bool
 ZoneServer_init (
     ZoneServer *self,
     int zoneServerId,
+    char *serverIp,
     int frontendPort,
     int workersCount,
     int privateGlobalPort
@@ -128,13 +133,14 @@ ZoneServer_init (
     self->workersCount = workersCount;
     self->frontendPort = frontendPort;
     self->privateGlobalPort = privateGlobalPort;
+    self->serverIp = serverIp;
 
     // ==========================
     //   Allocate ZMQ objects
     // ==========================
 
-    // The frontend listens to a RAW socket, not a 0MQ socket.
-    if (!(self->frontend = zsock_new (ZMQ_RAW_ROUTER))) {
+    // The frontend listens to a BSD socket, not a 0MQ socket.
+    if (!(self->frontend = zsock_new (ZMQ_STREAM))) {
         error ("Cannot allocate Zone Server ROUTER frontend");
         return false;
     }
@@ -174,16 +180,11 @@ bool
 ZoneServer_launchZoneServer (
     ZoneServer *self
 ) {
-    char *zoneServerIdArg = zsys_sprintf ("%d", self->zoneServerId);
-    char *zoneServerPortArg = zsys_sprintf ("%d", self->frontendPort);
-    char *zoneWorkersCountArg = zsys_sprintf ("%d", self->workersCount);
-    char *zonePrivateGlobalPort = zsys_sprintf ("%d", self->privateGlobalPort);
-
-    char *commandLine = zsys_sprintf ("%s %d %d %d %d",
-        ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->frontendPort, self->workersCount, self->privateGlobalPort);
-    info ("CommandLine : %s", commandLine);
-
     #ifdef WIN32
+        char *commandLine = zsys_sprintf ("%s %d %s %d %d %d",
+            ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->serverIp, self->frontendPort, self->workersCount, self->privateGlobalPort);
+        info ("CommandLine : %s", commandLine);
+
         STARTUPINFO si = {0};
         PROCESS_INFORMATION pi = {0};
         if (!CreateProcess (ZONE_SERVER_EXECUTABLE_NAME ".exe", commandLine, NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
@@ -194,9 +195,18 @@ ZoneServer_launchZoneServer (
             );
             error ("Error reason : %s", errorReason);
         }
+
+
+        zstr_free (&commandLine);
     #else
+
+    char *zoneServerIdArg = zsys_sprintf ("%d", self->zoneServerId);
+    char *zoneServerPortArg = zsys_sprintf ("%d", self->frontendPort);
+    char *zoneWorkersCountArg = zsys_sprintf ("%d", self->workersCount);
+    char *zonePrivateGlobalPort = zsys_sprintf ("%d", self->privateGlobalPort);
+
     const char *argv[] = {
-        ZONE_SERVER_EXECUTABLE_NAME, zoneServerIdArg, zoneServerPortArg,
+        ZONE_SERVER_EXECUTABLE_NAME, zoneServerIdArg, self->serverIp, zoneServerPortArg,
         zoneWorkersCountArg,  zonePrivateGlobalPort, NULL
     };
     if (fork () == 0) {
@@ -204,13 +214,12 @@ ZoneServer_launchZoneServer (
                 error ("Cannot launch Zone Server executable : %s.", ZONE_SERVER_EXECUTABLE_NAME);
             }
     }
-    #endif
-
     zstr_free (&zoneServerIdArg);
     zstr_free (&zoneServerPortArg);
     zstr_free (&zoneWorkersCountArg);
     zstr_free (&zonePrivateGlobalPort);
-    zstr_free (&commandLine);
+
+    #endif
 
     return true;
 }
@@ -386,12 +395,10 @@ ZoneServer_start (
 
     // Fill the client specifications :
     // - It connects to zone server port given in BC_START_GAMEOK
-    // - It communicates with the zone server through a RAW socket.
-    // Set the ROUTER as a RAW socket.
-    zsock_set_router_raw (self->frontend, true);
+    // - It communicates with the zone server through a BSD socket.
 
     // Bind the endpoint for the ROUTER frontend
-    if (zsock_bind (self->frontend, ZONE_SERVER_FRONTEND_ENDPOINT, self->frontendPort) == -1) {
+    if (zsock_bind (self->frontend, ZONE_SERVER_FRONTEND_ENDPOINT, self->serverIp, self->frontendPort) == -1) {
         error ("Failed to bind Zone Server ROUTER frontend to the port %d.", self->frontendPort);
         return NULL;
     }

@@ -20,7 +20,7 @@
 #include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
-#define ZONE_SERVER_FRONTEND_ENDPOINT           "tcp://127.0.0.1:%d"
+#define ZONE_SERVER_FRONTEND_ENDPOINT           "tcp://%s:%d"
 #define ZONE_SERVER_GLOBAL_ENDPOINT             "tcp://127.0.0.1:%d"
 #define ZONE_SERVER_BACKEND_ENDPOINT            "inproc://zoneServerWorkersBackend-%d"
 #define ZONE_SERVER_EXECUTABLE_NAME             "ZoneServer"
@@ -66,6 +66,7 @@ typedef struct ZoneServer ZoneServer;
 /**
  * @brief Allocate a new ZoneServer structure.
  * @param zoneServerId The zone server ID
+ * @param serverIp The IP of the zone server
  * @param frontendPort The zone server port opened to the internet
  * @param workersCount Count of worker per zone server
  * @param privateGlobalPort The private port exposed to the global server
@@ -74,6 +75,7 @@ typedef struct ZoneServer ZoneServer;
 ZoneServer *
 ZoneServer_new (
     int zoneServerId,
+    char *serverIp,
     int frontendPort,
     int workersCount,
     int privateGlobalPort
@@ -84,6 +86,7 @@ ZoneServer_new (
  * @brief Initialize an allocated ZoneServer structure.
  * @param self An allocated ZoneServer to initialize.
  * @param zoneServerId The zone server ID
+ * @param serverIp The IP of the zone server
  * @param frontendPort The zone server port opened to the internet
  * @param workersCount Count of worker per zone server
  * @return true on success, false otherwise.
@@ -92,6 +95,7 @@ bool
 ZoneServer_init (
     ZoneServer *self,
     int zoneServerId,
+    char *serverIp,
     int frontendPort,
     int workersCount,
     int privateGlobalPort

@@ -42,6 +42,9 @@ struct GlobalServer
     /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
     int *zoneServersPorts;
 
+    /** Zone servers IP. */
+    char **zoneServersIp;
+
     /** Count of zone servers */
     int zoneServersCount;
 
@@ -133,10 +136,36 @@ GlobalServer_init (
     }
 
     // Read the number of barrack server workers
-    if (!(self->zoneWorkersCount = atoi (zconfig_resolve (conf, "zoneServer/workers_count", NULL)))) {
+    if (!(self->zoneWorkersCount = atoi (zconfig_resolve (conf, "zoneServer/workersCount", NULL)))) {
         warning ("Cannot read correctly the zone workers count in the configuration file (%s). ", confFilePath);
         warning ("The default worker count = %d has been used.", ZONE_SERVER_WORKERS_COUNT_DEFAULT);
         self->zoneWorkersCount = ZONE_SERVER_WORKERS_COUNT_DEFAULT;
+    }
+
+    char *zoneServersIp;
+    // Read the zone server interfaces IP
+    if (!(zoneServersIp = zconfig_resolve (conf, "zoneServer/serversIP", NULL))) {
+        error ("Cannot read correctly the zone servers interface IP in the configuration file (%s). ", confFilePath);
+        return false;
+    }
+
+    int nbZoneServersIp = 0;
+    char *serverIp = strtok (zoneServersIp, " ");
+    while (serverIp != NULL) {
+        serverIp = strtok (NULL, " ");
+        nbZoneServersIp++;
+    }
+
+    if (nbZoneServersIp != self->zoneServersCount) {
+        error ("Number of zone ports different from number of zone interfaces IP.");
+        return false;
+    }
+
+    // Fill the zone server IPs array
+    self->zoneServersIp = calloc (self->zoneServersCount, sizeof (char *));
+    for (int ipIndex = 0; ipIndex < self->zoneServersCount; ipIndex++) {
+        self->zoneServersIp[ipIndex] = strdup (zoneServersIp);
+        zoneServersIp += strlen (zoneServersIp) + 1;
     }
 
     // Close the configuration file
@@ -234,7 +263,7 @@ GlobalServer_start (
     for (int zoneServerId = 0; zoneServerId < self->zoneServersCount; zoneServerId++) {
         ZoneServer *zoneServer;
 
-        if (!(zoneServer = ZoneServer_new (zoneServerId + 1, self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->zonesPort))) {
+        if (!(zoneServer = ZoneServer_new (zoneServerId + 1, self->zoneServersIp[zoneServerId], self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->zonesPort))) {
             error ("Cannot create a new ZoneServer");
             continue;
         }

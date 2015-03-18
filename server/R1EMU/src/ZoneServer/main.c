@@ -29,12 +29,13 @@ int main (int argc, char **argv)
     }
 
     int zoneServerId = atoi (argv[1]);
-    int frontendPort = atoi (argv[2]);
-    int workersCount = atoi (argv[3]);
-    int privateGlobalPort = atoi (argv[4]);
+    char *serverIp = argv[2];
+    int frontendPort = atoi (argv[3]);
+    int workersCount = atoi (argv[4]);
+    int privateGlobalPort = atoi (argv[5]);
 
     // Initialize the Zone Server
-    if ((ZoneServer = ZoneServer_new (zoneServerId, frontendPort, workersCount, privateGlobalPort))) {
+    if ((ZoneServer = ZoneServer_new (zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort))) {
 
         // Start the Zone Server
         if (!ZoneServer_start (ZoneServer)) {

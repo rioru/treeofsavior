@@ -22,13 +22,14 @@
 #include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
-#define BARRACK_SERVER_FRONTEND_ENDPOINT        "tcp://127.0.0.1:%d"
+#define BARRACK_SERVER_FRONTEND_ENDPOINT        "tcp://%s:%d"
 #define BARRACK_SERVER_BACKEND_ENDPOINT         "inproc://barrackServerWorkersBackend"
 #define BARRACK_SERVER_ACTOR_ID                 0
 
 // Configuration default values
 #define BARRACK_SERVER_PORTS_DEFAULT            (char []) {"2000 2001"}
 #define BARRACK_SERVER_WORKERS_COUNT_DEFAULT    3
+#define BARRACK_SERVER_FRONTEND_IP_DEFAULT      "127.0.0.1"
 
 /** Enumeration of all the packets headers that the barrack server handles */
 // We want to differentiate the recv header from the send header, but we want to keep a list
