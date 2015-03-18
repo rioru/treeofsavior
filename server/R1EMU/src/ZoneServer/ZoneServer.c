@@ -177,6 +177,7 @@ ZoneServer_launchZoneServer (
     char *zoneServerIdArg = zsys_sprintf ("%d", self->zoneServerId);
     char *zoneServerPortArg = zsys_sprintf ("%d", self->frontendPort);
     char *zoneWorkersCountArg = zsys_sprintf ("%d", self->workersCount);
+    char *zonePrivateGlobalPort = zsys_sprintf ("%d", self->privateGlobalPort);
 
     char *commandLine = zsys_sprintf ("%s %d %d %d %d",
         ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->frontendPort, self->workersCount, self->privateGlobalPort);
@@ -195,8 +196,8 @@ ZoneServer_launchZoneServer (
         }
     #else
     const char *argv[] = {
-        ZONE_SERVER_EXECUTABLE_NAME, self->zoneServerIdArg, self->zoneServerPortArg,
-        self->zoneWorkersCountArg, self->sessionServerFrontendPortArg, NULL
+        ZONE_SERVER_EXECUTABLE_NAME, zoneServerIdArg, zoneServerPortArg,
+        zoneWorkersCountArg,  zonePrivateGlobalPort, NULL
     };
     if (fork () == 0) {
             if (execv (ZONE_SERVER_EXECUTABLE_NAME, argv) == -1) {
@@ -208,6 +209,7 @@ ZoneServer_launchZoneServer (
     zstr_free (&zoneServerIdArg);
     zstr_free (&zoneServerPortArg);
     zstr_free (&zoneWorkersCountArg);
+    zstr_free (&zonePrivateGlobalPort);
     zstr_free (&commandLine);
 
     return true;
