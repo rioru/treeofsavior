@@ -316,8 +316,8 @@ ZoneWorker_worker (
             handler = ZoneWorker_handlePrivateRequest;
         }
         else {
-            error ("[%d] Unknown actor talked to the ZoneWorker ID = %d.", self->serverId, self->workerId);
-            continue;
+            warning ("[%d] Unknown actor talked to the ZoneWorker ID = %d. Maybe CTRL+C signal?", self->serverId, self->workerId);
+            break;
         }
 
         switch (handler (self, actor)) {
