@@ -77,8 +77,8 @@ BarrackHandler_startGame (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        uint16_t unk1;
-        uint8_t channelListId;
+        uint16_t channelListId;
+        uint8_t commanderListId;
     } CbStartGamePacket;
     #pragma pack(pop)
 
@@ -89,7 +89,7 @@ BarrackHandler_startGame (
         unsigned char zoneServerIp[32];
         uint32_t zoneServerPort;
         uint32_t mapId;
-        uint8_t channelListId;
+        uint8_t commanderListId;
         uint32_t spriteId;
         uint32_t spriteIdRelated;
         uint8_t isSingleMap;
@@ -109,6 +109,7 @@ BarrackHandler_startGame (
     BcStartGamePacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
+    buffer_print (clientPacket, sizeof (*clientPacket), "clientPacket ");
 
     // Retrieve zone servers IPs from global server
     char *zoneServerIps[] = {
@@ -118,14 +119,13 @@ BarrackHandler_startGame (
     };
     //! TODO : Check BOF
     char *zoneServerIp = zoneServerIps [clientPacket->channelListId];
-    dbg ("zoneServerIp = %s", zoneServerIp);
 
     replyPacket.header.type = BC_START_GAMEOK;
     replyPacket.zoneServerId = 0x12345678;
     strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));
     replyPacket.zoneServerPort = 2004;
     replyPacket.mapId = 0x551;
-    replyPacket.channelListId = clientPacket->channelListId;
+    replyPacket.commanderListId = clientPacket->commanderListId;
     replyPacket.spriteId = 0;
     replyPacket.spriteIdRelated = 2;
     replyPacket.isSingleMap = false;
