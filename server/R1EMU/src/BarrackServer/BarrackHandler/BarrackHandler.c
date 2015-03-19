@@ -118,7 +118,7 @@ BarrackHandler_startGame (
     };
     //! TODO : Check BOF
     char *zoneServerIp = zoneServerIps [clientPacket->channelListId];
-
+    dbg ("zoneServerIp = %s", zoneServerIp);
 
     replyPacket.header.type = BC_START_GAMEOK;
     replyPacket.zoneServerId = 0x12345678;
