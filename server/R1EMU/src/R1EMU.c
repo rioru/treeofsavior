@@ -84,7 +84,7 @@ int gettimeofday (
 }
 #endif
 
- 
+uint32_t
 R1EMU_seed_random (
     uint32_t customData
 ) {
