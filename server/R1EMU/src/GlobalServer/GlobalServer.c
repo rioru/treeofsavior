@@ -279,7 +279,7 @@ GlobalServer_start (
     // Define a poller with the zones and the CLI sockets
     if (!(poller = zpoller_new (self->cliConnection, self->zonesConnection, NULL))) {
         error ("Global server cannot create a poller.");
-        return NULL;
+        return false;
     }
 
     // Listens to requests

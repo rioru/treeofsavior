@@ -101,7 +101,7 @@ SessionTable_delete (
     SessionTable *self,
     unsigned char *key
 ) {
-    return zhash_delete (self->sessions, key);
+    zhash_delete (self->sessions, key);
 }
 
 void

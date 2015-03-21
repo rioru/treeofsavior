@@ -87,7 +87,7 @@ ZoneHandler_gameReady (
     ZoneHandler_startInfo (session, reply);
     ZoneHandler_moveSpeed (session, reply);
     ZoneHandler_MyPCEnter (session, reply);
-    ZoneHandler_setPos (session, reply, session->currentPcId, 1142.29, 1000, -32.42);
+    ZoneHandler_setPos (session, reply, session->currentPcId, 1142.29f, 1000, -32.42f);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -275,8 +275,8 @@ ZoneHandler_moveSpeed (
     replyPacket.header.type = ZC_MOVE_SPEED;
 
     replyPacket.pcId = session->currentPcId;
-    replyPacket.movementSpeed = 100.0;
-    replyPacket.unk1 = 0.1;
+    replyPacket.movementSpeed = 100.0f;
+    replyPacket.unk1 = 0.1f;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }

@@ -277,7 +277,7 @@ BarrackServer_backend (
             // Multiple messages : [1 frame identity] + [1 frame data] + [1 frame data] + ... + [1 frame data]
             // Send N messages [1 frame identity] + [1 frame data]
             zframe_t *identity = zmsg_pop (msg);
-            int msgCount = zmsg_size (msg);
+			size_t msgCount = zmsg_size(msg);
             for (int i = 0; i < msgCount; i++) {
                 zmsg_t *subMsg = zmsg_new ();
                 zmsg_add (subMsg, zframe_dup (identity));

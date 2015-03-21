@@ -16,6 +16,7 @@
  */
 
 #include "GlobalServer/GlobalServer.h"
+#include "hiredis.h"
 
 int main (int argc, char **argv)
 {

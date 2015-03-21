@@ -13,6 +13,7 @@
 *.lastbuildstate
 *.stackdump
 tftflxlre
+*.idb
 
 # HooksOfSavior project ignored files
 clienthooks/HooksOfSavior/HooksOfSavior/log.txt
