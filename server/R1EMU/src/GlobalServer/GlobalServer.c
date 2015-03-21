@@ -18,7 +18,7 @@
 // ------ Structure declaration -------
 typedef struct {
     int sessionPort;
-} ServerInformation;
+} ZoneServerInformation;
 
 /**
  * @brief GlobalServer detains the authority on all the zone servers
@@ -27,7 +27,7 @@ typedef struct {
 struct GlobalServer
 {
     /** Table of barrack and zone servers information. */
-    ServerInformation *serversInformation;
+	ZoneServerInformation *serversInformation;
 
     /** Socket listening to the CLI */
     zsock_t *cliConnection;
@@ -175,7 +175,7 @@ GlobalServer_init (
     //    Allocate server information
     // ================================
     // + 1 because it counts the barrack server
-    if (!(self->serversInformation = calloc (self->zoneServersCount + 1, sizeof (ServerInformation)))) {
+	if (!(self->serversInformation = calloc(self->zoneServersCount + 1, sizeof (ZoneServerInformation)))) {
         error ("Cannot allocate servers information array.");
         return false;
     }

@@ -44,14 +44,17 @@
     <ClCompile Include="..\..\..\src\R1EMU.c">
       <Filter>Common</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c">
-      <Filter>Common</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\src\Common\Packet\PacketHandler.c">
       <Filter>Common</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\src\SessionServer\SessionServer.c" />
     <ClCompile Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.c" />
+    <ClCompile Include="..\..\..\src\Common\Session\ClientSession.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\src\Common\Session\SessionTable.c">
+      <Filter>Common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\src\BarrackServer\BarrackServer.h">
@@ -94,6 +97,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\Session\SessionTable.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\src\Common\Session\ClientSession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

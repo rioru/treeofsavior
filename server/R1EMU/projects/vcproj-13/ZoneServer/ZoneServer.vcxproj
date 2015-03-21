@@ -69,7 +69,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\Common\ClientSession\ClientSession.c" />
     <ClCompile Include="..\..\..\src\Common\Commander\Commander.c" />
     <ClCompile Include="..\..\..\src\Common\Crypto\Crypto.c" />
     <ClCompile Include="..\..\..\src\Common\dbg\dbg.c" />
@@ -77,6 +76,8 @@
     <ClCompile Include="..\..\..\src\Common\Packet\PacketHandler.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\PacketStream.c" />
     <ClCompile Include="..\..\..\src\Common\Packet\PacketType.c" />
+    <ClCompile Include="..\..\..\src\Common\Session\ClientSession.c" />
+    <ClCompile Include="..\..\..\src\Common\Session\SessionTable.c" />
     <ClCompile Include="..\..\..\src\R1EMU.c" />
     <ClCompile Include="..\..\..\src\SessionServer\SessionServer.c" />
     <ClCompile Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.c" />
@@ -94,6 +95,8 @@
     <ClInclude Include="..\..\..\src\Common\Packet\PacketHandler.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\PacketStream.h" />
     <ClInclude Include="..\..\..\src\Common\Packet\PacketType.h" />
+    <ClInclude Include="..\..\..\src\Common\Session\ClientSession.h" />
+    <ClInclude Include="..\..\..\src\Common\Session\SessionTable.h" />
     <ClInclude Include="..\..\..\src\R1EMU.h" />
     <ClInclude Include="..\..\..\src\SessionServer\SessionServer.h" />
     <ClInclude Include="..\..\..\src\SessionServer\SessionWorker\SessionWorker.h" />

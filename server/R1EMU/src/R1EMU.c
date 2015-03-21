@@ -13,7 +13,6 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include <sys/time.h>
 
 // ------ Structure declaration -------
 
@@ -59,12 +58,38 @@ rand_r (
     return result;
 }
 
-uint32_t
+#ifdef WIN32
+int gettimeofday (
+	struct timeval * tp, 
+	struct timezone * tzp
+) {
+	SYSTEMTIME  nowSystemTime;
+	FILETIME    nowFileTime;
+	uint64_t    now;
+
+	static const uint64_t epoch = ((uint64_t)116444736000000000ULL);
+	GetSystemTime (&nowSystemTime);
+
+	if (!(SystemTimeToFileTime (&nowSystemTime, &nowFileTime))) {
+		return -1;
+	}
+
+	now = ((uint64_t) nowFileTime.dwLowDateTime);
+	now += ((uint64_t) nowFileTime.dwHighDateTime) << 32;
+
+	tp->tv_sec = (long int) ((now - epoch) / 10000000L);
+	tp->tv_usec = (long int) nowSystemTime.wMilliseconds * 1000;
+
+	return 0;
+}
+#endif
+
+ 
 R1EMU_seed_random (
     uint32_t customData
 ) {
     int pid, tid;
-    #if WIN32
+    #ifdef WIN32
         pid = (int) GetCurrentProcessId ();
         tid = (int) GetCurrentThreadId ();
     #else
