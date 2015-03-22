@@ -14,8 +14,8 @@ WINDRES = windres
 INC = -I../../../src -I../../../include -I../../../include/zmq
 CFLAGS = -Wall -std=gnu99 -Wno-pointer-sign
 RESINC = 
-LIBDIR = -L../../../lib
-LIB = -lzmq -lczmq
+LIBDIR = -L../../../lib -L../../../lib/x64
+LIB = -lzmq -lczmq -lhiredis
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
