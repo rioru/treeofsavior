@@ -502,7 +502,7 @@ typedef int SOCKET;
 #endif
 
 //- Include non-portable header files based on platform.h -------------------
-/*
+
 #if defined (HAVE_LINUX_WIRELESS_H)
 #   include <linux/wireless.h>
 #else
@@ -513,7 +513,6 @@ typedef int SOCKET;
 #       include <net/if_media.h>
 #   endif
 #endif
-*/
 
 #if defined (__WINDOWS__) && !defined (HAVE_LIBUUID)
 #   define HAVE_LIBUUID 1
