@@ -101,6 +101,17 @@ ZoneWorker_worker (
 );
 
 
+/**
+ * @brief Request to the sessionServer to get the list of clients around the current session
+ * @param arg A ZoneWorker
+ * @return Always NULL
+ */
+bool ZoneWorker_sendToClients (
+    ZoneWorker *self,
+    unsigned char *packet,
+    size_t packetSize,
+    zlist_t * clientsList
+);
 
 /**
  * @brief Request a session from the Barrack server

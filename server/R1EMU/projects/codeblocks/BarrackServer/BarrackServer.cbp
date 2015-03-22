@@ -42,6 +42,7 @@
 			<Add library="zmq" />
 			<Add library="czmq" />
 			<Add directory="../../../lib" />
+			<Add directory="../../../lib/x64" />
 		</Linker>
 		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.c">
 			<Option compilerVar="CC" />

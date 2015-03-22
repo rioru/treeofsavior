@@ -59,8 +59,14 @@ rand_r (
 }
 
 #ifdef WIN32
+
+struct timezone {
+    int tz_minuteswest;     /* minutes west of Greenwich */
+    int tz_dsttime;         /* type of DST correction */
+};
+
 int gettimeofday (
-	struct timeval * tp, 
+	struct timeval * tp,
 	struct timezone * tzp
 ) {
 	SYSTEMTIME  nowSystemTime;

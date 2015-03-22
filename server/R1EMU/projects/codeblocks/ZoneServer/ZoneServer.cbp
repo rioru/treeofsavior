@@ -41,6 +41,7 @@
 			<Add library="zmq" />
 			<Add library="czmq" />
 			<Add directory="../../../lib" />
+			<Add directory="../../../lib/x64" />
 		</Linker>
 		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.h" />
 		<Unit filename="../../../src/BarrackServer/BarrackServer.h" />
