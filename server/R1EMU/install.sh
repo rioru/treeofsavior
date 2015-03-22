@@ -2,10 +2,6 @@
 
 # Configurations
 installPath="/vagrant/"
-gitUserName="Spl3en"
-gitEmail="spl3en.contact@gmail.com"
-
-
 
 # === Installation starts from here ===
 
@@ -15,15 +11,6 @@ sudo apt-get install g++
 sudo apt-get install make
 sudo apt-get install git
 sudo apt-get install p7zip-full
-
-# =========================================================
-# =============            Git              ===============
-# =========================================================
-
-# Configure git
-git config --global color.ui auto
-git config --global user.name $gitUserName
-git config --global user.email $gitEmail
 
 # =========================================================
 # =============           Redis             ===============
