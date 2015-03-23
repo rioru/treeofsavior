@@ -34,6 +34,8 @@
 // with uniques header id. So let's declare all the ids here, and distribute them afterward
 typedef enum ZoneServerHeader {
     _ZONE_SERVER_WORKER_READY,            // Ready
+    _ZONE_SERVER_WORKER_NORMAL,           // Normal message
+    _ZONE_SERVER_WORKER_ERROR,            // Error message received from a worker
     _ZONE_SERVER_PING,                    // Ping
     _ZONE_SERVER_PONG,                    // Pong
 }   ZoneServerHeader;
@@ -44,12 +46,14 @@ typedef enum ZoneServerHeader {
 
 /** Enumeration of all the packets header that the zone server accepts */
 typedef enum ZoneServerRecvHeader {
+    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_READY),
+    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_NORMAL),
+    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_ERROR),
     DECL_ZONE_SERVER_HEADER (ZONE_SERVER_PING),
 }   ZoneServerRecvHeader;
 
 /** Enumeration of all the packets header that the zone server sends */
 typedef enum ZoneServerSendHeader {
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_READY),
     DECL_ZONE_SERVER_HEADER (ZONE_SERVER_PONG),
 }   ZoneServerSendHeader;
 

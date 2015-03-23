@@ -85,7 +85,7 @@ _buffer_print (
 
     int curPos = 0;
 
-    printf ("%s ===== [buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
+    printf ("%s ===== buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
     while (curPos < bufferSize) {
         int offset;
         printf ("%s", prefix);

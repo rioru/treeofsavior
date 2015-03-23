@@ -51,19 +51,6 @@ ZoneWorker_processClientPacket (
 
 
 /**
- * @brief Handle a intern packet request.
- * @param self An allocated ZoneWorker structure
- * @param msg The message to process
- * @return true on success, false otherwise
- */
-static void
-ZoneWorker_processInternPacket (
-    ZoneWorker *self,
-    zmsg_t *msg
-);
-
-
-/**
  * @brief Handle a request from the public ports
  * @param self An allocated ZoneWorker structure
  * @param worker The socket listening on the public port
@@ -166,12 +153,18 @@ ZoneWorker_processClientPacket (
     session = (ClientSession *) zframe_data (sessionFrame);
 
     // Build the reply
+    // We don't need the client packet in the reply
     zmsg_remove (msg, packet);
+    // Consider the message as a "normal" message by default
+    zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ZONE_SERVER_WORKER_NORMAL), sizeof (ZONE_SERVER_WORKER_NORMAL));
+    zmsg_push (msg, headerAnswer);
+
     switch (PacketHandler_buildReply (zoneHandlers, sizeof_array (zoneHandlers), session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
             buffer_print (zframe_data (packet), zframe_size (packet), NULL);
+            zframe_reset (headerAnswer, PACKET_HEADER (ZONE_SERVER_WORKER_ERROR), sizeof (ZONE_SERVER_WORKER_ERROR));
         break;
 
         case PACKET_HANDLER_OK:
@@ -205,15 +198,6 @@ ZoneWorker_getBarrackSession (
 
 
     return NULL;
-}
-
-
-static void
-ZoneWorker_processInternPacket (
-    ZoneWorker *self,
-    zmsg_t *msg
-) {
-
 }
 
 void
@@ -316,7 +300,7 @@ ZoneWorker_worker (
             handler = ZoneWorker_handlePrivateRequest;
         }
         else {
-            warning ("[%d] Unknown actor talked to the ZoneWorker ID = %d. Maybe CTRL+C signal?", self->serverId, self->workerId);
+            warning ("[%d] Unknown actor talked to the ZoneWorker ID = %d. Maybe SIGINT signal?", self->serverId, self->workerId);
             break;
         }
 
@@ -417,15 +401,6 @@ ZoneWorker_handlePublicRequest (
         // The second frame is the data of the packet
         ZoneWorker_processClientPacket (self, msg);
     }
-
-    else {
-        // This is a message from intern entities of the network
-        //! Nothing too much important should be here, as the clients
-        //! could craft a fake packet with 3 frames
-        // TODO : Check the identity of the sender (it shouldn't be a client)
-        ZoneWorker_processInternPacket (self, msg);
-    }
-
 
     // Reply back to the sender
     if (zmsg_send (&msg, worker) != 0) {

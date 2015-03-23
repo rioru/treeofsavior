@@ -23,7 +23,7 @@ int main (int argc, char **argv)
     BarrackServer *barrackServer;
     char *confFilePath;
 
-    if (argc > 2) {
+    if (argc >= 2) {
         confFilePath = argv[1];
     } else {
         confFilePath = DEFAULT_SERVER_CONF_PATH;

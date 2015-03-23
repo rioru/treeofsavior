@@ -36,6 +36,8 @@
 // with uniques header id. So let's declare all the ids here, and distribute them afterward
 typedef enum BarrackServerHeader {
     _BARRACK_SERVER_WORKER_READY,            // Ready Signal
+    _BARRACK_SERVER_WORKER_ERROR,            // Ready Signal
+    _BARRACK_SERVER_WORKER_NORMAL,            // Ready Signal
     _BARRACK_SERVER_PING,                    // Ping Signal
     _BARRACK_SERVER_PONG,                    // Pong Signal
 }   BarrackServerHeader;
@@ -47,11 +49,13 @@ typedef enum BarrackServerHeader {
 /** Enumeration of all the packets header that the barrack server accepts */
 typedef enum BarrackServerRecvHeader {
     DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_PING),
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_READY),
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_ERROR),
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_NORMAL),
 }   BarrackServerRecvHeader;
 
 /** Enumeration of all the packets header that the barrack server sends */
 typedef enum BarrackServerSendHeader {
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_READY),
     DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_PONG),
 }   BarrackServerSendHeader;
 

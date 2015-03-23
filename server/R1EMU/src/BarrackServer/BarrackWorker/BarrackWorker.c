@@ -115,13 +115,18 @@ BarrackWorker_processClientPacket (
     session = (ClientSession *) zframe_data (sessionFrame);
 
     // Build the reply
+    // We don't need the client packet in the reply
     zmsg_remove (msg, packet);
+    // Consider the message as a "normal" message by default
+    zframe_t *headerAnswer = zframe_new (PACKET_HEADER (BARRACK_SERVER_WORKER_NORMAL), sizeof (BARRACK_SERVER_WORKER_NORMAL));
+    zmsg_push (msg, headerAnswer);
+
     switch (PacketHandler_buildReply (barrackHandlers, sizeof_array (barrackHandlers), session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
-            buffer_print (zframe_data (packet), zframe_size (packet), "PACKET : ");
-            ClientSession_print (session);
+            buffer_print (zframe_data (packet), zframe_size (packet), NULL);
+            zframe_reset (headerAnswer, PACKET_HEADER (ZONE_SERVER_WORKER_ERROR), sizeof (ZONE_SERVER_WORKER_ERROR));
         break;
 
         case PACKET_HANDLER_OK:

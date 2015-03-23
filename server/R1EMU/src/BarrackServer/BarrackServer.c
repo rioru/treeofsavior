@@ -216,7 +216,7 @@ BarrackServer_backend (
 ) {
     zmsg_t *msg;
     zframe_t *workerIdentity;
-    zframe_t *packet;
+    zframe_t *header;
     BarrackServer *self = (BarrackServer *) _self;
 
     // Receive the message from the backend router
@@ -250,42 +250,53 @@ BarrackServer_backend (
     // The worker finished its work; add it at the end of the list (round robin load balancing)
     zlist_append (self->readyWorkers, workerIdentity);
 
-    // Get the content of the message
-    if (!(packet = zmsg_first (msg))) {
+    // Get the header the message
+    if (!(header = zmsg_pop (msg))) {
         error ("Frame data cannot be retrieved.");
         return -1;
     }
 
-    // Forward the message to the frontend if it's not a READY signal
-    if (memcmp (zframe_data (packet), (int[]){BARRACK_SERVER_WORKER_READY}, sizeof(BARRACK_SERVER_WORKER_READY)) == 0) {
-        zmsg_destroy (&msg);
-    }
-    else {
-        zmsg_first (msg);
-        zframe_t * secondFrame = zmsg_next (msg);
+    BarrackServerHeader packetHeader = *((BarrackServerHeader *) zframe_data (header));
+    zframe_destroy (&header);
 
-        if (zmsg_size (msg) == 2
-        || (zmsg_size (msg) == 3 && zframe_size (secondFrame) == 0)) {
-            // Simple message : [1 frame identity] + [1 frame data]
-            // Or             : [1 frame identity] + [1 empty frame] + [1 frame data]
+    switch (packetHeader) {
+        case BARRACK_SERVER_WORKER_ERROR:
+            // The worker sent an 'error' signal.
+            // TODO : logging ?
+            zmsg_destroy (&msg);
+        break;
 
-            if (zmsg_send (&msg, self->frontend) != 0) {
-                error ("Cannot send message to the frontend.");
-                return -1;
+        case BARRACK_SERVER_WORKER_READY:
+            // The worker sent a 'ready' signal. Nothing much to do.
+            zmsg_destroy (&msg);
+        break;
+
+        case BARRACK_SERVER_WORKER_NORMAL: {
+            // The worker send a 'normal' message to the client
+            if (zmsg_size (msg) == 2) {
+                // Simple message : [1 frame identity] + [1 frame data]
+                if (zmsg_send (&msg, self->frontend) != 0) {
+                    error ("Cannot send message to the frontend.");
+                    return -1;
+                }
+            } else {
+                // Multiple messages : [1 frame identity] + [1 frame data] + [1 frame data] + ... + [1 frame data]
+                // Send N messages [1 frame identity] + [1 frame data]
+                zframe_t *identity = zmsg_pop (msg);
+                size_t msgCount = zmsg_size (msg);
+                for (int i = 0; i < msgCount; i++) {
+                    zmsg_t *subMsg = zmsg_new ();
+                    zmsg_add (subMsg, zframe_dup (identity));
+                    zmsg_add (subMsg, zmsg_pop (msg));
+                    zmsg_send (&subMsg, self->frontend);
+                }
+                zframe_destroy (&identity);
             }
-        } else {
-            // Multiple messages : [1 frame identity] + [1 frame data] + [1 frame data] + ... + [1 frame data]
-            // Send N messages [1 frame identity] + [1 frame data]
-            zframe_t *identity = zmsg_pop (msg);
-			size_t msgCount = zmsg_size(msg);
-            for (int i = 0; i < msgCount; i++) {
-                zmsg_t *subMsg = zmsg_new ();
-                zmsg_add (subMsg, zframe_dup (identity));
-                zmsg_add (subMsg, zmsg_pop (msg));
-                zmsg_send (&subMsg, self->frontend);
-            }
-            zframe_destroy (&identity);
-        }
+        } break;
+
+        default :
+            warning ("Zone Server received an unknown header : %x", packetHeader);
+        break;
     }
 
     return 0;

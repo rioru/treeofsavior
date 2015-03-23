@@ -297,7 +297,7 @@ GlobalServer_start (
             handler = GlobalServer_handleCliRequest;
         }
         else {
-            warning ("An unknown actor talked to the Global Server. Maybe CTRL+C signal ?");
+            warning ("An unknown actor talked to the Global Server. Maybe SIGINT signal ?");
             break;
         }
 
