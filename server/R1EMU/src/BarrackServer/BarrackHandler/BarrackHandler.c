@@ -115,7 +115,7 @@ BarrackHandler_startGame (
     char *zoneServerIps[] = {
         "127.0.0.1",
         "127.0.0.1",
-        "172.28.128.3"
+        "192.168.33.10"
     };
     //! TODO : Check BOF
     char *zoneServerIp = zoneServerIps [clientPacket->channelListId];

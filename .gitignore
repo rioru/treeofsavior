@@ -28,3 +28,7 @@ server/R1EMU/projects/codeblocks/R1EMU/doxygen
 server/R1EMU/bin/BarrackServer
 server/R1EMU/bin/ZoneServer
 server/R1EMU/bin/GlobalServer
+
+# Don't upload custom launchers
+server/R1EMU/kill.sh
+server/R1EMU/launch.sh
