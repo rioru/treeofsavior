@@ -35,11 +35,11 @@
 // We want to differentiate the recv header from the send header, but we want to keep a list
 // with uniques header id. So let's declare all the ids here, and distribute them afterward
 typedef enum BarrackServerHeader {
-    _BARRACK_SERVER_WORKER_READY,            // Ready Signal
-    _BARRACK_SERVER_WORKER_ERROR,            // Ready Signal
-    _BARRACK_SERVER_WORKER_NORMAL,            // Ready Signal
-    _BARRACK_SERVER_PING,                    // Ping Signal
-    _BARRACK_SERVER_PONG,                    // Pong Signal
+    _BARRACK_SERVER_WORKER_READY,            // Ready
+    _BARRACK_SERVER_WORKER_NORMAL,           // Normal message
+    _BARRACK_SERVER_WORKER_ERROR,            // Error message received from a worker
+    _BARRACK_SERVER_PING,                    // Ping
+    _BARRACK_SERVER_PONG,                    // Pong
 }   BarrackServerHeader;
 
 // Macro helper for the distribution
