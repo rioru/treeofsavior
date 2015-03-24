@@ -36,7 +36,7 @@
 			<Add directory="../../../src" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
-			<Add directory="/usr/local/mysql/include/" />
+			<Add directory="../../../include/mysql" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />

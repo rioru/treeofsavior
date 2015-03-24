@@ -111,9 +111,9 @@ ZoneHandler_connect (
     zmsg_t *reply,
     void *arg
 ) {
-    zframe_t *barrackSessionFrame;
-    ClientSession *barrackSession;
-    ZoneWorker *self = (ZoneWorker *) arg;
+    // zframe_t *barrackSessionFrame;
+    // ClientSession *barrackSession;
+    // ZoneWorker *self = (ZoneWorker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -150,7 +150,7 @@ ZoneHandler_connect (
         return PACKET_HANDLER_ERROR;
     }
 
-    CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
+    // CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
     ZcConnectPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 

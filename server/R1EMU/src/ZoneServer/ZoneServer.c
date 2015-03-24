@@ -188,7 +188,7 @@ ZoneServer_launchZoneServer (
 ) {
     #ifdef WIN32
         char *commandLine = zsys_sprintf ("%s %d %s %d %d %d %s",
-            ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->serverIp, self->frontendPort, self->workersCount, self->privateGlobalPort
+            ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->serverIp, self->frontendPort, self->workersCount, self->privateGlobalPort,
             self->confFilePath
         );
         info ("CommandLine : %s", commandLine);

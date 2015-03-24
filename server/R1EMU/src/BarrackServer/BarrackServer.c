@@ -54,6 +54,9 @@ struct BarrackServer
 
     /** Number of workers allocated for the backend */
     int workersCount;
+
+    /** Configuration file path */
+    char *confFilePath;
 };
 
 
@@ -113,10 +116,12 @@ BarrackServer_new (
 bool
 BarrackServer_init (
     BarrackServer *self,
-    const char *confFilePath
+    char *confFilePath
 ) {
     zconfig_t *conf;
     char *portsArray;
+
+    self->confFilePath = confFilePath;
 
     // ==================================
     //     Read the configuration file
@@ -358,7 +363,7 @@ BarrackServer_start (
     // =============================================
     //  Launch the dedicated barrack session server
     // =============================================
-    SessionServer *sessionServer = SessionServer_new (BARRACK_SERVER_ACTOR_ID);
+    SessionServer *sessionServer = SessionServer_new (BARRACK_SERVER_ACTOR_ID, self->confFilePath);
     if (zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer) == -1) {
         error ("Cannot launch session server thread.");
         return false;

@@ -90,7 +90,7 @@ BarrackServer_new (
 bool
 BarrackServer_init (
     BarrackServer *self,
-    const char *confFilePath
+    char *confFilePath
 );
 
 
