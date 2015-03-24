@@ -50,6 +50,9 @@ struct SessionWorker
     /**< The worker socket connected to the backend. */
     zsock_t *worker;
 
+    /** The MySQL session */
+    MYSQL *sqlConn;
+
     /** The table containing all the sessions.
      *  BE CAREFUL : It is shared between all the session workers of the same server.
      */

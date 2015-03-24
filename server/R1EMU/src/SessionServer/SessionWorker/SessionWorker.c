@@ -112,15 +112,14 @@ SessionWorker_init (
         sqlDatabase = SESSION_WORKER_SQL_DATABASE_DEFAULT;
     }
 
-    MYSQL *sqlConn; // need something more global
-    sqlConn = mysql_init(NULL);
-    if (!mysql_real_connect(sqlConn, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
+    self->sqlConn = mysql_init(NULL);
+    if (!mysql_real_connect(self->sqlConn, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
         error ("The session worker ID %d could not connect to the database at %s.", workerId, sqlHostname);
         return false;
     }
     dbg ("Session worker ID %d successfully connected to the database.", workerId);
 
-    mysql_close(sqlConn);
+    mysql_close(self->sqlConn);
 
     return true;
 }
