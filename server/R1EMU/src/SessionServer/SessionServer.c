@@ -57,6 +57,9 @@ struct SessionServer
     // ----- Configuration -----
     /** Number of workers allocated for the backend */
     int workersCount;
+
+    /** The configuration file path */
+    char *confFilePath;
 };
 
 
@@ -95,7 +98,8 @@ SessionServer_backend (
 
 SessionServer *
 SessionServer_new (
-    int serverId
+    int serverId,
+    char *confFilePath
 ) {
     SessionServer *self;
 
@@ -103,7 +107,7 @@ SessionServer_new (
         return NULL;
     }
 
-    if (!SessionServer_init (self, serverId)) {
+    if (!SessionServer_init (self, serverId, confFilePath)) {
         SessionServer_destroy (&self);
         error ("SessionServer failed to initialize.");
         return NULL;
@@ -116,8 +120,11 @@ SessionServer_new (
 bool
 SessionServer_init (
     SessionServer *self,
-    int serverId
+    int serverId,
+    char *confFilePath
 ) {
+    self->confFilePath = confFilePath;
+
     // Only 1 worker for the session server.
     // It may change later, but for the moment there is no way to share
     // the hashtable containing all the sessions between multiple threads
@@ -299,7 +306,7 @@ SessionServer_start (
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->sessionsTable))) {
+        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->sessionsTable, self->confFilePath))) {
             if (zthread_new (SessionWorker_worker, sessionWorker) != 0) {
                 error ("Cannot create Session Server worker thread ID %d.", workerId);
                 return false;

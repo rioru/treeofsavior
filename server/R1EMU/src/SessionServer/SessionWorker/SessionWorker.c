@@ -48,7 +48,8 @@ SessionWorker *
 SessionWorker_new (
     int workerId,
     int serverId,
-    SessionTable *sessionsTable
+    SessionTable *sessionsTable,
+    char *confFilePath
 ) {
     SessionWorker *self;
 
@@ -56,7 +57,7 @@ SessionWorker_new (
         return NULL;
     }
 
-    if (!SessionWorker_init (self, workerId, serverId, sessionsTable)) {
+    if (!SessionWorker_init (self, workerId, serverId, sessionsTable, confFilePath)) {
         SessionWorker_destroy (&self);
         error ("SessionWorker failed to initialize.");
         return NULL;
@@ -71,14 +72,14 @@ SessionWorker_init (
     SessionWorker *self,
     int workerId,
     int serverId,
-    SessionTable *sessionsTable
+    SessionTable *sessionsTable,
+    char *confFilePath
 ) {
     zconfig_t *conf;
     const char *sqlHostname;
     const char *sqlLogin;
     const char *sqlPassword;
     const char *sqlDatabase;
-    char confFilePath[] = "../cfg/server.cfg"; // need to change the static path
 
     self->workerId = workerId;
     self->sessionsTable = sessionsTable;

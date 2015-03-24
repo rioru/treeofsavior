@@ -24,7 +24,7 @@ int main (int argc, char **argv)
 
     if (argc < 5) {
         error ("Wrong command line.");
-        info ("Usage : ZoneServer <zoneServerId> <frontendPort> <workersCount> <privateGlobalPort>");
+        info ("Usage : ZoneServer <zoneServerId> <serverIP> <frontendPort> <workersCount> <privateGlobalPort> <configFile>");
         return 0;
     }
 
@@ -33,9 +33,10 @@ int main (int argc, char **argv)
     int frontendPort = atoi (argv[3]);
     int workersCount = atoi (argv[4]);
     int privateGlobalPort = atoi (argv[5]);
+    char *confFilePath = argv[6];
 
     // Initialize the Zone Server
-    if ((ZoneServer = ZoneServer_new (zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort))) {
+    if ((ZoneServer = ZoneServer_new (zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort, confFilePath))) {
 
         // Start the Zone Server
         if (!ZoneServer_start (ZoneServer)) {

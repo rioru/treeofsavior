@@ -68,13 +68,15 @@ typedef struct SessionWorker SessionWorker;
  * @param workerId The worker ID.
  * @param serverId The server ID.
  * @param sessionsTable The table containing all the sessions
+ * @param confFilePath The configuration file path
  * @return A pointer to an allocated SessionWorker.
  */
 SessionWorker *
 SessionWorker_new (
     int workerId,
     int serverId,
-    SessionTable *sessionsTable
+    SessionTable *sessionsTable,
+    char *confFilePath
 );
 
 
@@ -84,6 +86,7 @@ SessionWorker_new (
  * @param workerId The worker ID.
  * @param serverId The server ID.
  * @param sessionsTable The table containing all the sessions
+ * @param confFilePath The configuration file path
  * @return true on success, false otherwise.
  */
 bool
@@ -91,7 +94,8 @@ SessionWorker_init (
     SessionWorker *self,
     int workerId,
     int serverId,
-    SessionTable *sessionsTable
+    SessionTable *sessionsTable,
+    char *confFilePath
 );
 
 /**

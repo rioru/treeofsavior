@@ -53,6 +53,9 @@ struct GlobalServer
 
     /** Port for communicating with the zones */
     int zonesPort;
+
+    /** Configuration file path */
+    char *confFilePath;
 };
 
 
@@ -88,6 +91,8 @@ GlobalServer_init (
 ) {
     zconfig_t *conf;
     char *publicPortsArray;
+
+    self->confFilePath = confFilePath;
 
     // ==================================
     //     Read the configuration file
@@ -263,7 +268,10 @@ GlobalServer_start (
     for (int zoneServerId = 0; zoneServerId < self->zoneServersCount; zoneServerId++) {
         ZoneServer *zoneServer;
 
-        if (!(zoneServer = ZoneServer_new (zoneServerId + 1, self->zoneServersIp[zoneServerId], self->zoneServersPorts[zoneServerId], self->zoneWorkersCount, self->zonesPort))) {
+        if (!(zoneServer = ZoneServer_new (
+                zoneServerId + 1, self->zoneServersIp[zoneServerId], self->zoneServersPorts[zoneServerId],
+                self->zoneWorkersCount, self->zonesPort, self->confFilePath
+        ))) {
             error ("Cannot create a new ZoneServer");
             continue;
         }

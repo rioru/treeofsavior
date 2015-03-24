@@ -74,6 +74,7 @@ typedef struct ZoneServer ZoneServer;
  * @param frontendPort The zone server port opened to the internet
  * @param workersCount Count of worker per zone server
  * @param privateGlobalPort The private port exposed to the global server
+ * @param confFilePath The configuration file path
  * @return A pointer to an allocated ZoneServer.
  */
 ZoneServer *
@@ -82,7 +83,8 @@ ZoneServer_new (
     char *serverIp,
     int frontendPort,
     int workersCount,
-    int privateGlobalPort
+    int privateGlobalPort,
+    char *confFilePath
 );
 
 
@@ -93,6 +95,7 @@ ZoneServer_new (
  * @param serverIp The IP of the zone server
  * @param frontendPort The zone server port opened to the internet
  * @param workersCount Count of worker per zone server
+ * @param confFilePath The configuration file path
  * @return true on success, false otherwise.
  */
 bool
@@ -102,7 +105,8 @@ ZoneServer_init (
     char *serverIp,
     int frontendPort,
     int workersCount,
-    int privateGlobalPort
+    int privateGlobalPort,
+    char *confFilePath
 );
 
 

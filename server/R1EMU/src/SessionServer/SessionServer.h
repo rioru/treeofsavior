@@ -76,11 +76,13 @@ typedef struct SessionServer SessionServer;
 /**
  * @brief Allocate a new SessionServer structure.
  * @param serverId The server ID using the session server
+ * @param confFilePath The configuration file
  * @return A pointer to an allocated SessionServer.
  */
 SessionServer *
 SessionServer_new (
-    int serverId
+    int serverId,
+    char *confFilePath
 );
 
 
@@ -88,12 +90,14 @@ SessionServer_new (
  * @brief Initialize an allocated SessionServer structure.
  * @param self An allocated SessionServer to initialize.
  * @param serverId The server ID using the session server
+ * @param confFilePath The configuration file
  * @return true on success, false otherwise.
  */
 bool
 SessionServer_init (
     SessionServer *self,
-    int serverId
+    int serverId,
+    char *confFilePath
 );
 
 

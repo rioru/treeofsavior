@@ -60,6 +60,9 @@ struct ZoneServer
 
     /** Number of workers allocated for the backend */
     int workersCount;
+
+    /** Path of the configuration file */
+    char *confFilePath;
 };
 
 
@@ -102,7 +105,8 @@ ZoneServer_new (
     char *serverIp,
     int frontendPort,
     int workersCount,
-    int privateGlobalPort
+    int privateGlobalPort,
+    char *confFilePath
 ) {
     ZoneServer *self;
 
@@ -110,7 +114,7 @@ ZoneServer_new (
         return NULL;
     }
 
-    if (!ZoneServer_init (self, zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort)) {
+    if (!ZoneServer_init (self, zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort, confFilePath)) {
         ZoneServer_destroy (&self);
         error ("ZoneServer failed to initialize.");
         return NULL;
@@ -127,13 +131,15 @@ ZoneServer_init (
     char *serverIp,
     int frontendPort,
     int workersCount,
-    int privateGlobalPort
+    int privateGlobalPort,
+    char *confFilePath
 ) {
     self->zoneServerId = zoneServerId;
     self->workersCount = workersCount;
     self->frontendPort = frontendPort;
     self->privateGlobalPort = privateGlobalPort;
     self->serverIp = serverIp;
+    self->confFilePath = confFilePath;
 
     // ==========================
     //   Allocate ZMQ objects
@@ -181,8 +187,10 @@ ZoneServer_launchZoneServer (
     ZoneServer *self
 ) {
     #ifdef WIN32
-        char *commandLine = zsys_sprintf ("%s %d %s %d %d %d",
-            ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->serverIp, self->frontendPort, self->workersCount, self->privateGlobalPort);
+        char *commandLine = zsys_sprintf ("%s %d %s %d %d %d %s",
+            ZONE_SERVER_EXECUTABLE_NAME ".exe", self->zoneServerId, self->serverIp, self->frontendPort, self->workersCount, self->privateGlobalPort
+            self->confFilePath
+        );
         info ("CommandLine : %s", commandLine);
 
         STARTUPINFO si = {0};
@@ -207,12 +215,17 @@ ZoneServer_launchZoneServer (
 
     const char *argv[] = {
         ZONE_SERVER_EXECUTABLE_NAME, zoneServerIdArg, self->serverIp, zoneServerPortArg,
-        zoneWorkersCountArg,  zonePrivateGlobalPort, NULL
+        zoneWorkersCountArg,  zonePrivateGlobalPort, self->confFilePath, NULL
     };
     if (fork () == 0) {
-            if (execv (ZONE_SERVER_EXECUTABLE_NAME, argv) == -1) {
-                error ("Cannot launch Zone Server executable : %s.", ZONE_SERVER_EXECUTABLE_NAME);
-            }
+        info ("Command line (zone server ID %d) : ", self->zoneServerId);
+        int argPos = 0;
+        while (argv[argPos] != NULL) {
+            info ("\t - %s", argv[argPos++]);
+        }
+        if (execv (ZONE_SERVER_EXECUTABLE_NAME, (char * const *) argv) == -1) {
+            error ("Cannot launch Zone Server executable : %s.", ZONE_SERVER_EXECUTABLE_NAME);
+        }
     }
     zstr_free (&zoneServerIdArg);
     zstr_free (&zoneServerPortArg);
@@ -374,7 +387,7 @@ ZoneServer_start (
     // =============================================
     //  Launch the dedicated barrack session server
     // =============================================
-    SessionServer *sessionServer = SessionServer_new (self->zoneServerId);
+    SessionServer *sessionServer = SessionServer_new (self->zoneServerId, self->confFilePath);
     zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer);
 
     // ===================================
