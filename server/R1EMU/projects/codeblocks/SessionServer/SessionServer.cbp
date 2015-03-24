@@ -37,11 +37,14 @@
 			<Add directory="../../../src" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
+			<Add directory="/usr/local/mysql/include/" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />
 			<Add library="czmq" />
+			<Add library="mysqlclient" />
 			<Add directory="../../../lib" />
+			<Add directory="/usr/local/mysql/lib/" />
 		</Linker>
 		<Unit filename="../../../src/Common/ClientSession/ClientSession.c">
 			<Option compilerVar="CC" />

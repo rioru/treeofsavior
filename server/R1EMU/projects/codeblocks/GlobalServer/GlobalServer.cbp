@@ -36,6 +36,7 @@
 			<Add directory="../../../src" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
+			<Add directory="/usr/local/mysql/include/" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />
@@ -44,6 +45,7 @@
 			<Add library="mysqlclient" />
 			<Add directory="../../../lib" />
 			<Add directory="../../../lib/x64" />
+			<Add directory="/usr/local/mysql/lib/" />
 		</Linker>
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />

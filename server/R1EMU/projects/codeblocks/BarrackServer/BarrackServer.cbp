@@ -37,13 +37,16 @@
 			<Add directory="../../../src" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
+			<Add directory="/usr/local/mysql/include/" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />
 			<Add library="czmq" />
 			<Add library="hiredis" />
+			<Add library="mysqlclient" />
 			<Add directory="../../../lib" />
 			<Add directory="../../../lib/x64" />
+			<Add directory="/usr/local/mysql/lib/" />
 		</Linker>
 		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.c">
 			<Option compilerVar="CC" />
