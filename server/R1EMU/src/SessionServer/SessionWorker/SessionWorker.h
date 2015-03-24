@@ -28,6 +28,11 @@
 
 // ---------- Defines -------------
 
+// Configuration default values
+static const char SESSION_WORKER_SQL_HOSTNAME_DEFAULT[] = "localhost";
+static const char SESSION_WORKER_SQL_LOGIN_DEFAULT[]    = "r1emu";
+static const char SESSION_WORKER_SQL_PASSWORD_DEFAULT[] = "r1emu";
+static const char SESSION_WORKER_SQL_DATABASE_DEFAULT[] = "r1emu";
 
 // ------ Structure declaration -------
 /**
@@ -105,4 +110,3 @@ void
 SessionWorker_destroy (
     SessionWorker **self
 );
-

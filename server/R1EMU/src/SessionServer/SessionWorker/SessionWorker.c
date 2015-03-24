@@ -73,9 +73,54 @@ SessionWorker_init (
     int serverId,
     SessionTable *sessionsTable
 ) {
+    zconfig_t *conf;
+    const char *sqlHostname;
+    const char *sqlLogin;
+    const char *sqlPassword;
+    const char *sqlDatabase;
+    char confFilePath[] = "../cfg/server.cfg"; // need to change the static path
+
     self->workerId = workerId;
     self->sessionsTable = sessionsTable;
     self->serverId  = serverId;
+    if (!(conf = zconfig_load (confFilePath))) {
+        error ("Cannot read the global configuration file (%s).", confFilePath);
+        return false;
+    }
+    if (!(sqlHostname = zconfig_resolve (conf, "database/mysql_host", NULL))
+    ) {
+        warning ("Cannot read correctly the MySQL host in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", SESSION_WORKER_SQL_HOSTNAME_DEFAULT);
+        sqlHostname = SESSION_WORKER_SQL_HOSTNAME_DEFAULT;
+    }
+    if (!(sqlLogin = zconfig_resolve (conf, "database/mysql_user", NULL))
+    ) {
+        warning ("Cannot read correctly the MySQL user in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", SESSION_WORKER_SQL_LOGIN_DEFAULT);
+        sqlLogin = SESSION_WORKER_SQL_LOGIN_DEFAULT;
+    }
+    if (!(sqlPassword = zconfig_resolve (conf, "database/mysql_password", NULL))
+    ) {
+        warning ("Cannot read correctly the MySQL password in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", SESSION_WORKER_SQL_PASSWORD_DEFAULT);
+        sqlPassword = SESSION_WORKER_SQL_PASSWORD_DEFAULT;
+    }
+    if (!(sqlDatabase = zconfig_resolve (conf, "database/mysql_database", NULL))
+    ) {
+        warning ("Cannot read correctly the MySQL database in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", SESSION_WORKER_SQL_DATABASE_DEFAULT);
+        sqlDatabase = SESSION_WORKER_SQL_DATABASE_DEFAULT;
+    }
+
+    MYSQL *sqlConn; // need something more global
+    sqlConn = mysql_init(NULL);
+    if (!mysql_real_connect(sqlConn, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
+        error ("The session worker ID %d could not connect to the database at %s.", workerId, sqlHostname);
+        return false;
+    }
+    dbg ("Session worker ID %d successfully connected to the database.", workerId);
+
+    mysql_close(sqlConn);
 
     return true;
 }

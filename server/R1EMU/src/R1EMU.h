@@ -17,19 +17,22 @@
 // Integers printf format
 #include <inttypes.h>
 
-// CZMQ environnement
+// CZMQ environment
 #include <zmq.h>
 #include <czmq.h>
 /** This is only for differenciate ZMQ RAW ROUTER from ZMQ ROUTER */
 #define ZMQ_RAW_ROUTER ZMQ_ROUTER
 #define PACKET_HEADER(x) (int[]){x}
 
-// Debugging environnement
+// MySQL environment
+#include <mysql.h>
+
+// Debugging environment
 /** If defined, the debugging functions will be included in the executable */
 #define __DBG_ACTIVATED__ TRUE
 #include "Common/dbg/dbg.h"
 
-// Configuration environnement
+// Configuration environment
 #define DEFAULT_SERVER_CONF_PATH "../cfg/server.cfg"
 
 #ifdef WIN32
