@@ -11,11 +11,11 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I../../../src -I../../../include -I../../../include/zmq
+INC = -I../../../src -I../../../include -I../../../include/zmq -I/usr/local/mysql/include/
 CFLAGS = -Wall -std=gnu99 -Wno-pointer-sign
 RESINC = 
-LIBDIR = -L../../../lib -L../../../lib/x64
-LIB = -lzmq -lczmq -lhiredis
+LIBDIR = -L../../../lib -L../../../lib/x64 -L/usr/local/mysql/lib/
+LIB = -lzmq -lczmq -lhiredis -lmysqlclient
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
