@@ -114,7 +114,7 @@ BarrackHandler_startGame (
     // Retrieve zone servers IPs from global server
     char *zoneServerIps[] = {
         "127.0.0.1",
-        "127.0.0.1",
+        "46.105.97.46",
         "192.168.33.10"
     };
     //! TODO : Check BOF
@@ -637,5 +637,3 @@ BarrackHandler_commanderList (
 
     return PACKET_HANDLER_OK;
 }
-
-
