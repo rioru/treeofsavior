@@ -41,6 +41,7 @@
 			<Add library="zmq" />
 			<Add library="czmq" />
 			<Add library="hiredis" />
+			<Add library="mysqlclient" />
 			<Add directory="../../../lib" />
 			<Add directory="../../../lib/x64" />
 		</Linker>
