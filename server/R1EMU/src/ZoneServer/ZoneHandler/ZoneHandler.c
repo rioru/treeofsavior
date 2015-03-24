@@ -35,7 +35,12 @@ static void ZoneHandler_moveSpeed               (ClientSession *session, zmsg_t 
 static void ZoneHandler_MyPCEnter               (ClientSession *session, zmsg_t *reply);
 /** Set the position of a commander */
 static void ZoneHandler_setPos                  (ClientSession *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
-
+/** Jump handler */
+static PacketHandlerState ZoneHandler_jump      (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+/** Jump handler */
+static PacketHandlerState ZoneHandler_onAir     (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+/** Jump handler */
+static PacketHandlerState ZoneHandler_onGround  (ClientSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 
 // ------ Structure declaration -------
 /**
@@ -47,6 +52,9 @@ const PacketHandler zoneHandlers [ZONE_HANDLER_ARRAY_SIZE] = {
 
     REGISTER_PACKET_HANDLER (CZ_CONNECT, ZoneHandler_connect),
     REGISTER_PACKET_HANDLER (CZ_GAME_READY, ZoneHandler_gameReady),
+    REGISTER_PACKET_HANDLER (CZ_JUMP, ZoneHandler_jump),
+    REGISTER_PACKET_HANDLER (CZ_ON_AIR, ZoneHandler_onAir),
+    REGISTER_PACKET_HANDLER (CZ_ON_GROUND, ZoneHandler_onGround),
 
     #undef REGISTER_PACKET_HANDLER
 };
@@ -317,4 +325,58 @@ ZoneHandler_quickSlotListHandler (
     replyPacket.zlibData = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+}
+
+static PacketHandlerState
+ZoneHandler_jump (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply,
+    void *arg
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        float height;
+        uint32_t unk1;
+        uint16_t charPosition;
+    } ZcJumpPacket;
+    #pragma pack(pop)
+
+    ZcJumpPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_JUMP;
+    replyPacket.pcId = session->currentPcId;
+    replyPacket.height = 300.0;
+    replyPacket.unk1 = 1;
+    replyPacket.charPosition = 1;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+ZoneHandler_onAir (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply,
+    void *arg
+) {
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+ZoneHandler_onGround (
+    ClientSession *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply,
+    void *arg
+) {
+    return PACKET_HANDLER_OK;
 }
