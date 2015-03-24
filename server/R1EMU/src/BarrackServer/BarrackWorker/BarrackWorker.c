@@ -126,7 +126,7 @@ BarrackWorker_processClientPacket (
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
             buffer_print (zframe_data (packet), zframe_size (packet), NULL);
-            zframe_reset (headerAnswer, PACKET_HEADER (ZONE_SERVER_WORKER_ERROR), sizeof (ZONE_SERVER_WORKER_ERROR));
+            zframe_reset (headerAnswer, PACKET_HEADER (BARRACK_SERVER_WORKER_ERROR), sizeof (BARRACK_SERVER_WORKER_ERROR));
         break;
 
         case PACKET_HANDLER_OK:
