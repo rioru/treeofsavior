@@ -170,7 +170,7 @@ ZoneHandler_connect (
     // === Fake a correct session ===
     session->currentPcId = 0xFF;
     session->currentCommanderId = 0xBADBADBADBADBAD;
-    session->charactersBarrackCount = 1;
+    session->charactersBarrackCount = 0;
     session->accountId = 0xDEADDEADDEADDEAD;
     strcpy (session->familyName, "FamilyName");
     strcpy (session->currentCommanderName, "Rioru");

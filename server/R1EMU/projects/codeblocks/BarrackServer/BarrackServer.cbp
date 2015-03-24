@@ -34,10 +34,11 @@
 			<Add option="-Wall" />
 			<Add option="-std=gnu99" />
 			<Add option="-Wno-pointer-sign" />
+			<Add directory="/usr/include/" />
 			<Add directory="../../../src" />
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
-			<Add directory="/usr/local/mysql/include/" />
+			<Add directory="../../../include/mysql" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />

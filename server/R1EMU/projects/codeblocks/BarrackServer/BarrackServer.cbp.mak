@@ -11,7 +11,7 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I../../../src -I../../../include -I../../../include/zmq -I/usr/local/mysql/include/
+INC = -I/usr/include/ -I../../../src -I../../../include -I../../../include/zmq -I../../../include/mysql
 CFLAGS = -Wall -std=gnu99 -Wno-pointer-sign
 RESINC = 
 LIBDIR = -L../../../lib -L../../../lib/x64 -L/usr/local/mysql/lib/
