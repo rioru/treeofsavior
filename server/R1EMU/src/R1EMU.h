@@ -25,7 +25,7 @@
 #define PACKET_HEADER(x) (int[]){x}
 
 // MySQL environment
-#include <mysql.h>
+#include <mysql/mysql.h>
 
 // Debugging environment
 /** If defined, the debugging functions will be included in the executable */
