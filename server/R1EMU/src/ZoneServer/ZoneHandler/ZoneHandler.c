@@ -180,7 +180,8 @@ ZoneHandler_connect (
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
 
     replyPacket.gameMode = 0;
-    replyPacket.accountPrivileges = 1;
+    replyPacket.unk1 = 1;
+    replyPacket.accountPrivileges = 0;
     replyPacket.pcId = session->currentPcId;
 
     replyPacket.commander = Commander_CreateBasicCommander ();

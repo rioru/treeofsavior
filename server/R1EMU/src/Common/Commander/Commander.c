@@ -30,6 +30,7 @@ Commander_CreateBasicCommander (
     memset (&commander, 0, sizeof (commander));
 
     commander.classId = 10001;
+    commander.unk2 = 0;
     commander.jobId = 1;
     commander.gender = 1;
     commander.unk3 = 1;
@@ -55,8 +56,17 @@ Commander_CreateBasicCommander (
     commander.ring_right = 0x00002710;
     commander.necklace = 0x00002710;
     commander.hairType = 2;
-    commander.spriteRelated = 2;
+    commander.unk5 = 0;
+    commander.pose = 0;
+    commander.spriteRelated = 1;
+    commander.unk6 = 0;
     commander.mapId = 0x551;
+    commander.unk7 = 0;
+    commander.unk8 = 0;
+    commander.unk9 = 0;
+    commander.unk10 = 0;
+    commander.unk11 = 0;
+    commander.unk12 = 0;
 
     // Fill with dummy stats
     commander.currentXP = 6000;
