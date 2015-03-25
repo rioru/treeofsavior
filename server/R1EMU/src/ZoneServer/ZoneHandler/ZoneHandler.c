@@ -170,7 +170,7 @@ ZoneHandler_connect (
     // === Fake a correct session ===
     session->currentPcId = 0xFF;
     session->currentCommanderId = 0xBADBADBADBADBAD;
-    session->charactersBarrackCount = 0;
+    session->charactersBarrackCount = 1;
     session->accountId = 0xDEADDEADDEADDEAD;
     strcpy (session->familyName, "FamilyName");
     strcpy (session->currentCommanderName, "Rioru");
@@ -201,8 +201,8 @@ ZoneHandler_connect (
     replyPacket.commander.commanderId = session->currentCommanderId;
 
     // Character position
-    replyPacket.commander.listPosition = session->charactersBarrackCount + 1;
-    replyPacket.commander.charPosition = session->charactersBarrackCount + 1;
+    replyPacket.commander.listPosition = session->charactersBarrackCount;
+    replyPacket.commander.charPosition = session->charactersBarrackCount;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -335,6 +335,21 @@ ZoneHandler_jump (
     zmsg_t *reply,
     void *arg
 ) {
+    #pragma pack(push, 1)
+    typedef struct {
+        uint8_t unk1;
+    } CzJumpPacket;
+    #pragma pack(pop)
+
+    if (sizeof (CzJumpPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CzJumpPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    CzJumpPacket *clientPacket = (CzJumpPacket *) packet;
+
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
