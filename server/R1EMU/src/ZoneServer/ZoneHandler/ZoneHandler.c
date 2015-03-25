@@ -357,7 +357,7 @@ ZoneHandler_jump (
         uint32_t pcId;
         float height;
         uint32_t unk1;
-        uint16_t charPosition;
+        uint8_t charPosition;
     } ZcJumpPacket;
     #pragma pack(pop)
 
