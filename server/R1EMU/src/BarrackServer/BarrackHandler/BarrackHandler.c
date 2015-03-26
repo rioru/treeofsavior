@@ -97,7 +97,6 @@ BarrackHandler_startGame (
     #pragma pack(pop)
 
 
-
     if (sizeof (CbStartGamePacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbStartGamePacket));
@@ -108,8 +107,6 @@ BarrackHandler_startGame (
     CbStartGamePacket *clientPacket = (CbStartGamePacket *) packet;
     BcStartGamePacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
-
-    buffer_print (clientPacket, sizeof (*clientPacket), "clientPacket ");
 
     // Retrieve zone servers IPs from global server
     char *zoneServerIps[] = {

@@ -44,6 +44,11 @@ void _dbg (
         case DBG_LEVEL_DEBUG: break;
         case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0E); break;
         case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0C); break;
+        #else
+        case DBG_LEVEL_INFO: fprintf (output, "\x1b[32m"); break;
+        case DBG_LEVEL_DEBUG: fprintf (output, "\x1b[37m"); break;
+        case DBG_LEVEL_WARNING: fprintf (output, "\x1b[33m"); break;
+        case DBG_LEVEL_ERROR: fprintf (output, "\x1b[31m"); break;
         #endif
     }
 
@@ -54,10 +59,9 @@ void _dbg (
 
     switch (level) {
         #ifdef WIN32
-        case DBG_LEVEL_INFO:    SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
-        case DBG_LEVEL_DEBUG: break;
-        case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
-        case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07); break;
+        SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07);
+        #else
+        fprintf (output, "\033[0m");
         #endif
     }
 

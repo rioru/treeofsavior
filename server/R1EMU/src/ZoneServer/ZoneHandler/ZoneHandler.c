@@ -349,7 +349,7 @@ ZoneHandler_jump (
         return PACKET_HANDLER_ERROR;
     }
 
-    CzJumpPacket *clientPacket = (CzJumpPacket *) packet;
+    // CzJumpPacket *clientPacket = (CzJumpPacket *) packet;
 
     #pragma pack(push, 1)
     typedef struct {
