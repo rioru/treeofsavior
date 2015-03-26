@@ -38,6 +38,7 @@
 			<Add directory="../../../include" />
 			<Add directory="../../../include/zmq" />
 			<Add directory="../../../include/mysql" />
+			<Add directory="../../../include/hiredis" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />

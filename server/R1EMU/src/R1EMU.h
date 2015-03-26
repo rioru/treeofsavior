@@ -27,6 +27,9 @@
 // MySQL environment
 #include <mysql/mysql.h>
 
+// Redis environment
+#include <hiredis.h>
+
 // Debugging environment
 /** If defined, the debugging functions will be included in the executable */
 #define __DBG_ACTIVATED__ TRUE
