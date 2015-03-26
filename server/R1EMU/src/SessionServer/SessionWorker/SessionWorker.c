@@ -115,7 +115,8 @@ SessionWorker_init (
 
     self->sqlConn = mysql_init(NULL);
     if (!mysql_real_connect(self->sqlConn, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
-        error ("The session worker ID %d could not connect to the database at %s.", workerId, sqlHostname);
+        error ("The session worker ID %d could not connect to the database at %s. (mysql_errno = %d)",
+            workerId, sqlHostname, mysql_errno (self->sqlConn));
         return false;
     }
     dbg ("Session worker ID %d successfully connected to the database.", workerId);
