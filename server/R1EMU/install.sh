@@ -12,6 +12,8 @@ sudo apt-get install make
 sudo apt-get install git
 sudo apt-get install p7zip-full
 sudo apt-get install cmake
+sudo apt-get install libmysqlclient-dev
+sudo apt-get install mysql-server
 
 # =========================================================
 # =============           Redis             ===============
