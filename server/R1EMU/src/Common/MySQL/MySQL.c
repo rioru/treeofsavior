@@ -38,7 +38,7 @@ MySQL_query (
 		vsnprintf (buf, MAX_QUERY_SIZE - 1, query, args);
 	va_end(args);
 	dbg ("Launching SQL command : %s", buf);
-	if (mysql_real_query(self->handle, buf, (unsigned long)strlen(query)))
+	if (mysql_real_query(self->handle, buf, (unsigned long)strlen(buf)))
 		return SQL_ERROR;
 	self->result = mysql_store_result(self->handle);
 	return SQL_SUCCESS;
