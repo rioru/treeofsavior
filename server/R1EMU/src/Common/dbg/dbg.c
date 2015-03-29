@@ -57,13 +57,11 @@ void _dbg (
         fflush (output);
     va_end (args);
 
-    switch (level) {
-        #ifdef WIN32
-        SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07);
-        #else
-        fprintf (output, "\033[0m");
-        #endif
-    }
+    #ifdef WIN32
+    SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07);
+    #else
+    fprintf (output, "\033[0m");
+    #endif
 
     zmutex_unlock (mutex);
 }
