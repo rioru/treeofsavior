@@ -38,12 +38,6 @@
 // Configuration environment
 #define DEFAULT_SERVER_CONF_PATH "../cfg/server.cfg"
 
-#ifdef WIN32
-
-#else
-#include <pthread.h>
-#endif
-
 // Utils
 #define STRINGIFY(x) # x
 #ifndef bool

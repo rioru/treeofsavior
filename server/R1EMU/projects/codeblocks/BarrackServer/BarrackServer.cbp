@@ -93,6 +93,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Packet/PacketType.h" />
+		<Unit filename="../../../src/Common/Redis/Redis.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Redis/Redis.h" />
 		<Unit filename="../../../src/Common/Session/ClientSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
