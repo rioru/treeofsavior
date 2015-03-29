@@ -19,7 +19,6 @@
 #include "SessionWorker.h"
 #include "SessionServer/SessionServer.h"
 #include "Common/Session/ClientSession.h"
-#include "Common/MySQL/MySQL.h"
 
 
 // ------ Structure declaration -------
@@ -114,10 +113,12 @@ SessionWorker_init (
         sqlDatabase = SESSION_WORKER_SQL_DATABASE_DEFAULT;
     }
 
-    self->sqlConn = mysql_init(NULL);
-    if (!mysql_real_connect(self->sqlConn, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
+    self->sqlConn = malloc(sizeof(SQL));
+    self->sqlConn->result = NULL;
+    self->sqlConn->handle = mysql_init(NULL);
+    if (!mysql_real_connect(self->sqlConn->handle, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
         error ("The session worker ID %d could not connect to the database at %s. (mysql_errno = %d)",
-            workerId, sqlHostname, mysql_errno (self->sqlConn));
+            workerId, sqlHostname, mysql_errno (self->sqlConn->handle));
         return false;
     }
     dbg ("Session worker ID %d successfully connected to the database.", workerId);
@@ -158,8 +159,8 @@ SessionWorker_updateSession (
     // Session exists
     memcpy (oldSession, newSession, sizeof (ClientSession));
 
-    // Update the database
-
+    // Update the database, maybe move it to an auto-save function and call it every x time and on log off
+    SessionWorker_flushSession (self, newSession);
 
     dbg ("Your session has been updated, USER_%s !", sessionKey);
 
@@ -333,7 +334,71 @@ SessionWorker_destroy (
 ) {
     SessionWorker *self = *_self;
 
-    mysql_close(self->sqlConn);
+    mysql_close(self->sqlConn->handle);
+    free (self->sqlConn);
     free (self);
     *_self = NULL;
+}
+
+void
+SessionWorker_flushSession (
+    SessionWorker *self,
+    ClientSession *session
+) {
+    MYSQL_ROW count;
+
+    // Flush the commander
+    if (session->currentCommanderId)
+    {
+        if (MySQL_query(self->sqlConn, "SELECT count(*) FROM commander WHERE commander_id = %u", session->currentCommanderId))
+            error ("SQL Error : %s" , mysql_error(self->sqlConn->handle));
+        else
+        {
+            count = mysql_fetch_row(self->sqlConn->result);
+            if (atoi(count[0]) == 0)
+            {
+                // Insert a new Commander
+                if (MySQL_query(self->sqlConn, "INSERT INTO commander (`commander_id`, `account_id`, `commander_num`, `name`, `family_name`, `class`, `gender`, `level`, `head_top`, `head_middle`, `necklace`, `body_armor`, `leg_armor`, `gloves`, `shoes`, `weapon`, `shield`, `costume`, `ring`, `bracelet_left`, `bracelet_right`, `hair_type`, `last_map`, `last_x`, `last_y`, `current_xp`, `pose`, `current_hp`, `current_sp`) VALUES (%u, %lu, %d, '%s', '%s', %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+                    session->currentCommander.commanderId,
+                    session->currentCommander.accountId,
+                    session->currentCommander.charPosition,
+                    session->currentCommander.charName,
+                    session->currentCommander.familyName,
+                    session->currentCommander.classId,
+                    session->currentCommander.gender,
+                    session->currentCommander.level,
+                    session->currentCommander.head_top,
+                    session->currentCommander.head_middle,
+                    session->currentCommander.necklace,
+                    session->currentCommander.body_armor,
+                    session->currentCommander.leg_armor,
+                    session->currentCommander.gloves,
+                    session->currentCommander.boots,
+                    session->currentCommander.weapon,
+                    session->currentCommander.shield,
+                    session->currentCommander.costume,
+                    session->currentCommander.bracelet,
+                    session->currentCommander.ring_left,
+                    session->currentCommander.ring_right,
+                    session->currentCommander.hairType,
+                    session->currentCommander.mapId,
+                    0,
+                    0,
+                    session->currentCommander.currentXP,
+                    session->currentCommander.pose,
+                    session->currentCommander.currentHP,
+                    session->currentCommander.currentSP
+                    ))
+                {
+                    error ("SQL Error : %s" , mysql_error(self->sqlConn->handle));
+                }
+                dbg("Inserting a new commander");
+            }
+            else
+            {
+                // Update the commander
+                dbg("Updating the commander");
+            }
+        }
+    }
 }

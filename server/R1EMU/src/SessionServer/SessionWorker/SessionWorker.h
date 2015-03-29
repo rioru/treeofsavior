@@ -25,6 +25,7 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Session/SessionTable.h"
+#include "Common/MySQL/MySQL.h"
 
 // ---------- Defines -------------
 
@@ -51,7 +52,7 @@ struct SessionWorker
     zsock_t *worker;
 
     /** The MySQL session */
-    MYSQL *sqlConn;
+    SQL *sqlConn;
 
     /** The table containing all the sessions.
      *  BE CAREFUL : It is shared between all the session workers of the same server.
@@ -119,10 +120,11 @@ SessionWorker_destroy (
 );
 
 /**
- * @brief Save all sessions to the database.
+ * @brief Save the current session to the database.
  * @param self A pointer to an allocated SessionWorker.
  */
 void
-SessionWorker_sessionsFlush (
-    SessionWorker **self
+SessionWorker_flushSession (
+    SessionWorker *self,
+    ClientSession *session
 );
