@@ -8,7 +8,7 @@
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
  * @file Redis.h
- * @brief
+ * @brief Redis set of functions for communicating with the Redis server.
  *
  *
  *
@@ -24,38 +24,35 @@
 
 
 // ------ Structure declaration -------
-/**
- * @brief Redis is
- *
- * Redis is
- */
-struct Redis
-{
-
-};
-
 typedef struct Redis Redis;
 
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new Redis structure.
+ * @param ip The IP address of the Redis server
+ * @param port The port of the Redis server
  * @return A pointer to an allocated Redis.
  */
 Redis *
 Redis_new (
-    void
+    char *ip,
+    int port
 );
 
 
 /**
  * @brief Initialize an allocated Redis structure.
  * @param self An allocated Redis to initialize.
+ * @param ip The IP address of the Redis server
+ * @param port The port of the Redis server
  * @return true on success, false otherwise.
  */
 bool
 Redis_init (
-    Redis *self
+    Redis *self,
+    char *ip,
+    int port
 );
 
 

@@ -16,6 +16,14 @@
 
 
 // ------ Structure declaration -------
+/**
+ * @brief Redis is a structure containing the necessary variables for communicating with the redis server
+ */
+struct Redis
+{
+    /** Redis context, handle of the connection to the redis server */
+    redisContext *context;
+};
 
 
 // ------ Static declaration -------
@@ -25,7 +33,8 @@
 
 Redis *
 Redis_new (
-    void
+    char *ip,
+    int port
 ) {
     Redis *self;
 
@@ -33,7 +42,7 @@ Redis_new (
         return NULL;
     }
 
-    if (!Redis_init (self)) {
+    if (!Redis_init (self, ip, port)) {
         Redis_destroy (&self);
         error ("Redis failed to initialize.");
         return NULL;
@@ -45,8 +54,11 @@ Redis_new (
 
 bool
 Redis_init (
-    Redis *self
+    Redis *self,
+    char *ip,
+    int port
 ) {
+    self->context = redisConnect (ip, port);
 
     return true;
 }
