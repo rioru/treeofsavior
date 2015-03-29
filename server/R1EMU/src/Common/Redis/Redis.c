@@ -70,6 +70,10 @@ Redis_destroy (
 ) {
     Redis *self = *_self;
 
+    if (self->context) {
+        redisFree (self->context);
+    }
+
     free (self);
     *_self = NULL;
 }
