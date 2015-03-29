@@ -19,6 +19,7 @@
 #include "SessionWorker.h"
 #include "SessionServer/SessionServer.h"
 #include "Common/Session/ClientSession.h"
+#include "Common/MySQL/MySQL.h"
 
 
 // ------ Structure declaration -------
@@ -121,8 +122,6 @@ SessionWorker_init (
     }
     dbg ("Session worker ID %d successfully connected to the database.", workerId);
 
-    mysql_close(self->sqlConn);
-
     return true;
 }
 
@@ -158,6 +157,10 @@ SessionWorker_updateSession (
 
     // Session exists
     memcpy (oldSession, newSession, sizeof (ClientSession));
+
+    // Update the database
+
+
     dbg ("Your session has been updated, USER_%s !", sessionKey);
 
     ClientSession_print (newSession);
@@ -330,6 +333,7 @@ SessionWorker_destroy (
 ) {
     SessionWorker *self = *_self;
 
+    mysql_close(self->sqlConn);
     free (self);
     *_self = NULL;
 }

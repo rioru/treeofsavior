@@ -236,7 +236,9 @@ BarrackHandler_loginByPassport (
 
     // Gives a random account
     replyPacket.header.type       = BC_LOGINOK;
-    replyPacket.accountId         = R1EMU_generate_random64 (&self->seed);
+    // Let's use a static accountId until we have a login mechanism
+    //replyPacket.accountId         = R1EMU_generate_random64 (&self->seed);
+    replyPacket.accountId         = 0xdeadc0ffee000102;
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
     strncpy (replyPacket.channelString, "CHANNEL_STRING", sizeof (replyPacket.channelString));
 
@@ -487,6 +489,7 @@ BarrackHandler_commanderCreate (
     session->charactersBarrackCount++;
     session->currentPcId = replyPacket.commander.pcId;
     session->currentCommanderId = replyPacket.commander.commanderId;
+    session->currentCommander = replyPacket.commander;
 
     // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));

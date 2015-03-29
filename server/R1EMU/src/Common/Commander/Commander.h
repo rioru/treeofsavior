@@ -7,8 +7,8 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file PacketType.h
- * @brief PacketType enumerates all the packets used in the game between the client and the server
+ * @file Commander.h
+ * @brief Commander contains all character related functions
  *
  * @license <license placeholder>
  */

@@ -19,6 +19,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Commander/Commander.h"
 
 // ---------- Defines -------------
 
@@ -49,6 +50,9 @@ struct ClientSession
 
     /** PCID of the current character */
     uint32_t currentPcId;
+
+    /** Current commander */
+    CommanderInfo currentCommander;
 };
 
 typedef struct ClientSession ClientSession;

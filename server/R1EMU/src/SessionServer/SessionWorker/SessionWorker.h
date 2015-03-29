@@ -117,3 +117,12 @@ void
 SessionWorker_destroy (
     SessionWorker **self
 );
+
+/**
+ * @brief Save all sessions to the database.
+ * @param self A pointer to an allocated SessionWorker.
+ */
+void
+SessionWorker_sessionsFlush (
+    SessionWorker **self
+);
