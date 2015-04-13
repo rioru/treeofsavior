@@ -19,6 +19,8 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Commander/Commander.h"
+#include "Common/Session/ClientSession.h"
 
 // ---------- Defines -------------
 
@@ -53,6 +55,19 @@ Redis_init (
     Redis *self,
     char *ip,
     int port
+);
+
+
+/**
+ * @brief Save a ClientSession to the Redis server.
+ * @param self An allocated Redis instance
+ * @param session An allocated session to save
+ * @return true on success, false otherwise
+ */
+bool
+Redis_setSession (
+    Redis *self,
+    ClientSession *session
 );
 
 

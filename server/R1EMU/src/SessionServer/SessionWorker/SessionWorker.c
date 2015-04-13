@@ -84,10 +84,15 @@ SessionWorker_init (
     self->workerId = workerId;
     self->sessionsTable = sessionsTable;
     self->serverId  = serverId;
+
     if (!(conf = zconfig_load (confFilePath))) {
         error ("Cannot read the global configuration file (%s).", confFilePath);
         return false;
     }
+
+    // ===================================
+    //        Initialize MySQL
+    // ===================================
     if (!(sqlHostname = zconfig_resolve (conf, "database/mysql_host", NULL))
     ) {
         warning ("Cannot read correctly the MySQL host in the configuration file (%s). ", confFilePath);
@@ -113,14 +118,42 @@ SessionWorker_init (
         sqlDatabase = SESSION_WORKER_SQL_DATABASE_DEFAULT;
     }
 
-    self->sqlConn = malloc(sizeof(SQL));
+    self->sqlConn = malloc (sizeof (SQL));
     self->sqlConn->result = NULL;
-    self->sqlConn->handle = mysql_init(NULL);
-    if (!mysql_real_connect(self->sqlConn->handle, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
+    self->sqlConn->handle = mysql_init (NULL);
+
+    if (!mysql_real_connect (self->sqlConn->handle, sqlHostname, sqlLogin, sqlPassword, sqlDatabase, 0, NULL, 0)) {
         error ("The session worker ID %d could not connect to the database at %s. (mysql_errno = %d)",
             workerId, sqlHostname, mysql_errno (self->sqlConn->handle));
         return false;
     }
+
+    // ===================================
+    //   Initialize Redis connection
+    // ===================================
+    char *redisHostname;
+    char *redisPort;
+    if (!(redisHostname = zconfig_resolve (conf, "redisServer/redis_host", NULL))
+    ) {
+        warning ("Cannot read correctly the Redis host in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", SESSION_WORKER_REDIS_HOSTNAME_DEFAULT);
+        redisHostname = SESSION_WORKER_REDIS_HOSTNAME_DEFAULT;
+    }
+    if (!(redisPort = zconfig_resolve (conf, "redisServer/redis_port", NULL))
+    ) {
+        warning ("Cannot read correctly the Redis port in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", SESSION_WORKER_REDIS_PORT_DEFAULT);
+        redisPort = SESSION_WORKER_REDIS_PORT_DEFAULT;
+    }
+
+    if (!(self->redis = Redis_new (redisHostname, atoi (redisPort)))) {
+        error ("Cannot initialize a new Redis connection.");
+        return false;
+    }
+
+    // Close the configuration file
+    zconfig_destroy (&conf);
+
     dbg ("Session worker ID %d successfully connected to the database.", workerId);
 
     return true;
@@ -140,6 +173,14 @@ SessionWorker_updateSession (
     zframe_t *sessionIdFrame,
     zframe_t *sessionFrame
 ) {
+    ClientSession *newSession;
+
+    newSession = (ClientSession *) zframe_data (sessionFrame);
+    Redis_setSession (self->redis, newSession);
+
+    dbg ("Your session has been updated, USER_%" PRIu64 "!", newSession->accountId);
+
+    /*
     ClientSession *newSession, *oldSession;
     unsigned char *sessionId;
     unsigned char sessionKey[11];
@@ -165,6 +206,7 @@ SessionWorker_updateSession (
     dbg ("Your session has been updated, USER_%s !", sessionKey);
 
     ClientSession_print (newSession);
+    */
 
     return zframe_new (PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION_OK), sizeof (SESSION_SERVER_UPDATE_SESSION_OK));
 }

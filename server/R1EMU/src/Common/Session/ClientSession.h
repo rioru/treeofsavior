@@ -29,10 +29,13 @@
  *
  * ClientSession is created during the Barrack phase.
  * This structure size must be kept as small as possible.
- * It shouldn't contain any pointer, because it is sent to others worker via TCP
+ * /!\ It shouldn't contain any pointer, because it is sent to others worker via TCP
  */
 struct ClientSession
 {
+    /** Zone ID affected to the Client Session */
+    uint16_t zoneId;
+
     /** Family name (also called barrack name) */
     unsigned char familyName [64];
 

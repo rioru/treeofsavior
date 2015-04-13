@@ -58,6 +58,9 @@
 #define sizeof_struct_member(struct, member) \
    (sizeof(((struct *)0)->member))
 
+// Quotify a string
+#define QUOTIFY(x) "\"" x "\""
+
 // ----------- Functions ------------
 /**
  * @brief High precision timestamp.

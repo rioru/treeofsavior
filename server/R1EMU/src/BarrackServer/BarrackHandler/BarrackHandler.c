@@ -219,7 +219,7 @@ BarrackHandler_loginByPassport (
     zmsg_t *reply,
     void *arg
 ) {
-    BarrackWorker * self = (BarrackWorker *) arg;
+    // BarrackWorker * self = (BarrackWorker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {

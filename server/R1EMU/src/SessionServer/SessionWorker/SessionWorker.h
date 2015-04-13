@@ -26,6 +26,7 @@
 #include "R1EMU.h"
 #include "Common/Session/SessionTable.h"
 #include "Common/MySQL/MySQL.h"
+#include "Common/Redis/Redis.h"
 
 // ---------- Defines -------------
 
@@ -34,6 +35,9 @@ static const char SESSION_WORKER_SQL_HOSTNAME_DEFAULT[] = "localhost";
 static const char SESSION_WORKER_SQL_LOGIN_DEFAULT[]    = "r1emu";
 static const char SESSION_WORKER_SQL_PASSWORD_DEFAULT[] = "r1emu";
 static const char SESSION_WORKER_SQL_DATABASE_DEFAULT[] = "r1emu";
+
+#define SESSION_WORKER_REDIS_HOSTNAME_DEFAULT   "localhost"
+#define SESSION_WORKER_REDIS_PORT_DEFAULT   "6379"
 
 // ------ Structure declaration -------
 /**
@@ -53,6 +57,9 @@ struct SessionWorker
 
     /** The MySQL session */
     SQL *sqlConn;
+
+    /** The Redis session */
+    Redis *redis;
 
     /** The table containing all the sessions.
      *  BE CAREFUL : It is shared between all the session workers of the same server.

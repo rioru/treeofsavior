@@ -53,5 +53,8 @@ int main (int argc, char **argv)
     // Shutdown the CZMQ layer properly
     zsys_shutdown ();
 
+    info ("Press any key to exit...");
+    fgetc (stdin);
+
     return 0;
 }

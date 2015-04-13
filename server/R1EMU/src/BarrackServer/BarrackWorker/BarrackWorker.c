@@ -113,6 +113,7 @@ BarrackWorker_processClientPacket (
     // Request a session
     sessionFrame = ClientSession_getSession (self->sessionServer, clientIdentity);
     session = (ClientSession *) zframe_data (sessionFrame);
+    session->zoneId = BARRACK_SERVER_ZONE_ID;
 
     // Build the reply
     // We don't need the client packet in the reply

@@ -363,7 +363,7 @@ BarrackServer_start (
     // =============================================
     //  Launch the dedicated barrack session server
     // =============================================
-    SessionServer *sessionServer = SessionServer_new (BARRACK_SERVER_ACTOR_ID, self->confFilePath);
+    SessionServer *sessionServer = SessionServer_new (BARRACK_SERVER_ZONE_ID, self->confFilePath);
     if (zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer) == -1) {
         error ("Cannot launch session server thread.");
         return false;
