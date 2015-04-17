@@ -23,6 +23,8 @@ struct Redis
 {
     /** Redis context, handle of the connection to the redis server */
     redisContext *context;
+
+    char *commandBuffer;
 };
 
 
@@ -58,7 +60,24 @@ Redis_init (
     char *ip,
     int port
 ) {
-    self->context = redisConnect (ip, port);
+    info ("Connecting to the Redis Server (%s:%d)...", ip, port);
+
+    while (1) {
+        self->context = redisConnectWithTimeout (ip, port, (struct timeval) {.tv_sec = 3, .tv_usec = 0});
+        if (self->context != NULL && self->context->err) {
+            warning ("Redis server not detected (%s)... Retrying in 3 seconds.", self->context->errstr);
+            zclock_sleep (3000);
+        } else {
+            break;
+        }
+    }
+
+    info ("Connected to the Redis Server !");
+
+    if (!(self->commandBuffer = calloc (1, REDIS_COMMAND_BUFFER_SIZE))) {
+        error ("Cannot allocate a command buffer.");
+        return false;
+    }
 
     return true;
 }
@@ -72,13 +91,80 @@ Redis_getSession (
 }
 
 bool
-Redis_setSession (
+Redis_set (
+    Redis *self,
+    ClientSession *session,
+    ...
+) {
+    va_list args;
+
+	va_start (args, session);
+
+	char * token = va_arg (args, char *);
+	int tokenLen;
+	int curPos;
+
+    // Build the Redis command
+	sprintf (self->commandBuffer, "HMSET zone%d:map%d:acc%" PRIu64 " ",
+        session->zoneId, session->currentCommander.mapId, session->accountId); // Identifiers
+
+    // Current position to the buffer = end of the HMSET key
+    curPos = strlen (self->commandBuffer);
+
+    // Iterate through all the tokens
+    while (token != NULL) {
+        tokenLen = strlen (token);
+        char *value = va_arg (args, char *);
+        int valueLen = strlen (value);
+
+        // Check for BoF
+        if (curPos + tokenLen + valueLen + 3 >= REDIS_COMMAND_BUFFER_SIZE) {
+            // CurPos + value + token + 2*space + 1*'\0'.
+            error ("Redis command buffer overflow.");
+            return false;
+        }
+
+        // Concatenate the token + value at the end of the command
+        curPos += sprintf (&self->commandBuffer[curPos], "%s %s ", token, value);
+
+        token = va_arg (args, char *);
+    }
+	va_end (args);
+
+	self->commandBuffer[curPos] = '\0';
+
+	redisReply *reply = redisCommand (self->context, self->commandBuffer);
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        return false;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            return false;
+        break;
+
+        case REDIS_REPLY_STATUS:
+            info ("Redis status : %s", reply->str);
+        break;
+
+        default : warning ("Unexpected Redis status."); return false;
+    }
+
+	return true;
+}
+
+bool
+Redis_refreshSession (
     Redis *self,
     ClientSession *session
 ) {
     redisReply *reply = redisCommand (
         self->context,
-        "HMSET zone%d:map%d:acc%d"
+        "HMSET zone%d:map%d:acc%I64u"
         " zoneId " QUOTIFY("%x")
         " familyName " QUOTIFY("%s")
         " currentCommanderName " QUOTIFY("%s")
@@ -136,7 +222,7 @@ Redis_setSession (
         // [UNKNOWN] "commander.unk11 " QUOTIFY("%x")
         // [UNKNOWN] "commander.unk12 " QUOTIFY("%x")
         ,
-        session->zoneId, session->currentCommander.mapId, session->currentCommander.accountId, // Identifiers
+        session->zoneId, session->currentCommander.mapId, session->accountId, // Identifiers
         session->zoneId,
         session->familyName,
         session->currentCommanderName,
@@ -226,6 +312,10 @@ Redis_destroy (
 
     if (self->context) {
         redisFree (self->context);
+    }
+
+    if (self->commandBuffer) {
+        free (self->commandBuffer);
     }
 
     free (self);

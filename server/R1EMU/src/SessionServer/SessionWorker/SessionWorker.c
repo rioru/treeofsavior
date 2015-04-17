@@ -175,38 +175,15 @@ SessionWorker_updateSession (
 ) {
     ClientSession *newSession;
 
+    // Retrieve the session from the session frame
     newSession = (ClientSession *) zframe_data (sessionFrame);
-    Redis_setSession (self->redis, newSession);
+
+    // Request to refresh the entire session to the Redis Server
+    // TODO: Optimization : send only the delta(oldSession, newSession)
+    Redis_refreshSession (self->redis, newSession);
 
     dbg ("Your session has been updated, USER_%" PRIu64 "!", newSession->accountId);
-
-    /*
-    ClientSession *newSession, *oldSession;
-    unsigned char *sessionId;
-    unsigned char sessionKey[11];
-
-    sessionId = zframe_data (sessionIdFrame);
-    ClientSession_getSessionKey (sessionId, sessionKey, sizeof (sessionKey));
-
-    newSession = (ClientSession *) zframe_data (sessionFrame);
-
-    // Search for it in the hashtable
-    if (!(oldSession = SessionTable_lookup (self->sessionsTable, sessionKey))) {
-        // It doesn't exist, throw an error
-        error ("The session server cannot update a session that doesn't exist.");
-        return zframe_new (PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION_FAILED), sizeof (SESSION_SERVER_UPDATE_SESSION_FAILED));
-    }
-
-    // Session exists
-    memcpy (oldSession, newSession, sizeof (ClientSession));
-
-    // Update the database, maybe move it to an auto-save function and call it every x time and on log off
-    SessionWorker_flushSession (self, newSession);
-
-    dbg ("Your session has been updated, USER_%s !", sessionKey);
-
     ClientSession_print (newSession);
-    */
 
     return zframe_new (PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION_OK), sizeof (SESSION_SERVER_UPDATE_SESSION_OK));
 }
