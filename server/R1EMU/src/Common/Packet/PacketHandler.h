@@ -19,7 +19,8 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "Common/Session/ClientSession.h"
+#include "Common/Session/SocketSession.h"
+#include "Common/Session/ClientGameSession.h"
 
 // ---------- Defines -------------
 
@@ -38,7 +39,7 @@ typedef enum {
 /** @return PacketHandlerState (see above) */
 typedef PacketHandlerState (*PacketHandlerFunction) (
     /** Session of the current player */
-    ClientSession *session,
+    ClientGameSession *session,
     /** Packet sent by the client */
     unsigned char *packet,
     /** Size of the packet sent by the client */
@@ -65,7 +66,7 @@ typedef struct {
  * @brief Build a reply based on the packet handler
  * @param[in] handlers The packet handlers
  * @param[in] handlersCount The number of handlers in the handlers array
- * @param[in] session The session associated with the packet
+ * @param[in] session The game session associated with the packet
  * @param[in] packet The packet sent by the client
  * @param[in] packetSize The size of the packet
  * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
@@ -76,7 +77,7 @@ PacketHandlerState
 PacketHandler_buildReply (
     const PacketHandler *handlers,
     size_t handlersCount,
-    ClientSession *session,
+    ClientGameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,

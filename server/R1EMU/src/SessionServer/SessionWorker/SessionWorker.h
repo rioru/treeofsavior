@@ -24,7 +24,6 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "Common/Session/SessionTable.h"
 #include "Common/MySQL/MySQL.h"
 #include "Common/Redis/Redis.h"
 
@@ -60,11 +59,6 @@ struct SessionWorker
 
     /** The Redis session */
     Redis *redis;
-
-    /** The table containing all the sessions.
-     *  BE CAREFUL : It is shared between all the session workers of the same server.
-     */
-    SessionTable *sessionsTable;
 };
 
 typedef struct SessionWorker SessionWorker;
@@ -75,7 +69,6 @@ typedef struct SessionWorker SessionWorker;
  * @brief Allocate a new SessionWorker structure.
  * @param workerId The worker ID.
  * @param serverId The server ID.
- * @param sessionsTable The table containing all the sessions
  * @param confFilePath The configuration file path
  * @return A pointer to an allocated SessionWorker.
  */
@@ -83,7 +76,6 @@ SessionWorker *
 SessionWorker_new (
     int workerId,
     int serverId,
-    SessionTable *sessionsTable,
     char *confFilePath
 );
 
@@ -102,7 +94,6 @@ SessionWorker_init (
     SessionWorker *self,
     int workerId,
     int serverId,
-    SessionTable *sessionsTable,
     char *confFilePath
 );
 
@@ -133,5 +124,5 @@ SessionWorker_destroy (
 void
 SessionWorker_flushSession (
     SessionWorker *self,
-    ClientSession *session
+    ClientGameSession *session
 );

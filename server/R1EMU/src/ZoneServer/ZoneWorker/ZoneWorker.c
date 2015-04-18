@@ -141,7 +141,7 @@ ZoneWorker_processClientPacket (
     ZoneWorker *self,
     zmsg_t *msg
 ) {
-    ClientSession *session;
+    ClientGameSession *session;
     zframe_t *sessionFrame;
 
     // Read the message
@@ -149,9 +149,9 @@ ZoneWorker_processClientPacket (
     zframe_t *packet = zmsg_next (msg);
 
     // Request a session
-    sessionFrame = ClientSession_getSession (self->sessionServer, clientIdentity);
-    session = (ClientSession *) zframe_data (sessionFrame);
-    session->zoneId = self->serverId;
+    sessionFrame = ClientGameSession_getSession (self->sessionServer, clientIdentity);
+    session = (ClientGameSession *) zframe_data (sessionFrame);
+    session->socketSession.zoneId = self->serverId;
 
     // Build the reply
     // We don't need the client packet in the reply
@@ -172,16 +172,16 @@ ZoneWorker_processClientPacket (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!ClientSession_updateSession (self->sessionServer, clientIdentity, session)) {
+            if (!ClientGameSession_updateSession (self->sessionServer, clientIdentity, session)) {
                 error ("Cannot update the following session");
-                ClientSession_print (session);
+                ClientGameSession_print (session);
             }
         break;
 
         case PACKET_HANDLER_DELETE_SESSION:
-            if (!ClientSession_deleteSession (self->sessionServer, clientIdentity)) {
+            if (!ClientGameSession_deleteSession (self->sessionServer, clientIdentity)) {
                 error ("Cannot delete the following session");
-                ClientSession_print (session);
+                ClientGameSession_print (session);
             }
         break;
     }

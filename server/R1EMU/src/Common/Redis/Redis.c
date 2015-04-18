@@ -63,7 +63,8 @@ Redis_init (
     info ("Connecting to the Redis Server (%s:%d)...", ip, port);
 
     while (1) {
-        self->context = redisConnectWithTimeout (ip, port, (struct timeval) {.tv_sec = 3, .tv_usec = 0});
+        self->context = redisConnect (ip, port);
+        //self->context = redisConnectWithTimeout (ip, port, (struct timeval) {.tv_sec = 3, .tv_usec = 0});
         if (self->context != NULL && self->context->err) {
             warning ("Redis server not detected (%s)... Retrying in 3 seconds.", self->context->errstr);
             zclock_sleep (3000);
@@ -85,7 +86,7 @@ Redis_init (
 void
 Redis_getSession (
     Redis *self,
-    ClientSession *session
+    ClientGameSession *session
 ) {
 
 }
@@ -93,7 +94,7 @@ Redis_getSession (
 bool
 Redis_set (
     Redis *self,
-    ClientSession *session,
+    ClientGameSession *session,
     ...
 ) {
     va_list args;
@@ -105,8 +106,8 @@ Redis_set (
 	int curPos;
 
     // Build the Redis command
-	sprintf (self->commandBuffer, "HMSET zone%d:map%d:acc%" PRIu64 " ",
-        session->zoneId, session->currentCommander.mapId, session->accountId); // Identifiers
+	sprintf (self->commandBuffer, "HMSET zone%d:map%d:acc%I64u ",
+        session->socketSession.zoneId, session->currentCommander.mapId, session->socketSession.accountId); // Identifiers
 
     // Current position to the buffer = end of the HMSET key
     curPos = strlen (self->commandBuffer);
@@ -151,83 +152,184 @@ Redis_set (
             info ("Redis status : %s", reply->str);
         break;
 
-        default : warning ("Unexpected Redis status."); return false;
+        default : warning ("Unexpected Redis status : %d.", reply->type); return false;
     }
 
 	return true;
 }
 
 bool
-Redis_refreshSession (
+Redis_getSocketSession (
     Redis *self,
-    ClientSession *session
+    char *socketIdKey,
+    SocketSession *socketSession
 ) {
-    redisReply *reply = redisCommand (
+	redisReply *reply = redisCommand (self->context, "HMGET socket%s accountId zoneId mapId authenticated", socketIdKey);
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        return false;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            return false;
+        break;
+
+        case REDIS_REPLY_STATUS:
+            info ("Redis status : %s", reply->str);
+        break;
+
+        case REDIS_REPLY_ARRAY:
+            if (reply->elements != 4) {
+                error ("Wrong number of elements received.");
+                return false;
+            }
+
+            if (reply->element[0]->str == NULL
+            ||  reply->element[1]->str == NULL
+            ||  reply->element[2]->str == NULL
+            ||  reply->element[3]->str == NULL) {
+                // The socket ID doesn't exist : set them to their default values
+                SocketSession_init (socketSession, 0, 0, 0, socketIdKey);
+                if (!Redis_updateSocketSession (self, socketSession)) {
+                    dbg ("Cannot update the socket session");
+                    return false;
+                }
+            }
+            else {
+                socketSession->accountId = strtoll (reply->element[0]->str, NULL, 16);
+                socketSession->zoneId = strtol (reply->element[1]->str, NULL, 16);
+                socketSession->mapId = strtol (reply->element[2]->str, NULL, 16);
+                socketSession->authenticated = strtol (reply->element[3]->str, NULL, 16);
+            }
+
+        break;
+
+        default : warning ("Unexpected Redis status : %d", reply->type); return false; break;
+    }
+
+    return true;
+}
+
+bool
+Redis_updateSocketSession (
+    Redis *self,
+    SocketSession *socketSession
+) {
+    redisReply *reply = NULL;
+
+    reply = redisCommand (
         self->context,
-        "HMSET zone%d:map%d:acc%I64u"
-        " zoneId " QUOTIFY("%x")
-        " familyName " QUOTIFY("%s")
-        " currentCommanderName " QUOTIFY("%s")
-        " charactersBarrackCount " QUOTIFY("%x")
-        " accountId " QUOTIFY("%llu")
-        " currentCommanderId " QUOTIFY("%llu")
-        " currentPcId " QUOTIFY("%x")
-        // [UNKNOWN] " commander.unk1 " QUOTIFY("%s")
-        " commander.classId " QUOTIFY("%x")
-        // [UNKNOWN] " commander.unk2 " QUOTIFY("%s")
-        " commander.jobId " QUOTIFY("%x")
-        " commander.gender " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk3 " QUOTIFY("%x")
-        " commander.level " QUOTIFY("%x")
-        " commander.head_top " QUOTIFY("%x")
-        " commander.head_middle " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk1 " QUOTIFY("%x")
-        " commander.body_armor " QUOTIFY("%x")
-        " commander.gloves " QUOTIFY("%x")
-        " commander.boots " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk2 " QUOTIFY("%x")
-        " commander.bracelet " QUOTIFY("%x")
-        " commander.weapon " QUOTIFY("%x")
-        " commander.shield " QUOTIFY("%x")
-        " commander.costume " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk3 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk4 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk5 " QUOTIFY("%x")
-        " commander.leg_armor " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk6 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.itemUnk7 " QUOTIFY("%x")
-        " commander.ring_left " QUOTIFY("%x")
-        " commander.ring_right " QUOTIFY("%x")
-        " commander.necklace " QUOTIFY("%x")
-        " commander.hairType " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk4 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk5 " QUOTIFY("%x")
-        " commander.pcId " QUOTIFY("%x")
-        " commander.listPosition " QUOTIFY("%x")
-        " commander.charPosition " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk6 " QUOTIFY("%x")
-        " commander.mapId " QUOTIFY("%x")
-        " commander.currentXP " QUOTIFY("%x")
-        " commander.maxXP " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk7 " QUOTIFY("%x")
-        " commander.pose " QUOTIFY("%x")
-        " commander.spriteRelated " QUOTIFY("%x")
-        " commander.currentHP " QUOTIFY("%x")
-        " commander.maxHP " QUOTIFY("%x")
-        " commander.currentSP " QUOTIFY("%x")
-        " commander.maxSP " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk8 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk9 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk10 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk11 " QUOTIFY("%x")
-        // [UNKNOWN] "commander.unk12 " QUOTIFY("%x")
+        "HMSET socket%s"
+        " accountId %llx"
+        " zoneId %x"
+        " mapId %x"
+        " authenticated %x",
+        socketSession->key,
+        socketSession->accountId,
+        socketSession->zoneId,
+        socketSession->mapId,
+        socketSession->authenticated
+    );
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        return false;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            return false;
+        break;
+
+        case REDIS_REPLY_STATUS:
+            info ("Redis status : %s", reply->str);
+        break;
+
+        default : warning ("Unexpected Redis status."); return false;
+    }
+
+    return true;
+}
+
+bool
+Redis_updateGameSession (
+    Redis *self,
+    ClientGameSession *session
+) {
+    redisReply *reply = NULL;
+
+    reply = redisCommand (
+        self->context,
+        "HMSET zone%d:map%d:acc%llx"
+        " zoneId " "%x"
+        " familyName " "%s"
+        " currentCommanderName " "%s"
+        " charactersBarrackCount " "%x"
+        " accountId " "%llx"
+        " currentCommanderId " "%llx"
+        " currentPcId " "%x"
+        // [UNKNOWN] " commander.unk1 " ("%s")
+        " commander.classId " "%x"
+        // [UNKNOWN] " commander.unk2 " ("%s")
+        " commander.jobId " "%x"
+        " commander.gender " "%x"
+        // [UNKNOWN] "commander.unk3 " "%x"
+        " commander.level " "%x"
+        " commander.head_top " "%x"
+        " commander.head_middle " "%x"
+        // [UNKNOWN] "commander.itemUnk1 " "%x"
+        " commander.body_armor " "%x"
+        " commander.gloves " "%x"
+        " commander.boots " "%x"
+        // [UNKNOWN] "commander.itemUnk2 " "%x"
+        " commander.bracelet " "%x"
+        " commander.weapon " "%x"
+        " commander.shield " "%x"
+        " commander.costume " "%x"
+        // [UNKNOWN] "commander.itemUnk3 " "%x"
+        // [UNKNOWN] "commander.itemUnk4 " "%x"
+        // [UNKNOWN] "commander.itemUnk5 " "%x"
+        " commander.leg_armor " "%x"
+        // [UNKNOWN] "commander.itemUnk6 " "%x"
+        // [UNKNOWN] "commander.itemUnk7 " "%x"
+        " commander.ring_left " "%x"
+        " commander.ring_right " "%x"
+        " commander.necklace " "%x"
+        " commander.hairType " "%x"
+        // [UNKNOWN] "commander.unk4 " "%x"
+        // [UNKNOWN] "commander.unk5 " "%x"
+        " commander.pcId " "%x"
+        " commander.listPosition " "%x"
+        " commander.charPosition " "%x"
+        // [UNKNOWN] "commander.unk6 " "%x"
+        " commander.mapId " "%x"
+        " commander.currentXP " "%x"
+        " commander.maxXP " "%x"
+        // [UNKNOWN] "commander.unk7 " "%x"
+        " commander.pose " "%x"
+        " commander.spriteRelated " "%x"
+        " commander.currentHP " "%x"
+        " commander.maxHP " "%x"
+        " commander.currentSP " "%x"
+        " commander.maxSP " "%x"
+        // [UNKNOWN] "commander.unk8 " "%x"
+        // [UNKNOWN] "commander.unk9 " "%x"
+        // [UNKNOWN] "commander.unk10 " "%x"
+        // [UNKNOWN] "commander.unk11 " "%x"
+        // [UNKNOWN] "commander.unk12 " "%x"
         ,
-        session->zoneId, session->currentCommander.mapId, session->accountId, // Identifiers
-        session->zoneId,
+        session->socketSession.zoneId, session->currentCommander.mapId, session->socketSession.accountId, // Identifiers
+        session->socketSession.zoneId,
         session->familyName,
         session->currentCommanderName,
         session->charactersBarrackCount,
-        session->accountId,
+        session->socketSession.accountId,
         session->currentCommanderId,
         session->currentPcId,
         // [UNKNOWN] session->currentCommander.unk1,

@@ -27,6 +27,7 @@ typedef enum {
     DBG_LEVEL_DEBUG,
     DBG_LEVEL_WARNING,
     DBG_LEVEL_ERROR,
+    DBG_LEVEL_SPECIAL,
 } DbgLevel;
 
 
@@ -82,6 +83,10 @@ typedef enum {
     /** Error level debug function. */
     #define error(format, ...)                                            \
         dbg_ex (DBG_LEVEL_ERROR, stderr, "[ERROR] " format "\n", ##__VA_ARGS__)
+
+    /** Special level debug function. */
+    #define special(format, ...)                                            \
+        dbg_ex (DBG_LEVEL_SPECIAL, stderr, "[SPECIAL] " format "\n", ##__VA_ARGS__)
 
     /** Fatal error level debug function. */
     #define die(format, ...)                                              \

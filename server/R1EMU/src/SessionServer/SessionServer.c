@@ -18,7 +18,6 @@
 // ---------- Includes ------------
 #include "SessionServer.h"
 #include "SessionWorker/SessionWorker.h"
-#include "Common/Session/SessionTable.h"
 
 
 // ------ Structure declaration -------
@@ -47,9 +46,6 @@ struct SessionServer
 
     /** Index of the worker in the worker array that is going to take the charge if there is an overload */
     int overloadWorker;
-
-    /** Hashtable of the sessions */
-    SessionTable *sessionsTable;
 
     /** Actor Id using the session server */
     int serverId;
@@ -151,12 +147,6 @@ SessionServer_init (
     // Allocate the workers entity list
     if (!(self->readyWorkers = zlist_new ())) {
         error ("Cannot allocate ready workers list.");
-        return false;
-    }
-
-    // Allocate the sessions hashtable
-    if (!(self->sessionsTable = SessionTable_new ())) {
-        error ("Cannot allocate a new sessionTable.");
         return false;
     }
 
@@ -306,7 +296,7 @@ SessionServer_start (
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->sessionsTable, self->confFilePath))) {
+        if ((sessionWorker = SessionWorker_new (workerId, self->serverId, self->confFilePath))) {
             if (zthread_new (SessionWorker_worker, sessionWorker) != 0) {
                 error ("Cannot create Session Server worker thread ID %d.", workerId);
                 return false;

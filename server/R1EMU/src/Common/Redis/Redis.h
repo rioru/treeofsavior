@@ -20,7 +20,8 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
-#include "Common/Session/ClientSession.h"
+#include "Common/Session/SocketSession.h"
+#include "Common/Session/ClientGameSession.h"
 
 // ---------- Defines -------------
 #define REDIS_COMMAND_BUFFER_SIZE 1024*100
@@ -60,15 +61,43 @@ Redis_init (
 
 
 /**
- * @brief Save an entire ClientSession to the Redis server.
+ * @brief Save an entire ClientGameSession to the Redis server.
  * @param self An allocated Redis instance
- * @param session An allocated session to save
+ * @param session An allocated session to refresh
  * @return true on success, false otherwise
  */
 bool
-Redis_refreshSession (
+Redis_updateGameSession (
     Redis *self,
-    ClientSession *session
+    ClientGameSession *session
+);
+
+
+/**
+ * @brief Save an entire ClientGameSession to the Redis server.
+ * @param self An allocated Redis instance
+ * @param socketSession An allocated socket session to refresh
+ * @return true on success, false otherwise
+ */
+bool
+Redis_updateSocketSession (
+    Redis *self,
+    SocketSession *socketSession
+);
+
+
+/**
+ * @brief Get the SocketSession associated with the Socket ID
+ * @param self An allocated Redis
+ * @param socketIdKey A socket ID key
+ * @param[out] socketSession The socket Session
+ * @return
+ */
+bool
+Redis_getSocketSession (
+    Redis *self,
+    char *socketIdKey,
+    SocketSession *socketSession
 );
 
 
@@ -82,7 +111,7 @@ Redis_refreshSession (
 bool
 Redis_set (
     Redis *self,
-    ClientSession *session,
+    ClientGameSession *session,
     ...
 );
 

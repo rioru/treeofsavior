@@ -44,11 +44,13 @@ void _dbg (
         case DBG_LEVEL_DEBUG: break;
         case DBG_LEVEL_WARNING: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0E); break;
         case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0C); break;
+        case DBG_LEVEL_SPECIAL: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0D); break;
         #else
         case DBG_LEVEL_INFO: fprintf (output, "\x1b[32m"); break;
         case DBG_LEVEL_DEBUG: fprintf (output, "\x1b[37m"); break;
         case DBG_LEVEL_WARNING: fprintf (output, "\x1b[33m"); break;
         case DBG_LEVEL_ERROR: fprintf (output, "\x1b[31m"); break;
+        case DBG_LEVEL_SPECIAL: fprintf (output, "\x1b[34m"); break;
         #endif
     }
 
