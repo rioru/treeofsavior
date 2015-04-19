@@ -32,7 +32,8 @@ typedef enum SessionServerHeader {
     _SESSION_SERVER_WORKER_READY,            // Ready
     _SESSION_SERVER_PING,                    // Ping
     _SESSION_SERVER_PONG,                    // Pong
-    _SESSION_SERVER_REQUEST_SESSION,         // Request a session
+    _SESSION_SERVER_REQUEST_SESSION,         // Request a session with a socket ID
+    _SESSION_SERVER_REQUEST_BARRACK_SESSION, // Request a session from the barrack server with an account ID
     _SESSION_SERVER_UPDATE_SESSION,          // Update a session
     _SESSION_SERVER_UPDATE_SESSION_OK,       // Session update success
     _SESSION_SERVER_UPDATE_SESSION_FAILED,   // Session update fail
@@ -49,6 +50,7 @@ typedef enum SessionServerHeader {
 typedef enum SessionServerRecvHeader {
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_PING),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_REQUEST_SESSION),
+    DECL_SESSION_SERVER_HEADER (SESSION_SERVER_REQUEST_BARRACK_SESSION),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_UPDATE_SESSION),
     DECL_SESSION_SERVER_HEADER (SESSION_SERVER_DELETE_SESSION),
 }   SessionServerRecvHeader;

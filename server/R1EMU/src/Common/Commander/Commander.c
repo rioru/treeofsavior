@@ -22,62 +22,59 @@
 
 // ------ Extern function implementation ------
 
-CommanderInfo
-Commander_CreateBasicCommander (
-    void
+void
+CommanderInfo_createBasicCommander (
+    CommanderInfo *commander
 ) {
-    CommanderInfo commander;
-    memset (&commander, 0, sizeof (commander));
+    memset (commander, 0, sizeof (CommanderInfo));
 
-    commander.classId = 10001;
-    commander.unk2 = 0;
-    commander.jobId = 1;
-    commander.gender = 1;
-    commander.unk3 = 1;
-    commander.level = 1;
-    commander.head_top = 0x00002710;
-    commander.head_middle = 0x00002710;
-    commander.itemUnk1 = 0x00002710;
-    commander.body_armor = 0x00002710;
-    commander.gloves = 0x00002710;
-    commander.boots = 0x00002710;
-    commander.itemUnk2 = 0x00002710;
-    commander.bracelet = 0x00002710;
-    commander.weapon = 0x00002710;
-    commander.shield = 0x00002710;
-    commander.costume = 0x00002710;
-    commander.itemUnk3 = 0x00002710;
-    commander.itemUnk4 = 0x00002710;
-    commander.itemUnk5 = 0x00002710;
-    commander.leg_armor = 0x00002710;
-    commander.itemUnk6 = 0x00002710;
-    commander.itemUnk7 = 0x00002710;
-    commander.ring_left = 0x00002710;
-    commander.ring_right = 0x00002710;
-    commander.necklace = 0x00002710;
-    commander.hairType = 2;
-    commander.unk5 = 0;
-    commander.pose = 0;
-    commander.spriteRelated = 1;
-    commander.unk6 = 0;
-    commander.mapId = 0x551;
-    commander.unk7 = 0;
-    commander.unk8 = 0;
-    commander.unk9 = 0;
-    commander.unk10 = 0;
-    commander.unk11 = 0;
-    commander.unk12 = 0;
+    commander->classId = 10001;
+    commander->unk2 = 0;
+    commander->jobId = 1;
+    commander->gender = 1;
+    commander->unk3 = 1;
+    commander->level = 1;
+    commander->head_top = 0x00002710;
+    commander->head_middle = 0x00002710;
+    commander->itemUnk1 = 0x00002710;
+    commander->body_armor = 0x00002710;
+    commander->gloves = 0x00002710;
+    commander->boots = 0x00002710;
+    commander->itemUnk2 = 0x00002710;
+    commander->bracelet = 0x00002710;
+    commander->weapon = 0x00002710;
+    commander->shield = 0x00002710;
+    commander->costume = 0x00002710;
+    commander->itemUnk3 = 0x00002710;
+    commander->itemUnk4 = 0x00002710;
+    commander->itemUnk5 = 0x00002710;
+    commander->leg_armor = 0x00002710;
+    commander->itemUnk6 = 0x00002710;
+    commander->itemUnk7 = 0x00002710;
+    commander->ring_left = 0x00002710;
+    commander->ring_right = 0x00002710;
+    commander->necklace = 0x00002710;
+    commander->hairType = 2;
+    commander->unk5 = 0;
+    commander->pose = 0;
+    commander->spriteRelated = 1;
+    commander->unk6 = 0;
+    commander->mapId = 0x551;
+    commander->unk7 = 0;
+    commander->unk8 = 0;
+    commander->unk9 = 0;
+    commander->unk10 = 0;
+    commander->unk11 = 0;
+    commander->unk12 = 0;
 
     // Fill with dummy stats
-    commander.currentXP = 6000;
-    commander.maxXP = 12000;
-    commander.currentHP = 6000;
-    commander.maxHP = 12000;
-    commander.currentSP = 6000;
-    commander.maxSP = 12000;
-    commander.level = 10;
-
-    return commander;
+    commander->currentXP = 6000;
+    commander->maxXP = 12000;
+    commander->currentHP = 6000;
+    commander->maxHP = 12000;
+    commander->currentSP = 6000;
+    commander->maxSP = 12000;
+    commander->level = 10;
 }
 
 

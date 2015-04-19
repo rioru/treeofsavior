@@ -116,12 +116,14 @@ bool ZoneWorker_sendToClients (
 /**
  * @brief Request a session from the Barrack server
  * @param self An allocated ZoneWorker
+ * @param clientIdentity The identity of the client
  * @param accountId The account ID of the session
  * @return a zframe_t on success, NULL otherwise
  */
 zframe_t *
 ZoneWorker_getBarrackSession (
     ZoneWorker *self,
+    zframe_t *clientIdentity,
     uint64_t accountId
 );
 

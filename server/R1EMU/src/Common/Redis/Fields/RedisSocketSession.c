@@ -26,8 +26,7 @@ const char *redisSocketSessionsStr [] = {
 	[REDIS_SOCKET_SESSION_accountId] = REDIS_SOCKET_SESSION_accountId_str,
 	[REDIS_SOCKET_SESSION_zoneId] = REDIS_SOCKET_SESSION_zoneId_str,
 	[REDIS_SOCKET_SESSION_mapId] = REDIS_SOCKET_SESSION_mapId_str,
-	[REDIS_SOCKET_SESSION_authenticated] = REDIS_SOCKET_SESSION_authenticated_str,
-	[REDIS_SOCKET_SESSION_isInBarrack] = REDIS_SOCKET_SESSION_isInBarrack_str
+	[REDIS_SOCKET_SESSION_authenticated] = REDIS_SOCKET_SESSION_authenticated_str
 };
 
 
@@ -35,19 +34,22 @@ const char *redisSocketSessionsStr [] = {
 bool
 Redis_getSocketSession (
     Redis *self,
+    int zoneId,
     char *socketIdKey,
     SocketSession *socketSession
 ) {
 	redisReply *reply = NULL;
+    char key[100];
+
+    snprintf (key, sizeof (key), "zone%x:socket%s", zoneId, socketIdKey);
 
 	reply = Redis_commandDbg (self,
-        "HMGET socket%s "
+        "HMGET %s "
         REDIS_SOCKET_SESSION_accountId_str " "
         REDIS_SOCKET_SESSION_zoneId_str " "
         REDIS_SOCKET_SESSION_mapId_str " "
-        REDIS_SOCKET_SESSION_authenticated_str " "
-        REDIS_SOCKET_SESSION_isInBarrack_str " ",
-        socketIdKey
+        REDIS_SOCKET_SESSION_authenticated_str " ",
+        key
     );
 
     if (!reply) {
@@ -78,7 +80,7 @@ Redis_getSocketSession (
 
             if (Redis_anyElementIsNull (reply->element, reply->elements) != -1) {
                 // The socket ID doesn't exist : set them to their default values
-                SocketSession_init (socketSession, 0, 0, 0, socketIdKey);
+                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, zoneId, SOCKET_SESSION_UNDEFINED_MAP, socketIdKey);
 
                 // Update the newly created socketSession to the Redis Session
                 if (!Redis_updateSocketSession (self, socketSession)) {
@@ -88,14 +90,11 @@ Redis_getSocketSession (
                 }
             }
             else {
-                Redis_printElements (reply->element, reply->elements, redisSocketSessionsStr);
-
                 // Read the socket Session from the Redis server
                 socketSession->accountId = strtoll (reply->element[REDIS_SOCKET_SESSION_accountId]->str, NULL, 16);
                 socketSession->zoneId = strtol (reply->element[REDIS_SOCKET_SESSION_zoneId]->str, NULL, 16);
                 socketSession->mapId = strtol (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
                 socketSession->authenticated = strtol (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
-                socketSession->isInBarrack = strtol (reply->element[REDIS_SOCKET_SESSION_isInBarrack]->str, NULL, 16);
             }
         break;
 
@@ -117,20 +116,21 @@ Redis_updateSocketSession (
     SocketSession *socketSession
 ) {
     redisReply *reply = NULL;
+    char key[100];
+
+    snprintf (key, sizeof (key), "zone%x:socket%s", socketSession->zoneId, socketSession->key);
 
     reply = Redis_commandDbg (self,
-        "HMSET socket%s"
+        "HMSET %s"
         " accountId %llx"
         " zoneId %x"
         " mapId %x"
         " authenticated %x"
-        " isInBarrack %x",
-        socketSession->key,
+        , key,
         socketSession->accountId,
         socketSession->zoneId,
         socketSession->mapId,
-        socketSession->authenticated,
-        socketSession->isInBarrack
+        socketSession->authenticated
     );
 
     if (!reply) {

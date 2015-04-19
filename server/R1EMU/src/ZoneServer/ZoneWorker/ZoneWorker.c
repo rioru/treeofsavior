@@ -194,11 +194,18 @@ ZoneWorker_processClientPacket (
 zframe_t *
 ZoneWorker_getBarrackSession (
     ZoneWorker *self,
+    zframe_t *clientIdentity,
     uint64_t accountId
 ) {
+    zframe_t *sessionFrame;
+    zframe_t *accountIdFrame = zframe_new ((typeof (accountId)[]) {accountId}, sizeof (accountId));
 
+    if (!(sessionFrame = GameSession_getBarrackSession (self->sessionServer, clientIdentity, accountIdFrame))) {
+        error ("Cannot get the requested session from the barrack server");
+        return NULL;
+    }
 
-    return NULL;
+    return sessionFrame;
 }
 
 void

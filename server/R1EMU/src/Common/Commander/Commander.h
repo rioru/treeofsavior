@@ -126,7 +126,19 @@ typedef enum CommanderHair
 
 // ----------- Functions ------------
 
-CommanderInfo
-Commander_CreateBasicCommander (
-    void
+/**
+ * @brief Initialize a commander with basic information
+ */
+
+void
+CommanderInfo_createBasicCommander (
+    CommanderInfo *commander
+);
+
+/**
+ * @brief Dump a CommanderInfo in the console
+ */
+void
+CommanderInfo_print (
+    CommanderInfo *commander
 );

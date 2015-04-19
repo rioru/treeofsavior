@@ -61,9 +61,6 @@ SocketSession_init (
 
     self->authenticated = false;
 
-    // Consider it just connected, so it is in the Barrack
-    self->isInBarrack = true;
-
     return true;
 }
 
@@ -87,7 +84,6 @@ SocketSession_print (
     dbg ("accountId = <%llx>", self->accountId);
     dbg ("zoneId = <%x>", self->zoneId);
     dbg ("authenticated = <%x>", self->authenticated);
-    dbg ("isInBarrack = <%x>", self->isInBarrack);
 }
 
 

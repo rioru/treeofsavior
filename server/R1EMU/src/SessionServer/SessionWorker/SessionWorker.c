@@ -18,6 +18,7 @@
 // ---------- Includes ------------
 #include "SessionWorker.h"
 #include "SessionServer/SessionServer.h"
+#include "BarrackServer/BarrackServer.h"
 #include "Common/Session/GameSession.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
@@ -193,58 +194,99 @@ SessionWorker_updateSession (
 }
 
 static zframe_t *
-SessionWorker_getSession (
+SessionWorker_getSessionWithSocket (
     SessionWorker *self,
-    zframe_t *sessionIdFrame,
-    SocketSession *socketSession,
-    GameSession *gameSession
+    zframe_t *socketIdFrame
 ) {
+    GameSession gameSession = {0};
+    SocketSession socketSession;
     unsigned char *socketId;
-    unsigned char socketIdKey[11];
+    unsigned char socketKey[11];
 
     // Generate the socketId key
-    socketId = zframe_data (sessionIdFrame);
-    SocketSession_genKey (socketId, socketIdKey, sizeof (socketIdKey));
+    socketId = zframe_data (socketIdFrame);
+    SocketSession_genKey (socketId, socketKey, sizeof (socketKey));
 
     // Search for the Socket Session
-    if (!Redis_getSocketSession (self->redis, socketIdKey, socketSession)) {
+    if (!Redis_getSocketSession (self->redis, self->serverId, socketKey, &socketSession)) {
         error ("Cannot get Socket Session.");
         return false;
     }
 
-    special ("BON ??");
-    SocketSession_print (socketSession);
-
-    if (!socketSession->authenticated) {
-        // This is the first time the client connect, the session is empty
-        GameSession_init (gameSession);
-        dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketIdKey);
+    if (!socketSession.authenticated) {
+        // This is the first time the client connect.
+        // Initialize an empty game session
+        GameSession_init (&gameSession);
+        dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey);
     } else {
-        if (!Redis_getGameSession (self->redis, socketSession, gameSession)) {
+        if (!Redis_getGameSession (self->redis, &socketSession, &gameSession)) {
             error ("Cannot get Game Session.");
             return NULL;
         }
-        dbg ("Welcome back, SOCKET_%s !", socketIdKey);
+        dbg ("Welcome back, SOCKET_%s !", socketKey);
     }
 
     // Copy the socketSession in the gameSession
-    memcpy (&gameSession->socketSession, socketSession, sizeof (SocketSession));
+    memcpy (&gameSession.socketSession, &socketSession, sizeof (SocketSession));
 
     // Reply with the socketSession
-    return zframe_new (gameSession, sizeof (GameSession));
+    return zframe_new (&gameSession, sizeof (GameSession));
+}
+
+static zframe_t *
+SessionWorker_getSessionFromBarrack (
+    SessionWorker *self,
+    zframe_t *socketIdFrame,
+    zframe_t *accountIdFrame
+) {
+    unsigned char *socketId;
+    GameSession gameSession = {0};
+
+    uint64_t accountId = *((uint64_t *) zframe_data (accountIdFrame));
+
+    SocketSession socketSession = {
+        .accountId = accountId,
+        .zoneId = BARRACK_SERVER_ZONE_ID,
+        .mapId = SOCKET_SESSION_UNDEFINED_MAP
+    };
+
+    // Generate the socket key
+    socketId = zframe_data (socketIdFrame);
+    SocketSession_genKey (socketId, socketSession.key, sizeof (socketSession.key));
+
+    if (!Redis_getGameSession (self->redis, &socketSession, &gameSession)) {
+        error ("Cannot get Game Session.");
+        return NULL;
+    }
+
+    // Update the socketSession for the target zone Id
+    socketSession.zoneId = self->serverId;
+    if (!Redis_updateSocketSession (self->redis, &socketSession)) {
+        error ("Cannot update Socket Session.");
+        return NULL;
+    }
+
+    // Copy the socketSession in the gameSession
+    memcpy (&gameSession.socketSession, &socketSession, sizeof (SocketSession));
+
+    // Reply with the socketSession
+    return zframe_new (&gameSession, sizeof (GameSession));
 }
 
 static zframe_t *
 SessionWorker_deleteSession (
     SessionWorker *self,
-    zframe_t *sessionIdFrame
+    zframe_t *socketIdFrame
 ) {
-    unsigned char *sessionId;
-    unsigned char sessionKey[11];
+    unsigned char *socketId;
+    unsigned char socketKey[11];
 
-    // Generate the hashtable key
-    sessionId = zframe_data (sessionIdFrame);
-    SocketSession_genKey (sessionId, sessionKey, sizeof (sessionKey));
+    // Generate the socket key
+    socketId = zframe_data (socketIdFrame);
+    SocketSession_genKey (socketId, socketKey, sizeof (socketKey));
+
+    // Delete the session
+    // TODO
 
     return zframe_new (PACKET_HEADER (SESSION_SERVER_DELETE_SESSION_OK), sizeof (SESSION_SERVER_DELETE_SESSION_OK));
 }
@@ -254,9 +296,6 @@ SessionWorker_handleRequest (
     SessionWorker *self,
     zmsg_t *msg
 ) {
-    SocketSession socketSession = {0};
-    GameSession gameSession = {{0}};
-
     // Extract the request
     zframe_t *identityFrame = zmsg_pop (msg); (void) identityFrame;
     zframe_t *emptyFrame = zmsg_pop (msg); (void) emptyFrame;
@@ -273,8 +312,16 @@ SessionWorker_handleRequest (
 
         case SESSION_SERVER_REQUEST_SESSION: {
             zframe_t *clientIdentityFrame = zmsg_pop (msg);
-            requestAnswer = SessionWorker_getSession (self, clientIdentityFrame, &socketSession, &gameSession);
+            requestAnswer = SessionWorker_getSessionWithSocket (self, clientIdentityFrame);
             zframe_destroy (&clientIdentityFrame);
+        } break;
+
+        case SESSION_SERVER_REQUEST_BARRACK_SESSION: {
+            zframe_t *clientIdentityFrame = zmsg_pop (msg);
+            zframe_t *accountIdFrame = zmsg_pop (msg);
+            requestAnswer = SessionWorker_getSessionFromBarrack (self, clientIdentityFrame, accountIdFrame);
+            zframe_destroy (&clientIdentityFrame);
+            zframe_destroy (&accountIdFrame);
         } break;
 
         case SESSION_SERVER_UPDATE_SESSION: {

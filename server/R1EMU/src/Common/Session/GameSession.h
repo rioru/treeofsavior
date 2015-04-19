@@ -21,6 +21,7 @@
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Session/SocketSession.h"
+#include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
 
@@ -34,15 +35,6 @@
  */
 struct GameSession
 {
-    /** Copy of the socket Session */
-    SocketSession socketSession;
-
-    /** Family name (also called barrack name) */
-    unsigned char familyName [64];
-
-    /** current commander name */
-    unsigned char currentCommanderName [64];
-
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
 
@@ -54,6 +46,9 @@ struct GameSession
 
     /** Current commander */
     CommanderInfo currentCommander;
+
+    /** Copy of the socket Session */
+    SocketSession socketSession;
 };
 
 typedef struct GameSession GameSession;
@@ -114,6 +109,20 @@ GameSession_getSession (
     zframe_t *clientIdentity
 );
 
+
+/**
+ * @brief Request a game session from the session of the barrack server
+ * @param sessionServer An opened socket to the session server
+ * @param clientIdentity A frame containing the identity of the client
+ * @param accountIdFrame A frame containing the accountId of the client.
+ * @return a zframe_t containing a GameSession on success, NULL otherwise
+ */
+zframe_t *
+GameSession_getBarrackSession (
+    zsock_t *sessionServer,
+    zframe_t *clientIdentity,
+    zframe_t *accountIdFrame
+);
 
 /**
  * @brief Update a session for the session server

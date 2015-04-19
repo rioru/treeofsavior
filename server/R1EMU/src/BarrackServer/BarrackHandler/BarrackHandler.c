@@ -240,7 +240,7 @@ BarrackHandler_loginByPassport (
     session->socketSession.authenticated = true;
 
     // ===== Gives a random account =====
-    replyPacket.header.type  = BC_LOGINOK;
+    replyPacket.header.type = BC_LOGINOK;
     // Let's use a random accountId until we have a login mechanism
     replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
     info ("AccountID %llx generated !", replyPacket.accountId);
@@ -336,7 +336,7 @@ BarrackHandler_barracknameChange (
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
 
     // Update the session
-    strncpy (session->familyName, clientPacket->barrackName, sizeof (session->familyName));
+    strncpy (session->currentCommander.familyName, clientPacket->barrackName, sizeof (session->currentCommander.familyName));
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -414,13 +414,13 @@ BarrackHandler_commanderCreate (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = BC_COMMANDER_CREATE;
-    replyPacket.commander = Commander_CreateBasicCommander();
+    CommanderInfo_createBasicCommander(&replyPacket.commander);
 
     // CharName
     strncpy (replyPacket.commander.charName, clientPacket->charName, sizeof (replyPacket.commander.charName));
 
     // FamilyName
-    strncpy (replyPacket.commander.familyName, session->familyName, sizeof (replyPacket.commander.familyName));
+    strncpy (replyPacket.commander.familyName, session->currentCommander.familyName, sizeof (replyPacket.commander.familyName));
 
     // AccountID
     replyPacket.commander.accountId = session->socketSession.accountId;
@@ -497,7 +497,6 @@ BarrackHandler_commanderCreate (
     session->currentPcId = replyPacket.commander.pcId;
     session->currentCommanderId = replyPacket.commander.commanderId;
     session->currentCommander = replyPacket.commander;
-    memcpy (session->currentCommanderName, replyPacket.commander.charName, sizeof(session->currentCommanderName));
 
     // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));

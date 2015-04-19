@@ -99,7 +99,7 @@ ZoneHandler_gameReady (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return PACKET_HANDLER_OK;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 
@@ -111,9 +111,9 @@ ZoneHandler_connect (
     zmsg_t *reply,
     void *arg
 ) {
-    // zframe_t *barrackSessionFrame;
-    // GameSession *barrackSession;
-    // ZoneWorker *self = (ZoneWorker *) arg;
+    zframe_t *barrackSessionFrame;
+    GameSession *barrackSession;
+    ZoneWorker *self = (ZoneWorker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -150,31 +150,28 @@ ZoneHandler_connect (
         return PACKET_HANDLER_ERROR;
     }
 
-    // CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
+    CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
     ZcConnectPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
+
+    // Authenticate here
+
+    // Authentication OK!
 
     // A new user just connected to the zone server
     // Its session is empty and must be updated from the barrack server.
     // Ask for the session to the barrack server
-    /*
-    if (!(barrackSessionFrame = ZoneWorker_getBarrackSession (self, clientPacket->accountId))) {
+    if (!(barrackSessionFrame = ZoneWorker_getBarrackSession (self, zmsg_last (reply), clientPacket->accountId))) {
         error ("Cannot retrieve the session from the barrack server.");
         return PACKET_HANDLER_ERROR;
     }
 
     barrackSession = (GameSession *) zframe_data (barrackSessionFrame);
-    (void) barrackSession;
-    */
 
-    // === Fake a correct session ===
-    session->currentPcId = 0xFF;
-    session->currentCommanderId = 0xBADBADBADBADBAD;
-    session->charactersBarrackCount = 1;
-    session->socketSession.accountId = 0xDEADDEADDEADDEAD;
-    strcpy (session->familyName, "FamilyName");
-    strcpy (session->currentCommanderName, "Rioru");
-    // ===============================
+    // Update the Game Session
+    memcpy (session, barrackSession, sizeof (GameSession));
+    session->socketSession.authenticated = true;
+    session->socketSession.mapId = session->currentCommander.mapId;
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
@@ -184,13 +181,11 @@ ZoneHandler_connect (
     replyPacket.accountPrivileges = 0;
     replyPacket.pcId = session->currentPcId;
 
-    replyPacket.commander = Commander_CreateBasicCommander ();
+    special (">>>>>>>>>>>>>>>>>>>");
+    CommanderInfo_print (&session->currentCommander);
 
     // CharName
-    strncpy (replyPacket.commander.charName, session->currentCommanderName, sizeof (replyPacket.commander.charName));
-
-    // FamilyName
-    strncpy (replyPacket.commander.familyName, session->familyName, sizeof (replyPacket.commander.familyName));
+    memcpy (&replyPacket.commander, &session->currentCommander, sizeof (CommanderInfo));
 
     // AccountID
     replyPacket.commander.accountId = session->socketSession.accountId;
@@ -234,6 +229,8 @@ ZoneHandler_setPos (
     replyPacket.x = x;
     replyPacket.y = y;
     replyPacket.z = z;
+
+    // Update session
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }

@@ -146,6 +146,48 @@ GameSession_getSession (
     return sessionFrame;
 }
 
+zframe_t *
+GameSession_getBarrackSession (
+    zsock_t *sessionServer,
+    zframe_t *clientIdentity,
+    zframe_t *accountIdFrame
+) {
+    GameSession *session;
+    zframe_t *sessionFrame;
+    zmsg_t *msg;
+
+    // Build a session request message
+    if (!(msg = zmsg_new ())
+    ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_REQUEST_BARRACK_SESSION), sizeof (SESSION_SERVER_REQUEST_BARRACK_SESSION)) != 0
+    ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
+    ||  zmsg_addmem (msg, zframe_data (accountIdFrame), zframe_size (accountIdFrame)) != 0
+    ||  zmsg_send (&msg, sessionServer) != 0
+    ) {
+        error ("Cannot build and send a session message for the session server");
+        return NULL;
+    }
+
+    // Wait for the session server answer
+    if (!(msg = zmsg_recv (sessionServer))) {
+        error ("Cannot receive a session from the session server");
+        return NULL;
+    }
+
+    // Extract the session from the answer
+    if (!(sessionFrame = zmsg_pop (msg))
+    ||  !(session = (GameSession *) zframe_data (sessionFrame))
+    ||  !(sizeof (GameSession) == zframe_size (sessionFrame))
+    ) {
+        error ("Cannot extract correctly the session from the session server");
+        return NULL;
+    }
+
+    // Cleanup
+    zmsg_destroy (&msg);
+
+    return sessionFrame;
+}
+
 bool
 GameSession_updateSession (
     zsock_t *sessionServer,
@@ -203,8 +245,6 @@ GameSession_print (
     GameSession *self
 ) {
     dbg ("==== GameSession %p ====", self);
-    dbg ("familyName = <%s>", self->familyName);
-    dbg ("currentCommanderName = <%s>", self->currentCommanderName);
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
     dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
     dbg ("currentPcId = 0x%X", self->currentPcId);

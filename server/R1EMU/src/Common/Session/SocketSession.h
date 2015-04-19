@@ -21,7 +21,8 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-
+#define SOCKET_SESSION_UNDEFINED_MAP -1
+#define SOCKET_SESSION_UNDEFINED_ACCOUNT -1
 
 // ------ Structure declaration -------
 
@@ -41,7 +42,6 @@ struct SocketSession
 
     /** States */
     bool authenticated;
-    bool isInBarrack;
 };
 
 typedef struct SocketSession SocketSession;
