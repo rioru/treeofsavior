@@ -21,10 +21,11 @@
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Session/SocketSession.h"
-#include "Common/Session/ClientGameSession.h"
+#include "Common/Session/GameSession.h"
 
 // ---------- Defines -------------
 #define REDIS_COMMAND_BUFFER_SIZE 1024*100
+#define REDIS_EMPTY_STRING (unsigned char *) "__EMPTY_STRING__"
 
 
 // ------ Structure declaration -------
@@ -61,43 +62,17 @@ Redis_init (
 
 
 /**
- * @brief Save an entire ClientGameSession to the Redis server.
+ * @brief Send a command to the redis server AND display it in the console.
  * @param self An allocated Redis instance
- * @param session An allocated session to refresh
- * @return true on success, false otherwise
+ * @param format the format of the command
+ * @param ... The values of the command
+ * @return A redisReply
  */
-bool
-Redis_updateGameSession (
+redisReply *
+Redis_commandDbg (
     Redis *self,
-    ClientGameSession *session
-);
-
-
-/**
- * @brief Save an entire ClientGameSession to the Redis server.
- * @param self An allocated Redis instance
- * @param socketSession An allocated socket session to refresh
- * @return true on success, false otherwise
- */
-bool
-Redis_updateSocketSession (
-    Redis *self,
-    SocketSession *socketSession
-);
-
-
-/**
- * @brief Get the SocketSession associated with the Socket ID
- * @param self An allocated Redis
- * @param socketIdKey A socket ID key
- * @param[out] socketSession The socket Session
- * @return
- */
-bool
-Redis_getSocketSession (
-    Redis *self,
-    char *socketIdKey,
-    SocketSession *socketSession
+    char * format,
+    ...
 );
 
 
@@ -111,8 +86,34 @@ Redis_getSocketSession (
 bool
 Redis_set (
     Redis *self,
-    ClientGameSession *session,
+    GameSession *session,
     ...
+);
+
+/**
+ * @brief Tells if any element of the redisReply array is NULL
+ * @param elements Array of redisReply
+ * @param nbElements Number of elements
+ * @return The position if any element is NULL, -1 otherwise
+ */
+size_t
+Redis_anyElementIsNull (
+    redisReply **elements,
+    size_t nbElements
+);
+
+
+/**
+ * @brief Dump the elements in the console
+ * @param elements Array of redisReply
+ * @param nbElements Number of elements
+ * @param elementsName The name of elements
+ */
+void
+Redis_printElements (
+    redisReply **elements,
+    size_t nbElements,
+    const char **elementsName
 );
 
 
@@ -124,4 +125,5 @@ void
 Redis_destroy (
     Redis **self
 );
+
 

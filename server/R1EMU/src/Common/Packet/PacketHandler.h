@@ -20,7 +20,7 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Session/SocketSession.h"
-#include "Common/Session/ClientGameSession.h"
+#include "Common/Session/GameSession.h"
 
 // ---------- Defines -------------
 
@@ -39,7 +39,7 @@ typedef enum {
 /** @return PacketHandlerState (see above) */
 typedef PacketHandlerState (*PacketHandlerFunction) (
     /** Session of the current player */
-    ClientGameSession *session,
+    GameSession *session,
     /** Packet sent by the client */
     unsigned char *packet,
     /** Size of the packet sent by the client */
@@ -77,7 +77,7 @@ PacketHandlerState
 PacketHandler_buildReply (
     const PacketHandler *handlers,
     size_t handlersCount,
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,

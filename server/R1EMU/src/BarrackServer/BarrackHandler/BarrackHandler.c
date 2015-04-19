@@ -20,23 +20,23 @@
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
-static PacketHandlerState BarrackHandler_loginByPassport   (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_loginByPassport   (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Start the barrack : call other handlers that initializes the barrack */
-static PacketHandlerState BarrackHandler_startBarrack      (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_startBarrack      (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Once the commander list has been received, request to start the barrack */
-static PacketHandlerState BarrackHandler_currentBarrack    (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_currentBarrack    (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Change a barrack name */
-static PacketHandlerState BarrackHandler_barracknameChange (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_barracknameChange (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Create a commander */
-static PacketHandlerState BarrackHandler_commanderCreate   (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_commanderCreate   (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Send a list of zone servers */
-static PacketHandlerState BarrackHandler_commanderDestroy  (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_commanderDestroy  (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Change the commander position in the barrack */
-static PacketHandlerState BarrackHandler_commanderMove     (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_commanderMove     (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Makes the commander jumps in the barrack */
-static PacketHandlerState BarrackHandler_jump              (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_jump              (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Request for the player to enter in game */
-static PacketHandlerState BarrackHandler_startGame         (ClientGameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_startGame         (GameSession *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 
 /** Register new servers */
 static PacketHandlerState BarrackHandler_serverEntry       (zmsg_t *reply);
@@ -69,7 +69,7 @@ const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
 
 static PacketHandlerState
 BarrackHandler_startGame (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -136,7 +136,7 @@ BarrackHandler_startGame (
 
 static PacketHandlerState
 BarrackHandler_jump (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -184,7 +184,7 @@ BarrackHandler_jump (
 
 static PacketHandlerState
 BarrackHandler_commanderMove (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -213,7 +213,7 @@ BarrackHandler_commanderMove (
 
 static PacketHandlerState
 BarrackHandler_loginByPassport (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -260,7 +260,7 @@ BarrackHandler_loginByPassport (
 
 static PacketHandlerState
 BarrackHandler_startBarrack (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -274,7 +274,7 @@ BarrackHandler_startBarrack (
 
 static PacketHandlerState
 BarrackHandler_currentBarrack (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -287,7 +287,7 @@ BarrackHandler_currentBarrack (
 
 static PacketHandlerState
 BarrackHandler_barracknameChange (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -345,7 +345,7 @@ BarrackHandler_barracknameChange (
 
 static PacketHandlerState
 BarrackHandler_commanderDestroy (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,
@@ -373,7 +373,7 @@ BarrackHandler_commanderDestroy (
 
 static PacketHandlerState
 BarrackHandler_commanderCreate (
-    ClientGameSession *session,
+    GameSession *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,

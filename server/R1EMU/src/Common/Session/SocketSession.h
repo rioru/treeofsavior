@@ -39,8 +39,9 @@ struct SocketSession
     /** Socket Redis key */
     unsigned char key[11];
 
-    /** Authenticated state */
+    /** States */
     bool authenticated;
+    bool isInBarrack;
 };
 
 typedef struct SocketSession SocketSession;
@@ -74,6 +75,28 @@ SocketSession_init (
     unsigned char *socketIdKey
 );
 
+/**
+ * @brief Format a session key from the session id
+ * @param sessionId The sessionId of the session requested
+ * @param[out] sessionKey The sessionKey generated
+ * @param sessionKeySize The sessionKey size
+ * @return
+ */
+void
+SocketSession_genKey (
+    unsigned char *sessionId,
+    unsigned char *sessionKey,
+    size_t sessionKeySize
+);
+
+/**
+ * @brief Prints a SocketSession structure.
+ * @param self An allocated SocketSession
+ */
+void
+SocketSession_print (
+    SocketSession *self
+);
 
 /**
  * @brief Free an allocated SocketSession structure and nullify the content of the pointer.

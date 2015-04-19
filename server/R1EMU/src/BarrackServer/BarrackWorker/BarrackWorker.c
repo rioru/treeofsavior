@@ -36,9 +36,9 @@ BarrackWorker_handlePingPacket (
  *        The first frame contains client entity, the second frame contains packet data.
  * @param self An allocated BarrackWorker structure
  * @param msg The message of the client
- * @return
+ * @return true on sucess, false otherwise
  */
-static void
+static bool
 BarrackWorker_processClientPacket (
     BarrackWorker *self,
     zmsg_t *msg
@@ -98,12 +98,12 @@ BarrackWorker_handlePingPacket (
     zframe_reset (headerFrame, PACKET_HEADER (BARRACK_SERVER_PONG), sizeof (BARRACK_SERVER_PONG));
 }
 
-static void
+static bool
 BarrackWorker_processClientPacket (
     BarrackWorker *self,
     zmsg_t *msg
 ) {
-    ClientGameSession *session;
+    GameSession *session;
     zframe_t *sessionFrame;
 
     // Read the message
@@ -111,8 +111,12 @@ BarrackWorker_processClientPacket (
     zframe_t *packet = zmsg_next (msg);
 
     // Request a session
-    sessionFrame = ClientGameSession_getSession (self->sessionServer, clientIdentity);
-    session = (ClientGameSession *) zframe_data (sessionFrame);
+    if (!(sessionFrame = GameSession_getSession (self->sessionServer, clientIdentity))) {
+        error ("Cannot retrieve a Game Session.");
+        return false;
+    }
+
+    session = (GameSession *) zframe_data (sessionFrame);
     session->socketSession.zoneId = BARRACK_SERVER_ZONE_ID;
 
     // Build the reply
@@ -135,16 +139,16 @@ BarrackWorker_processClientPacket (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!ClientGameSession_updateSession (self->sessionServer, clientIdentity, session)) {
+            if (!GameSession_updateSession (self->sessionServer, clientIdentity, session)) {
                 error ("Cannot update the following session");
-                ClientGameSession_print (session);
+                GameSession_print (session);
             }
         break;
 
         case PACKET_HANDLER_DELETE_SESSION:
-            if (!ClientGameSession_deleteSession (self->sessionServer, clientIdentity)) {
+            if (!GameSession_deleteSession (self->sessionServer, clientIdentity)) {
                 error ("Cannot delete the following session");
-                ClientGameSession_print (session);
+                GameSession_print (session);
             }
         break;
     }
@@ -152,6 +156,8 @@ BarrackWorker_processClientPacket (
     // Cleanup
     zframe_destroy (&sessionFrame);
     zframe_destroy (&packet);
+
+    return true;
 }
 
 
@@ -235,7 +241,9 @@ BarrackWorker_worker (
         if (zmsg_size (msg) == 2) {
             // The first frame is the client identity
             // The second frame is the data of the packet
-            BarrackWorker_processClientPacket (self, msg);
+            if (!(BarrackWorker_processClientPacket (self, msg))) {
+                error ("Cannot process the client packet.");
+            }
         }
 
         else {

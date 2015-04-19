@@ -7,7 +7,7 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file ClientGameSession.h
+ * @file GameSession.h
  * @brief
  *
  *
@@ -26,13 +26,13 @@
 
 // ------ Structure declaration -------
 /**
- * @brief ClientGameSession is a session created when a client authenticates
+ * @brief GameSession is a session created when a client authenticates
  *
- * ClientGameSession is created during the Barrack phase.
+ * GameSession is created during the Barrack phase.
  * This structure size must be kept as small as possible.
  * /!\ It shouldn't contain any pointer, because it is sent to others worker via TCP
  */
-struct ClientGameSession
+struct GameSession
 {
     /** Copy of the socket Session */
     SocketSession socketSession;
@@ -56,10 +56,10 @@ struct ClientGameSession
     CommanderInfo currentCommander;
 };
 
-typedef struct ClientGameSession ClientGameSession;
+typedef struct GameSession GameSession;
 
 /**
- * @brief ClientGameSessionPrivileges enumerates the different levels of privileges
+ * @brief GameSessionPrivileges enumerates the different levels of privileges
  *  for an account.
  */
 typedef enum {
@@ -67,27 +67,27 @@ typedef enum {
     CLIENT_SESSION_PRIVILEGES_UNKNOWN = 1,
     CLIENT_SESSION_PRIVILEGES_GM      = 2,
     CLIENT_SESSION_PRIVILEGES_PLAYER  = 3
-} ClientGameSessionPrivileges;
+} GameSessionPrivileges;
 
 // ----------- Functions ------------
 
 /**
- * @brief Allocate a new ClientGameSession structure.
- * @return A pointer to an allocated ClientGameSession.
+ * @brief Allocate a new GameSession structure.
+ * @return A pointer to an allocated GameSession.
  */
-ClientGameSession *
-ClientGameSession_new (
+GameSession *
+GameSession_new (
 );
 
 
 /**
- * @brief Initialize an allocated ClientGameSession structure.
- * @param self An allocated ClientGameSession to initialize.
+ * @brief Initialize an allocated GameSession structure.
+ * @param self An allocated GameSession to initialize.
  * @return true on success, false otherwise.
  */
 bool
-ClientGameSession_init (
-    ClientGameSession *self
+GameSession_init (
+    GameSession *self
 );
 
 /**
@@ -96,8 +96,8 @@ ClientGameSession_init (
  * @param sessionKey The session key to lookup
  * @return A client session or NULL if it doesn't exists
  */
-ClientGameSession *
-ClientGameSession_lookupSession (
+GameSession *
+GameSession_lookupSession (
     zhash_t *sessions,
     unsigned char *sessionKey
 );
@@ -106,10 +106,10 @@ ClientGameSession_lookupSession (
  * @brief Request a session from the session server
  * @param sessionServer An opened socket to the session server
  * @param clientIdentity A frame containing the identity of the client
- * @return a zframe_t containing a ClientGameSession on success, NULL otherwise
+ * @return a zframe_t containing a GameSession on success, NULL otherwise
  */
 zframe_t *
-ClientGameSession_getSession (
+GameSession_getSession (
     zsock_t *sessionServer,
     zframe_t *clientIdentity
 );
@@ -123,10 +123,10 @@ ClientGameSession_getSession (
  * @return true on success, false otherwise
  */
 bool
-ClientGameSession_updateSession (
+GameSession_updateSession (
     zsock_t *sessionServer,
     zframe_t *clientIdentity,
-    ClientGameSession *session
+    GameSession *session
 );
 
 
@@ -137,49 +137,35 @@ ClientGameSession_updateSession (
  * @return true on success, false otherwise
  */
 bool
-ClientGameSession_deleteSession (
+GameSession_deleteSession (
     zsock_t *sessionServer,
     zframe_t *clientIdentity
 );
 
 /**
- * @brief Format a session key from the session id
- * @param sessionId The sessionId of the session requested
- * @param[out] sessionKey The sessionKey generated
- * @param sessionKeySize The sessionKey size
- * @return
+ * @brief Prints a GameSession structure.
+ * @param self An allocated GameSession
  */
 void
-ClientGameSession_genSessionKey (
-    unsigned char *sessionId,
-    unsigned char *sessionKey,
-    size_t sessionKeySize
+GameSession_print (
+    GameSession *self
 );
 
 /**
- * @brief Prints a ClientGameSession structure.
- * @param self An allocated ClientGameSession
+ * @brief Free an allocated GameSession structure and nullify the content of the pointer.
+ * @param self A pointer to an allocated GameSession.
  */
 void
-ClientGameSession_print (
-    ClientGameSession *self
-);
-
-/**
- * @brief Free an allocated ClientGameSession structure and nullify the content of the pointer.
- * @param self A pointer to an allocated ClientGameSession.
- */
-void
-ClientGameSession_destroy (
-    ClientGameSession **self
+GameSession_destroy (
+    GameSession **self
 );
 
 
 /**
- * @brief Free an allocated ClientGameSession structure
- * @param self A pointer to an allocated ClientGameSession.
+ * @brief Free an allocated GameSession structure
+ * @param self A pointer to an allocated GameSession.
  */
 void
-ClientGameSession_free (
-    ClientGameSession *self
+GameSession_free (
+    GameSession *self
 );

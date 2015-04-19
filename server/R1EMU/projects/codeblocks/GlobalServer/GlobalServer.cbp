@@ -77,18 +77,19 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Packet/PacketType.h" />
+		<Unit filename="../../../src/Common/Redis/Fields/GameSession.h" />
 		<Unit filename="../../../src/Common/Redis/Redis.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Redis/Redis.h" />
-		<Unit filename="../../../src/Common/Session/ClientSession.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/Common/Session/ClientSession.h" />
-		<Unit filename="../../../src/Common/Session/SessionTable.c">
+		<Unit filename="../../../src/Common/Session/GameSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Session/SessionTable.h" />
+		<Unit filename="../../../src/Common/Session/GameSession.h" />
+		<Unit filename="../../../src/Common/Session/SocketSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../../src/Common/dbg/dbg.c">
 			<Option compilerVar="CC" />
 		</Unit>

@@ -124,5 +124,5 @@ SessionWorker_destroy (
 void
 SessionWorker_flushSession (
     SessionWorker *self,
-    ClientGameSession *session
+    GameSession *session
 );

@@ -7,7 +7,7 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file ClientGameSession.h
+ * @file GameSession.h
  * @brief
  *
  *
@@ -16,23 +16,23 @@
  */
 
 // ---------- Includes ------------
-#include "ClientGameSession.h"
+#include "GameSession.h"
 #include "SessionServer/SessionServer.h"
 
 
-ClientGameSession *
-ClientGameSession_new (
+GameSession *
+GameSession_new (
     void
 ) {
-    ClientGameSession *self;
+    GameSession *self;
 
-    if ((self = calloc (1, sizeof (ClientGameSession))) == NULL) {
+    if ((self = calloc (1, sizeof (GameSession))) == NULL) {
         return NULL;
     }
 
-    if (!ClientGameSession_init (self)) {
-        ClientGameSession_destroy (&self);
-        error ("ClientGameSession failed to initialize.");
+    if (!GameSession_init (self)) {
+        GameSession_destroy (&self);
+        error ("GameSession failed to initialize.");
         return NULL;
     }
 
@@ -40,33 +40,23 @@ ClientGameSession_new (
 }
 
 bool
-ClientGameSession_init (
-    ClientGameSession *self
+GameSession_init (
+    GameSession *self
 ) {
+    memset (self, 0, sizeof (GameSession));
     return true;
 }
 
-ClientGameSession *
-ClientGameSession_lookupSession (
+GameSession *
+GameSession_lookupSession (
     zhash_t *sessions,
     unsigned char *sessionKey
 ) {
     return zhash_lookup (sessions, sessionKey);
 }
 
-void
-ClientGameSession_genSessionKey (
-    unsigned char *sessionId,
-    unsigned char *sessionKey,
-    size_t sessionKeySize
-) {
-    // Format the session key from the sessionId
-    snprintf (sessionKey, sessionKeySize,
-        "%02X%02X%02X%02X%02X", sessionId[0], sessionId[1], sessionId[2], sessionId[3], sessionId[4]);
-}
-
 bool
-ClientGameSession_deleteSession (
+GameSession_deleteSession (
     zsock_t *sessionServer,
     zframe_t *clientIdentity
 ) {
@@ -117,11 +107,11 @@ ClientGameSession_deleteSession (
 }
 
 zframe_t *
-ClientGameSession_getSession (
+GameSession_getSession (
     zsock_t *sessionServer,
     zframe_t *clientIdentity
 ) {
-    ClientGameSession *session;
+    GameSession *session;
     zframe_t *sessionFrame;
     zmsg_t *msg;
 
@@ -143,8 +133,8 @@ ClientGameSession_getSession (
 
     // Extract the session from the answer
     if (!(sessionFrame = zmsg_pop (msg))
-    ||  !(session = (ClientGameSession *) zframe_data (sessionFrame))
-    ||  !(sizeof (ClientGameSession) == zframe_size (sessionFrame))
+    ||  !(session = (GameSession *) zframe_data (sessionFrame))
+    ||  !(sizeof (GameSession) == zframe_size (sessionFrame))
     ) {
         error ("Cannot extract correctly the session from the session server");
         return NULL;
@@ -157,10 +147,10 @@ ClientGameSession_getSession (
 }
 
 bool
-ClientGameSession_updateSession (
+GameSession_updateSession (
     zsock_t *sessionServer,
     zframe_t *clientIdentity,
-    ClientGameSession *session
+    GameSession *session
 ) {
     zframe_t *answerFrame;
     SessionServerSendHeader answer;
@@ -170,7 +160,7 @@ ClientGameSession_updateSession (
     if (!(msg = zmsg_new ())
     ||  zmsg_addmem (msg, PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION), sizeof (SESSION_SERVER_UPDATE_SESSION)) != 0
     ||  zmsg_addmem (msg, zframe_data (clientIdentity), zframe_size (clientIdentity)) != 0
-    ||  zmsg_addmem (msg, session, sizeof (ClientGameSession)) != 0
+    ||  zmsg_addmem (msg, session, sizeof (GameSession)) != 0
     ||  zmsg_send (&msg, sessionServer) != 0
     ) {
         error ("Cannot build and send a session message for the session server");
@@ -209,29 +199,29 @@ ClientGameSession_updateSession (
 }
 
 void
-ClientGameSession_print (
-    ClientGameSession *self
+GameSession_print (
+    GameSession *self
 ) {
-    dbg ("==== Session %p ====", self);
+    dbg ("==== GameSession %p ====", self);
     dbg ("familyName = <%s>", self->familyName);
     dbg ("currentCommanderName = <%s>", self->currentCommanderName);
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
-    dbg ("accountId = 0x%llX", self->socketSession.accountId);
     dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
     dbg ("currentPcId = 0x%X", self->currentPcId);
+    SocketSession_print (&self->socketSession);
 }
 
 void
-ClientGameSession_destroy (
-    ClientGameSession **_self
+GameSession_destroy (
+    GameSession **_self
 ) {
-    ClientGameSession_free (*_self);
+    GameSession_free (*_self);
     *_self = NULL;
 }
 
 void
-ClientGameSession_free (
-    ClientGameSession *self
+GameSession_free (
+    GameSession *self
 ) {
     free (self);
 }

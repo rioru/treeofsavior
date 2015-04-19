@@ -18,7 +18,9 @@
 // ---------- Includes ------------
 #include "SessionWorker.h"
 #include "SessionServer/SessionServer.h"
-#include "Common/Session/ClientGameSession.h"
+#include "Common/Session/GameSession.h"
+#include "Common/Redis/Fields/RedisGameSession.h"
+#include "Common/Redis/Fields/RedisSocketSession.h"
 
 
 // ------ Structure declaration -------
@@ -171,14 +173,14 @@ SessionWorker_updateSession (
     zframe_t *sessionFrame
 ) {
     unsigned char *socketId;
-    ClientGameSession *newSession;
+    GameSession *newSession;
 
     // Retrieve the session from the session frame
-    newSession = (ClientGameSession *) zframe_data (sessionFrame);
+    newSession = (GameSession *) zframe_data (sessionFrame);
 
     // Request to refresh the entire socket session to the Redis Server
     socketId = zframe_data (sessionIdFrame);
-    ClientGameSession_genSessionKey (socketId, newSession->socketSession.key, sizeof (newSession->socketSession.key));
+    SocketSession_genKey (socketId, newSession->socketSession.key, sizeof (newSession->socketSession.key));
     Redis_updateSocketSession (self->redis, &newSession->socketSession);
 
     // Request to refresh the entire game session to the Redis Server
@@ -186,7 +188,6 @@ SessionWorker_updateSession (
     Redis_updateGameSession (self->redis, newSession);
 
     dbg ("Your session has been updated, PLAYER_%llx !", newSession->socketSession.accountId);
-    ClientGameSession_print (newSession);
 
     return zframe_new (PACKET_HEADER (SESSION_SERVER_UPDATE_SESSION_OK), sizeof (SESSION_SERVER_UPDATE_SESSION_OK));
 }
@@ -196,29 +197,41 @@ SessionWorker_getSession (
     SessionWorker *self,
     zframe_t *sessionIdFrame,
     SocketSession *socketSession,
-    ClientGameSession *gameSession
+    GameSession *gameSession
 ) {
     unsigned char *socketId;
     unsigned char socketIdKey[11];
 
     // Generate the socketId key
     socketId = zframe_data (sessionIdFrame);
-    ClientGameSession_genSessionKey (socketId, socketIdKey, sizeof (socketIdKey));
+    SocketSession_genKey (socketId, socketIdKey, sizeof (socketIdKey));
 
     // Search for the Socket Session
-    Redis_getSocketSession (self->redis, socketIdKey, socketSession);
+    if (!Redis_getSocketSession (self->redis, socketIdKey, socketSession)) {
+        error ("Cannot get Socket Session.");
+        return false;
+    }
+
+    special ("BON ??");
+    SocketSession_print (socketSession);
 
     if (!socketSession->authenticated) {
         // This is the first time the client connect, the session is empty
-        memset (gameSession, 0, sizeof (*gameSession));
-        ClientGameSession_init (gameSession);
+        GameSession_init (gameSession);
         dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketIdKey);
     } else {
+        if (!Redis_getGameSession (self->redis, socketSession, gameSession)) {
+            error ("Cannot get Game Session.");
+            return NULL;
+        }
         dbg ("Welcome back, SOCKET_%s !", socketIdKey);
     }
 
+    // Copy the socketSession in the gameSession
+    memcpy (&gameSession->socketSession, socketSession, sizeof (SocketSession));
+
     // Reply with the socketSession
-    return zframe_new (gameSession, sizeof (ClientGameSession));
+    return zframe_new (gameSession, sizeof (GameSession));
 }
 
 static zframe_t *
@@ -231,7 +244,7 @@ SessionWorker_deleteSession (
 
     // Generate the hashtable key
     sessionId = zframe_data (sessionIdFrame);
-    ClientGameSession_genSessionKey (sessionId, sessionKey, sizeof (sessionKey));
+    SocketSession_genKey (sessionId, sessionKey, sizeof (sessionKey));
 
     return zframe_new (PACKET_HEADER (SESSION_SERVER_DELETE_SESSION_OK), sizeof (SESSION_SERVER_DELETE_SESSION_OK));
 }
@@ -241,8 +254,8 @@ SessionWorker_handleRequest (
     SessionWorker *self,
     zmsg_t *msg
 ) {
-    SocketSession socketSession;
-    ClientGameSession gameSession;
+    SocketSession socketSession = {0};
+    GameSession gameSession = {{0}};
 
     // Extract the request
     zframe_t *identityFrame = zmsg_pop (msg); (void) identityFrame;
@@ -286,7 +299,13 @@ SessionWorker_handleRequest (
     // Rebuild the answer message
     zmsg_add (msg, identityFrame);
     zmsg_add (msg, emptyFrame);
-    zmsg_add (msg, requestAnswer);
+
+    if (!requestAnswer) {
+        error ("Cannot answer to the request.");
+        zmsg_add (msg, zframe_new (NULL, 0));
+    } else {
+        zmsg_add (msg, requestAnswer);
+    }
 
     // Clean up
     zframe_destroy (&headerFrame);
@@ -367,7 +386,7 @@ SessionWorker_destroy (
 void
 SessionWorker_flushSession (
     SessionWorker *self,
-    ClientGameSession *session
+    GameSession *session
 ) {
     MYSQL_ROW count;
 
