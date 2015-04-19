@@ -53,76 +53,63 @@
 		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.h" />
 		<Unit filename="../../../src/BarrackServer/BarrackServer.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/BarrackServer/BarrackServer.h" />
 		<Unit filename="../../../src/BarrackServer/BarrackWorker/BarrackWorker.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/BarrackServer/BarrackWorker/BarrackWorker.h" />
 		<Unit filename="../../../src/BarrackServer/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Commander/Commander.h" />
 		<Unit filename="../../../src/Common/Crypto/Crypto.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Crypto/Crypto.h" />
 		<Unit filename="../../../src/Common/MySQL/MySQL.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/MySQL/MySQL.h" />
 		<Unit filename="../../../src/Common/Packet/Packet.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Packet/Packet.h" />
 		<Unit filename="../../../src/Common/Packet/PacketHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Packet/PacketHandler.h" />
 		<Unit filename="../../../src/Common/Packet/PacketStream.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Packet/PacketStream.h" />
 		<Unit filename="../../../src/Common/Packet/PacketType.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Packet/PacketType.h" />
+		<Unit filename="../../../src/Common/Redis/Fields/RedisGameSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Redis/Fields/RedisSocketSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../../src/Common/Redis/Redis.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Redis/Redis.h" />
-		<Unit filename="../../../src/Common/Session/ClientSession.h" />
 		<Unit filename="../../../src/Common/Session/GameSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Session/GameSession.h" />
 		<Unit filename="../../../src/Common/Session/SocketSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Session/SocketSession.h" />
 		<Unit filename="../../../src/Common/dbg/dbg.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/dbg/dbg.h" />
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/R1EMU.h" />
-		<Unit filename="../../../src/SessionServer/ClientSession/ClientSession.h" />
 		<Unit filename="../../../src/SessionServer/SessionServer.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/SessionServer/SessionServer.h" />
 		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
