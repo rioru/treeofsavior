@@ -22,12 +22,17 @@ typedef struct _StringID
 
 }   StringID;
 
-char * (__thiscall *StringID__getString) (StringID **this) = (void *) 0x0103B740;
+#define OFFSET_logDebug_1 (0xCA8FA0 - 0x400000)
+#define OFFSET_LuaGetObject (0x103B6D0 - 0x400000)
+#define OFFSET_logDebug_2 (0xCA8E80 - 0x400000)
+#define OFFSET_GetPacket (0x643910 - 0x400000)
+#define OFFSET_NetEncrypt (0x0CB6890 - 0x400000)
+
+char * (__thiscall *StringID__c_str) (StringID **this) = (void *) 0x00D32300;
 
 /** =================== HOOKS ================= */
 void __cdecl logDebug_1 (int a1, LPCSTR lpOutputString, char *message)
 {
-	#define OFFSET_logDebug_1 (0xFB2920 - 0x400000)
 	void (__cdecl *hooked) (int, LPCSTR, char *) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) logDebug_1);
 
@@ -39,11 +44,10 @@ void __cdecl logDebug_1 (int a1, LPCSTR lpOutputString, char *message)
 	return hooked (a1, lpOutputString, message);
 }
 
-int __thiscall Lua__LuaCmd (int this, unsigned __int8 *Src)
+int __thiscall Lua__LuaGetObject (int this, unsigned __int8 *Src)
 {
-	#define OFFSET_LuaCmd (0x103B6D0 - 0x400000)
 	int (__thiscall *hooked) (int this, unsigned __int8 *Src) =
-		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) Lua__LuaCmd);
+		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) Lua__LuaGetObject);
 
     static char *lastCmd = NULL;
     if (lastCmd == NULL) lastCmd = strdup(Src);
@@ -61,7 +65,6 @@ int __thiscall Lua__LuaCmd (int this, unsigned __int8 *Src)
 
 void logDebug_2 (const char *Format, ...)
 {
-	#define OFFSET_logDebug_2 (0xFB2800 - 0x400000)
 	char OutputString[24096];
 	va_list va;
 
@@ -73,7 +76,6 @@ void logDebug_2 (const char *Format, ...)
 
 bool __thiscall ClientNet__GetPacket (void *clientNet, BYTE *outPacket, DWORD *outSize, DWORD *outType)
 {
-    #define OFFSET_GetPacket (0x6FCA80 - 0x400000)
     bool (__thiscall *hooked) (void *clientNet, BYTE *outPacket, DWORD *outSize, DWORD *outType) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) ClientNet__GetPacket);
 
@@ -90,7 +92,6 @@ bool __thiscall ClientNet__GetPacket (void *clientNet, BYTE *outPacket, DWORD *o
 
 int __cdecl imcCrypt__NetEncrypt (signed int plaintextSize, BYTE *plaintextIn, void *ciphertextOut)
 {
-	#define OFFSET_NetEncrypt (0x0FC0210 - 0x400000)
 	int (__cdecl *hooked) (signed int plaintextSize, BYTE *plaintextIn, void *ciphertextOut) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) imcCrypt__NetEncrypt);
 
@@ -159,50 +160,8 @@ int __thiscall sub_##address(DtbTable *this, DtbItem ** _out_, DWORD * seed)    
     return hooked (this, _out_, seed);                                                                \
 }
 
+// TODO : Redefine the list of Shrage functions
 HOOK_SCHRAGE_FUNCTION (65D540);
-HOOK_SCHRAGE_FUNCTION (67D340);
-HOOK_SCHRAGE_FUNCTION (67D400);
-HOOK_SCHRAGE_FUNCTION (67EA40);
-HOOK_SCHRAGE_FUNCTION (6E4D70);
-HOOK_SCHRAGE_FUNCTION (6EC390);
-HOOK_SCHRAGE_FUNCTION (6FA180);
-HOOK_SCHRAGE_FUNCTION (709030);
-HOOK_SCHRAGE_FUNCTION (7BA5E0);
-HOOK_SCHRAGE_FUNCTION (7C9C60);
-HOOK_SCHRAGE_FUNCTION (82D140);
-HOOK_SCHRAGE_FUNCTION (838F70);
-HOOK_SCHRAGE_FUNCTION (893AB0);
-HOOK_SCHRAGE_FUNCTION (8FD980);
-HOOK_SCHRAGE_FUNCTION (8FDA40);
-HOOK_SCHRAGE_FUNCTION (92C050);
-HOOK_SCHRAGE_FUNCTION (92C110);
-HOOK_SCHRAGE_FUNCTION (941AC0);
-HOOK_SCHRAGE_FUNCTION (9B3DA0);
-HOOK_SCHRAGE_FUNCTION (9D6D70);
-HOOK_SCHRAGE_FUNCTION (9D6E30);
-HOOK_SCHRAGE_FUNCTION (9D8340);
-HOOK_SCHRAGE_FUNCTION (A1B5F0);
-HOOK_SCHRAGE_FUNCTION (A88B80);
-HOOK_SCHRAGE_FUNCTION (A9BD20);
-HOOK_SCHRAGE_FUNCTION (AF55C0);
-HOOK_SCHRAGE_FUNCTION (AF5680);
-HOOK_SCHRAGE_FUNCTION (AF6B70);
-HOOK_SCHRAGE_FUNCTION (C082E0);
-HOOK_SCHRAGE_FUNCTION (C08460);
-HOOK_SCHRAGE_FUNCTION (C083A0);
-HOOK_SCHRAGE_FUNCTION (C1FB20);
-HOOK_SCHRAGE_FUNCTION (C2C2A0);
-HOOK_SCHRAGE_FUNCTION (C2C360);
-HOOK_SCHRAGE_FUNCTION (FED500);
-HOOK_SCHRAGE_FUNCTION (FEDBD0);
-HOOK_SCHRAGE_FUNCTION (1011400);
-HOOK_SCHRAGE_FUNCTION (1011550);
-HOOK_SCHRAGE_FUNCTION (10116A0);
-HOOK_SCHRAGE_FUNCTION (1011760);
-HOOK_SCHRAGE_FUNCTION (10118E0);
-HOOK_SCHRAGE_FUNCTION (1011F70);
-HOOK_SCHRAGE_FUNCTION (1012030);
-HOOK_SCHRAGE_FUNCTION (10740B0);
 
 
 
@@ -243,26 +202,26 @@ int __thiscall ItemTable__convertIESToIR (ItemTable *this, imcIESObject *object,
 
     int res = hooked (this, object, irItem);
 
-    static int curId = 0;
+    // static int curId = 0;
 
     // Korean item name :
-    // char *itemName   = StringID__getString (&irItem->itemName);
+    char *itemName   = StringID__c_str (&irItem->itemName);
 
     int seed         = irItem->seed;
     int ItemLv       = irItem->ItemLv;
 
-    char *className  = StringID__getString (&irItem->className);
-    char *itemType   = StringID__getString (&irItem->itemType);
-    char *GroupName  = StringID__getString (&irItem->GroupName);
-    char *classType  = StringID__getString (&irItem->classType);
-    char *EqpType    = StringID__getString (&irItem->EqpType);
-    char *AttackType = StringID__getString (&irItem->AttackType);
-    char *Attribute  = StringID__getString (&irItem->Attribute);
-    char *HandSide   = StringID__getString (&irItem->HandSide);
+    char *className  = StringID__c_str (&irItem->className);
+    char *itemType   = StringID__c_str (&irItem->itemType);
+    char *GroupName  = StringID__c_str (&irItem->GroupName);
+    char *classType  = StringID__c_str (&irItem->classType);
+    char *EqpType    = StringID__c_str (&irItem->EqpType);
+    char *AttackType = StringID__c_str (&irItem->AttackType);
+    char *Attribute  = StringID__c_str (&irItem->Attribute);
+    char *HandSide   = StringID__c_str (&irItem->HandSide);
 
     dbg ("Seed = 0x%08X | ItemLv = %0.3d | ClassName = <%s> | itemType = <%s> | GroupName = <%s> | classType = <%s> | "
          "EqpType = <%s> | AttackType = <%s> | Attribute = <%s> | HandSide = <%s> | Name = <%s>",
-         seed, ItemLv, className, itemType, GroupName, classType, EqpType, AttackType, Attribute, HandSide, tableNameItemsEnglish[curId++]);
+         seed, ItemLv, className, itemType, GroupName, classType, EqpType, AttackType, Attribute, HandSide, itemName);
 
     return res;
 }
@@ -320,56 +279,15 @@ void startInjection (void)
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2,     (ULONG_PTR) logDebug_2);
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,      (ULONG_PTR) ClientNet__GetPacket);
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
+	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
 
+    /*
     #define HookEngine_hook_Shrage(address) \
         HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##address, (ULONG_PTR) sub_##address);
     HookEngine_hook_Shrage (65D540);
-    HookEngine_hook_Shrage (67D340);
-    HookEngine_hook_Shrage (67D400);
-    HookEngine_hook_Shrage (67EA40);
-    HookEngine_hook_Shrage (6E4D70);
-    HookEngine_hook_Shrage (6EC390);
-    HookEngine_hook_Shrage (6FA180);
-    HookEngine_hook_Shrage (709030);
-    HookEngine_hook_Shrage (7BA5E0);
-    HookEngine_hook_Shrage (7C9C60);
-    HookEngine_hook_Shrage (82D140);
-    HookEngine_hook_Shrage (838F70);
-    HookEngine_hook_Shrage (893AB0);
-    HookEngine_hook_Shrage (8FD980);
-    HookEngine_hook_Shrage (8FDA40);
-    HookEngine_hook_Shrage (92C050);
-    HookEngine_hook_Shrage (92C110);
-    HookEngine_hook_Shrage (941AC0);
-    HookEngine_hook_Shrage (9B3DA0);
-    HookEngine_hook_Shrage (9D6D70);
-    HookEngine_hook_Shrage (9D6E30);
-    HookEngine_hook_Shrage (9D8340);
-    HookEngine_hook_Shrage (A1B5F0);
-    HookEngine_hook_Shrage (A88B80);
-    HookEngine_hook_Shrage (A9BD20);
-    HookEngine_hook_Shrage (AF55C0);
-    HookEngine_hook_Shrage (AF5680);
-    HookEngine_hook_Shrage (AF6B70);
-    HookEngine_hook_Shrage (C082E0);
-    HookEngine_hook_Shrage (C08460);
-    HookEngine_hook_Shrage (C083A0);
-    HookEngine_hook_Shrage (C1FB20);
-    HookEngine_hook_Shrage (C2C2A0);
-    HookEngine_hook_Shrage (C2C360);
-    HookEngine_hook_Shrage (FED500);
-    HookEngine_hook_Shrage (FEDBD0);
-    HookEngine_hook_Shrage (1011400);
-    HookEngine_hook_Shrage (1011550);
-    HookEngine_hook_Shrage (10116A0);
-    HookEngine_hook_Shrage (1011760);
-    HookEngine_hook_Shrage (10118E0);
-    HookEngine_hook_Shrage (1011F70);
-    HookEngine_hook_Shrage (1012030);
-    HookEngine_hook_Shrage (10740B0);
+    */
 
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaCmd,  (ULONG_PTR) Lua__LuaCmd);
+	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaGetObject,  (ULONG_PTR) Lua__LuaGetObject);
 }
 
 void endInjection (void)

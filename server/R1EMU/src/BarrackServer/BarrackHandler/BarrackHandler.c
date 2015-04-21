@@ -532,8 +532,9 @@ BarrackHandler_commanderCreate (
     replyPacket.commander.charPosition = gameSession->charactersBarrackCount + 1;
 
     // Hair type
+    // TODO : Check the hairType
+    replyPacket.commander.hairType = clientPacket->hairType;
     switch (clientPacket->hairType) {
-        // TODO : Check the hairType
         /*
         case COMMANDER_HAIR_ID1:
         case COMMANDER_HAIR_ID2:
