@@ -164,7 +164,5 @@ int main (int argc, char ** argv)
         break;
     }
 
-    system ("pause");
-
     return 0;
 }
