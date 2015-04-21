@@ -21,6 +21,8 @@
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
 static PacketHandlerState BarrackHandler_loginByPassport   (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+/** Read the login / password and accepts or refuse the authentification */
+static PacketHandlerState BarrackHandler_login             (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Start the barrack : call other handlers that initializes the barrack */
 static PacketHandlerState BarrackHandler_startBarrack      (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
 /** Once the commander list has been received, request to start the barrack */
@@ -53,6 +55,7 @@ const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     #define REGISTER_PACKET_HANDLER(packetName, handler) \
         [packetName] = {handler, STRINGIFY (packetName)}
 
+    REGISTER_PACKET_HANDLER (CB_LOGIN,              BarrackHandler_login),
     REGISTER_PACKET_HANDLER (CB_LOGIN_BY_PASSPORT,  BarrackHandler_loginByPassport),
     REGISTER_PACKET_HANDLER (CB_START_BARRACK,      BarrackHandler_startBarrack),
     REGISTER_PACKET_HANDLER (CB_CURRENT_BARRACK,    BarrackHandler_currentBarrack),
@@ -66,6 +69,57 @@ const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     #undef REGISTER_PACKET_HANDLER
 };
 
+
+
+static PacketHandlerState
+BarrackHandler_login (
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply,
+    void *arg
+) {
+    SocketSession *socketSession = &session->socket;
+
+    BarrackWorker * self = (BarrackWorker *) arg;
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint64_t accountId;
+        unsigned char channelString[17];
+        uint32_t accountPrivileges;
+    } BcLoginOkPacket;
+    #pragma pack(pop)
+
+    BcLoginOkPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    // Authenticate here
+    // TODO
+
+    // Authentication OK!
+    socketSession->authenticated = true;
+
+    // ===== Gives a random account =====
+    replyPacket.header.type = BC_LOGINOK;
+    // Let's use a random accountId until we have a login mechanism
+    replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
+    info ("AccountID %llx generated !", replyPacket.accountId);
+    replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
+    // TODO: Generate a challenge in channelString
+    strncpy (replyPacket.channelString, "CHANNEL_STRING", sizeof (replyPacket.channelString));
+    // ==================================
+
+    // Update the session
+    socketSession->accountId = replyPacket.accountId;
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return PACKET_HANDLER_UPDATE_SESSION;
+}
 
 static PacketHandlerState
 BarrackHandler_startGame (
