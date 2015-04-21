@@ -533,6 +533,8 @@ BarrackHandler_commanderCreate (
 
     // Hair type
     switch (clientPacket->hairType) {
+        // TODO : Check the hairType
+        /*
         case COMMANDER_HAIR_ID1:
         case COMMANDER_HAIR_ID2:
         case COMMANDER_HAIR_ID3:
@@ -550,6 +552,7 @@ BarrackHandler_commanderCreate (
             dbg ("Invalid hairType (%d)", clientPacket->hairType);
             return PACKET_HANDLER_ERROR;
         break;
+        */
     }
 
     // PCID
