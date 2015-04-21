@@ -53,12 +53,6 @@ struct SessionWorker
 
     /**< The worker socket connected to the backend. */
     zsock_t *worker;
-
-    /** The MySQL session */
-    SQL *sqlConn;
-
-    /** The Redis session */
-    Redis *redis;
 };
 
 typedef struct SessionWorker SessionWorker;

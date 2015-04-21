@@ -37,8 +37,7 @@ struct Redis
 
 Redis *
 Redis_new (
-    char *ip,
-    int port
+    void
 ) {
     Redis *self;
 
@@ -46,7 +45,7 @@ Redis_new (
         return NULL;
     }
 
-    if (!Redis_init (self, ip, port)) {
+    if (!Redis_init (self)) {
         Redis_destroy (&self);
         error ("Redis failed to initialize.");
         return NULL;
@@ -55,34 +54,39 @@ Redis_new (
     return self;
 }
 
-
 bool
 Redis_init (
-    Redis *self,
-    char *ip,
-    int port
+    Redis *self
 ) {
-    info ("Connecting to the Redis Server (%s:%d)...", ip, port);
-
-    while (1) {
-        self->context = redisConnect (ip, port);
-        //self->context = redisConnectWithTimeout (ip, port, (struct timeval) {.tv_sec = 3, .tv_usec = 0});
-        if (self->context != NULL && self->context->err) {
-            warning ("Redis server not detected (%s)... Retrying in 3 seconds.", self->context->errstr);
-            zclock_sleep (3000);
-        } else {
-            break;
-        }
-    }
-
-    info ("Connected to the Redis Server !");
-
     if (!(self->commandBuffer = calloc (1, REDIS_COMMAND_BUFFER_SIZE))) {
         error ("Cannot allocate a command buffer.");
         return false;
     }
 
     return true;
+}
+
+bool
+Redis_connect (
+    Redis *self,
+    RedisInfo *redisInfo
+) {
+    info ("Connecting to the Redis Server (%s:%d)...", redisInfo->hostname, atoi(redisInfo->port));
+
+    while (1) {
+        self->context = redisConnectWithTimeout (redisInfo->hostname, atoi(redisInfo->port), (struct timeval) {.tv_sec = 3, .tv_usec = 0});
+
+        if (self->context != NULL && self->context->err) {
+            warning ("Redis server not detected (%s)... Retrying in 3 seconds.", self->context->errstr);
+            zclock_sleep (3000);
+        } else {
+            // Connection OK
+            break;
+        }
+    }
+
+    info ("Connected to the Redis Server !");
+    return false;
 }
 
 void
@@ -130,12 +134,12 @@ Redis_commandDbg (
 bool
 Redis_set (
     Redis *self,
-    GameSession *session,
+    SocketSession *socketSession,
     ...
 ) {
     va_list args;
 
-	va_start (args, session);
+	va_start (args, socketSession);
 
 	char * token = va_arg (args, char *);
 	int tokenLen;
@@ -143,7 +147,7 @@ Redis_set (
 
     // Build the Redis command
 	sprintf (self->commandBuffer, "HMSET zone%d:map%d:acc%I64u ",
-        session->socketSession.zoneId, session->currentCommander.mapId, session->socketSession.accountId); // Identifiers
+        socketSession->zoneId, socketSession->mapId, socketSession->accountId); // Identifiers
 
     // Current position to the buffer = end of the HMSET key
     curPos = strlen (self->commandBuffer);

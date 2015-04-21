@@ -19,28 +19,93 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-#define SQL_ERROR -1
-#define SQL_SUCCESS 0
+typedef enum MySQLStatus {
+
+    SQL_SUCCESS = 0,
+    SQL_ERROR = -1,
+
+}   MySQLStatus;
+
 #define MAX_QUERY_SIZE 1024
 
-// ------ Structure declaration -------
+#define MYSQL_HOSTNAME_DEFAULT     (char []) {"localhost"}
+#define MYSQL_LOGIN_DEFAULT        (char []) {"r1emu"}
+#define MYSQL_PASSWORD_DEFAULT     (char []) {"r1emu"}
+#define MYSQL_DATABASE_DEFAULT     (char []) {"r1emu"}
 
-typedef struct	SQL
+// ------ Structure declaration -------
+typedef struct MySQL MySQL;
+
+typedef struct MySQLInfo
 {
-	MYSQL		*handle;
-	MYSQL_RES	*result;
-}				SQL;
+    char *hostname;
+    char *login;
+    char *password;
+    char *database;
+
+}   MySQLInfo;
 
 // ----------- Functions ------------
 
-int
+/**
+ * @brief Allocate a new MySQL structure.
+ * @return A pointer to an allocated MySQL, or NULL if an error occured.
+ */
+MySQL *
+MySQL_new (
+    void
+);
+
+/**
+ * @brief Initialize an allocated MySQL structure.
+ * @param self An allocated MySQL to initialize.
+ * @return true on success, false otherwise.
+ */
+bool
+MySQL_init (
+    MySQL *self
+);
+
+/**
+ * @brief : Connect to the MySQL database
+ * @param self An allocated MySQL instance
+ * @param sqlInfo The information about the SQL database connection to etablish
+ * @return true on success, false otherwise
+ */
+bool
+MySQL_connect (
+    MySQL *self,
+    MySQLInfo *sqlInfo
+);
+
+/**
+ * @brief
+ * @param
+ */
+MySQLStatus
 MySQL_query (
-	SQL *self,
+	MySQL *self,
 	const char *query,
 	...
 );
 
+
+/**
+ * @brief
+ * @param
+ */
 void
 MySQL_freeResult (
-	SQL *self
+	MySQL *self
 );
+
+
+/**
+ * @brief Free an allocated MySQL structure and nullify the content of the pointer
+ * @param self A pointer to an allocated MySQL
+ */
+void
+MySQL_destroy (
+    MySQL **_self
+);
+

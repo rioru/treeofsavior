@@ -28,7 +28,7 @@ PacketHandlerState
 PacketHandler_buildReply (
     const PacketHandler *handlers,
     size_t handlersCount,
-    GameSession *session,
+    Session *session,
     unsigned char *packet,
     size_t packetSize,
     zmsg_t *reply,

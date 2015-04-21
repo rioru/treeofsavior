@@ -46,9 +46,6 @@ struct GameSession
 
     /** Current commander */
     CommanderInfo currentCommander;
-
-    /** Copy of the socket Session */
-    SocketSession socketSession;
 };
 
 typedef struct GameSession GameSession;
@@ -95,18 +92,6 @@ GameSession *
 GameSession_lookupSession (
     zhash_t *sessions,
     unsigned char *sessionKey
-);
-
-/**
- * @brief Request a session from the session server
- * @param sessionServer An opened socket to the session server
- * @param clientIdentity A frame containing the identity of the client
- * @return a zframe_t containing a GameSession on success, NULL otherwise
- */
-zframe_t *
-GameSession_getSession (
-    zsock_t *sessionServer,
-    zframe_t *clientIdentity
 );
 
 

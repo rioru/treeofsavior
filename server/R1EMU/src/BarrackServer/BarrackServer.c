@@ -57,6 +57,12 @@ struct BarrackServer
 
     /** Configuration file path */
     char *confFilePath;
+
+    /** Information about the SQL database connection */
+    MySQLInfo sqlInfo;
+
+    /** Information about the Redis database connection */
+    RedisInfo redisInfo;
 };
 
 
@@ -165,6 +171,50 @@ BarrackServer_init (
         warning ("Cannot read correctly the barrack interface IP in the configuration file (%s). ", confFilePath);
         warning ("The default IP = %s has been used.", BARRACK_SERVER_FRONTEND_IP_DEFAULT);
         self->serverIp = BARRACK_SERVER_FRONTEND_IP_DEFAULT;
+    }
+
+    // ===================================
+    //       Read MySQL configuration
+    // ===================================
+    if (!(self->sqlInfo.hostname = strdup (zconfig_resolve (conf, "database/mysql_host", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL host in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_HOSTNAME_DEFAULT);
+        self->sqlInfo.hostname = MYSQL_HOSTNAME_DEFAULT;
+    }
+    if (!(self->sqlInfo.login = strdup (zconfig_resolve (conf, "database/mysql_user", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL user in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_LOGIN_DEFAULT);
+        self->sqlInfo.login = MYSQL_LOGIN_DEFAULT;
+    }
+    if (!(self->sqlInfo.password = strdup (zconfig_resolve (conf, "database/mysql_password", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL password in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_PASSWORD_DEFAULT);
+        self->sqlInfo.password = MYSQL_PASSWORD_DEFAULT;
+    }
+    if (!(self->sqlInfo.database = strdup (zconfig_resolve (conf, "database/mysql_database", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL database in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_DATABASE_DEFAULT);
+        self->sqlInfo.database = MYSQL_DATABASE_DEFAULT;
+    }
+
+    // ===================================
+    //       Read Redis configuration
+    // ===================================
+    if (!(self->redisInfo.hostname = strdup (zconfig_resolve (conf, "redisServer/redis_host", NULL)))
+    ) {
+        warning ("Cannot read correctly the Redis host in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", REDIS_HOSTNAME_DEFAULT);
+        self->redisInfo.hostname = REDIS_HOSTNAME_DEFAULT;
+    }
+    if (!(self->redisInfo.port = strdup (zconfig_resolve (conf, "redisServer/redis_port", NULL)))
+    ) {
+        warning ("Cannot read correctly the Redis port in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", REDIS_PORT_DEFAULT);
+        self->redisInfo.port = REDIS_PORT_DEFAULT;
     }
 
     // Close the configuration file
@@ -360,15 +410,6 @@ BarrackServer_start (
     zloop_t *reactor;
     BarrackWorker * barrackWorker;
 
-    // =============================================
-    //  Launch the dedicated barrack session server
-    // =============================================
-    SessionServer *sessionServer = SessionServer_new (BARRACK_SERVER_ZONE_ID, self->confFilePath);
-    if (zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer) == -1) {
-        error ("Cannot launch session server thread.");
-        return false;
-    }
-
     // ===================================
     //       Initialize backend
     // ===================================
@@ -381,7 +422,7 @@ BarrackServer_start (
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((barrackWorker = BarrackWorker_new (workerId))) {
+        if ((barrackWorker = BarrackWorker_new (workerId, &self->sqlInfo, &self->redisInfo))) {
             if (zthread_new (BarrackWorker_worker, barrackWorker) != 0) {
                 error ("Cannot create Barrack Server worker thread ID %d.", workerId);
                 return false;

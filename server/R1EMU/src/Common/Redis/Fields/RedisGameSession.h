@@ -20,6 +20,7 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Redis/Redis.h"
+#include "Common/Session/Session.h"
 
 // ---------- Defines -------------
 #define REDIS_GAME_SESSION_zoneId_str "zoneId"
@@ -125,28 +126,44 @@ extern const char *redisGameSessionsStr [];
 // ----------- Functions ------------
 
 /**
+ * @brief Request the session associated with the ZoneId and the Socket ID
+ * @param self An allocated Redis
+ * @param zoneId A zone Id
+ * @param socketId A socket ID
+ * @param[out] session The resulting Session
+ * @return
+ */
+bool
+Redis_requestSession (
+    Redis *self,
+    int zoneId,
+    char *socketId,
+    Session *session
+);
+
+/**
  * @brief Get the GameSession associated with the SocketSession
  * @param self An allocated Redis
- * @param socketSession A socket session
- * @param[out] session The game Session
+ * @param[in, out] session The Session
  * @return
  */
 bool
 Redis_getGameSession (
     Redis *self,
-    SocketSession *socketSession,
-    GameSession *session
+    Session *session
 );
 
 
 /**
  * @brief Save an entire GameSession to the Redis server.
  * @param self An allocated Redis instance
- * @param session An allocated session to refresh
+ * @param[in] socketSession The Socket Session
+ * @param[out] gameSession The Game Session
  * @return true on success, false otherwise
  */
 bool
 Redis_updateGameSession (
     Redis *self,
-    GameSession *session
+    SocketSession *socketSession,
+    GameSession *gameSession
 );

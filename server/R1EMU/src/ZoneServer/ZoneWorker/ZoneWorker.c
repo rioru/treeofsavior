@@ -19,6 +19,8 @@
 #include "ZoneWorker.h"
 #include "ZoneServer/ZoneServer.h"
 #include "ZoneServer/ZoneHandler/ZoneHandler.h"
+#include "Common/Redis/Fields/RedisSocketSession.h"
+#include "Common/Redis/Fields/RedisGameSession.h"
 
 
 // ------ Structure declaration -------
@@ -41,9 +43,9 @@ ZoneWorker_handlePingPacket (
  *        The first frame contains client entity, the second frame contains packet data.
  * @param self An allocated ZoneWorker structure
  * @param msg The message of the client
- * @return
+ * @return true on success, false otherwise
  */
-static void
+static bool
 ZoneWorker_processClientPacket (
     ZoneWorker *self,
     zmsg_t *msg
@@ -94,7 +96,9 @@ ZoneWorker_new (
     int workerId,
     int zoneServerId,
     int frontendPort,
-    int globalPort
+    int globalPort,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 ) {
     ZoneWorker *self;
 
@@ -102,7 +106,7 @@ ZoneWorker_new (
         return NULL;
     }
 
-    if (!ZoneWorker_init (self, workerId, zoneServerId, frontendPort, globalPort)) {
+    if (!ZoneWorker_init (self, workerId, zoneServerId, frontendPort, globalPort, sqlInfo, redisInfo)) {
         ZoneWorker_destroy (&self);
         error ("ZoneWorker failed to initialize.");
         return NULL;
@@ -118,12 +122,32 @@ ZoneWorker_init (
     int workerId,
     int serverId,
     int frontendPort,
-    int globalPort
+    int globalPort,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 ) {
     self->workerId = workerId;
     self->serverId = serverId;
     self->frontendPort = frontendPort;
     self->globalPort = globalPort;
+
+    // ===================================
+    //          Initialize MySQL
+    // ===================================
+    if (!(self->sqlConn = MySQL_new ())) {
+        error ("Cannot initialize a new MySQL connection.");
+        return false;
+    }
+    MySQL_connect (self->sqlConn, sqlInfo);
+
+    // ===================================
+    //     Initialize Redis connection
+    // ===================================
+    if (!(self->redis = Redis_new ())) {
+        error ("Cannot initialize a new Redis connection.");
+        return false;
+    }
+    Redis_connect (self->redis, redisInfo);
 
     return true;
 }
@@ -136,31 +160,32 @@ ZoneWorker_handlePingPacket (
     return zframe_new (PACKET_HEADER (ZONE_SERVER_PONG), sizeof (ZONE_SERVER_PONG));
 }
 
-static void
+static bool
 ZoneWorker_processClientPacket (
     ZoneWorker *self,
     zmsg_t *msg
 ) {
-    GameSession *session;
-    zframe_t *sessionFrame;
+    Session session = {{0}};
 
     // Read the message
-    zframe_t *clientIdentity = zmsg_first (msg);
+    zframe_t *socketIdFrame = zmsg_first (msg);
     zframe_t *packet = zmsg_next (msg);
 
-    // Request a session
-    sessionFrame = GameSession_getSession (self->sessionServer, clientIdentity);
-    session = (GameSession *) zframe_data (sessionFrame);
-    session->socketSession.zoneId = self->serverId;
+    // Request a Game Session
+    if (!(Redis_requestSession (self->redis, self->serverId, zframe_data (socketIdFrame), &session))) {
+        error ("Cannot retrieve a Game Session.");
+        return false;
+    }
 
     // Build the reply
     // We don't need the client packet in the reply
     zmsg_remove (msg, packet);
+
     // Consider the message as a "normal" message by default
     zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ZONE_SERVER_WORKER_NORMAL), sizeof (ZONE_SERVER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
-    switch (PacketHandler_buildReply (zoneHandlers, sizeof_array (zoneHandlers), session, zframe_data (packet), zframe_size (packet), msg, self))
+    switch (PacketHandler_buildReply (zoneHandlers, sizeof_array (zoneHandlers), &session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
@@ -172,40 +197,31 @@ ZoneWorker_processClientPacket (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!GameSession_updateSession (self->sessionServer, clientIdentity, session)) {
-                error ("Cannot update the following session");
-                GameSession_print (session);
+            if (!Redis_updateSocketSession (self->redis, &session.socket)) {
+                error ("Cannot update the socket session.");
+                return false;
+            }
+            if (!Redis_updateGameSession (self->redis, &session.socket, &session.game)) {
+                error ("Cannot update the game session");
+                return false;
             }
         break;
 
         case PACKET_HANDLER_DELETE_SESSION:
-            if (!GameSession_deleteSession (self->sessionServer, clientIdentity)) {
+            // TODO :
+            /*
+            if (!Redis_deleteGameSession (self->sessionServer, &gameSession)) {
                 error ("Cannot delete the following session");
-                GameSession_print (session);
+                GameSession_print (&gameSession);
             }
+            */
         break;
     }
 
     // Cleanup
-    zframe_destroy (&sessionFrame);
     zframe_destroy (&packet);
-}
 
-zframe_t *
-ZoneWorker_getBarrackSession (
-    ZoneWorker *self,
-    zframe_t *clientIdentity,
-    uint64_t accountId
-) {
-    zframe_t *sessionFrame;
-    zframe_t *accountIdFrame = zframe_new ((typeof (accountId)[]) {accountId}, sizeof (accountId));
-
-    if (!(sessionFrame = GameSession_getBarrackSession (self->sessionServer, clientIdentity, accountIdFrame))) {
-        error ("Cannot get the requested session from the barrack server");
-        return NULL;
-    }
-
-    return sessionFrame;
+    return true;
 }
 
 void

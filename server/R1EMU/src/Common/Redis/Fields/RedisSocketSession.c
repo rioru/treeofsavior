@@ -39,17 +39,14 @@ Redis_getSocketSession (
     SocketSession *socketSession
 ) {
 	redisReply *reply = NULL;
-    char key[100];
-
-    snprintf (key, sizeof (key), "zone%x:socket%s", zoneId, socketIdKey);
 
 	reply = Redis_commandDbg (self,
-        "HMGET %s "
+        "HMGET zone%x:socket%s "
         REDIS_SOCKET_SESSION_accountId_str " "
         REDIS_SOCKET_SESSION_zoneId_str " "
         REDIS_SOCKET_SESSION_mapId_str " "
         REDIS_SOCKET_SESSION_authenticated_str " ",
-        key
+        zoneId, socketIdKey
     );
 
     if (!reply) {
@@ -79,8 +76,8 @@ Redis_getSocketSession (
             }
 
             if (Redis_anyElementIsNull (reply->element, reply->elements) != -1) {
-                // The socket ID doesn't exist : set them to their default values
-                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, zoneId, SOCKET_SESSION_UNDEFINED_MAP, socketIdKey);
+                // The socket session doesn't exist : create a new one and set it to its default value
+                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, zoneId, SOCKET_SESSION_UNDEFINED_MAP, socketIdKey, false);
 
                 // Update the newly created socketSession to the Redis Session
                 if (!Redis_updateSocketSession (self, socketSession)) {
@@ -95,6 +92,7 @@ Redis_getSocketSession (
                 socketSession->zoneId = strtol (reply->element[REDIS_SOCKET_SESSION_zoneId]->str, NULL, 16);
                 socketSession->mapId = strtol (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
                 socketSession->authenticated = strtol (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
+                memcpy (socketSession->key, socketIdKey, sizeof (socketSession->key));
             }
         break;
 
@@ -116,17 +114,14 @@ Redis_updateSocketSession (
     SocketSession *socketSession
 ) {
     redisReply *reply = NULL;
-    char key[100];
-
-    snprintf (key, sizeof (key), "zone%x:socket%s", socketSession->zoneId, socketSession->key);
 
     reply = Redis_commandDbg (self,
-        "HMSET %s"
+        "HMSET zone%x:socket%s"
         " accountId %llx"
         " zoneId %x"
         " mapId %x"
         " authenticated %x"
-        , key,
+        , socketSession->zoneId, socketSession->key,
         socketSession->accountId,
         socketSession->zoneId,
         socketSession->mapId,

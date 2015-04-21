@@ -24,6 +24,8 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/MySQL/MySQL.h"
+#include "Common/Redis/Redis.h"
 
 // ---------- Defines -------------
 
@@ -49,6 +51,13 @@ struct ZoneWorker
 
     /** Private port with the global server */
     int globalPort;
+
+    // Database stuff
+    /** The MySQL session */
+    MySQL *sqlConn;
+
+    /** The Redis session */
+    Redis *redis;
 };
 
 typedef struct ZoneWorker ZoneWorker;
@@ -68,7 +77,9 @@ ZoneWorker_new (
     int workerId,
     int zoneServerId,
     int frontendPort,
-    int globalPort
+    int globalPort,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 );
 
 
@@ -84,9 +95,11 @@ bool
 ZoneWorker_init (
     ZoneWorker *self,
     int workerId,
-    int zoneServerId,
+    int serverId,
     int frontendPort,
-    int globalPort
+    int globalPort,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 );
 
 

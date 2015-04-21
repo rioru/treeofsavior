@@ -14,6 +14,8 @@
 #include "BarrackWorker.h"
 #include "BarrackServer/BarrackServer.h"
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
+#include "Common/Redis/Fields/RedisSocketSession.h"
+#include "Common/Redis/Fields/RedisGameSession.h"
 
 
 // ------ Structure declaration -------
@@ -57,12 +59,13 @@ BarrackWorker_processInternPacket (
     zmsg_t *msg
 );
 
-
 // ------ Extern function implementation ------
 
 BarrackWorker *
 BarrackWorker_new (
-    int workerId
+    int workerId,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 ) {
     BarrackWorker *self;
 
@@ -70,7 +73,7 @@ BarrackWorker_new (
         return NULL;
     }
 
-    if (!BarrackWorker_init (self, workerId)) {
+    if (!BarrackWorker_init (self, workerId, sqlInfo, redisInfo)) {
         BarrackWorker_destroy (&self);
         error ("BarrackWorker failed to initialize.");
         return NULL;
@@ -82,11 +85,31 @@ BarrackWorker_new (
 bool
 BarrackWorker_init (
     BarrackWorker *self,
-    int workerId
+    int workerId,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 ) {
     // Initialize seed
     self->seed = R1EMU_seed_random (workerId);
     self->workerId = workerId;
+
+    // ===================================
+    //          Initialize MySQL
+    // ===================================
+    if (!(self->sqlConn = MySQL_new ())) {
+        error ("Cannot initialize a new MySQL connection.");
+        return false;
+    }
+    MySQL_connect (self->sqlConn, sqlInfo);
+
+    // ===================================
+    //     Initialize Redis connection
+    // ===================================
+    if (!(self->redis = Redis_new ())) {
+        error ("Cannot initialize a new Redis connection.");
+        return false;
+    }
+    Redis_connect (self->redis, redisInfo);
 
     return true;
 }
@@ -103,21 +126,17 @@ BarrackWorker_processClientPacket (
     BarrackWorker *self,
     zmsg_t *msg
 ) {
-    GameSession *session;
-    zframe_t *sessionFrame;
+    Session session = {{0}};
 
     // Read the message
-    zframe_t *clientIdentity = zmsg_first (msg);
+    zframe_t *socketIdFrame = zmsg_first (msg);
     zframe_t *packet = zmsg_next (msg);
 
-    // Request a session
-    if (!(sessionFrame = GameSession_getSession (self->sessionServer, clientIdentity))) {
+    // Request a Game Session from the redis server (in the barrack zone)
+    if (!(Redis_requestSession (self->redis, BARRACK_SERVER_ZONE_ID, zframe_data (socketIdFrame), &session))) {
         error ("Cannot retrieve a Game Session.");
         return false;
     }
-
-    session = (GameSession *) zframe_data (sessionFrame);
-    session->socketSession.zoneId = BARRACK_SERVER_ZONE_ID;
 
     // Build the reply
     // We don't need the client packet in the reply
@@ -127,7 +146,7 @@ BarrackWorker_processClientPacket (
     zframe_t *headerAnswer = zframe_new (PACKET_HEADER (BARRACK_SERVER_WORKER_NORMAL), sizeof (BARRACK_SERVER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
-    switch (PacketHandler_buildReply (barrackHandlers, sizeof_array (barrackHandlers), session, zframe_data (packet), zframe_size (packet), msg, self))
+    switch (PacketHandler_buildReply (barrackHandlers, sizeof_array (barrackHandlers), &session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
@@ -139,22 +158,28 @@ BarrackWorker_processClientPacket (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!GameSession_updateSession (self->sessionServer, clientIdentity, session)) {
-                error ("Cannot update the following session");
-                GameSession_print (session);
+            if (!Redis_updateSocketSession (self->redis, &session.socket)) {
+                error ("Cannot update the socket session.");
+                return false;
+            }
+            if (!Redis_updateGameSession (self->redis, &session.socket, &session.game)) {
+                error ("Cannot update the game session");
+                return false;
             }
         break;
 
         case PACKET_HANDLER_DELETE_SESSION:
-            if (!GameSession_deleteSession (self->sessionServer, clientIdentity)) {
+            // TODO :
+            /*
+            if (!Redis_deleteGameSession (self->sessionServer, &gameSession)) {
                 error ("Cannot delete the following session");
-                GameSession_print (session);
+                GameSession_print (&gameSession);
             }
+            */
         break;
     }
 
     // Cleanup
-    zframe_destroy (&sessionFrame);
     zframe_destroy (&packet);
 
     return true;
@@ -167,7 +192,7 @@ BarrackWorker_processInternPacket (
     zmsg_t *msg
 ) {
     // Read the message
-    zframe_t *clientIdentityFrame = zmsg_first (msg); (void) clientIdentityFrame;
+    zframe_t *socketIdFrameFrame = zmsg_first (msg); (void) socketIdFrameFrame;
     zframe_t *headerFrame = zmsg_next (msg);
 
     // Handle the request
@@ -201,14 +226,6 @@ BarrackWorker_worker (
     ||  zsock_connect (self->worker, BARRACK_SERVER_BACKEND_ENDPOINT) == -1
     ) {
         error ("Barrack worker ID = %d cannot connect to the backend socket.", self->workerId);
-        return NULL;
-    }
-
-    // Create and connect a socket to the session server frontend
-    if (!(self->sessionServer = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (self->sessionServer, SESSION_SERVER_FRONTEND_ENDPOINT, 0) == -1
-    ) {
-        error ("Barrack worker ID = %d cannot connect to the Session Server.", self->workerId);
         return NULL;
     }
 
@@ -262,7 +279,6 @@ BarrackWorker_worker (
 
     // Cleanup
     zsock_destroy (&self->worker);
-    zsock_destroy (&self->sessionServer);
 
     dbg ("Barrack worker ID %d exits.", self->workerId);
     return NULL;

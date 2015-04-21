@@ -108,6 +108,7 @@ typedef enum {
 	#define error(format, ...)
 	#define die(format, ...)
 	#define buffer_print(format, ...)
+	#define special(format, ...)
 
 #endif
 

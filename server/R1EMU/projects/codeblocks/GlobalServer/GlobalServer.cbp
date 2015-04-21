@@ -97,12 +97,6 @@
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/SessionServer/SessionServer.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/SessionServer/SessionWorker/SessionWorker.c">
-			<Option compilerVar="CC" />
-		</Unit>
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>

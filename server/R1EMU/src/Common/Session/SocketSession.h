@@ -57,7 +57,8 @@ SocketSession_new (
     uint64_t accountId,
     uint16_t zoneId,
     uint16_t mapId,
-    unsigned char *socketIdKey
+    unsigned char *socketIdKey,
+    bool authenticated
 );
 
 
@@ -72,7 +73,8 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t zoneId,
     uint16_t mapId,
-    unsigned char *socketIdKey
+    unsigned char *socketIdKey,
+    bool authenticated
 );
 
 /**

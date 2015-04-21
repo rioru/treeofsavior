@@ -7,66 +7,57 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file GameSession.h
- * @brief
- *
- *
- *
  * @license <license placeholder>
  */
 
-// ---------- Includes ------------
-#include "GameSession.h"
 
-GameSession *
-GameSession_new (
+// ---------- Includes ------------
+#include "Session.h"
+
+
+// ------ Structure declaration -------
+
+
+// ------ Static declaration -------
+
+
+// ------ Extern function implementation -------
+
+Session *
+Session_new (
     void
 ) {
-    GameSession *self;
+    Session *self;
 
-    if ((self = calloc (1, sizeof (GameSession))) == NULL) {
+    if ((self = calloc (1, sizeof (Session))) == NULL) {
         return NULL;
     }
 
-    if (!GameSession_init (self)) {
-        GameSession_destroy (&self);
-        error ("GameSession failed to initialize.");
+    if (!Session_init (self)) {
+        Session_destroy (&self);
+        error ("Session failed to initialize.");
         return NULL;
     }
 
     return self;
 }
 
+
 bool
-GameSession_init (
-    GameSession *self
+Session_init (
+    Session *self
 ) {
-    memset (self, 0, sizeof (GameSession));
+
     return true;
 }
 
-void
-GameSession_print (
-    GameSession *self
-) {
-    dbg ("==== GameSession %p ====", self);
-    dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
-    dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
-    dbg ("currentPcId = 0x%X", self->currentPcId);
-    CommanderInfo_print (&self->currentCommander);
-}
 
 void
-GameSession_destroy (
-    GameSession **_self
+Session_destroy (
+    Session **_self
 ) {
-    GameSession_free (*_self);
-    *_self = NULL;
-}
+    Session *self = *_self;
 
-void
-GameSession_free (
-    GameSession *self
-) {
     free (self);
+    *_self = NULL;
 }

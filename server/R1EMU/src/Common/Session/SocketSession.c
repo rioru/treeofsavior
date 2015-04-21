@@ -28,7 +28,8 @@ SocketSession_new (
     uint64_t accountId,
     uint16_t zoneId,
     uint16_t mapId,
-    unsigned char *socketIdKey
+    unsigned char *socketIdKey,
+    bool authenticated
 ) {
     SocketSession *self;
 
@@ -36,7 +37,7 @@ SocketSession_new (
         return NULL;
     }
 
-    if (!SocketSession_init (self, accountId, zoneId, mapId, socketIdKey)) {
+    if (!SocketSession_init (self, accountId, zoneId, mapId, socketIdKey, authenticated)) {
         SocketSession_destroy (&self);
         error ("SocketSession failed to initialize.");
         return NULL;
@@ -52,14 +53,15 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t zoneId,
     uint16_t mapId,
-    unsigned char *socketIdKey
+    unsigned char *socketIdKey,
+    bool authenticated
 ) {
     self->accountId = accountId;
     self->zoneId = zoneId;
     self->mapId = mapId;
     memcpy (self->key, socketIdKey, sizeof (self->key));
 
-    self->authenticated = false;
+    self->authenticated = authenticated;
 
     return true;
 }

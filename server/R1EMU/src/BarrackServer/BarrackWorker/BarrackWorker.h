@@ -21,6 +21,8 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/MySQL/MySQL.h"
+#include "Common/Redis/Redis.h"
 
 // ---------- Defines -------------
 /** This size is defined in the client, do not touch */
@@ -41,11 +43,15 @@ typedef struct BarrackWorker
     /** The worker socket connected to the backend. */
     zsock_t *worker;
 
-    /** The session server socket connected to the frontend. */
-    zsock_t *sessionServer;
-
     /** Seed for the random generator */
     uint32_t seed;
+
+    // Database stuff
+    /** The MySQL session */
+    MySQL *sqlConn;
+
+    /** The Redis session */
+    Redis *redis;
 
 }   BarrackWorker;
 
@@ -53,25 +59,33 @@ typedef struct BarrackWorker
 
 /**
  * @brief Allocate a new BarrackWorker structure.
- * @param worker The worker ID.
+ * @param workerId The worker ID.
+ * @param sqlInfo The information about the SQL database connection to etablish
+ * @param redisInfo The information about the Redis database connection to etablish
  * @return A pointer to an allocated BarrackWorker.
  */
 BarrackWorker *
 BarrackWorker_new (
-    int workerId
+    int workerId,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 );
 
 
 /**
  * @brief Initialize an allocated BarrackWorker structure.
  * @param self An allocated BarrackWorker to initialize.
- * @param worker The worker ID.
+ * @param workerId The worker ID.
+ * @param sqlInfo The information about the SQL database connection to etablish
+ * @param redisInfo The information about the Redis database connection to etablish
  * @return true on success, false otherwise.
  */
 bool
 BarrackWorker_init (
     BarrackWorker *self,
-    int workerId
+    int workerId,
+    MySQLInfo *sqlInfo,
+    RedisInfo *redisInfo
 );
 
 

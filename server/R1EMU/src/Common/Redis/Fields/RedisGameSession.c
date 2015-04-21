@@ -13,6 +13,7 @@
 
 // ---------- Includes ------------
 #include "RedisGameSession.h"
+#include "RedisSocketSession.h"
 
 
 // ------ Structure declaration -------
@@ -72,11 +73,50 @@ const char *redisGameSessionsStr [] = {
 // ------ Extern functions implementation -------
 
 bool
+Redis_requestSession (
+    Redis *self,
+    int zoneId,
+    char *socketId,
+    Session *session
+) {
+    GameSession *gameSession = &session->game;
+    SocketSession *socketSession = &session->socket;
+
+    unsigned char socketKey[11];
+
+    // Generate the socketId key
+    SocketSession_genKey (socketId, socketKey, sizeof (socketKey));
+
+    // Search for the Socket Session
+    if (!Redis_getSocketSession (self, zoneId, socketKey, socketSession)) {
+        error ("Cannot get Socket Session.");
+        return false;
+    }
+
+    if (!socketSession->authenticated) {
+        // This is the first time the client connect.
+        // Initialize an empty game session
+        GameSession_init (gameSession);
+        dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey);
+    } else {
+        if (!Redis_getGameSession (self, session)) {
+            error ("Cannot get Game Session.");
+            return false;
+        }
+        dbg ("Welcome back, SOCKET_%s !", socketKey);
+    }
+
+    return true;
+}
+
+bool
 Redis_getGameSession (
     Redis *self,
-    SocketSession *socketSession,
-    GameSession *session
+    Session *session
 ) {
+    GameSession *gameSession = &session->game;
+    SocketSession *socketSession = &session->socket;
+
     redisReply *reply = NULL;
 
     reply = Redis_commandDbg (self,
@@ -172,61 +212,61 @@ Redis_getGameSession (
             }
 
             // Write the reply to the session
-            strncpy (session->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_familyName]->str, sizeof (session->currentCommander.familyName));
-            strncpy (session->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commanderName]->str, sizeof (session->currentCommander.charName));
+            strncpy (gameSession->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_familyName]->str, sizeof (gameSession->currentCommander.familyName));
+            strncpy (gameSession->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commanderName]->str, sizeof (gameSession->currentCommander.charName));
 
-            session->charactersBarrackCount = strtol (reply->element[REDIS_GAME_SESSION_charactersBarrackCount]->str, NULL, 16);
-            session->currentCommanderId = strtoll (reply->element[REDIS_GAME_SESSION_currentCommanderId]->str, NULL, 16);
-            session->currentPcId = strtoll (reply->element[REDIS_GAME_SESSION_currentPcId]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk1,
-            session->currentCommander.classId = strtol (reply->element[REDIS_GAME_SESSION_commander_classId]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk2,
-            session->currentCommander.jobId = strtol (reply->element[REDIS_GAME_SESSION_commander_jobId]->str, NULL, 16);
-            session->currentCommander.gender = strtol (reply->element[REDIS_GAME_SESSION_commander_gender]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk3,
-            session->currentCommander.level = strtol (reply->element[REDIS_GAME_SESSION_commander_level]->str, NULL, 16);
-            session->currentCommander.head_top = strtol (reply->element[REDIS_GAME_SESSION_commander_head_top]->str, NULL, 16);
-            session->currentCommander.head_middle = strtol (reply->element[REDIS_GAME_SESSION_commander_head_middle]->str, NULL, 16);
-            session->currentCommander.itemUnk1 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk1]->str, NULL, 16);
-            session->currentCommander.body_armor = strtol (reply->element[REDIS_GAME_SESSION_commander_body_armor]->str, NULL, 16);
-            session->currentCommander.gloves = strtol (reply->element[REDIS_GAME_SESSION_commander_gloves]->str, NULL, 16);
-            session->currentCommander.boots = strtol (reply->element[REDIS_GAME_SESSION_commander_boots]->str, NULL, 16);
-            session->currentCommander.itemUnk2 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk2]->str, NULL, 16);
-            session->currentCommander.bracelet = strtol (reply->element[REDIS_GAME_SESSION_commander_bracelet]->str, NULL, 16);
-            session->currentCommander.weapon = strtol (reply->element[REDIS_GAME_SESSION_commander_weapon]->str, NULL, 16);
-            session->currentCommander.shield = strtol (reply->element[REDIS_GAME_SESSION_commander_shield]->str, NULL, 16);
-            session->currentCommander.costume = strtol (reply->element[REDIS_GAME_SESSION_commander_costume]->str, NULL, 16);
-            session->currentCommander.itemUnk3 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk3]->str, NULL, 16);
-            session->currentCommander.itemUnk4 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk4]->str, NULL, 16);
-            session->currentCommander.itemUnk5 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk5]->str, NULL, 16);
-            session->currentCommander.leg_armor = strtol (reply->element[REDIS_GAME_SESSION_commander_leg_armor]->str, NULL, 16);
-            session->currentCommander.itemUnk6 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk6]->str, NULL, 16);
-            session->currentCommander.itemUnk7 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk7]->str, NULL, 16);
-            session->currentCommander.ring_left = strtol (reply->element[REDIS_GAME_SESSION_commander_ring_left]->str, NULL, 16);
-            session->currentCommander.ring_right = strtol (reply->element[REDIS_GAME_SESSION_commander_ring_right]->str, NULL, 16);
-            session->currentCommander.necklace = strtol (reply->element[REDIS_GAME_SESSION_commander_necklace]->str, NULL, 16);
-            session->currentCommander.hairType = strtol (reply->element[REDIS_GAME_SESSION_commander_hairType]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk4,
-            // [UNKNOWN] session->currentCommander.unk5,
-            session->currentCommander.pcId = strtol (reply->element[REDIS_GAME_SESSION_commander_pcId]->str, NULL, 16);
-            session->currentCommander.listPosition = strtol (reply->element[REDIS_GAME_SESSION_commander_listPosition]->str, NULL, 16);
-            session->currentCommander.charPosition = strtol (reply->element[REDIS_GAME_SESSION_commander_charPosition]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk6,
-            session->currentCommander.mapId = strtol (reply->element[REDIS_GAME_SESSION_commander_mapId]->str, NULL, 16);
-            session->currentCommander.currentXP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentXP]->str, NULL, 16);
-            session->currentCommander.maxXP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxXP]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk7,
-            session->currentCommander.pose = strtol (reply->element[REDIS_GAME_SESSION_commander_pose]->str, NULL, 16);
-            session->currentCommander.spriteRelated = strtol (reply->element[REDIS_GAME_SESSION_commander_spriteRelated]->str, NULL, 16);
-            session->currentCommander.currentHP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentHP]->str, NULL, 16);
-            session->currentCommander.maxHP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxHP]->str, NULL, 16);
-            session->currentCommander.currentSP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentSP]->str, NULL, 16);
-            session->currentCommander.maxSP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxSP]->str, NULL, 16);
-            // [UNKNOWN] session->currentCommander.unk8,
-            // [UNKNOWN] session->currentCommander.unk9,
-            // [UNKNOWN] session->currentCommander.unk10,
-            // [UNKNOWN] session->currentCommander.unk11,
-            // [UNKNOWN] session->currentCommander.unk12,
+            gameSession->charactersBarrackCount = strtol (reply->element[REDIS_GAME_SESSION_charactersBarrackCount]->str, NULL, 16);
+            gameSession->currentCommanderId = strtoll (reply->element[REDIS_GAME_SESSION_currentCommanderId]->str, NULL, 16);
+            gameSession->currentPcId = strtoll (reply->element[REDIS_GAME_SESSION_currentPcId]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk1,
+            gameSession->currentCommander.classId = strtol (reply->element[REDIS_GAME_SESSION_commander_classId]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk2,
+            gameSession->currentCommander.jobId = strtol (reply->element[REDIS_GAME_SESSION_commander_jobId]->str, NULL, 16);
+            gameSession->currentCommander.gender = strtol (reply->element[REDIS_GAME_SESSION_commander_gender]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk3,
+            gameSession->currentCommander.level = strtol (reply->element[REDIS_GAME_SESSION_commander_level]->str, NULL, 16);
+            gameSession->currentCommander.head_top = strtol (reply->element[REDIS_GAME_SESSION_commander_head_top]->str, NULL, 16);
+            gameSession->currentCommander.head_middle = strtol (reply->element[REDIS_GAME_SESSION_commander_head_middle]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk1 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk1]->str, NULL, 16);
+            gameSession->currentCommander.body_armor = strtol (reply->element[REDIS_GAME_SESSION_commander_body_armor]->str, NULL, 16);
+            gameSession->currentCommander.gloves = strtol (reply->element[REDIS_GAME_SESSION_commander_gloves]->str, NULL, 16);
+            gameSession->currentCommander.boots = strtol (reply->element[REDIS_GAME_SESSION_commander_boots]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk2 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk2]->str, NULL, 16);
+            gameSession->currentCommander.bracelet = strtol (reply->element[REDIS_GAME_SESSION_commander_bracelet]->str, NULL, 16);
+            gameSession->currentCommander.weapon = strtol (reply->element[REDIS_GAME_SESSION_commander_weapon]->str, NULL, 16);
+            gameSession->currentCommander.shield = strtol (reply->element[REDIS_GAME_SESSION_commander_shield]->str, NULL, 16);
+            gameSession->currentCommander.costume = strtol (reply->element[REDIS_GAME_SESSION_commander_costume]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk3 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk3]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk4 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk4]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk5 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk5]->str, NULL, 16);
+            gameSession->currentCommander.leg_armor = strtol (reply->element[REDIS_GAME_SESSION_commander_leg_armor]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk6 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk6]->str, NULL, 16);
+            gameSession->currentCommander.itemUnk7 = strtol (reply->element[REDIS_GAME_SESSION_commander_itemUnk7]->str, NULL, 16);
+            gameSession->currentCommander.ring_left = strtol (reply->element[REDIS_GAME_SESSION_commander_ring_left]->str, NULL, 16);
+            gameSession->currentCommander.ring_right = strtol (reply->element[REDIS_GAME_SESSION_commander_ring_right]->str, NULL, 16);
+            gameSession->currentCommander.necklace = strtol (reply->element[REDIS_GAME_SESSION_commander_necklace]->str, NULL, 16);
+            gameSession->currentCommander.hairType = strtol (reply->element[REDIS_GAME_SESSION_commander_hairType]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk4,
+            // [UNKNOWN] gameSession->currentCommander.unk5,
+            gameSession->currentCommander.pcId = strtol (reply->element[REDIS_GAME_SESSION_commander_pcId]->str, NULL, 16);
+            gameSession->currentCommander.listPosition = strtol (reply->element[REDIS_GAME_SESSION_commander_listPosition]->str, NULL, 16);
+            gameSession->currentCommander.charPosition = strtol (reply->element[REDIS_GAME_SESSION_commander_charPosition]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk6,
+            gameSession->currentCommander.mapId = strtol (reply->element[REDIS_GAME_SESSION_commander_mapId]->str, NULL, 16);
+            gameSession->currentCommander.currentXP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentXP]->str, NULL, 16);
+            gameSession->currentCommander.maxXP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxXP]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk7,
+            gameSession->currentCommander.pose = strtol (reply->element[REDIS_GAME_SESSION_commander_pose]->str, NULL, 16);
+            gameSession->currentCommander.spriteRelated = strtol (reply->element[REDIS_GAME_SESSION_commander_spriteRelated]->str, NULL, 16);
+            gameSession->currentCommander.currentHP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentHP]->str, NULL, 16);
+            gameSession->currentCommander.maxHP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxHP]->str, NULL, 16);
+            gameSession->currentCommander.currentSP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentSP]->str, NULL, 16);
+            gameSession->currentCommander.maxSP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxSP]->str, NULL, 16);
+            // [UNKNOWN] gameSession->currentCommander.unk8,
+            // [UNKNOWN] gameSession->currentCommander.unk9,
+            // [UNKNOWN] gameSession->currentCommander.unk10,
+            // [UNKNOWN] gameSession->currentCommander.unk11,
+            // [UNKNOWN] gameSession->currentCommander.unk12,
         }
         break;
 
@@ -236,11 +276,11 @@ Redis_getGameSession (
     return true;
 }
 
-
 bool
 Redis_updateGameSession (
     Redis *self,
-    GameSession *session
+    SocketSession *socketSession,
+    GameSession *gameSession
 ) {
     redisReply *reply = NULL;
 
@@ -297,63 +337,63 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_maxHP_str " %x"
         " " REDIS_GAME_SESSION_commander_currentSP_str " %x"
         " " REDIS_GAME_SESSION_commander_maxSP_str " %x"
-        , session->socketSession.zoneId, session->socketSession.mapId, session->socketSession.accountId,
-        session->socketSession.zoneId,
-        (session->currentCommander.familyName[0] != '\0') ? session->currentCommander.familyName : REDIS_EMPTY_STRING,
-        (session->currentCommander.charName[0] != '\0') ? session->currentCommander.charName : REDIS_EMPTY_STRING,
-        session->charactersBarrackCount,
-        session->socketSession.accountId,
-        session->currentCommanderId,
-        session->currentPcId,
-        // [UNKNOWN] session->currentCommander.unk1,
-        session->currentCommander.classId,
-        // [UNKNOWN] session->currentCommander.unk2,
-        session->currentCommander.jobId,
-        session->currentCommander.gender,
-        // [UNKNOWN] session->currentCommander.unk3,
-        session->currentCommander.level,
-        session->currentCommander.head_top,
-        session->currentCommander.head_middle,
-        session->currentCommander.itemUnk1,
-        session->currentCommander.body_armor,
-        session->currentCommander.gloves,
-        session->currentCommander.boots,
-        session->currentCommander.itemUnk2,
-        session->currentCommander.bracelet,
-        session->currentCommander.weapon,
-        session->currentCommander.shield,
-        session->currentCommander.costume,
-        session->currentCommander.itemUnk3,
-        session->currentCommander.itemUnk4,
-        session->currentCommander.itemUnk5,
-        session->currentCommander.leg_armor,
-        session->currentCommander.itemUnk6,
-        session->currentCommander.itemUnk7,
-        session->currentCommander.ring_left,
-        session->currentCommander.ring_right,
-        session->currentCommander.necklace,
-        session->currentCommander.hairType,
-        // [UNKNOWN] session->currentCommander.unk4,
-        // [UNKNOWN] session->currentCommander.unk5,
-        session->currentCommander.pcId,
-        session->currentCommander.listPosition,
-        session->currentCommander.charPosition,
-        // [UNKNOWN] session->currentCommander.unk6,
-        session->currentCommander.mapId,
-        session->currentCommander.currentXP,
-        session->currentCommander.maxXP,
-        // [UNKNOWN] session->currentCommander.unk7,
-        session->currentCommander.pose,
-        session->currentCommander.spriteRelated,
-        session->currentCommander.currentHP,
-        session->currentCommander.maxHP,
-        session->currentCommander.currentSP,
-        session->currentCommander.maxSP
-        // [UNKNOWN] session->currentCommander.unk8,
-        // [UNKNOWN] session->currentCommander.unk9,
-        // [UNKNOWN] session->currentCommander.unk10,
-        // [UNKNOWN] session->currentCommander.unk11,
-        // [UNKNOWN] session->currentCommander.unk12,
+        , socketSession->zoneId, socketSession->mapId, socketSession->accountId,
+        socketSession->zoneId,
+        (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
+        (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
+        gameSession->charactersBarrackCount,
+        socketSession->accountId,
+        gameSession->currentCommanderId,
+        gameSession->currentPcId,
+        // [UNKNOWN] gameSession->currentCommander.unk1,
+        gameSession->currentCommander.classId,
+        // [UNKNOWN] gameSession->currentCommander.unk2,
+        gameSession->currentCommander.jobId,
+        gameSession->currentCommander.gender,
+        // [UNKNOWN] gameSession->currentCommander.unk3,
+        gameSession->currentCommander.level,
+        gameSession->currentCommander.head_top,
+        gameSession->currentCommander.head_middle,
+        gameSession->currentCommander.itemUnk1,
+        gameSession->currentCommander.body_armor,
+        gameSession->currentCommander.gloves,
+        gameSession->currentCommander.boots,
+        gameSession->currentCommander.itemUnk2,
+        gameSession->currentCommander.bracelet,
+        gameSession->currentCommander.weapon,
+        gameSession->currentCommander.shield,
+        gameSession->currentCommander.costume,
+        gameSession->currentCommander.itemUnk3,
+        gameSession->currentCommander.itemUnk4,
+        gameSession->currentCommander.itemUnk5,
+        gameSession->currentCommander.leg_armor,
+        gameSession->currentCommander.itemUnk6,
+        gameSession->currentCommander.itemUnk7,
+        gameSession->currentCommander.ring_left,
+        gameSession->currentCommander.ring_right,
+        gameSession->currentCommander.necklace,
+        gameSession->currentCommander.hairType,
+        // [UNKNOWN] gameSession->currentCommander.unk4,
+        // [UNKNOWN] gameSession->currentCommander.unk5,
+        gameSession->currentCommander.pcId,
+        gameSession->currentCommander.listPosition,
+        gameSession->currentCommander.charPosition,
+        // [UNKNOWN] gameSession->currentCommander.unk6,
+        gameSession->currentCommander.mapId,
+        gameSession->currentCommander.currentXP,
+        gameSession->currentCommander.maxXP,
+        // [UNKNOWN] gameSession->currentCommander.unk7,
+        gameSession->currentCommander.pose,
+        gameSession->currentCommander.spriteRelated,
+        gameSession->currentCommander.currentHP,
+        gameSession->currentCommander.maxHP,
+        gameSession->currentCommander.currentSP,
+        gameSession->currentCommander.maxSP
+        // [UNKNOWN] gameSession->currentCommander.unk8,
+        // [UNKNOWN] gameSession->currentCommander.unk9,
+        // [UNKNOWN] gameSession->currentCommander.unk10,
+        // [UNKNOWN] gameSession->currentCommander.unk11,
+        // [UNKNOWN] gameSession->currentCommander.unk12,
     );
 
     if (!reply) {

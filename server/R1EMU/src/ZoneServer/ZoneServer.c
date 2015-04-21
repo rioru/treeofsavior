@@ -63,6 +63,12 @@ struct ZoneServer
 
     /** Path of the configuration file */
     char *confFilePath;
+
+    /** Information about the SQL database connection */
+    MySQLInfo sqlInfo;
+
+    /** Information about the Redis database connection */
+    RedisInfo redisInfo;
 };
 
 
@@ -134,6 +140,8 @@ ZoneServer_init (
     int privateGlobalPort,
     char *confFilePath
 ) {
+    zconfig_t *conf;
+
     self->zoneServerId = zoneServerId;
     self->workersCount = workersCount;
     self->frontendPort = frontendPort;
@@ -163,9 +171,65 @@ ZoneServer_init (
         return false;
     }
 
+    // ==================================
+    //     Read the configuration file
+    // ==================================
+
+    // Open the configuration file
+    if (!(conf = zconfig_load (confFilePath))) {
+        error ("Cannot read the barrack configuration file (%s).", confFilePath);
+        return false;
+    }
+
+    // ===================================
+    //       Read MySQL configuration
+    // ===================================
+    if (!(self->sqlInfo.hostname = strdup (zconfig_resolve (conf, "database/mysql_host", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL host in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_HOSTNAME_DEFAULT);
+        self->sqlInfo.hostname = MYSQL_HOSTNAME_DEFAULT;
+    }
+    if (!(self->sqlInfo.login = strdup (zconfig_resolve (conf, "database/mysql_user", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL user in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_LOGIN_DEFAULT);
+        self->sqlInfo.login = MYSQL_LOGIN_DEFAULT;
+    }
+    if (!(self->sqlInfo.password = strdup (zconfig_resolve (conf, "database/mysql_password", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL password in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_PASSWORD_DEFAULT);
+        self->sqlInfo.password = MYSQL_PASSWORD_DEFAULT;
+    }
+    if (!(self->sqlInfo.database = strdup (zconfig_resolve (conf, "database/mysql_database", NULL)))
+    ) {
+        warning ("Cannot read correctly the MySQL database in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", MYSQL_DATABASE_DEFAULT);
+        self->sqlInfo.database = MYSQL_DATABASE_DEFAULT;
+    }
+
+    // ===================================
+    //       Read Redis configuration
+    // ===================================
+    if (!(self->redisInfo.hostname = strdup (zconfig_resolve (conf, "redisServer/redis_host", NULL)))
+    ) {
+        warning ("Cannot read correctly the Redis host in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", REDIS_HOSTNAME_DEFAULT);
+        self->redisInfo.hostname = REDIS_HOSTNAME_DEFAULT;
+    }
+    if (!(self->redisInfo.port = strdup (zconfig_resolve (conf, "redisServer/redis_port", NULL)))
+    ) {
+        warning ("Cannot read correctly the Redis port in the configuration file (%s). ", confFilePath);
+        warning ("The default hostname = %s has been used.", REDIS_PORT_DEFAULT);
+        self->redisInfo.port = REDIS_PORT_DEFAULT;
+    }
+
     // ==========================================================
     //   The configuration file must be read entirely from here
     // ==========================================================
+    // Close the configuration file
+    zconfig_destroy (&conf);
 
     // Allocate the workers array
     if ((self->workers = malloc (sizeof (zframe_t *) * self->workersCount)) == NULL) {
@@ -384,12 +448,6 @@ ZoneServer_start (
     ZoneWorker * zoneWorker;
     ZoneServer *self = (ZoneServer *) args;
 
-    // =============================================
-    //  Launch the dedicated barrack session server
-    // =============================================
-    SessionServer *sessionServer = SessionServer_new (self->zoneServerId, self->confFilePath);
-    zthread_new ((zthread_detached_fn *) SessionServer_start, sessionServer);
-
     // ===================================
     //       Initialize backend
     // ===================================
@@ -402,7 +460,7 @@ ZoneServer_start (
 
     // Initialize workers - Start N worker threads.
     for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if ((zoneWorker = ZoneWorker_new (workerId, self->zoneServerId, self->frontendPort, self->privateGlobalPort))) {
+        if ((zoneWorker = ZoneWorker_new (workerId, self->zoneServerId, self->frontendPort, self->privateGlobalPort, &self->sqlInfo, &self->redisInfo))) {
             if (zthread_new (ZoneWorker_worker, zoneWorker) != 0) {
                 error ("Cannot create Zone Server worker thread ID %d.", workerId);
                 return NULL;
