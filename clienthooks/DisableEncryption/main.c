@@ -5,12 +5,9 @@
 #include <wincon.h>
 #include <subauth.h>
 #include <ntdef.h>
+#include <stdio.h>
 
-#define __DEBUG_OBJECT__ "DisableEncryption"
-#include "dbg/dbg.h"
-
-
-#define NetEncrypt_OFFSET 0xBC0210
+#define NetEncrypt_OFFSET 0x8B6890
 
 DWORD
 get_pid_by_name (char *proc_name)
@@ -115,12 +112,12 @@ int main (int argc, char ** argv)
             8B45 10         mov eax, [dword ss:ebp+10]                    ; &encryptedpacket->size
             8D58 02         lea ebx, [eax+2]                              ; &encryptedpacket->data
             8B7D 08         mov edi, [dword ss:ebp+8]                     ; plaintextSize
-            66:8908         mov [word ds:eax], cx                         ; encryptedpacket->size = plaintextSize
+            66:8908         mov [word ds:eax], cx                         ; encryptedpacket->size = plaintextSizeCPU Disasm
             83C7 02         add edi, 2
             57              push edi                                      ; size
             FF75 0C         push [dword ss:ebp+0C]                        ; src
             53              push ebx                                      ; dest
-            E8 983E5BFF     call Client_tos.memcpy                        ; Jump to MSVCR100.memcpy
+            E8 D4B5E660     call Client_tos.memcpy                        ; Jump to MSVCR100.memcpy
             89F8            mov eax, edi
             C9              leave
             C3              retn
@@ -135,7 +132,7 @@ int main (int argc, char ** argv)
         0x57,
         0xFF, 0x75, 0x0C,
         0x53,
-        0xE8, 0x98, 0x3E, 0x5B, 0xFF,
+        0xE8, 0xD4, 0xB5, 0xE6, 0x60,
         0x89, 0xF8,
         0xC9,
         0xC3
@@ -163,7 +160,11 @@ int main (int argc, char ** argv)
         break;
 
         default :
-            printf ("Error, unexpected code found.\n");
+            printf ("Error, unexpected code found : %x.\n", opcode);
         break;
     }
+
+    system ("pause");
+
+    return 0;
 }
