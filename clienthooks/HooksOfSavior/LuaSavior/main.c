@@ -10,6 +10,7 @@
 
 // Global Lua handler
 lua_State * hLua = NULL;
+int (__cdecl *originalHook) (lua_State *) = NULL;
 
 // Lua loaded functions prototypes
 int (* _lua_gettop) ();
@@ -30,17 +31,17 @@ typedef struct _imcIESThread {
     lua_State * luaJITHandler;
 } imcIESThread;
 
-char __thiscall imcIESThread__Run (imcIESThread *this, int stringID, int a3)
-{
-	#define OFFSET_imcIESThread__Run (0xFE2130 - 0x400000)
-	char (__thiscall * hooked) (imcIESThread *this, int stringID, int a3) =
-		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) imcIESThread__Run);
+int __cdecl lua_gettop_hook (lua_State *self) {
+    #define OFFSET_lua_gettop (0xCD1DC0  - 0x400000)
 
-    hLua = this->luaJITHandler;
+	int (__cdecl *hooked) (lua_State *) =
+		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) lua_gettop_hook);
 
-    return hooked (this, stringID, a3);
+    originalHook = hooked;
+    hLua = self;
+
+    return hooked (self);
 }
-
 
 // Lua loader
 bool loadLua (char *tosDllPath)
@@ -56,7 +57,7 @@ bool loadLua (char *tosDllPath)
         _##x = (void *) GetProcAddress (lua51, STRINGIFY(x)); \
         if (!_##x) { \
             DWORD code = GetLastError(); \
-            char *errorCode = get_error_message(code); \
+            char *errorCode = (char *) get_error_message(code); \
             char *errorMsg = str_dup_printf("ERROR LOADING " STRINGIFY(x) " : %s (%x) !\n", errorCode, code); \
             MessageBox(NULL, errorMsg, "ERROR", 0); return 0; \
         } \
@@ -76,6 +77,8 @@ bool loadLua (char *tosDllPath)
         Sleep (1);
     }
 
+	HookEngine_unhook ((ULONG_PTR) originalHook);
+
     return 1;
 }
 
@@ -92,16 +95,26 @@ int Lua_print (lua_State * L)
         }
         else {
             /* Do something with non-strings */
+            dbg ("Cannot print non-strings !");
         }
     }
 
     return 0;
 }
 
+/*
+int CREATE_SCROLL_CHAR_LIST (lua_State *L)
+{
+    dbg ("CREATE_SCROLL_CHAR_LIST hooked !");
+    return 0;
+}
+*/
+
 void luaSetHooks (lua_State *L)
 {
     struct luaL_Reg hookedFunctions [] = {
         {"print", Lua_print},
+        // {"CREATE_SCROLL_CHAR_LIST", CREATE_SCROLL_CHAR_LIST},
 
         {NULL, NULL} /* end of array */
     };
@@ -126,7 +139,7 @@ void startInjection (void)
 	}
 
 	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_imcIESThread__Run, (ULONG_PTR) imcIESThread__Run);
+	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_lua_gettop, (ULONG_PTR) lua_gettop_hook);
 
     // Load our own luaJIT and retrieve addresses to the functions needed
     if (!loadLua (tosDllPath)) {
@@ -147,6 +160,27 @@ void startInjection (void)
         return;
     }
 
+    MessageBox (NULL, "LuaOfSavior is ready. script.lua called !", "Injected", 0);
+
+    while (1) {
+        if (GetAsyncKeyState(VK_F12) && GetAsyncKeyState(VK_SHIFT)) {
+            // Load custom script
+            if (_luaL_loadfile (hLua, str_dup_printf("%s/script.lua", tosDllPath))) {
+                MessageBox (NULL, "Cannot load script.lua", "ERROR", 0);
+                return;
+            }
+
+            if (_lua_pcall (hLua, 0, 0, 0)) {
+                MessageBox (NULL, "Error when loading script.lua", "ERROR", 0);
+                return;
+            }
+
+            MessageBox (NULL, "script.lua called !", "Injected", 0);
+
+            Sleep (2000);
+        }
+        Sleep (10);
+    }
 }
 
 void endInjection (void)

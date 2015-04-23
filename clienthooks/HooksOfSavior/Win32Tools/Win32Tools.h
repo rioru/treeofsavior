@@ -349,6 +349,8 @@ find_pattern_mask (HANDLE process, DWORD start, DWORD end, char *raw_pattern, ch
 char *
 create_mask_from_file (char *filename);
 
+char * get_error_message (DWORD code);
+
 int
 find_pattern (const unsigned char *buffer, DWORD size, unsigned char *pattern, char *mask);
 

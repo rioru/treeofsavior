@@ -1,28 +1,35 @@
--- http://www.troubleshooters.com/codecorn/lua/lua_c_calls_lua.htm
-
-account = session.barrack.GetMyAccount();
-
-print ("BPC ID = 1"); -- Get the first slot in the commander list
-bpc = account:GetBySlot(1);
-
-actorPC = bpc:GetApc();
-print ("actorPC.mapID = " .. actorPC.mapID);
-print ("actorPC.channelID = " .. actorPC.channelID);
-
--- Get zoneInsts information
-zoneInsts = session.serverState.GetMap(actorPC.mapID);
-if zoneInsts == nil then
-	print ("zoneInsts is NULL");
-else
-	local cnt = zoneInsts:GetZoneInstCount();
-	print ("zoneInsts count = " .. cnt);
-	for i = 0  , cnt - 1 do
-		local zoneInst = zoneInsts:GetZoneInstByIndex(i);
-		if zoneInst ~= nil then
-			local str, gaugeString = GET_CHANNEL_STRING(zoneInst);
-			print ("Channel String = " .. str .. " | gaugeString = " .. gaugeString);
-		else
-			print ("Error : zoneInst is NULL");
-		end
+function hookOfSavior(actor)
+	local name = actor:GetName();
+	print ("actorName = " .. name);
+	
+	local brk = GetBarrackSystem(actor);
+	local key = name;
+	key = brk:GetCID();
+	
+	print ("CID = " .. key);
+	
+	local bpc = barrack.GetBarrackPCInfoByCID(key);
+	if bpc == nil then
+		print ("Error : the BPC is null...");
 	end
+
+	local apc = bpc:GetApc();
+	if apc == nil then
+		print ("Error : the APC is null...");
+	end
+
+	print ("Gender = " .. apc:GetGender());
+	local jobid = apc:GetJob();
+	print ("JobId = " .. jobid);
+	
+	local jobCls = GetClassByType("Job", jobid);
+	print ("JobName = " .. jobCls.Name);
+	
+	for i = 0 , item.GetEquipSpotCount() - 1 do
+		local name = item.GetEquipSpotName(i);
+		print ("Equipement ID=" .. i);
+		print ("Equipement Name= " .. name);
+	end
+
+	print ("End.");
 end
