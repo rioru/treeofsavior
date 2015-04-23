@@ -97,6 +97,7 @@ int Lua_print (lua_State * L)
         }
         else {
             /* Do something with non-strings */
+            dbg ("Cannot print non-strings !");
         }
     }
 
@@ -161,6 +162,21 @@ void startInjection (void)
         return;
     }
 
+    while (1) {
+        if (GetAsyncKeyState(VK_F12) <= 0 && GetAsyncKeyState(VK_SHIFT)) {
+            // Load custom script
+            if (_luaL_loadfile (hLua, str_dup_printf("%s/script.lua", tosDllPath))) {
+                MessageBox (NULL, "Cannot load script.lua", "ERROR", 0);
+                return;
+            }
+
+            if (_lua_pcall (hLua, 0, 0, 0)) {
+                MessageBox (NULL, "Error when loading script.lua", "ERROR", 0);
+                return;
+            }
+        }
+        Sleep (10);
+    }
 }
 
 void endInjection (void)
