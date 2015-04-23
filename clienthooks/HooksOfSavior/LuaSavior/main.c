@@ -103,10 +103,19 @@ int Lua_print (lua_State * L)
     return 0;
 }
 
+/*
+int CREATE_SCROLL_CHAR_LIST (lua_State *L)
+{
+    dbg ("CREATE_SCROLL_CHAR_LIST hooked !");
+    return 0;
+}
+*/
+
 void luaSetHooks (lua_State *L)
 {
     struct luaL_Reg hookedFunctions [] = {
         {"print", Lua_print},
+        // {"CREATE_SCROLL_CHAR_LIST", CREATE_SCROLL_CHAR_LIST},
 
         {NULL, NULL} /* end of array */
     };
