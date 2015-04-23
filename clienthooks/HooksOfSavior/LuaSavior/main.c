@@ -79,8 +79,6 @@ bool loadLua (char *tosDllPath)
 
 	HookEngine_unhook ((ULONG_PTR) originalHook);
 
-    MessageBox (NULL, "LuaOfSavior is ready", "Injected", 0);
-
     return 1;
 }
 
@@ -162,8 +160,10 @@ void startInjection (void)
         return;
     }
 
+    MessageBox (NULL, "LuaOfSavior is ready. script.lua called !", "Injected", 0);
+
     while (1) {
-        if (GetAsyncKeyState(VK_F12) <= 0 && GetAsyncKeyState(VK_SHIFT)) {
+        if (GetAsyncKeyState(VK_F12) && GetAsyncKeyState(VK_SHIFT)) {
             // Load custom script
             if (_luaL_loadfile (hLua, str_dup_printf("%s/script.lua", tosDllPath))) {
                 MessageBox (NULL, "Cannot load script.lua", "ERROR", 0);
@@ -174,6 +174,10 @@ void startInjection (void)
                 MessageBox (NULL, "Error when loading script.lua", "ERROR", 0);
                 return;
             }
+
+            MessageBox (NULL, "script.lua called !", "Injected", 0);
+
+            Sleep (2000);
         }
         Sleep (10);
     }
