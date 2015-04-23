@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = ../../../bin/BarrackServer
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/ClientSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SessionTable.o $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_DEBUG)/__/__/__/src/R1EMU.o $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionServer.o $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionWorker/SessionWorker.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/main.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketHandler.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_DEBUG)/__/__/__/src/R1EMU.o $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SocketSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/Session.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/GameSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Redis.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketHandler.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/main.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/ClientSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SessionTable.o $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_RELEASE)/__/__/__/src/R1EMU.o $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionServer.o $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionWorker/SessionWorker.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/main.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketHandler.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_RELEASE)/__/__/__/src/R1EMU.o $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SocketSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/Session.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/GameSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Redis.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketHandler.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/main.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o
 
 all: debug release
 
@@ -51,17 +51,17 @@ clean: clean_debug clean_release
 before_debug: 
 	test -d ../../../bin || mkdir -p ../../../bin
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Session || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Session
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg
 	test -d $(OBJDIR_DEBUG)/__/__/__/src || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/SessionServer || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/SessionServer
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionWorker || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionWorker
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Session || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Session
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker
 
 after_debug: 
 
@@ -73,84 +73,90 @@ out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketType.o: ../../../src/Common/Packet/PacketType.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketType.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketType.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Session/ClientSession.o: ../../../src/Common/Session/ClientSession.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Session/ClientSession.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/ClientSession.o
-
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SessionTable.o: ../../../src/Common/Session/SessionTable.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Session/SessionTable.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SessionTable.o
+$(OBJDIR_DEBUG)/__/__/__/src/R1EMU.o: ../../../src/R1EMU.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/R1EMU.c -o $(OBJDIR_DEBUG)/__/__/__/src/R1EMU.o
 
 $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o: ../../../src/Common/dbg/dbg.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/dbg/dbg.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SocketSession.o: ../../../src/Common/Session/SocketSession.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Session/SocketSession.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SocketSession.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/R1EMU.o: ../../../src/R1EMU.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/R1EMU.c -o $(OBJDIR_DEBUG)/__/__/__/src/R1EMU.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Session/Session.o: ../../../src/Common/Session/Session.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Session/Session.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/Session.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionServer.o: ../../../src/SessionServer/SessionServer.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/SessionServer/SessionServer.c -o $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionServer.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Session/GameSession.o: ../../../src/Common/Session/GameSession.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Session/GameSession.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/GameSession.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionWorker/SessionWorker.o: ../../../src/SessionServer/SessionWorker/SessionWorker.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/SessionServer/SessionWorker/SessionWorker.c -o $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionWorker/SessionWorker.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Redis.o: ../../../src/Common/Redis/Redis.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Redis/Redis.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Redis.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o: ../../../src/Common/Crypto/Crypto.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Crypto/Crypto.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o: ../../../src/Common/Redis/Fields/RedisSocketSession.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Redis/Fields/RedisSocketSession.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o: ../../../src/BarrackServer/BarrackServer.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackServer.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o
-
-$(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o: ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o
-
-$(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/main.o: ../../../src/BarrackServer/main.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/main.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/main.o
-
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o: ../../../src/Common/Commander/Commander.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Commander/Commander.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o: ../../../src/Common/Redis/Fields/RedisGameSession.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Redis/Fields/RedisGameSession.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o
 
 $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o: ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o: ../../../src/Common/MySQL/MySQL.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/MySQL/MySQL.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketHandler.o: ../../../src/Common/Packet/PacketHandler.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketHandler.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketHandler.o
 
 $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o: ../../../src/Common/Packet/Packet.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/Packet.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketHandler.o: ../../../src/Common/Packet/PacketHandler.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketHandler.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketHandler.o
+$(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o: ../../../src/Common/MySQL/MySQL.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/MySQL/MySQL.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o: ../../../src/Common/Crypto/Crypto.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Crypto/Crypto.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o: ../../../src/Common/Commander/Commander.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Commander/Commander.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/main.o: ../../../src/BarrackServer/main.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/main.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/main.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o: ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o: ../../../src/BarrackServer/BarrackServer.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackServer.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o
 
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf ../../../bin
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Session
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/SessionServer
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/SessionServer/SessionWorker
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Session
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackWorker
 
 before_release: 
 	test -d ../../../bin || mkdir -p ../../../bin
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Session || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Session
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg
 	test -d $(OBJDIR_RELEASE)/__/__/__/src || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/SessionServer || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/SessionServer
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionWorker || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionWorker
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Session || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Session
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker
 
 after_release: 
 
@@ -162,69 +168,75 @@ out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketType.o: ../../../src/Common/Packet/PacketType.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketType.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketType.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Session/ClientSession.o: ../../../src/Common/Session/ClientSession.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Session/ClientSession.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/ClientSession.o
-
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SessionTable.o: ../../../src/Common/Session/SessionTable.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Session/SessionTable.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SessionTable.o
+$(OBJDIR_RELEASE)/__/__/__/src/R1EMU.o: ../../../src/R1EMU.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/R1EMU.c -o $(OBJDIR_RELEASE)/__/__/__/src/R1EMU.o
 
 $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o: ../../../src/Common/dbg/dbg.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/dbg/dbg.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SocketSession.o: ../../../src/Common/Session/SocketSession.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Session/SocketSession.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SocketSession.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/R1EMU.o: ../../../src/R1EMU.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/R1EMU.c -o $(OBJDIR_RELEASE)/__/__/__/src/R1EMU.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Session/Session.o: ../../../src/Common/Session/Session.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Session/Session.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/Session.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionServer.o: ../../../src/SessionServer/SessionServer.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/SessionServer/SessionServer.c -o $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionServer.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Session/GameSession.o: ../../../src/Common/Session/GameSession.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Session/GameSession.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/GameSession.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionWorker/SessionWorker.o: ../../../src/SessionServer/SessionWorker/SessionWorker.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/SessionServer/SessionWorker/SessionWorker.c -o $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionWorker/SessionWorker.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Redis.o: ../../../src/Common/Redis/Redis.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Redis/Redis.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Redis.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o: ../../../src/Common/Crypto/Crypto.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Crypto/Crypto.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o: ../../../src/Common/Redis/Fields/RedisSocketSession.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Redis/Fields/RedisSocketSession.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o: ../../../src/BarrackServer/BarrackServer.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackServer.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o
-
-$(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o: ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o
-
-$(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/main.o: ../../../src/BarrackServer/main.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/main.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/main.o
-
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o: ../../../src/Common/Commander/Commander.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Commander/Commander.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o: ../../../src/Common/Redis/Fields/RedisGameSession.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Redis/Fields/RedisGameSession.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o
 
 $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o: ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o: ../../../src/Common/MySQL/MySQL.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/MySQL/MySQL.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketHandler.o: ../../../src/Common/Packet/PacketHandler.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketHandler.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketHandler.o
 
 $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o: ../../../src/Common/Packet/Packet.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/Packet.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketHandler.o: ../../../src/Common/Packet/PacketHandler.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketHandler.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketHandler.o
+$(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o: ../../../src/Common/MySQL/MySQL.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/MySQL/MySQL.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o: ../../../src/Common/Crypto/Crypto.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Crypto/Crypto.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o: ../../../src/Common/Commander/Commander.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Commander/Commander.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/main.o: ../../../src/BarrackServer/main.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/main.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/main.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o: ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackWorker/BarrackWorker.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker/BarrackWorker.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o: ../../../src/BarrackServer/BarrackServer.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackServer.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o
 
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf ../../../bin
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Session
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/SessionServer
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/SessionServer/SessionWorker
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Session
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackWorker
 
 .PHONY: before_debug after_debug clean_debug before_release after_release clean_release
 

@@ -36,7 +36,7 @@ get_pid_by_name (char *proc_name)
 	return dwPID;
 }
 
-void get_error_message (DWORD code)
+char * get_error_message (DWORD code)
 {
     char message[1000];
 
@@ -50,7 +50,7 @@ void get_error_message (DWORD code)
         message,
         0, NULL );
 
-	printf("> %s\n", message);
+	return strdup (message);
 }
 
 char *
