@@ -79,6 +79,8 @@ bool loadLua (char *tosDllPath)
 
 	HookEngine_unhook ((ULONG_PTR) originalHook);
 
+    MessageBox (NULL, "LuaOfSavior is ready", "Injected", 0);
+
     return 1;
 }
 

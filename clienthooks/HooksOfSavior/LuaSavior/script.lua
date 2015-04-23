@@ -1,2 +1,3 @@
-
-print ("HELLO WORLD !");
+function hookOfSavior(actor)
+	print "Hook!"
+end
