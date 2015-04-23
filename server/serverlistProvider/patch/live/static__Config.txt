@@ -1,0 +1,5 @@
+ServiceNation=KOR
+Dictionary=NO
+UseNexonSSO=NO
+UseNexonGLM=NO
+UseHackshield=NO
