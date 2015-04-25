@@ -478,7 +478,7 @@ BarrackHandler_commanderCreate (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = BC_COMMANDER_CREATE;
-    CommanderInfo_createBasicCommander(&replyPacket.commander);
+    CommanderInfo_createBasicCommander (&replyPacket.commander);
 
     // CharName
     strncpy (replyPacket.commander.charName, clientPacket->charName, sizeof (replyPacket.commander.charName));
@@ -526,7 +526,7 @@ BarrackHandler_commanderCreate (
     }
 
     // Character position
-    replyPacket.commander.listPosition = gameSession->charactersBarrackCount + 1;
+    // replyPacket.commander.listPosition = gameSession->charactersBarrackCount + 1;
     replyPacket.commander.charPosition = gameSession->charactersBarrackCount + 1;
 
     // Hair type

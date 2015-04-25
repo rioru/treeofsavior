@@ -75,8 +75,8 @@ typedef struct CommanderInfo
     uint32_t maxHP;
     uint16_t currentSP;
     uint16_t maxSP;
-    uint32_t unk8; // Stats ?
-    uint32_t unk9;
+    float posX;
+    float posY;
     uint32_t unk10;
     uint32_t unk11;
     uint32_t unk12;

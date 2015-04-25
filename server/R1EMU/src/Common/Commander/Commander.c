@@ -28,43 +28,45 @@ CommanderInfo_createBasicCommander (
 ) {
     memset (commander, 0, sizeof (CommanderInfo));
 
-    commander->classId = 10001;
+    commander->classId = 10005;
     commander->unk2 = 0;
-    commander->jobId = 1;
-    commander->gender = 1;
+    commander->jobId = 4;
+    commander->gender = 2;
     commander->unk3 = 1;
     commander->level = 1;
-    commander->head_top = 0x00002710;
-    commander->head_middle = 0x00002710;
-    commander->itemUnk1 = 0x00002710;
-    commander->body_armor = 0x00002710;
-    commander->gloves = 0x00002710;
-    commander->boots = 0x00002710;
-    commander->itemUnk2 = 0x00002710;
-    commander->bracelet = 0x00002710;
-    commander->weapon = 0x00002710;
-    commander->shield = 0x00002710;
-    commander->costume = 0x00002710;
-    commander->itemUnk3 = 0x00002710;
-    commander->itemUnk4 = 0x00002710;
-    commander->itemUnk5 = 0x00002710;
-    commander->leg_armor = 0x00002710;
-    commander->itemUnk6 = 0x00002710;
-    commander->itemUnk7 = 0x00002710;
-    commander->ring_left = 0x00002710;
-    commander->ring_right = 0x00002710;
-    commander->necklace = 0x00002710;
-    commander->hairType = 2;
+    commander->head_top = 2;
+    commander->head_middle = 2;
+    commander->itemUnk1 = 4;
+    commander->body_armor = 0x81a9d;
+    commander->gloves = 6;
+    commander->boots = 7;
+    commander->itemUnk2 = 0x2710;
+    commander->bracelet = 0x2af8;
+    commander->weapon = 0x3118d;
+    commander->shield = 0x98967c;
+    commander->costume = 4;
+    commander->itemUnk3 = 9;
+    commander->itemUnk4 = 9;
+    commander->itemUnk5 = 4;
+    commander->leg_armor = 0x7f38d;
+    commander->itemUnk6 = 9;
+    commander->itemUnk7 = 9;
+    commander->ring_left = 9;
+    commander->ring_right = 9;
+    commander->necklace = 0xa;
+    commander->hairType = 51;
+    commander->unk4 = 0;
     commander->unk5 = 0;
-    commander->pose = 0;
-    commander->spriteRelated = 1;
+    commander->pcId = 0x604;
+    commander->listPosition = 0x19f74;
+    commander->charPosition = 1;
     commander->unk6 = 0;
-    commander->mapId = 0x551;
+    commander->mapId = 0x3fd;
+    commander->spriteRelated = 0x41000000;
     commander->unk7 = 0;
-    commander->unk8 = 0;
-    commander->unk9 = 0;
-    commander->unk10 = 0;
-    commander->unk11 = 0;
+    commander->pose = 0x1eefe0a0;
+    commander->posX = 27.0;
+    commander->posY = 29.0;
     commander->unk12 = 0;
 
     // Fill with dummy stats
@@ -75,6 +77,9 @@ CommanderInfo_createBasicCommander (
     commander->currentSP = 6000;
     commander->maxSP = 12000;
     commander->level = 10;
+
+    commander->unk10 = commander->currentHP;
+    commander->unk11 = commander->maxHP;
 }
 
 
@@ -125,13 +130,13 @@ CommanderInfo_print (
     dbg ("unk7 = %d (%x)", commander->unk7, commander->unk7);
     dbg ("pose = %d (%x)", commander->pose, commander->pose);
     dbg ("spriteRelated = %d (%x)", commander->spriteRelated, commander->spriteRelated);
-    dbg ("commanderId =%" PRIu64, commander->commanderId, commander->commanderId);
-    dbg ("currentHP = %d (%x)", commander->currentHP, commander->currentHP);
-    dbg ("maxHP = %d (%x)", commander->maxHP, commander->maxHP);
-    dbg ("currentSP = %d (%x)", commander->currentSP, commander->currentSP);
-    dbg ("maxSP = %d (%x)", commander->maxSP, commander->maxSP);
-    dbg ("unk8 = %d (%x)", commander->unk8, commander->unk8);
-    dbg ("unk9 = %d (%x)", commander->unk9, commander->unk9);
+    dbg ("commanderId = %" PRIu64, commander->commanderId, commander->commanderId);
+    dbg ("currentHP = %f (%x)", commander->currentHP, commander->currentHP);
+    dbg ("maxHP = %f (%x)", commander->maxHP, commander->maxHP);
+    dbg ("currentSP = %f (%x)", commander->currentSP, commander->currentSP);
+    dbg ("maxSP = %f (%x)", commander->maxSP, commander->maxSP);
+    dbg ("posX = %f (%x)", commander->posX, commander->posX);
+    dbg ("posY = %f (%x)", commander->posY, commander->posY);
     dbg ("unk10 = %d (%x)", commander->unk10, commander->unk10);
     dbg ("unk11 = %d (%x)", commander->unk11, commander->unk11);
     dbg ("unk12 = %d (%x)", commander->unk12, commander->unk12);
