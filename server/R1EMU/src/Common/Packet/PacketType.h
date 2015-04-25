@@ -26,7 +26,9 @@
 
 typedef enum PacketTypeBarrackNormal {
 
-    BC_NORMAL_ZONE_TRAFFIC = 0xB
+    BC_NORMAL_COMMANDER_MOVE_OK = 0x2,
+    BC_NORMAL_ZONE_TRAFFIC = 0xB,
+    BC_NORMAL_PET_INFORMATION = 0x8
 
 }   PacketTypeBarrackNormal;
 

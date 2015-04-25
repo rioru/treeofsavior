@@ -223,7 +223,7 @@ BarrackHandler_startGame (
     replyPacket.zoneServerId = 0x12345678;
     strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));
     replyPacket.zoneServerPort = 2004;
-    replyPacket.mapId = 0x551;
+    replyPacket.mapId = 0x3fd;
     replyPacket.commanderListId = clientPacket->commanderListId;
     replyPacket.spriteId = 0;
     replyPacket.spriteIdRelated = 2;
@@ -302,6 +302,16 @@ BarrackHandler_commanderMove (
     } CbCommanderMovePacket;
     #pragma pack(pop)
 
+    #pragma pack(push, 1)
+    typedef struct {
+        BarrackPacketNormalHeader normalHeader;
+        uint64_t accountId;
+        uint32_t unk1;
+        float x, y;
+        uint8_t unk2;
+    } BcNormalCommanderMoveOk;
+    #pragma pack(pop)
+
     if (sizeof (CbCommanderMovePacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbCommanderMovePacket));
@@ -309,8 +319,35 @@ BarrackHandler_commanderMove (
         return PACKET_HANDLER_ERROR;
     }
 
-    // CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
-    // Nothing to reply
+    CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
+
+    BcNormalCommanderMoveOk replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    BarrackPacket_normalHeader (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (BcNormalCommanderMoveOk));
+
+    // TODO : Check position of the client
+    replyPacket.accountId = session->socket.accountId;
+    replyPacket.x = clientPacket->x;
+    replyPacket.y = clientPacket->y;
+
+    return PACKET_HANDLER_OK;
+}
+
+
+static PacketHandlerState
+BarrackHandler_unkHandler1 (
+    zmsg_t *reply
+) {
+    size_t memSize;
+
+    void *memory = dumpToMem (
+        "[11:09:35][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 1D 00 04 00 00 00 D1 A8 01 44 | O..............D\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  00 00 00 00 0B 00 00 00 00 00 00 00 00          | .............\n"
+        , NULL, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (memory, memSize));
 
     return PACKET_HANDLER_OK;
 }
@@ -324,7 +361,68 @@ BarrackHandler_startBarrack (
     void *arg
 ) {
     BarrackHandler_serverEntry   (reply);
+    BarrackHandler_unkHandler1   (reply);
     BarrackHandler_commanderList (reply);
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+BarrackHandler_petInformation (
+    zmsg_t *reply
+) {
+	#pragma pack(push, 1)
+    typedef struct {
+        BarrackPacketNormalHeader normalHeader;
+        uint64_t accountId;
+        // TODO
+    } BcNormalPetInformationPacket;
+    #pragma pack(pop)
+
+    BcNormalPetInformationPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (BcNormalPetInformationPacket));
+
+    size_t memSize;
+
+    void *memory = dumpToMem (
+		"[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF C4 00 08 00 00 00 D1 A8 01 44 | O..............D\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 01 00 00 00 61 EA 00 00 E5 5E 00 00 | ........a....^..\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  79 9F 01 00 EC 28 00 00 D1 91 01 00 D7 37 00 00 | y....(.......7..\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0A 00 EC 9A B0 EC AD 88 EC AD 88 00 00 00 00 00 | ................\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  7E 00 4E 11 00 00 00 00 B0 00 00 00 00 00 4F 11 | ~.N...........O.\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 A5 00 00 00 00 00 40 17 00 00 00 00 | ..........@.....\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  A1 00 00 00 00 00 F4 1D 00 00 00 00 05 1C 00 00 | ................\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 6A 17 00 00 00 00 65 17 00 00 00 00 62 00 | ..j.....e.....b.\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 60 00 00 00 00 00 90 17 00 00 00 00 | ....`...........\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  A3 16 00 00 E0 41 64 1E 00 00 00 00 E5 1B 00 00 | .....Ad.........\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 EC 1B 00 00 00 00 EB 1B 00 00 00 00 03 1C | ................\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 C0 40 0A 1C 00 00 E0 40 E7 1B 00 00 20 41 | ...@.....@.... A\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00                                     | ....\n"
+        , NULL, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (memory, memSize));
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+BarrackHandler_unkHandler3 (
+    zmsg_t *reply
+) {
+    size_t memSize;
+
+    void *memory = dumpToMem (
+		"[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 51 00 0B 00 00 00 8D FA 41 00 | O.....Q.......A."
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0D CA B9 0D 80 40 0C 45 C1 E7 FD F6 7A 0F 89 80 | .....@.E....z..."
+		"[11:09:37][           ToSClient:                     dbgBuffer]  8C 0E 90 10 01 FD 97 43 44 4E 01 30 F1 BC 26 1E | .......CDN.0..&."
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0D 22 E9 95 96 D4 4E 0A BF 60 A7 6C E8 C4 0E 6E | ......N..`.l...n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0F B4 50 26 AC D8 C0 1B 33 82 62 18 E8 EF 01 C1 | ..P&....3.b....."
+		"[11:09:37][           ToSClient:                     dbgBuffer]  07                                              | ."
+        , NULL, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (memory, memSize));
 
     return PACKET_HANDLER_OK;
 }
@@ -337,6 +435,13 @@ BarrackHandler_currentBarrack (
     zmsg_t *reply,
     void *arg
 ) {
+    /*   [CLIENT SEND] Packet type : <CB_CURRENT_BARRACK>
+         =================================================
+          4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111
+          size pktType  checksum     accountId               float    float
+    */
+    // BarrackHandler_petInformation (reply);
+    // BarrackHandler_unkHandler3 (reply);
     BarrackHandler_zoneTraffics (reply);
 
     return PACKET_HANDLER_OK;
@@ -613,7 +718,7 @@ BarrackHandler_zoneTraffics (
     // Fill the arrays here
     for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++) {
         zoneServerCounts [mapIndex] = 5;
-        mapsId [mapIndex] = 0x551;
+        mapsId [mapIndex] = 0x3fd;
     }
     // Number of players per zone
     int currentPlayersCount = 10;

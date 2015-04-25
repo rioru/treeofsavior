@@ -39,6 +39,7 @@
 #define DEFAULT_SERVER_CONF_PATH "../cfg/server.cfg"
 
 // Utils
+#include "Common/utils/utils.h"
 #define STRINGIFY(x) # x
 #ifndef bool
 #define bool char
