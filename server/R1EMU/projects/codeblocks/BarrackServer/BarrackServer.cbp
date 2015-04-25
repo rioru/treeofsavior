@@ -108,6 +108,9 @@
 		<Unit filename="../../../src/Common/util/util.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/Common/utils/utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
