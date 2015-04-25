@@ -117,7 +117,7 @@ int main (int argc, char ** argv)
             57              push edi                                      ; size
             FF75 0C         push [dword ss:ebp+0C]                        ; src
             53              push ebx                                      ; dest
-            E8 14DB2400     call Client_tos.memcpy                        ; Jump to MSVCR100.memcpy
+            E8 D4DC2400     call Client_tos.memcpy                        ; Jump to MSVCR100.memcpy
             89F8            mov eax, edi
             C9              leave
             C3              retn
@@ -132,7 +132,7 @@ int main (int argc, char ** argv)
         0x57,
         0xFF, 0x75, 0x0C,
         0x53,
-        0xE8, 0x14, 0xDB, 0x24, 0x00,
+        0xE8, 0xD4, 0xDC, 0x24, 0x00,
         0x89, 0xF8,
         0xC9,
         0xC3
