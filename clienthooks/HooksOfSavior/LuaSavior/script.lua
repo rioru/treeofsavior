@@ -1,4 +1,4 @@
-function hookOfSavior(actor)
+function getActorInformation (actor)
 	local name = actor:GetName();
 	print ("actorName = " .. name);
 	
@@ -32,4 +32,10 @@ function hookOfSavior(actor)
 	end
 
 	print ("End.");
+end
+
+function getBpcInformation (bpc)
+	if bpc == nil then
+		print ("Error : the BPC is null...");
+	end
 end
