@@ -88,7 +88,7 @@ BarrackHandler_login (
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        unsigned char channelString[17];
+        unsigned char accountNameId[17];
         uint32_t accountPrivileges;
     } BcLoginOkPacket;
     #pragma pack(pop)
@@ -108,8 +108,56 @@ BarrackHandler_login (
     replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
     info ("AccountID %llx generated !", replyPacket.accountId);
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
-    // TODO: Generate a challenge in channelString
-    strncpy (replyPacket.channelString, "CHANNEL_STRING", sizeof (replyPacket.channelString));
+    strncpy (replyPacket.accountNameId, "accountNameId", sizeof (replyPacket.accountNameId));
+    // ==================================
+
+    // Update the session
+    socketSession->accountId = replyPacket.accountId;
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return PACKET_HANDLER_UPDATE_SESSION;
+}
+
+
+static PacketHandlerState
+BarrackHandler_loginByPassport (
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply,
+    void *arg
+) {
+    SocketSession *socketSession = &session->socket;
+    BarrackWorker * self = (BarrackWorker *) arg;
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint64_t accountId;
+        unsigned char accountNameId[17];
+        uint32_t accountPrivileges;
+    } BcLoginOkPacket;
+    #pragma pack(pop)
+
+    BcLoginOkPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    // Authenticate here
+    // TODO
+
+    // Authentication OK!
+    socketSession->authenticated = true;
+
+    // ===== Gives a random account =====
+    replyPacket.header.type = BC_LOGINOK;
+    // Let's use a random accountId until we have a login mechanism
+    replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
+    info ("AccountID %llx generated !", replyPacket.accountId);
+    replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
+    strncpy (replyPacket.accountNameId, "accountNameId", sizeof (replyPacket.accountNameId));
     // ==================================
 
     // Update the session
@@ -265,56 +313,6 @@ BarrackHandler_commanderMove (
     // Nothing to reply
 
     return PACKET_HANDLER_OK;
-}
-
-static PacketHandlerState
-BarrackHandler_loginByPassport (
-    Session *session,
-    unsigned char *packet,
-    size_t packetSize,
-    zmsg_t *reply,
-    void *arg
-) {
-    SocketSession *socketSession = &session->socket;
-
-    BarrackWorker * self = (BarrackWorker *) arg;
-
-    #pragma pack(push, 1)
-    typedef struct {
-        ServerPacketHeader header;
-        uint16_t unk1;
-        uint64_t accountId;
-        unsigned char channelString[17];
-        uint32_t accountPrivileges;
-    } BcLoginOkPacket;
-    #pragma pack(pop)
-
-    BcLoginOkPacket replyPacket;
-    memset (&replyPacket, 0, sizeof (replyPacket));
-
-    // Authenticate here
-    // TODO
-
-    // Authentication OK!
-    socketSession->authenticated = true;
-
-    // ===== Gives a random account =====
-    replyPacket.header.type = BC_LOGINOK;
-    // Let's use a random accountId until we have a login mechanism
-    replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
-    info ("AccountID %llx generated !", replyPacket.accountId);
-    replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
-    // TODO: Generate a challenge in channelString
-    strncpy (replyPacket.channelString, "CHANNEL_STRING", sizeof (replyPacket.channelString));
-    // ==================================
-
-    // Update the session
-    socketSession->accountId = replyPacket.accountId;
-
-    // Send message
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-
-    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 static PacketHandlerState
