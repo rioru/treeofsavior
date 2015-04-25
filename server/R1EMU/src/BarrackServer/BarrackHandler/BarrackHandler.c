@@ -46,6 +46,9 @@ static PacketHandlerState BarrackHandler_serverEntry       (zmsg_t *reply);
 static PacketHandlerState BarrackHandler_commanderList     (zmsg_t *reply);
 /** Send a list of zone servers */
 static PacketHandlerState BarrackHandler_zoneTraffics      (zmsg_t *reply);
+/** UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
+static PacketHandlerState BarrackHandler_unkHandler1       (Session *session, zmsg_t *reply);
+
 
 // ------ Structure declaration -------
 /**
@@ -309,7 +312,7 @@ BarrackHandler_commanderMove (
         uint32_t unk1;
         float x, y;
         uint8_t unk2;
-    } BcNormalCommanderMoveOk;
+    } BcNormalCommanderMoveOkPacket;
     #pragma pack(pop)
 
     if (sizeof (CbCommanderMovePacket) != packetSize) {
@@ -321,15 +324,18 @@ BarrackHandler_commanderMove (
 
     CbCommanderMovePacket *clientPacket = (CbCommanderMovePacket *) packet;
 
-    BcNormalCommanderMoveOk replyPacket;
+    BcNormalCommanderMoveOkPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    BarrackPacket_normalHeader (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (BcNormalCommanderMoveOk));
+    BarrackPacket_normalHeader (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (BcNormalCommanderMoveOkPacket));
 
     // TODO : Check position of the client
     replyPacket.accountId = session->socket.accountId;
     replyPacket.x = clientPacket->x;
     replyPacket.y = clientPacket->y;
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return PACKET_HANDLER_OK;
 }
@@ -337,17 +343,34 @@ BarrackHandler_commanderMove (
 
 static PacketHandlerState
 BarrackHandler_unkHandler1 (
+    Session *session,
     zmsg_t *reply
 ) {
-    size_t memSize;
+    #pragma pack(push, 1)
+    typedef struct {
+        BarrackPacketNormalHeader normalHeader;
+        uint64_t accountId;
+        uint32_t unk1;
+        uint32_t unk2;
+        uint8_t unk3;
+    } BcNormalUnknown1Packet;
+    #pragma pack(pop)
 
-    void *memory = dumpToMem (
-        "[11:09:35][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 1D 00 04 00 00 00 D1 A8 01 44 | O..............D\n"
-        "[11:09:35][           ToSClient:                     dbgBuffer]  00 00 00 00 0B 00 00 00 00 00 00 00 00          | .............\n"
-        , NULL, &memSize
-    );
+    BcNormalUnknown1Packet replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    // Build BC_NORMAL header
+    BarrackPacket_normalHeader (&replyPacket.normalHeader, BC_NORMAL_UNKNOWN_1, sizeof (BcNormalUnknown1Packet));
+
+    replyPacket.accountId = session->socket.accountId;
+    replyPacket.unk1 = 0xB;
+    replyPacket.unk2 = 0;
+    replyPacket.unk3 = 0;
+
+    buffer_print (&replyPacket, sizeof(replyPacket), ">> ");
+
+    // Send message
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return PACKET_HANDLER_OK;
 }
@@ -361,7 +384,7 @@ BarrackHandler_startBarrack (
     void *arg
 ) {
     BarrackHandler_serverEntry   (reply);
-    BarrackHandler_unkHandler1   (reply);
+    // BarrackHandler_unkHandler1   (session, reply);
     BarrackHandler_commanderList (reply);
 
     return PACKET_HANDLER_OK;
@@ -369,6 +392,7 @@ BarrackHandler_startBarrack (
 
 static PacketHandlerState
 BarrackHandler_petInformation (
+    Session *session,
     zmsg_t *reply
 ) {
 	#pragma pack(push, 1)
@@ -376,15 +400,15 @@ BarrackHandler_petInformation (
         BarrackPacketNormalHeader normalHeader;
         uint64_t accountId;
         // TODO
+        byte unk[180];
     } BcNormalPetInformationPacket;
     #pragma pack(pop)
 
     BcNormalPetInformationPacket replyPacket;
     memset (&replyPacket, 0, sizeof (BcNormalPetInformationPacket));
 
-    size_t memSize;
-
-    void *memory = dumpToMem (
+    size_t memSize = sizeof (BcNormalPetInformationPacket);
+    dumpToMem (
 		"[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF C4 00 08 00 00 00 D1 A8 01 44 | O..............D\n"
 		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 01 00 00 00 61 EA 00 00 E5 5E 00 00 | ........a....^..\n"
 		"[11:09:37][           ToSClient:                     dbgBuffer]  79 9F 01 00 EC 28 00 00 D1 91 01 00 D7 37 00 00 | y....(.......7..\n"
@@ -398,10 +422,12 @@ BarrackHandler_petInformation (
 		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 EC 1B 00 00 00 00 EB 1B 00 00 00 00 03 1C | ................\n"
 		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 C0 40 0A 1C 00 00 E0 40 E7 1B 00 00 20 41 | ...@.....@.... A\n"
 		"[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00                                     | ....\n"
-        , NULL, &memSize
+        , &replyPacket, &memSize
     );
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    replyPacket.accountId = session->socket.accountId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (BcNormalPetInformationPacket)));
 
     return PACKET_HANDLER_OK;
 }
@@ -440,7 +466,7 @@ BarrackHandler_currentBarrack (
           4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111
           size pktType  checksum     accountId               float    float
     */
-    // BarrackHandler_petInformation (reply);
+    // BarrackHandler_petInformation (session, reply);
     // BarrackHandler_unkHandler3 (reply);
     BarrackHandler_zoneTraffics (reply);
 
@@ -552,7 +578,7 @@ BarrackHandler_commanderCreate (
 
     #pragma pack(push, 1)
     typedef struct {
-        uint8_t unk2;
+        uint8_t charPosition;
         unsigned char charName[64];
         uint8_t unk3;
         uint8_t jobId;
@@ -631,8 +657,12 @@ BarrackHandler_commanderCreate (
     }
 
     // Character position
-    // replyPacket.commander.listPosition = gameSession->charactersBarrackCount + 1;
+    if (clientPacket->charPosition != gameSession->charactersBarrackCount + 1) {
+        warning ("Client sent a malformed charPosition.");
+    }
+
     replyPacket.commander.charPosition = gameSession->charactersBarrackCount + 1;
+    replyPacket.commander.listPosition = gameSession->charactersBarrackCount + 1;
 
     // Hair type
     // TODO : Check the hairType
