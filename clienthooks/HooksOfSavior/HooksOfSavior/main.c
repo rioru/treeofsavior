@@ -22,11 +22,11 @@ typedef struct _StringID
 
 }   StringID;
 
-#define OFFSET_logDebug_1 (0xCA8FA0 - 0x400000)
-#define OFFSET_LuaGetObject (0x103B6D0 - 0x400000)
-#define OFFSET_logDebug_2 (0xCA8E80 - 0x400000)
-#define OFFSET_GetPacket (0x643910 - 0x400000)
-#define OFFSET_NetEncrypt (0x0CB6890 - 0x400000)
+#define OFFSET_logDebug_1 (0xCB05D0 - 0x400000)
+// #define OFFSET_LuaGetObject (0x103B6D0 - 0x400000)
+// #define OFFSET_logDebug_2 (0xCA8E80 - 0x400000)
+#define OFFSET_GetPacket (0x06457A0 - 0x400000)
+#define OFFSET_NetEncrypt (0xCBDEC0 - 0x400000)
 
 char * (__thiscall *StringID__c_str) (StringID **this) = (void *) 0x00D32300;
 
@@ -276,7 +276,7 @@ void startInjection (void)
 
 	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_1,     (ULONG_PTR) logDebug_1);
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2,     (ULONG_PTR) logDebug_2);
+	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2,     (ULONG_PTR) logDebug_2);
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
 	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,      (ULONG_PTR) ClientNet__GetPacket);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
