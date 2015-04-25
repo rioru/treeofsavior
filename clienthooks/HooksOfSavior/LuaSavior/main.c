@@ -25,14 +25,8 @@ int (* _luaL_loadfile) ();
 #define _lua_getglobal(L,s) _lua_getfield(L, LUA_GLOBALSINDEX, (s))
 
 
-// Hook for retrieve the global Lua handler in imcIESThread
-typedef struct _imcIESThread {
-    byte data[0x984];
-    lua_State * luaJITHandler;
-} imcIESThread;
-
 int __cdecl lua_gettop_hook (lua_State *self) {
-    #define OFFSET_lua_gettop (0xCD1DC0  - 0x400000)
+    #define OFFSET_lua_gettop (0xCD93C0  - 0x400000)
 
 	int (__cdecl *hooked) (lua_State *) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) lua_gettop_hook);
@@ -118,7 +112,6 @@ void luaSetHooks (lua_State *L)
 
         {NULL, NULL} /* end of array */
     };
-
 
     _lua_getglobal(L, "_G");
     _luaL_register(L, NULL, hookedFunctions);
