@@ -133,35 +133,71 @@ typedef struct _DtbTable
 
 BbQueue alreadyCalled = bb_queue_local_decl();
 
-#define HOOK_SCHRAGE_FUNCTION(address)                                                                 \
-int OFFSET_##address = (0x##address - 0x400000);                                                      \
-int __thiscall sub_##address(DtbTable *this, DtbItem ** _out_, DWORD * seed)                          \
-{                                                                                                     \
-    int (__thiscall *hooked) (DtbTable *, DtbItem **, DWORD *) =                                      \
-        (typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) sub_##address);                \
-    BbQueue seeds = bb_queue_local_decl();                                                            \
-                                                                                                      \
-    if (!bb_queue_exists(&alreadyCalled, this)) {                                                     \
-        bb_queue_add (&alreadyCalled, this);                                                          \
-        int end = this->tableSizeMax * 2;                                                             \
-        int start = 0;                                                                                \
-        dbg("==============================");                                                        \
-        dbg ("Table = %p | Seed parameter = 0x%x | Table Size = %d", this, *seed, end);                \
-        for (DtbItem *curItem = this->table[start]; start < end ; curItem = curItem->next, start++) { \
-            if (bb_queue_exists (&seeds, curItem))                                                    \
-                break;                                                                                \
-            bb_queue_add (&seeds, curItem);                                                           \
-            dbg ("CurItem = %p | Seed = 0x%x", curItem, curItem->schrageId);                        \
-        }                                                                                             \
-        dbg("==============================");                                                        \
-    }                                                                                                 \
-    bb_queue_clear (&seeds);                                                                          \
-                                                                                                      \
-    return hooked (this, _out_, seed);                                                                \
+#define HOOK_SCHRAGE_FUNCTION(name, address)                                                                 \
+int OFFSET_##name = (address - 0x400000);                                                                    \
+int __thiscall sub_##name(DtbTable *this, DtbItem ** _out_, DWORD * seed)                                    \
+{                                                                                                            \
+    int (__thiscall *hooked) (DtbTable *, DtbItem **, DWORD *) =                                             \
+        (typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) sub_##name);                          \
+    BbQueue seeds = bb_queue_local_decl();                                                                   \
+                                                                                                             \
+    if (!bb_queue_exists(&alreadyCalled, this)) {                                                            \
+        bb_queue_add (&alreadyCalled, this);                                                                 \
+        int end = this->tableSizeMax * 2;                                                                    \
+        int start = 0;                                                                                       \
+        dbg("==============================");                                                               \
+        dbg ("Table = %p | Seed parameter = 0x%x | Table Size = %d", this, *seed, end);                      \
+        for (DtbItem *curItem = this->table[start]; start < end ; curItem = curItem->next, start++) {        \
+            if (bb_queue_exists (&seeds, curItem))                                                           \
+                break;                                                                                       \
+            bb_queue_add (&seeds, curItem);                                                                  \
+            dbg ("CurItem = %p | Seed = 0x%x", curItem, curItem->schrageId);                                 \
+        }                                                                                                    \
+        dbg("==============================");                                                               \
+    }                                                                                                        \
+    bb_queue_clear (&seeds);                                                                                 \
+                                                                                                             \
+    return hooked (this, _out_, seed);                                                                       \
 }
 
 // TODO : Redefine the list of Shrage functions
-HOOK_SCHRAGE_FUNCTION (65D540);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_1, 0x5A4F30);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_2, 0x5C42F0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_3, 0x5C43B0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_4, 0x5C5A80);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_5, 0x5C8BB0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_6, 0x62E560);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_7, 0x635B30);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_8, 0x6435C0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_9, 0x6531A0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_10, 0x711B30);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_11, 0x722010);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_12, 0x78D870);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_13, 0x79E1C0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_14, 0x84ECD0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_15, 0x84ED90);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_16, 0x87E210);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_17, 0x87E2D0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_18, 0x88D570);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_19, 0x8A0A60);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_20, 0x8F5A30);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_21, 0x8F5AF0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_22, 0x8F5BB0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_23, 0x903BF0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_24, 0x916F20);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_25, 0x916FE0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_26, 0xCE2CE0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_27, 0xCE33B0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_28, 0xD0F410);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_29, 0xD0F560);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_30, 0xD0F6B0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_31, 0xD0F770);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_32, 0xD0FF80);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_33, 0xD10040);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_34, 0xD627C0);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_35, 0x730F70);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_36, 0xD0F830);
+HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_37, 0xD0F8F0);
 
 
 
@@ -279,15 +315,49 @@ void startInjection (void)
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2,     (ULONG_PTR) logDebug_2);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,      (ULONG_PTR) ClientNet__GetPacket);
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
-
-    /*
-    #define HookEngine_hook_Shrage(address) \
-        HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##address, (ULONG_PTR) sub_##address);
-    HookEngine_hook_Shrage (65D540);
-    */
-
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaGetObject,  (ULONG_PTR) Lua__LuaGetObject);
+	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
+
+    #define HookEngine_hook_Shrage(name) \
+        HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##name, (ULONG_PTR) sub_##name);
+
+    HookEngine_hook_Shrage(DtbTable__getObject_1);
+    HookEngine_hook_Shrage(DtbTable__getObject_2);
+    HookEngine_hook_Shrage(DtbTable__getObject_3);
+    HookEngine_hook_Shrage(DtbTable__getObject_4);
+    HookEngine_hook_Shrage(DtbTable__getObject_5);
+    HookEngine_hook_Shrage(DtbTable__getObject_6);
+    HookEngine_hook_Shrage(DtbTable__getObject_7);
+    HookEngine_hook_Shrage(DtbTable__getObject_8);
+    HookEngine_hook_Shrage(DtbTable__getObject_9);
+    HookEngine_hook_Shrage(DtbTable__getObject_10);
+    HookEngine_hook_Shrage(DtbTable__getObject_11);
+    HookEngine_hook_Shrage(DtbTable__getObject_12);
+    HookEngine_hook_Shrage(DtbTable__getObject_13);
+    HookEngine_hook_Shrage(DtbTable__getObject_14);
+    HookEngine_hook_Shrage(DtbTable__getObject_15);
+    HookEngine_hook_Shrage(DtbTable__getObject_16);
+    HookEngine_hook_Shrage(DtbTable__getObject_17);
+    HookEngine_hook_Shrage(DtbTable__getObject_18);
+    HookEngine_hook_Shrage(DtbTable__getObject_19);
+    HookEngine_hook_Shrage(DtbTable__getObject_20);
+    HookEngine_hook_Shrage(DtbTable__getObject_21);
+    HookEngine_hook_Shrage(DtbTable__getObject_22);
+    HookEngine_hook_Shrage(DtbTable__getObject_23);
+    HookEngine_hook_Shrage(DtbTable__getObject_24);
+    HookEngine_hook_Shrage(DtbTable__getObject_25);
+    HookEngine_hook_Shrage(DtbTable__getObject_26);
+    HookEngine_hook_Shrage(DtbTable__getObject_27);
+    HookEngine_hook_Shrage(DtbTable__getObject_28);
+    HookEngine_hook_Shrage(DtbTable__getObject_29);
+    HookEngine_hook_Shrage(DtbTable__getObject_30);
+    HookEngine_hook_Shrage(DtbTable__getObject_31);
+    HookEngine_hook_Shrage(DtbTable__getObject_32);
+    HookEngine_hook_Shrage(DtbTable__getObject_33);
+    HookEngine_hook_Shrage(DtbTable__getObject_34);
+    HookEngine_hook_Shrage(DtbTable__getObject_35);
+    HookEngine_hook_Shrage(DtbTable__getObject_36);
+    HookEngine_hook_Shrage(DtbTable__getObject_37);
 }
 
 void endInjection (void)

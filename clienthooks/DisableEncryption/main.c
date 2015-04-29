@@ -7,7 +7,7 @@
 #include <ntdef.h>
 #include <stdio.h>
 
-#define NetEncrypt_OFFSET (0xCBDEC0 - 0x400000)
+#define NetEncrypt_OFFSET (0xCBE530 - 0x400000)
 
 DWORD
 get_pid_by_name (char *proc_name)
