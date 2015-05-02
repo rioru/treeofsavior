@@ -1,3 +1,3 @@
-start Client_tos.exe
-Sleep 1
+start Client_tos.exe -SERVICE -IN_SERVER
+timeout 5
 start DisableEncryption.exe
