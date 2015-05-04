@@ -152,6 +152,15 @@ ZoneWorker_init (
     return true;
 }
 
+zlist_t *
+ZoneWorker_getClientsInCircleArea (
+    ZoneWorker *self,
+    Session *session,
+    float x, float y, float z,
+    float range
+) {
+
+}
 
 static zframe_t *
 ZoneWorker_handlePingPacket (

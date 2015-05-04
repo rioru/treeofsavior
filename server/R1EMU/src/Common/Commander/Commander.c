@@ -65,8 +65,8 @@ CommanderInfo_createBasicCommander (
     commander->spriteRelated = 0x41000000;
     commander->unk7 = 0;
     commander->pose = 0x1eefe0a0;
-    commander->posX = 27.0;
-    commander->posY = 29.0;
+    commander->commanderPosX = 27.0;
+    commander->commanderPosY = 29.0;
     commander->unk12 = 0;
 
     // Fill with dummy stats
@@ -135,8 +135,8 @@ CommanderInfo_print (
     dbg ("maxHP = %f (%x)", commander->maxHP, commander->maxHP);
     dbg ("currentSP = %f (%x)", commander->currentSP, commander->currentSP);
     dbg ("maxSP = %f (%x)", commander->maxSP, commander->maxSP);
-    dbg ("posX = %f (%x)", commander->posX, commander->posX);
-    dbg ("posY = %f (%x)", commander->posY, commander->posY);
+    dbg ("commanderPosX = %f (%x)", commander->commanderPosX, commander->commanderPosX);
+    dbg ("commanderPosY = %f (%x)", commander->commanderPosY, commander->commanderPosY);
     dbg ("unk10 = %d (%x)", commander->unk10, commander->unk10);
     dbg ("unk11 = %d (%x)", commander->unk11, commander->unk11);
     dbg ("unk12 = %d (%x)", commander->unk12, commander->unk12);

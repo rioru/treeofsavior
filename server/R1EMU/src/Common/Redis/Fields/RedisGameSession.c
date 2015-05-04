@@ -66,7 +66,9 @@ const char *redisGameSessionsStr [] = {
 	[REDIS_GAME_SESSION_commander_currentHP] = REDIS_GAME_SESSION_commander_currentHP_str,
 	[REDIS_GAME_SESSION_commander_maxHP] = REDIS_GAME_SESSION_commander_maxHP_str,
 	[REDIS_GAME_SESSION_commander_currentSP] = REDIS_GAME_SESSION_commander_currentSP_str,
-	[REDIS_GAME_SESSION_commander_maxSP] = REDIS_GAME_SESSION_commander_maxSP_str
+	[REDIS_GAME_SESSION_commander_maxSP] = REDIS_GAME_SESSION_commander_maxSP_str,
+	[REDIS_GAME_SESSION_commander_commanderPosX] = REDIS_GAME_SESSION_commander_commanderPosX_str,
+	[REDIS_GAME_SESSION_commander_commanderPosY] = REDIS_GAME_SESSION_commander_commanderPosY_str
 };
 
 
@@ -172,8 +174,8 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_commander_maxHP_str
         " " REDIS_GAME_SESSION_commander_currentSP_str
         " " REDIS_GAME_SESSION_commander_maxSP_str
-        // [UNKNOWN] "commander.unk8 "
-        // [UNKNOWN] "commander.unk9 "
+        " " REDIS_GAME_SESSION_commander_commanderPosX_str
+        " " REDIS_GAME_SESSION_commander_commanderPosY_str
         // [UNKNOWN] "commander.unk10 "
         // [UNKNOWN] "commander.unk11 "
         // [UNKNOWN] "commander.unk12 "
@@ -262,8 +264,8 @@ Redis_getGameSession (
             gameSession->currentCommander.maxHP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxHP]->str, NULL, 16);
             gameSession->currentCommander.currentSP = strtol (reply->element[REDIS_GAME_SESSION_commander_currentSP]->str, NULL, 16);
             gameSession->currentCommander.maxSP = strtol (reply->element[REDIS_GAME_SESSION_commander_maxSP]->str, NULL, 16);
-            // [UNKNOWN] gameSession->currentCommander.unk8,
-            // [UNKNOWN] gameSession->currentCommander.unk9,
+            gameSession->currentCommander.commanderPosX = strtof (reply->element[REDIS_GAME_SESSION_commander_commanderPosX]->str, NULL);
+            gameSession->currentCommander.commanderPosY = strtof (reply->element[REDIS_GAME_SESSION_commander_commanderPosY]->str, NULL);
             // [UNKNOWN] gameSession->currentCommander.unk10,
             // [UNKNOWN] gameSession->currentCommander.unk11,
             // [UNKNOWN] gameSession->currentCommander.unk12,
@@ -337,6 +339,8 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_maxHP_str " %x"
         " " REDIS_GAME_SESSION_commander_currentSP_str " %x"
         " " REDIS_GAME_SESSION_commander_maxSP_str " %x"
+        " " REDIS_GAME_SESSION_commander_commanderPosX_str " %f"
+        " " REDIS_GAME_SESSION_commander_commanderPosY_str " %f"
         , socketSession->zoneId, socketSession->mapId, socketSession->accountId,
         socketSession->zoneId,
         (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
@@ -388,7 +392,9 @@ Redis_updateGameSession (
         gameSession->currentCommander.currentHP,
         gameSession->currentCommander.maxHP,
         gameSession->currentCommander.currentSP,
-        gameSession->currentCommander.maxSP
+        gameSession->currentCommander.maxSP,
+        gameSession->currentCommander.commanderPosX,
+        gameSession->currentCommander.commanderPosY
         // [UNKNOWN] gameSession->currentCommander.unk8,
         // [UNKNOWN] gameSession->currentCommander.unk9,
         // [UNKNOWN] gameSession->currentCommander.unk10,
@@ -417,3 +423,21 @@ Redis_updateGameSession (
 
     return true;
 }
+
+zlist_t *
+Redis_getClientsInCircleArea (
+    Redis *self,
+    Session *session,
+    float x, float y, float z,
+    float range
+) {
+    zlist_t *clients;
+
+    if (!(clients = zlist_new ())) {
+        error ("Cannot allocate a new zlist.");
+        return NULL;
+    }
+
+
+}
+

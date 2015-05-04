@@ -26,6 +26,7 @@
 #include "R1EMU.h"
 #include "Common/MySQL/MySQL.h"
 #include "Common/Redis/Redis.h"
+#include "Common/Session/Session.h"
 
 // ---------- Defines -------------
 
@@ -140,6 +141,22 @@ ZoneWorker_getBarrackSession (
     uint64_t accountId
 );
 
+
+/**
+ * @brief Return a list of clients into an area
+ * @param self An allocated ZoneWorker
+ * @param session The session of the client
+ * @param x, y, z The position of the middle of the circle
+ * @param range Radius of the circle
+ * @return a zlist_t of identity keys
+ */
+zlist_t *
+ZoneWorker_getClientsInCircleArea (
+    ZoneWorker *self,
+    Session *session,
+    float x, float y, float z,
+    float range
+);
 
 /**
  * @brief Free an allocated ZoneWorker structure and nullify the content of the pointer.
