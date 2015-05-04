@@ -378,6 +378,7 @@ ZoneServer_backend (
                 zframe_t *identity = zmsg_pop (msg);
                 size_t msgCount = zmsg_size (msg);
                 for (int i = 0; i < msgCount; i++) {
+                    // TODO : Don't allocate a new zmsg_t for every submessage ?
                     zmsg_t *subMsg = zmsg_new ();
                     zmsg_add (subMsg, zframe_dup (identity));
                     zmsg_add (subMsg, zmsg_pop (msg));
@@ -389,12 +390,20 @@ ZoneServer_backend (
 
         case ZONE_SERVER_WORKER_MULTICAST: {
             // The worker send a 'multicast' message : It is addressed to a group of destination clients.
-            // TODO
-
-
+            // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+            zframe_t *dataFrame = zmsg_pop (msg);
+            size_t identityCount = zmsg_size (msg);
+            for (size_t count = 0; count < identityCount; count++) {
+                // TODO : Don't allocate a new zmsg_t for every submessage ?
+                zmsg_t *subMsg = zmsg_new ();
+                zmsg_add (subMsg, zmsg_pop (msg));
+                zmsg_add (subMsg, zframe_dup (dataFrame));
+                zmsg_send (&subMsg, self->frontend);
+            }
+            zframe_destroy (&dataFrame);
         } break;
 
-        default :
+        default:
             warning ("Zone Server received an unknown header : %x", packetHeader);
         break;
     }
