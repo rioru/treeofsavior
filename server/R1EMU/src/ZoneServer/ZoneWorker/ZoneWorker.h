@@ -151,7 +151,7 @@ ZoneWorker_getBarrackSession (
  * @return a zlist_t of identity keys
  */
 zlist_t *
-ZoneWorker_getClientsInCircleArea (
+ZoneWorker_getClientsWithinDistance (
     ZoneWorker *self,
     Session *session,
     float x, float y, float z,

@@ -14,6 +14,7 @@
 // ---------- Includes ------------
 #include "RedisGameSession.h"
 #include "RedisSocketSession.h"
+#include "Common/utils/math.h"
 
 
 // ------ Structure declaration -------
@@ -24,6 +25,7 @@
 
 // ------ Extern variables implementation -------
 const char *redisGameSessionsStr [] = {
+	[REDIS_GAME_SESSION_socketKey] = REDIS_GAME_SESSION_socketKey_str,
 	[REDIS_GAME_SESSION_zoneId] = REDIS_GAME_SESSION_zoneId_str,
 	[REDIS_GAME_SESSION_familyName] = REDIS_GAME_SESSION_familyName_str,
 	[REDIS_GAME_SESSION_commanderName] = REDIS_GAME_SESSION_commanderName_str,
@@ -123,6 +125,7 @@ Redis_getGameSession (
 
     reply = Redis_commandDbg (self,
         "HMGET zone%x:map%x:acc%llx"
+        " " REDIS_GAME_SESSION_socketKey_str
         " " REDIS_GAME_SESSION_zoneId_str
         " " REDIS_GAME_SESSION_familyName_str
         " " REDIS_GAME_SESSION_commanderName_str
@@ -214,6 +217,7 @@ Redis_getGameSession (
             }
 
             // Write the reply to the session
+            strncpy (gameSession->socketKey, reply->element[REDIS_GAME_SESSION_socketKey]->str, sizeof (gameSession->socketKey));
             strncpy (gameSession->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_familyName]->str, sizeof (gameSession->currentCommander.familyName));
             strncpy (gameSession->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commanderName]->str, sizeof (gameSession->currentCommander.charName));
 
@@ -288,6 +292,7 @@ Redis_updateGameSession (
 
     reply = Redis_commandDbg (self,
         "HMSET zone%x:map%x:acc%llx"
+        " " REDIS_GAME_SESSION_socketKey_str " %s"
         " " REDIS_GAME_SESSION_zoneId_str " %x"
         " " REDIS_GAME_SESSION_familyName_str " %s"
         " " REDIS_GAME_SESSION_commanderName_str " %s"
@@ -342,6 +347,7 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_cPosX_str " %f"
         " " REDIS_GAME_SESSION_commander_cPosY_str " %f"
         , socketSession->zoneId, socketSession->mapId, socketSession->accountId,
+        socketSession->key,
         socketSession->zoneId,
         (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
         (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
@@ -418,24 +424,115 @@ Redis_updateGameSession (
             info ("Redis status : %s", reply->str);
         break;
 
-        default : warning ("Unexpected Redis status."); return false;
+        default : warning ("Unexpected Redis status. (%d)", reply->type); return false;
     }
 
     return true;
 }
 
 zlist_t *
-Redis_getClientsInCircleArea (
+Redis_getClientsWithinDistance (
     Redis *self,
-    Session *session,
-    float x, float y, float z,
+    uint16_t zoneId, uint16_t mapId,
+    float posX, float posY, float posZ,
     float range
 ) {
     zlist_t *clients;
+    redisReply *reply;
 
+    // TODO : Could be better. Don't allocate a new zlist everytime we call this function.
+    // Who got this list then ? The Worker?
     if (!(clients = zlist_new ())) {
         error ("Cannot allocate a new zlist.");
         return NULL;
     }
+
+    // Iterate through all the clients
+
+    // TODO : Huge optimization to do here !
+    // It iterates through all the clients of the zone server in the chosen map
+    // It could use a better clustering method, but it should be enough for the moment
+
+    // Start iterating
+    int iterator = 0;
+
+    do {
+        reply = Redis_commandDbg (self,
+            "SCAN %d MATCH zone%x:map%x:acc*",
+            iterator, zoneId, mapId
+        );
+
+        if (!reply) {
+            error ("Redis error encountered : The request is invalid.");
+            return false;
+        }
+
+        switch (reply->type) {
+            case REDIS_REPLY_ERROR:
+                error ("Redis error encountered : %s", reply->str);
+                return false;
+            break;
+
+            case REDIS_REPLY_ARRAY: {
+                // [0] = new iterator
+                iterator = strtol (reply->element[0]->str, NULL, 10);
+                // [1] = results
+                for (int i = 0; i < reply->element[1]->elements; i++) {
+                    redisReply *posReply = Redis_commandDbg (self,
+                        "HMGET %s " REDIS_GAME_SESSION_commander_cPosX_str
+                                " " REDIS_GAME_SESSION_commander_cPosY_str // Get position
+                                " " REDIS_GAME_SESSION_socketKey_str, // SocketID
+                        reply->element[1]->element[i]->str // account key
+                    );
+
+                    if (!posReply) {
+                        error ("Redis error encountered : The request is invalid.");
+                        return false;
+                    }
+
+                    switch (posReply->type) {
+
+                        case REDIS_REPLY_ERROR:
+                            error ("Redis error encountered : %s", reply->str);
+                            return false;
+                        break;
+
+                        case REDIS_REPLY_STATUS:
+                            info ("Redis status : %s", reply->str);
+                        break;
+
+                        case REDIS_REPLY_ARRAY: {
+                            if (posReply->elements != 3) {
+                                error ("Abnormal number of elements (%d, should be 3).", posReply->elements);
+                                return false;
+                            }
+
+                            // [0] = X, [1] = Y
+                            float x = strtof (posReply->element[0]->str, NULL),
+                                  y = strtof (posReply->element[1]->str, NULL);
+                            char *socketKey = posReply->element[2]->str;
+
+                            // Check range
+                            if (Math_isWithin2DManhattanDistance (x, y, posX, posY, 300.0)) {
+                                // The current client is within the area, add it to the list
+                                zlist_append (clients, strdup (socketKey));
+                            }
+                        } break;
+
+                        default : warning ("Unexpected Redis status. (%d)", reply->type); return NULL;
+                    }
+
+                    freeReplyObject (posReply);
+                }
+            } break;
+
+            default : warning ("Unexpected Redis status. (%d)", reply->type); return NULL;
+        }
+
+        freeReplyObject (reply);
+
+    } while (iterator != 0);
+
+    return clients;
 }
 

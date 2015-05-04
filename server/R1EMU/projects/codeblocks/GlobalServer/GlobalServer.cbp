@@ -89,6 +89,12 @@
 		<Unit filename="../../../src/Common/dbg/dbg.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/Common/utils/math.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/utils/utils.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../../src/GlobalServer/GlobalServer.c">
 			<Option compilerVar="CC" />
 		</Unit>

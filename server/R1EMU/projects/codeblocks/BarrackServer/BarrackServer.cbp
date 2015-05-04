@@ -98,11 +98,13 @@
 		<Unit filename="../../../src/Common/Session/Session.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/Session/Session.h" />
 		<Unit filename="../../../src/Common/Session/SocketSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/dbg/dbg.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/utils/math.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/utils/utils.c">

@@ -17,6 +17,7 @@
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"
 #include "BarrackServer/BarrackWorker/BarrackWorker.h"
+#include "Common/Redis/Fields/RedisGameSession.h"
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
@@ -297,6 +298,8 @@ BarrackHandler_commanderMove (
     zmsg_t *reply,
     void *arg
 ) {
+    // BarrackWorker * self = (BarrackWorker *) arg;
+
     #pragma pack(push, 1)
     typedef struct {
         uint8_t commanderListId;
@@ -333,6 +336,8 @@ BarrackHandler_commanderMove (
     replyPacket.accountId = session->socket.accountId;
     replyPacket.x = clientPacket->x;
     replyPacket.y = clientPacket->y;
+
+    // zlist_t * clients = Redis_getClientsWithinDistance (self->redis, session->socket.zoneId, session->socket.mapId, replyPacket.x, replyPacket.y, 0.0, 100.0);
 
     // Update session
     session->game.currentCommander.cPosX = replyPacket.x;

@@ -153,13 +153,13 @@ ZoneWorker_init (
 }
 
 zlist_t *
-ZoneWorker_getClientsInCircleArea (
+ZoneWorker_getClientsWithinDistance (
     ZoneWorker *self,
     Session *session,
     float x, float y, float z,
     float range
 ) {
-
+    return Redis_getClientsWithinDistance (self->redis, session->socket.zoneId, session->socket.mapId, x, y, z, range);
 }
 
 static zframe_t *

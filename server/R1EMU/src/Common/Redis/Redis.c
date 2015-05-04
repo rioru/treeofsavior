@@ -95,8 +95,18 @@ Redis_printElements (
     size_t nbElements,
     const char **elementsName
 ) {
+    char buffer[100];
     for (size_t i = 0; i < nbElements; i++) {
-        dbg ("[%s] = <%s>", elementsName[i], elements[i]->str);
+        char *elementName;
+
+        if (!elementsName) {
+            sprintf (buffer, "%02u", (unsigned int) i);
+            elementName = buffer;
+        } else {
+            elementName = (char *) elementsName[i];
+        }
+
+        dbg ("[%s] = <%s>", elementName, elements[i]->str);
     }
 }
 
@@ -127,7 +137,7 @@ Redis_commandDbg (
         vsnprintf (buffer, sizeof(buffer), format, args);
     va_end (args);
 
-    special ("%s", buffer);
+    // special ("%s", buffer);
     return redisCommand (self->context, buffer);
 }
 
@@ -147,7 +157,7 @@ Redis_set (
 	int curPos;
 
     // Build the Redis command
-	sprintf (self->commandBuffer, "HMSET zone%d:map%d:acc%I64u ",
+	sprintf (self->commandBuffer, "HMSET zone%x:map%x:acc%llx ",
         socketSession->zoneId, socketSession->mapId, socketSession->accountId); // Identifiers
 
     // Current position to the buffer = end of the HMSET key

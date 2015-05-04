@@ -23,6 +23,7 @@
 #include "Common/Session/Session.h"
 
 // ---------- Defines -------------
+#define REDIS_GAME_SESSION_socketKey_str "socketKey"
 #define REDIS_GAME_SESSION_zoneId_str "zoneId"
 #define REDIS_GAME_SESSION_familyName_str "familyName"
 #define REDIS_GAME_SESSION_commanderName_str "commanderName"
@@ -71,6 +72,7 @@
 #define REDIS_GAME_SESSION_commander_cPosY_str "cPosY"
 
 enum RedisGameSessionFields {
+	REDIS_GAME_SESSION_socketKey,
 	REDIS_GAME_SESSION_zoneId,
 	REDIS_GAME_SESSION_familyName,
 	REDIS_GAME_SESSION_commanderName,
@@ -170,4 +172,22 @@ Redis_updateGameSession (
     Redis *self,
     SocketSession *socketSession,
     GameSession *gameSession
+);
+
+
+/**
+ * @brief Return a list of clients into the area of a given position
+ * @param self An allocated ZoneWorker
+ * @param zoneId The zoneId of the position
+ * @param mapId The mapId of the position
+ * @param posX, posY, posZ The position
+ * @param range Radius of the circle
+ * @return a zlist_t of identity keys
+ */
+zlist_t *
+Redis_getClientsWithinDistance (
+    Redis *self,
+    uint16_t zoneId, uint16_t mapId,
+    float posX, float posY, float posZ,
+    float range
 );

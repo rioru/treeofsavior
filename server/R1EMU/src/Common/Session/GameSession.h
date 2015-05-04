@@ -35,6 +35,8 @@
  */
 struct GameSession
 {
+    uint8_t socketKey[SOCKET_SESSION_KEY_SIZE];
+
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
 
