@@ -131,6 +131,7 @@ Redis_commandDbg (
     return redisCommand (self->context, buffer);
 }
 
+/*
 bool
 Redis_set (
     Redis *self,
@@ -197,6 +198,7 @@ Redis_set (
 
 	return true;
 }
+*/
 
 void
 Redis_destroy (

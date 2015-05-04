@@ -334,10 +334,14 @@ BarrackHandler_commanderMove (
     replyPacket.x = clientPacket->x;
     replyPacket.y = clientPacket->y;
 
+    // Update session
+    session->game.currentCommander.cPosX = replyPacket.x;
+    session->game.currentCommander.cPosY = replyPacket.y;
+
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return PACKET_HANDLER_OK;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 
