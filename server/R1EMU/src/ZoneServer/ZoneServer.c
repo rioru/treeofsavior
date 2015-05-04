@@ -387,6 +387,13 @@ ZoneServer_backend (
             }
         } break;
 
+        case ZONE_SERVER_WORKER_MULTICAST: {
+            // The worker send a 'multicast' message : It is addressed to a group of destination clients.
+            // TODO
+
+
+        } break;
+
         default :
             warning ("Zone Server received an unknown header : %x", packetHeader);
         break;

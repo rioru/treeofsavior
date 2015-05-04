@@ -35,6 +35,7 @@
 typedef enum ZoneServerHeader {
     _ZONE_SERVER_WORKER_READY,            // Ready
     _ZONE_SERVER_WORKER_NORMAL,           // Normal message
+    _ZONE_SERVER_WORKER_MULTICAST,        // Multicast message
     _ZONE_SERVER_WORKER_ERROR,            // Error message received from a worker
     _ZONE_SERVER_PING,                    // Ping
     _ZONE_SERVER_PONG,                    // Pong
@@ -48,6 +49,7 @@ typedef enum ZoneServerHeader {
 typedef enum ZoneServerRecvHeader {
     DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_READY),
     DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_NORMAL),
+    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_MULTICAST),
     DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_ERROR),
     DECL_ZONE_SERVER_HEADER (ZONE_SERVER_PING),
 }   ZoneServerRecvHeader;
