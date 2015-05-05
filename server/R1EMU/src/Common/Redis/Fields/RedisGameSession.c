@@ -86,10 +86,10 @@ Redis_requestSession (
     GameSession *gameSession = &session->game;
     SocketSession *socketSession = &session->socket;
 
-    unsigned char socketKey[11];
+    unsigned char socketKey[SOCKET_SESSION_KEY_SIZE];
 
     // Generate the socketId key
-    SocketSession_genKey (socketId, socketKey, sizeof (socketKey));
+    SocketSession_genKey (socketId, socketKey);
 
     // Search for the Socket Session
     if (!Redis_getSocketSession (self, zoneId, socketKey, socketSession)) {

@@ -47,8 +47,8 @@ struct ZoneWorker
     /** The front end port of the zone server */
     int frontendPort;
 
-    /**< The session server socket connected to the frontend. */
-    zsock_t *sessionServer;
+    /** The publisher socket to send asynchronous messages to the zone server */
+    zsock_t *publisher;
 
     /** Private port with the global server */
     int globalPort;
@@ -116,18 +116,6 @@ ZoneWorker_worker (
 
 
 /**
- * @brief Request to the sessionServer to get the list of clients around the current session
- * @param arg A ZoneWorker
- * @return Always NULL
- */
-bool ZoneWorker_sendToClients (
-    ZoneWorker *self,
-    unsigned char *packet,
-    size_t packetSize,
-    zlist_t * clientsList
-);
-
-/**
  * @brief Request a session from the Barrack server
  * @param self An allocated ZoneWorker
  * @param clientIdentity The identity of the client
@@ -156,6 +144,23 @@ ZoneWorker_getClientsWithinDistance (
     Session *session,
     float x, float y, float z,
     float range
+);
+
+
+/**
+ * @brief Send the same packet to multiple clients
+ * @param self An allocated ZoneWorker
+ * @param clients A list of clients socket identity
+ * @param packet The packet to send
+ * @param packetLen the length of the packet
+ * @return true on success, false otherwise
+ */
+bool
+ZoneWorker_sendToClients (
+    ZoneWorker *self,
+    zlist_t *clients,
+    unsigned char *packet,
+    size_t packetLen
 );
 
 /**

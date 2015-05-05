@@ -30,6 +30,9 @@ struct BarrackServer
     /** Barrack server backend socket. Listens to "barrackWorkers" endpoint */
     zsock_t *backend;
 
+    /** Subscriber connection to the Barrack workers */
+    zsock_t **subscribers;
+
     /** List of workers entities */
     zlist_t *readyWorkers;
 
@@ -93,6 +96,20 @@ static int
 BarrackServer_backend (
     zloop_t *loop,
     zsock_t *backend,
+    void *self
+);
+
+/**
+ * @brief SUBSCRIBER handler of the Barrack Server
+ * @param loop The reactor handler
+ * @param subscribe The subscriber socket
+ * @param self The zoneServer
+ * @return 0 on success, -1 on error
+ */
+static int
+BarrackServer_subscribe (
+    zloop_t *loop,
+    zsock_t *subscribe,
     void *self
 );
 
@@ -236,6 +253,15 @@ BarrackServer_init (
         return false;
     }
 
+    // The barrack server talks asynchronously with the session workers with a pub/sub socket.
+    self->subscribers = calloc (1, sizeof (zsock_t *) * self->workersCount);
+    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+        if (!(self->subscribers[workerId] = zsock_new (ZMQ_SUB))) {
+            error ("Cannot allocate a Barrack Server SUBSCRIBER");
+            return false;
+        }
+    }
+
     // Allocate the workers entity list
     if (!(self->readyWorkers = zlist_new ())) {
         error ("Cannot allocate ready workers list.");
@@ -262,6 +288,55 @@ BarrackServer_init (
     return true;
 }
 
+static int
+BarrackServer_subscribe (
+    zloop_t *loop,
+    zsock_t *publisher,
+    void *_self
+) {
+    zmsg_t *msg;
+    zframe_t *header;
+    BarrackServer *self = (BarrackServer *) _self;
+
+    // Receive the message from the publisher socket
+    if (!(msg = zmsg_recv (publisher))) {
+        // Interrupt
+        return 0;
+    }
+
+    // Get the header of the message
+    if (!(header = zmsg_pop (msg))) {
+        error ("Frame header cannot be retrieved.");
+        return -1;
+    }
+
+    BarrackServerHeader packetHeader = *((BarrackServerHeader *) zframe_data (header));
+    zframe_destroy (&header);
+
+    switch (packetHeader) {
+
+        case BARRACK_SERVER_WORKER_MULTICAST: {
+            // The worker send a 'multicast' message : It is addressed to a group of destination clients.
+            // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+            zframe_t *dataFrame = zmsg_pop (msg);
+            size_t identityCount = zmsg_size (msg);
+            for (size_t count = 0; count < identityCount; count++) {
+                // TODO : Don't allocate a new zmsg_t for every submessage ?
+                zmsg_t *subMsg = zmsg_new ();
+                zmsg_add (subMsg, zmsg_pop (msg));
+                zmsg_add (subMsg, zframe_dup (dataFrame));
+                zmsg_send (&subMsg, self->frontend);
+            }
+            zframe_destroy (&dataFrame);
+        } break;
+
+        default:
+            warning ("Barrack Server subscriber received an unknown header : %x", packetHeader);
+        break;
+    }
+
+    return 0;
+}
 
 static int
 BarrackServer_backend (
@@ -347,6 +422,22 @@ BarrackServer_backend (
                 }
                 zframe_destroy (&identity);
             }
+        } break;
+
+        case BARRACK_SERVER_WORKER_MULTICAST: {
+            // The worker send a 'multicast' message : It is addressed to a group of destination clients.
+            // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+            zframe_t *dataFrame = zmsg_pop (msg);
+            size_t identityCount = zmsg_size (msg);
+            special ("count : %d", identityCount);
+            for (size_t count = 0; count < identityCount; count++) {
+                // TODO : Don't allocate a new zmsg_t for every submessage ?
+                zmsg_t *subMsg = zmsg_new ();
+                zmsg_add (subMsg, zmsg_pop (msg));
+                zmsg_add (subMsg, zframe_dup (dataFrame));
+                zmsg_send (&subMsg, self->frontend);
+            }
+            zframe_destroy (&dataFrame);
         } break;
 
         default :
@@ -450,6 +541,19 @@ BarrackServer_start (
         info ("Frontend listening on port %d.", self->publicPorts[i]);
     }
 
+    // ===================================
+    //       Initialize subscribers
+    // ===================================
+    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+        if (zsock_connect (self->subscribers[workerId], BARRACK_SERVER_SUBSCRIBER_ENDPOINT, workerId) != 0) {
+            error ("Failed to connect to the subscriber endpoint %d.", workerId);
+            return NULL;
+        }
+        info ("Subscriber connected to %s", zsys_sprintf (BARRACK_SERVER_SUBSCRIBER_ENDPOINT, workerId));
+        // Subscribe to all messages, without any filter
+        zsock_set_subscribe (self->subscribers[workerId], "");
+    }
+
     // ====================================
     //   Prepare a reactor and fire it up
     // ====================================
@@ -463,6 +567,14 @@ BarrackServer_start (
     ) {
         error ("Cannot register the sockets with the reactor.");
         return false;
+    }
+
+    // Listen to subscribers
+    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+        if (zloop_reader (reactor, self->subscribers[workerId], BarrackServer_subscribe, self) == -1) {
+            error ("Cannot register the subscribers with the reactor.");
+            return false;
+        }
     }
 
     info ("BarrackServer is ready and running.");

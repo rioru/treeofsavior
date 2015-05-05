@@ -152,6 +152,39 @@ ZoneWorker_init (
     return true;
 }
 
+bool
+ZoneWorker_sendToClients (
+    ZoneWorker *self,
+    zlist_t *clients,
+    unsigned char *packet,
+    size_t packetLen
+) {
+    zmsg_t *msg = zmsg_new ();
+
+    if (zmsg_addmem (msg, PACKET_HEADER (ZONE_SERVER_WORKER_MULTICAST), sizeof (ZONE_SERVER_WORKER_MULTICAST)) != 0
+    ||  zmsg_addmem (msg, packet, packetLen) != 0
+    ) {
+        error ("Cannot build the multicast packet.");
+        return false;
+    }
+
+    // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+    char *identityKey;
+    while ((identityKey = zlist_pop (clients)) != NULL) {
+        // Add all the clients to the packet
+        unsigned char identityBytes[5];
+        SocketSession_genId (identityKey, identityBytes);
+        zmsg_addmem (msg, identityBytes, sizeof (identityBytes));
+    }
+
+    if (zmsg_send (&msg, self->publisher) != 0) {
+        error ("Cannot send the multicast packet.");
+        return false;
+    }
+
+    return true;
+}
+
 zlist_t *
 ZoneWorker_getClientsWithinDistance (
     ZoneWorker *self,
@@ -219,10 +252,6 @@ ZoneWorker_processClientPacket (
         case PACKET_HANDLER_DELETE_SESSION:
             // TODO :
             /*
-            if (!Redis_deleteGameSession (self->sessionServer, &gameSession)) {
-                error ("Cannot delete the following session");
-                GameSession_print (&gameSession);
-            }
             */
         break;
     }
@@ -272,11 +301,15 @@ ZoneWorker_worker (
     void *arg
 ) {
     zframe_t *readyFrame;
-    zsock_t *worker, *global;
     zpoller_t *poller;
+    zsock_t *worker, *global;
     bool isRunning = true;
 
     ZoneWorker *self = (ZoneWorker *) arg;
+
+    // ============================
+    //    Initialize connections
+    // ============================
 
     // Create and connect a socket to the backend
     if (!(worker = zsock_new (ZMQ_REQ))
@@ -285,30 +318,31 @@ ZoneWorker_worker (
         error ("[%d] Zone worker ID = %d cannot connect to the backend socket.", self->serverId, self->workerId);
         return NULL;
     }
-    dbg ("Session worker ID %d connected to %s", self->workerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->serverId));
+    info ("[%d] Session worker ID %d connected to the backend %s.", self->serverId, self->workerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->serverId));
 
     // Create and listen to a socket with the global server
     if (!(global = zsock_new (ZMQ_REQ))
     ||  zsock_connect (global, ZONE_SERVER_GLOBAL_ENDPOINT, self->globalPort) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot bind to the port %d.", self->serverId, self->globalPort);
+        error ("[%d] Zone worker ID = %d cannot bind to the global port %d.", self->serverId, self->globalPort);
         return NULL;
     }
-    info ("[%d] Zone worker ID = %d connected to the private global port %d.", self->serverId, self->workerId, self->globalPort);
+    info ("[%d] Zone worker ID = %d connected to the global server %s.", self->serverId, self->workerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->serverId));
 
-    // Create and connect a socket to the session server frontend
-    if (!(self->sessionServer = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (self->sessionServer, SESSION_SERVER_FRONTEND_ENDPOINT, self->serverId) == -1
+    // Create a publisher to send asynchronous messages to the zone server
+    if (!(self->publisher = zsock_new (ZMQ_PUB))
+    ||  zsock_bind (self->publisher, ZONE_SERVER_SUBSCRIBER_ENDPOINT, self->serverId, self->workerId) == -1
     ) {
-        error ("Barrack worker ID = %d cannot connect to the Session Server.", self->workerId);
+        error ("[%d] Zone worker ID = %d cannot bind to the subscriber endpoint.", self->serverId);
         return NULL;
     }
+    info ("[%d] Session worker ID %d bind to the subscriber endpoint %s", self->serverId, self->workerId, zsys_sprintf (ZONE_SERVER_SUBSCRIBER_ENDPOINT, self->serverId, self->workerId));
 
     // Tell to the broker we're ready for work
     if (!(readyFrame = zframe_new (PACKET_HEADER (ZONE_SERVER_WORKER_READY), sizeof (ZONE_SERVER_WORKER_READY)))
     ||  zframe_send (&readyFrame, worker, 0) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot send a correct ZONE_WORKER_READY state.", self->workerId);
+        error ("[%d] Zone worker ID = %d cannot send a correct ZONE_WORKER_READY state.", self->serverId, self->workerId);
         return NULL;
     }
 
@@ -320,6 +354,7 @@ ZoneWorker_worker (
 
     dbg ("[%d] Zone worker ID %d is running and waiting for messages.", self->serverId, self->workerId);
 
+    // TODO : Refactor zpoller into zreactor ?
     while (isRunning) {
 
         zsock_t *actor = zpoller_wait (poller, -1);
@@ -350,6 +385,7 @@ ZoneWorker_worker (
 
     // Cleanup
     zsock_destroy (&worker);
+    zsock_destroy (&global);
 
     dbg ("[%d] Zone worker ID = %d exits.", self->serverId, self->workerId);
     return NULL;

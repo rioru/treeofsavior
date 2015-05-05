@@ -167,9 +167,9 @@ ZoneHandler_connect (
     // Ask for the session to the barrack server
     // Register a valid SocketSession for the BarrackServer
     unsigned char *socketId = zframe_data (zmsg_last (reply));
-    unsigned char socketKey[11];
+    unsigned char socketKey[SOCKET_SESSION_KEY_SIZE];
     // Generate the socketId key
-    SocketSession_genKey (socketId, socketKey, sizeof (socketKey));
+    SocketSession_genKey (socketId, socketKey);
     SocketSession_init (socketSession, clientPacket->accountId, BARRACK_SERVER_ZONE_ID, BARRACK_SERVER_MAP_ID, socketKey, true);
     if (!(Redis_getGameSession (self->redis, session))) {
         error ("Cannot retrieve the session from the barrack server.");

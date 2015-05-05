@@ -69,12 +69,26 @@ SocketSession_init (
 void
 SocketSession_genKey (
     unsigned char *sessionId,
-    unsigned char *sessionKey,
-    size_t sessionKeySize
+    unsigned char sessionKey[SOCKET_SESSION_KEY_SIZE]
 ) {
     // Format the session key from the sessionId
-    snprintf (sessionKey, sessionKeySize,
+    snprintf (sessionKey, SOCKET_SESSION_KEY_SIZE,
         "%02X%02X%02X%02X%02X", sessionId[0], sessionId[1], sessionId[2], sessionId[3], sessionId[4]);
+}
+
+void
+SocketSession_genId (
+    unsigned char *sessionKey,
+    unsigned char sessionId[5]
+) {
+    uint64_t identity = strtoll (sessionKey, NULL, 16);
+    // Format the sessionId from the session key
+    // Swap the bytes
+    sessionId[0] = (identity >> 32) & 0xFF;
+    sessionId[1] = (identity >> 24) & 0xFF;
+    sessionId[2] = (identity >> 16) & 0xFF;
+    sessionId[3] = (identity >>  8) & 0xFF;
+    sessionId[4] =  identity        & 0xFF;
 }
 
 void

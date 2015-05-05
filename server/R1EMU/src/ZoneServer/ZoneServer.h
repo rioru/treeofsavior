@@ -23,6 +23,7 @@
 #define ZONE_SERVER_FRONTEND_ENDPOINT           "tcp://%s:%d"
 #define ZONE_SERVER_GLOBAL_ENDPOINT             "tcp://127.0.0.1:%d"
 #define ZONE_SERVER_BACKEND_ENDPOINT            "inproc://zoneServerWorkersBackend-%d"
+#define ZONE_SERVER_SUBSCRIBER_ENDPOINT         "inproc://zoneServerWorkersSubscriber-%d-%d"
 #define ZONE_SERVER_EXECUTABLE_NAME             "ZoneServer"
 
 // Configuration default values

@@ -217,21 +217,31 @@ BarrackWorker_worker (
     void *arg
 ) {
     zmsg_t *msg;
+    zsock_t *worker;
     zframe_t *readyFrame;
 
-    BarrackWorker * self = (BarrackWorker *) arg;
+    BarrackWorker *self = (BarrackWorker *) arg;
 
     // Create and connect a socket to the backend
-    if (!(self->worker = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (self->worker, BARRACK_SERVER_BACKEND_ENDPOINT) == -1
+    if (!(worker = zsock_new (ZMQ_REQ))
+    ||  zsock_connect (worker, BARRACK_SERVER_BACKEND_ENDPOINT) == -1
     ) {
         error ("Barrack worker ID = %d cannot connect to the backend socket.", self->workerId);
         return NULL;
     }
 
+    // Create a publisher to send asynchronous messages to the barrack server
+    if (!(self->publisher = zsock_new (ZMQ_PUB))
+    ||  zsock_bind (self->publisher, BARRACK_SERVER_SUBSCRIBER_ENDPOINT, self->workerId) == -1
+    ) {
+        error ("Barrack worker ID = %d cannot bind to the subscriber endpoint.", self->workerId);
+        return NULL;
+    }
+    info ("Barrack worker ID %d bind to the subscriber endpoint %s", self->workerId, zsys_sprintf (BARRACK_SERVER_SUBSCRIBER_ENDPOINT, self->workerId));
+
     // Tell to the broker we're ready for work
     if (!(readyFrame = zframe_new (PACKET_HEADER (BARRACK_SERVER_WORKER_READY), sizeof (BARRACK_SERVER_WORKER_READY)))
-    ||  zframe_send (&readyFrame, self->worker, 0) == -1
+    ||  zframe_send (&readyFrame, worker, 0) == -1
     ) {
         error ("Barrack worker ID = %d cannot send a correct BARRACK_SERVER_WORKER_READY state.", self->workerId);
         return NULL;
@@ -242,7 +252,7 @@ BarrackWorker_worker (
     while (true)
     {
         // Process messages as they arrive
-        if (!(msg = zmsg_recv (self->worker))) {
+        if (!(msg = zmsg_recv (worker))) {
             dbg ("Barrack worker ID %d stops working.", self->workerId);
             break; // Interrupted
         }
@@ -272,18 +282,51 @@ BarrackWorker_worker (
         }
 
         // Reply back to the sender
-        if (zmsg_send (&msg, self->worker) != 0) {
+        if (zmsg_send (&msg, worker) != 0) {
             warning ("Barrack worker ID %d failed to send a message.", self->workerId);
         }
     }
 
     // Cleanup
-    zsock_destroy (&self->worker);
+    zsock_destroy (&worker);
 
     dbg ("Barrack worker ID %d exits.", self->workerId);
     return NULL;
 }
 
+
+bool
+BarrackWorker_sendToClients (
+    BarrackWorker *self,
+    zlist_t *clients,
+    unsigned char *packet,
+    size_t packetLen
+) {
+    zmsg_t *msg = zmsg_new ();
+
+    if (zmsg_addmem (msg, PACKET_HEADER (BARRACK_SERVER_WORKER_MULTICAST), sizeof (BARRACK_SERVER_WORKER_MULTICAST)) != 0
+    ||  zmsg_addmem (msg, packet, packetLen) != 0
+    ) {
+        error ("Cannot build the multicast packet.");
+        return false;
+    }
+
+    // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+    char *identityKey;
+    while ((identityKey = zlist_pop (clients)) != NULL) {
+        // Add all the clients to the packet
+        unsigned char identityBytes[5];
+        SocketSession_genId (identityKey, identityBytes);
+        zmsg_addmem (msg, identityBytes, sizeof (identityBytes));
+    }
+
+    if (zmsg_send (&msg, self->publisher) != 0) {
+        error ("Cannot send the multicast packet.");
+        return false;
+    }
+
+    return true;
+}
 
 void
 BarrackWorker_destroy (

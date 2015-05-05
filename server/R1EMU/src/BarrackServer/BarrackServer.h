@@ -24,6 +24,7 @@
 // ---------- Defines -------------
 #define BARRACK_SERVER_FRONTEND_ENDPOINT        "tcp://%s:%d"
 #define BARRACK_SERVER_BACKEND_ENDPOINT         "inproc://barrackServerWorkersBackend"
+#define BARRACK_SERVER_SUBSCRIBER_ENDPOINT      "inproc://barrackServerWorkersSubscriber-%d"
 #define BARRACK_SERVER_ZONE_ID                  0
 #define BARRACK_SERVER_MAP_ID                   -1
 
@@ -38,6 +39,7 @@
 typedef enum BarrackServerHeader {
     _BARRACK_SERVER_WORKER_READY,            // Ready
     _BARRACK_SERVER_WORKER_NORMAL,           // Normal message
+    _BARRACK_SERVER_WORKER_MULTICAST,        // Normal message
     _BARRACK_SERVER_WORKER_ERROR,            // Error message received from a worker
     _BARRACK_SERVER_PING,                    // Ping
     _BARRACK_SERVER_PONG,                    // Pong
@@ -53,6 +55,7 @@ typedef enum BarrackServerRecvHeader {
     DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_READY),
     DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_ERROR),
     DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_NORMAL),
+    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_MULTICAST),
 }   BarrackServerRecvHeader;
 
 /** Enumeration of all the packets header that the barrack server sends */

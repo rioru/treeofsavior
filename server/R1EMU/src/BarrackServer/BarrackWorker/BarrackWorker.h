@@ -41,7 +41,7 @@ typedef struct BarrackWorker
     int workerId;
 
     /** The worker socket connected to the backend. */
-    zsock_t *worker;
+    zsock_t *publisher;
 
     /** Seed for the random generator */
     uint32_t seed;
@@ -99,6 +99,14 @@ BarrackWorker_worker (
     void *args
 );
 
+
+bool
+BarrackWorker_sendToClients (
+    BarrackWorker *self,
+    zlist_t *clients,
+    unsigned char *packet,
+    size_t packetLen
+);
 
 /**
  * @brief Free an allocated BarrackWorker structure and nullify the content of the pointer.

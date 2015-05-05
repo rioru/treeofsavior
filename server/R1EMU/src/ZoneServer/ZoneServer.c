@@ -36,6 +36,9 @@ struct ZoneServer
     /** Zone server backend socket. */
     zsock_t *backend;
 
+    /** Subscriber connection to the Zone workers */
+    zsock_t **subscribers;
+
     /** List of workers entities */
     zlist_t *readyWorkers;
 
@@ -102,6 +105,20 @@ ZoneServer_backend (
     void *self
 );
 
+/**
+ * @brief SUBSCRIBER handler of the Zone Server
+ * @param loop The reactor handler
+ * @param subscribe The subscriber socket
+ * @param self The zoneServer
+ * @return 0 on success, -1 on error
+ */
+static int
+ZoneServer_subscribe (
+    zloop_t *loop,
+    zsock_t *subscribe,
+    void *self
+);
+
 
 // ------ Extern function implementation ------
 
@@ -163,6 +180,15 @@ ZoneServer_init (
     if (!(self->backend = zsock_new (ZMQ_ROUTER))) {
         error ("Cannot allocate Zone Server ROUTER backend");
         return false;
+    }
+
+    // The zone server talks asynchronously with the session workers with a pub/sub socket.
+    self->subscribers = calloc (1, sizeof (zsock_t *) * self->workersCount);
+    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+        if (!(self->subscribers[workerId] = zsock_new (ZMQ_SUB))) {
+            error ("Cannot allocate a Barrack Server SUBSCRIBER");
+            return false;
+        }
     }
 
     // Allocate the workers entity list
@@ -302,6 +328,56 @@ ZoneServer_launchZoneServer (
 }
 
 static int
+ZoneServer_subscribe (
+    zloop_t *loop,
+    zsock_t *subscribe,
+    void *_self
+) {
+    zmsg_t *msg;
+    zframe_t *header;
+    ZoneServer *self = (ZoneServer *) _self;
+
+    // Receive the message from the subscriber socket
+    if (!(msg = zmsg_recv (subscribe))) {
+        // Interrupt
+        return 0;
+    }
+
+    // Get the header of the message
+    if (!(header = zmsg_pop (msg))) {
+        error ("Frame header cannot be retrieved.");
+        return -1;
+    }
+
+    ZoneServerHeader packetHeader = *((ZoneServerHeader *) zframe_data (header));
+    zframe_destroy (&header);
+
+    switch (packetHeader) {
+
+        case ZONE_SERVER_WORKER_MULTICAST: {
+            // The worker send a 'multicast' message : It is addressed to a group of destination clients.
+            // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+            zframe_t *dataFrame = zmsg_pop (msg);
+            size_t identityCount = zmsg_size (msg);
+            for (size_t count = 0; count < identityCount; count++) {
+                // TODO : Don't allocate a new zmsg_t for every submessage ?
+                zmsg_t *subMsg = zmsg_new ();
+                zmsg_add (subMsg, zmsg_pop (msg));
+                zmsg_add (subMsg, zframe_dup (dataFrame));
+                zmsg_send (&subMsg, self->frontend);
+            }
+            zframe_destroy (&dataFrame);
+        } break;
+
+        default:
+            warning ("Zone Server subscriber received an unknown header : %x", packetHeader);
+        break;
+    }
+
+    return 0;
+}
+
+static int
 ZoneServer_backend (
     zloop_t *loop,
     zsock_t *backend,
@@ -386,21 +462,6 @@ ZoneServer_backend (
                 }
                 zframe_destroy (&identity);
             }
-        } break;
-
-        case ZONE_SERVER_WORKER_MULTICAST: {
-            // The worker send a 'multicast' message : It is addressed to a group of destination clients.
-            // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
-            zframe_t *dataFrame = zmsg_pop (msg);
-            size_t identityCount = zmsg_size (msg);
-            for (size_t count = 0; count < identityCount; count++) {
-                // TODO : Don't allocate a new zmsg_t for every submessage ?
-                zmsg_t *subMsg = zmsg_new ();
-                zmsg_add (subMsg, zmsg_pop (msg));
-                zmsg_add (subMsg, zframe_dup (dataFrame));
-                zmsg_send (&subMsg, self->frontend);
-            }
-            zframe_destroy (&dataFrame);
         } break;
 
         default:
@@ -503,6 +564,19 @@ ZoneServer_start (
     info ("[%d] Frontend listening on port %d.", self->zoneServerId, self->frontendPort);
 
 
+    // ===================================
+    //       Initialize subscriber
+    // ===================================
+    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+        if (zsock_connect (self->subscribers[workerId], ZONE_SERVER_SUBSCRIBER_ENDPOINT, self->zoneServerId, workerId) != 0) {
+            error ("Failed to connect to the subscriber endpoint %d.", workerId);
+            return NULL;
+        }
+        info ("Subscriber connected to %s", zsys_sprintf (ZONE_SERVER_SUBSCRIBER_ENDPOINT, self->zoneServerId, workerId));
+        // Subscribe to all messages, without any filter
+        zsock_set_subscribe (self->subscribers[workerId], "");
+    }
+
     // ====================================
     //   Prepare a reactor and fire it up
     // ====================================
@@ -512,11 +586,19 @@ ZoneServer_start (
         return NULL;
     }
 
-    if (zloop_reader (reactor, self->backend,  ZoneServer_backend,  self) == -1
-    ||  zloop_reader (reactor, self->frontend, ZoneServer_frontend, self) == -1
+    if (zloop_reader (reactor, self->backend,    ZoneServer_backend,   self) == -1
+    ||  zloop_reader (reactor, self->frontend,   ZoneServer_frontend,  self) == -1
     ) {
         error ("Cannot register the sockets with the reactor.");
         return NULL;
+    }
+
+    // Listen to subscribers
+    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+        if (zloop_reader (reactor, self->subscribers[workerId], ZoneServer_subscribe, self) == -1) {
+            error ("Cannot register the subscribers with the reactor.");
+            return false;
+        }
     }
 
     info ("[%d] ZoneServer is ready and running.", self->zoneServerId);

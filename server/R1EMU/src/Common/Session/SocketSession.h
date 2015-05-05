@@ -83,14 +83,25 @@ SocketSession_init (
  * @brief Format a session key from the session id
  * @param sessionId The sessionId of the session requested
  * @param[out] sessionKey The sessionKey generated
- * @param sessionKeySize The sessionKey size
  * @return
  */
 void
 SocketSession_genKey (
     unsigned char *sessionId,
+    unsigned char sessionKey[SOCKET_SESSION_KEY_SIZE]
+);
+
+
+/**
+ * @brief Format a session id from the session key
+ * @param sessionKey The sessionKey of the session requested
+ * @param[out] sessionId The sessionId generated
+ * @return
+ */
+void
+SocketSession_genId (
     unsigned char *sessionKey,
-    size_t sessionKeySize
+    unsigned char sessionId[5]
 );
 
 /**
