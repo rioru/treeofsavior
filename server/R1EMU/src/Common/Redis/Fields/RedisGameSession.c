@@ -457,6 +457,7 @@ Redis_getClientsWithinDistance (
     int iterator = 0;
 
     do {
+        // Get all the accounts within the same area
         reply = Redis_commandDbg (self,
             "SCAN %d MATCH zone%x:map%x:acc*",
             iterator, zoneId, mapId
@@ -478,10 +479,11 @@ Redis_getClientsWithinDistance (
                 iterator = strtol (reply->element[0]->str, NULL, 10);
                 // [1] = results
                 for (int i = 0; i < reply->element[1]->elements; i++) {
+                    // Get the position of all accounts in the map
                     redisReply *posReply = Redis_commandDbg (self,
                         "HMGET %s " REDIS_GAME_SESSION_commander_cPosX_str
                                 " " REDIS_GAME_SESSION_commander_cPosY_str // Get position
-                                " " REDIS_GAME_SESSION_socketKey_str, // SocketID
+                                " " REDIS_GAME_SESSION_socketKey_str, // SocketKey
                         reply->element[1]->element[i]->str // account key
                     );
 
@@ -507,12 +509,12 @@ Redis_getClientsWithinDistance (
                                 return false;
                             }
 
-                            // [0] = X, [1] = Y
+                            // [0] = X, [1] = Y, [2] = socketKey
                             float x = strtof (posReply->element[0]->str, NULL),
                                   y = strtof (posReply->element[1]->str, NULL);
                             char *socketKey = posReply->element[2]->str;
 
-                            // Check range
+                            // Check range here
                             if (Math_isWithin2DManhattanDistance (x, y, posX, posY, 300.0)) {
                                 // The current client is within the area, add it to the list
                                 zlist_append (clients, strdup (socketKey));
