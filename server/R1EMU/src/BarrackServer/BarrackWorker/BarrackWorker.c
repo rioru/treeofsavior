@@ -16,6 +16,7 @@
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
+#include "Common/utils/random.h"
 
 
 // ------ Structure declaration -------

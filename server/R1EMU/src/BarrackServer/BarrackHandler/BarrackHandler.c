@@ -13,6 +13,7 @@
 
 // ---------- Includes ------------
 #include "BarrackHandler.h"
+#include "Common/utils/random.h"
 #include "Common/Packet/Packet.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"

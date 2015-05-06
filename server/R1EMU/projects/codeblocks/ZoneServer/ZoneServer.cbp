@@ -95,10 +95,10 @@
 		<Unit filename="../../../src/Common/utils/math.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/Common/utils/utils.c">
+		<Unit filename="../../../src/Common/utils/random.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="../../../src/R1EMU.c">
+		<Unit filename="../../../src/Common/utils/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">

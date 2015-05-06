@@ -92,6 +92,9 @@
 		<Unit filename="../../../src/Common/utils/math.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/Common/utils/random.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="../../../src/Common/utils/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -99,9 +102,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/GlobalServer/main.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/R1EMU.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
