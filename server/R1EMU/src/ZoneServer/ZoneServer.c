@@ -18,7 +18,6 @@
 // ---------- Includes ------------
 #include "ZoneServer.h"
 #include "ZoneWorker/ZoneWorker.h"
-#include "SessionServer/SessionServer.h"
 
 
 // ------ Structure declaration -------

@@ -21,7 +21,6 @@
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Session/SocketSession.h"
-#include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
 

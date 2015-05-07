@@ -17,7 +17,6 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
 #define ZONE_SERVER_FRONTEND_ENDPOINT           "tcp://%s:%d"

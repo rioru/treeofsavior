@@ -19,7 +19,6 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "SessionServer/SessionServer.h"
 
 // ---------- Defines -------------
 #define BARRACK_SERVER_FRONTEND_ENDPOINT        "tcp://%s:%d"
