@@ -17,37 +17,108 @@
 
 // ---------- Includes ------------
 #include "ZoneServer/ZoneServer.h"
+#include "BarrackServer/BarrackServer.h"
+#include "Common/Server/ServerFactory.h"
 
 int main (int argc, char **argv)
 {
-    ZoneServer *ZoneServer;
+    ZoneServer *zoneServer;
+    BarrackServer *barrackServer;
 
-    if (argc < 5) {
-        error ("Wrong command line.");
-        info ("Usage : ZoneServer <zoneServerId> <serverIP> <frontendPort> <workersCount> <privateGlobalPort> <configFile>");
-        return 0;
+    int curArg = 1;
+
+    // === Read the command line arguments ===
+    int routerId = atoi (argv[curArg++]);
+    char *routerIp = argv[curArg++];
+    int portsCount = atoi (argv[curArg++]);
+    int *ports;
+    if (!(ports = malloc (sizeof (int) * portsCount))) {
+        error ("Cannot allocate the port array.");
+        return -1;
+    }
+    for (int i = 0; i < portsCount; i++) {
+        ports[i] = atoi (argv[curArg++]);
+    }
+    int workersCount = atoi (argv[curArg++]);
+    char *globalServerIp = argv[curArg++];
+    int globalServerPort = atoi (argv[curArg++]);
+    char *sqlHostname = argv[curArg++];
+    char *sqlUsername = argv[curArg++];
+    char *sqlPassword = argv[curArg++];
+    char *sqlDatabase = argv[curArg++];
+    char *redisHostname = argv[curArg++];
+    int redisPort = atoi(argv[curArg++]);
+
+    special ("Parameters received : ");
+    special ("routerId = %d", routerId);
+    special ("routerIp = %s", routerIp);
+    special ("portsCount = %d", portsCount);
+    special ("workersCount = %d", workersCount);
+    special ("globalServerIp = %s", globalServerIp);
+    special ("globalServerPort = %d", globalServerPort);
+    special ("sqlHostname = %s", sqlHostname);
+    special ("sqlUsername = %s", sqlUsername);
+    special ("sqlPassword = %s", sqlPassword);
+    special ("sqlDatabase = %s", sqlDatabase);
+    special ("redisHostname = %s", redisHostname);
+    special ("redisPort = %d", redisPort);
+
+
+    // === Build the Server ===
+    Server *server;
+    if (!(server = ServerFactory_createServer (
+        routerId, routerIp,
+        portsCount, ports,
+        workersCount,
+        globalServerIp, globalServerPort,
+        sqlHostname, sqlUsername, sqlPassword, sqlDatabase,
+        redisHostname, redisPort
+    ))) {
+        error ("Cannot create a Server.");
+        return -1;
     }
 
-    int zoneServerId = atoi (argv[1]);
-    char *serverIp = argv[2];
-    int frontendPort = atoi (argv[3]);
-    int workersCount = atoi (argv[4]);
-    int privateGlobalPort = atoi (argv[5]);
-    char *confFilePath = argv[6];
+    // Initialize the Server
+    if (routerId == BARRACK_SERVER_ROUTER_ID)
+    {
+        special ("======================");
+        special ("=== Barrack server ===");
+        special ("======================");
+        // Initialize the Barrack Server
+        if ((barrackServer = BarrackServer_new (server))) {
 
-    // Initialize the Zone Server
-    if ((ZoneServer = ZoneServer_new (zoneServerId, serverIp, frontendPort, workersCount, privateGlobalPort, confFilePath))) {
+            // Start the Barrack Server
+            if (!BarrackServer_start (barrackServer)) {
+                error ("Cannot start the BarrackServer properly.");
+            }
 
-        // Start the Zone Server
-        if (!ZoneServer_start (ZoneServer)) {
-            error ("Cannot start the Zone Server properly.");
+            // Unload the Barrack Server properly
+            BarrackServer_destroy (&barrackServer);
         }
-
-        // Unload the Zone Server properly
-        ZoneServer_destroy (&ZoneServer);
+        else {
+            error ("Cannot initialize the BarrackServer properly.");
+        }
     }
-    else {
-        error ("Cannot initialize the Zone Server properly.");
+
+    else
+    {
+        special ("=====================");
+        special ("=== Zone server %d ===", routerId);
+        special ("=====================");
+        // Initialize the Zone Server
+        if ((zoneServer = ZoneServer_new (server))) {
+
+            // Start the Zone Server
+            if (!ZoneServer_start (zoneServer)) {
+                error ("Cannot start the Zone Server properly.");
+            }
+
+            // Unload the Zone Server properly
+            ZoneServer_destroy (&zoneServer);
+        }
+        else {
+            error ("Cannot initialize the Zone Server properly.");
+        }
     }
 
     // Shutdown the CZMQ layer properly

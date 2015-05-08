@@ -24,60 +24,72 @@
 #include "Common/Session/GameSession.h"
 
 // ---------- Defines -------------
-#define REDIS_COMMAND_BUFFER_SIZE 1024*100
 #define REDIS_EMPTY_STRING (unsigned char *) "__EMPTY_STRING__"
 
 #define REDIS_HOSTNAME_DEFAULT   (char []) {"localhost"}
-#define REDIS_PORT_DEFAULT       (char []) {"6379"}
+#define REDIS_PORT_DEFAULT       6379
 
 // ------ Structure declaration -------
 typedef struct Redis Redis;
 
-typedef struct RedisInfo
+typedef struct RedisStartupInfo
 {
     char *hostname;
-    char *port;
+    int port;
 
-}   RedisInfo;
+}   RedisStartupInfo;
 
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new Redis structure.
- * @param ip The IP address of the Redis server
- * @param port The port of the Redis server
+ * @param redisInfo The information about the Redis database connection to etablish
  * @return A pointer to an allocated Redis.
  */
 Redis *
 Redis_new (
-    void
+    RedisStartupInfo *info
 );
 
 
 /**
  * @brief Initialize an allocated Redis structure.
  * @param self An allocated Redis to initialize.
- * @param ip The IP address of the Redis server
- * @param port The port of the Redis server
+ * @param redisInfo The information about the Redis database connection to etablish
  * @return true on success, false otherwise.
  */
 bool
 Redis_init (
-    Redis *self
+    Redis *self,
+    RedisStartupInfo *info
+);
+
+
+/**
+ * @brief Initialize an allocated RedisStartupInfo structure.
+ * @param self An allocated RedisStartupInfo to initialize.
+ * @param hostname The IP address of the Redis server
+ * @param port The port of the Redis server
+ * @return true on success, false otherwise.
+ */
+bool
+RedisStartupInfo_init (
+    RedisStartupInfo *self,
+    char *ip,
+    int port
 );
 
 
 /**
  * @brief : Connect to the Redis database
  * @param self An allocated Redis instance
- * @param redisInfo The information about the Redis database connection to etablish
  * @return true on success, false otherwise
  */
 bool
 Redis_connect (
-    Redis *self,
-    RedisInfo *redisInfo
+    Redis *self
 );
+
 
 
 /**

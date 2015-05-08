@@ -22,8 +22,9 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-#define GLOBAL_SERVER_CLI_ENDPOINT        "tcp://127.0.0.1:%d"
-#define GLOBAL_SERVER_ZONES_ENDPOINT      "tcp://127.0.0.1:%d"
+#define GLOBAL_SERVER_CLI_ENDPOINT        "tcp://%s:%d"
+#define GLOBAL_SERVER_ZONES_ENDPOINT      "tcp://%s:*"
+#define GLOBAL_SERVER_CLI_IP_DEFAULT      "127.0.0.1"
 
 // Configuration default values
 #define GLOBAL_SERVER_CLI_PORT_DEFAULT         2003

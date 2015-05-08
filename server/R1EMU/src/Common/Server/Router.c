@@ -45,33 +45,9 @@ struct Router
     /** Index of the worker in the worker array that is going to take the charge if there is an overload */
     int overloadWorker;
 
-    /** Server ID */
-    uint16_t serverId;
-
-    /** The IP of the Router */
-    char *ip;
-
-    /** Public ports exposed to the clients */
-    int *ports;
-
-    /** Ports count */
-    int portsCount;
-
-    /** Number of workers linked to the Router */
-    int workersCount;
-
-    /** The IP of the global server */
-    char *globalServerIp;
-
-    /** The private port exposed to the global server */
-    int globalServerPort;
-
-    // === Database ===
-    /** The information about the SQL Database */
-    MySQLInfo *sqlInfo;
-
-    /** The information about the Redis Database */
-    RedisInfo *redisInfo;
+    // === Startup information ===
+    /** Router information */
+    RouterStartupInfo info;
 
     // === Handlers ===
     /** Array of packet handlers */
@@ -146,19 +122,14 @@ Router_initBackend (
     Router *self
 );
 
+
+
+
 // ------ Extern function implementation ------
 
 Router *
 Router_new (
-    uint16_t serverId,
-    char *ip,
-    int *ports,
-    int portsCount,
-    int workersCount,
-    char *globalServerIp,
-    int globalServerPort,
-    MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo
+    RouterStartupInfo *info
 ) {
     Router *self;
 
@@ -166,7 +137,7 @@ Router_new (
         return NULL;
     }
 
-    if (!Router_init (self, serverId, ip, ports, portsCount, workersCount, globalServerIp, globalServerPort, sqlInfo, redisInfo)) {
+    if (!Router_init (self, info)) {
         Router_destroy (&self);
         error ("Router failed to initialize.");
         return NULL;
@@ -175,38 +146,20 @@ Router_new (
     return self;
 }
 
-
 bool
 Router_init (
     Router *self,
-    uint16_t serverId,
-    char *ip,
-    int *ports,
-    int portsCount,
-    int workersCount,
-    char *globalServerIp,
-    int globalServerPort,
-    MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo
+    RouterStartupInfo *info
 ) {
-    // ==========================
-    //   Initialize structure
-    // ==========================
-    self->serverId = serverId;
-    self->ip = ip;
-    self->ports = ports;
-    self->portsCount = portsCount;
-    self->workersCount = workersCount;
-    self->globalServerIp = globalServerIp;
-    self->globalServerPort = globalServerPort;
-    self->sqlInfo = sqlInfo;
-    self->redisInfo = redisInfo;
+    // Get a private copy of the Router Information
+    memcpy (&self->info, info, sizeof (self->info));
 
-    // The workers will send a READY signal in the backend
+    // No Worker is ready at the startup
     self->workersReadyCount = 0;
 
-    // By default, the first worker is going to take the charge
+    // By default, the workerID = 0 is going to take the charge when the Router is overloaded.
     self->overloadWorker = 0;
+
 
     // ==========================
     //   Allocate ZMQ objects
@@ -225,8 +178,8 @@ Router_init (
     }
 
     // The Router can communicate asynchronously with the workers with a pub/sub socket.
-    self->subscribers = calloc (1, sizeof (zsock_t *) * self->workersCount);
-    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+    self->subscribers = calloc (1, sizeof (zsock_t *) * self->info.workersCount);
+    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
         if (!(self->subscribers[workerId] = zsock_new (ZMQ_SUB))) {
             error ("Cannot allocate a Barrack Server SUBSCRIBER");
             return false;
@@ -240,10 +193,28 @@ Router_init (
     }
 
     // Allocate the workers array
-    if ((self->workers = malloc (sizeof (zframe_t *) * self->workersCount)) == NULL) {
+    if ((self->workers = malloc (sizeof (zframe_t *) * self->info.workersCount)) == NULL) {
         error ("Cannot allocate the workers array.");
         return false;
     }
+
+    return true;
+}
+
+bool
+RouterStartupInfo_init (
+    RouterStartupInfo *self,
+    uint16_t routerId,
+    char *ip,
+    int *ports,
+    int portsCount,
+    int workersCount
+) {
+    self->routerId = routerId;
+    self->ip = ip;
+    self->ports = ports;
+    self->portsCount = portsCount;
+    self->workersCount = workersCount;
 
     return true;
 }
@@ -346,7 +317,7 @@ Router_backend (
             self->workers [self->workersReadyCount++] = zframe_dup (workerIdentity);
             zmsg_destroy (&msg);
 
-            if (self->workersReadyCount == self->workersCount) {
+            if (self->workersReadyCount == self->info.workersCount) {
                 // All the workers are ready. Open the frontend to the outside world !
                 if (!(Router_initFrontend (self))) {
                     error ("Cannot initialize the frontend.");
@@ -418,9 +389,10 @@ Router_frontend (
         }
 
         workerIdentity = zframe_dup (self->workers[self->overloadWorker]);
+
+        // We don't want only one Worker takes the overload charge, do a round robin here too
         self->overloadWorker = (self->overloadWorker + 1) % self->workersReadyCount;
     }
-
 
     // Wrap the worker's identity which receives the message
     zmsg_wrap (msg, workerIdentity);
@@ -443,12 +415,12 @@ Router_initFrontend (
     // ===================================
 
     // Bind the endpoints for the ROUTER frontend
-    for (int i = 0; i < self->portsCount; i++) {
-        if (zsock_bind (self->frontend, ROUTER_FRONTEND_ENDPOINT, self->ip, self->ports[i]) == -1) {
-            error ("Failed to bind Barrack Server frontend to the endpoint : %s:%d.", self->ip, self->ports[i]);
+    for (int i = 0; i < self->info.portsCount; i++) {
+        if (zsock_bind (self->frontend, ROUTER_FRONTEND_ENDPOINT, self->info.ip, self->info.ports[i]) == -1) {
+            error ("Failed to bind Barrack Server frontend to the endpoint : %s:%d.", self->info.ip, self->info.ports[i]);
             return false;
         }
-        info ("Frontend listening on port %d.", self->ports[i]);
+        info ("Frontend listening on port %d.", self->info.ports[i]);
     }
 
     return true;
@@ -458,38 +430,15 @@ static bool
 Router_initBackend (
     Router *self
 ) {
-    Worker *worker;
-
     // ===================================
     //       Initialize backend
     // ===================================
     // Create and connect a socket to the backend
-    if (zsock_bind (self->backend, ROUTER_BACKEND_ENDPOINT, self->serverId) == -1) {
+    if (zsock_bind (self->backend, ROUTER_BACKEND_ENDPOINT, self->info.routerId) == -1) {
         error ("Failed to bind Barrack Server ROUTER backend.");
         return false;
     }
-    info ("Backend listening on %s.", zsys_sprintf (ROUTER_BACKEND_ENDPOINT, self->serverId));
-
-    // Initialize workers - Start N worker threads.
-    for (uint16_t workerId = 0; workerId < self->workersCount; workerId++)
-    {
-        // Allocate a new worker
-        if (!(worker = Worker_new (
-                workerId, self->serverId,
-                self->globalServerIp, self->globalServerPort,
-                self->sqlInfo, self->redisInfo,
-                self->packetHandlers, self->packetHandlersCount)
-        )) {
-            error ("Cannot allocate a new worker");
-            return false;
-        }
-
-        // Start a thread for the worker
-        if (zthread_new (Worker_worker, worker) != 0) {
-            error ("Cannot create Barrack Server worker thread ID %d.", workerId);
-            return false;
-        }
-    }
+    info ("Backend listening on %s.", zsys_sprintf (ROUTER_BACKEND_ENDPOINT, self->info.routerId));
 
     return true;
 }
@@ -502,12 +451,12 @@ Router_initSubscribers (
     // ===================================
     //       Initialize subscribers
     // ===================================
-    for (int workerId = 0; workerId < self->workersCount; workerId++) {
-        if (zsock_connect (self->subscribers[workerId], ROUTER_SUBSCRIBER_ENDPOINT, self->serverId, workerId) != 0) {
+    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
+        if (zsock_connect (self->subscribers[workerId], ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId) != 0) {
             error ("Failed to connect to the subscriber endpoint %d.", workerId);
             return false;
         }
-        info ("Subscriber connected to %s", zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->serverId, workerId));
+        info ("Subscriber connected to %s", zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId));
         // Subscribe to all messages, without any filter
         zsock_set_subscribe (self->subscribers[workerId], "");
     }
@@ -550,7 +499,7 @@ Router_start (
     }
 
     // Attach a callback to subscribers sockets
-    for (int workerId = 0; workerId < self->workersCount; workerId++) {
+    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
         if (zloop_reader (reactor, self->subscribers[workerId], Router_subscribe, self) == -1) {
             error ("Cannot register the subscribers with the reactor.");
             return false;
@@ -566,6 +515,13 @@ Router_start (
     zloop_destroy (&reactor);
 
     return true;
+}
+
+int
+Router_getId (
+    Router *self
+) {
+    return self->info.routerId;
 }
 
 

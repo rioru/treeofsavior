@@ -33,24 +33,13 @@
 
 
 // ------ Structure declaration -------
-/**
- * @brief Worker is the minimal structure that a worker needs to work
- *        Everything else goes through the messaging system
- */
-struct Worker
+typedef struct
 {
-    // === Network ===
     /** The worker ID */
     uint16_t workerId;
 
     /** The Server ID having authority on this worker */
-    uint16_t serverId;
-
-    /** The frontend port of the Router */
-    int frontendPort;
-
-    /** The publisher socket to send asynchronous messages to the Router */
-    zsock_t *publisher;
+    uint16_t routerId;
 
     /** IP of the global server */
     char *globalServerIp;
@@ -58,74 +47,106 @@ struct Worker
     /** Private port with the global server */
     int globalServerPort;
 
+    /** MySQL startup information */
+    MySQLStartupInfo sqlInfo;
+
+    /** Redis startup information */
+    RedisStartupInfo redisInfo;
+
+    /** Array of packet handlers */
+    const PacketHandler *packetHandlers;
+
+    /** Packet handlers entries count */
+    int packetHandlersCount;
+
+}   WorkerStartupInfo;
+
+/**
+ * @brief Worker is the minimal structure that a worker needs to work
+ *        Everything else goes through the messaging system
+ */
+struct Worker
+{
+    /** Start up information */
+    WorkerStartupInfo info;
+
+    /** The publisher socket to send asynchronous messages to the Router */
+    zsock_t *publisher;
+
+    /** Seed for the random generator */
+    uint32_t seed;
+
     // === Database ===
     /** The MySQL session */
     MySQL *sqlConn;
 
     /** The Redis session */
     Redis *redis;
-
-    // === Handlers ===
-    /** Array of packet handlers */
-    PacketHandler *packetHandlers;
-
-    /** Packet handlers entries count */
-    int packetHandlersCount;
 };
 
 typedef struct Worker Worker;
+
+
 
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new Worker structure.
- * @param workerId The worker ID.
- * @param serverId The Server ID
- * @param globalServerIp The IP of the global server
- * @param globalServerPort The private port exposed to the global server
- * @param sqlInfo The information about the SQL Database
- * @param redisInfo The information about the Redis Database
- * @param packetHandlers Array of packet handlers
- * @param packetHandlersCount Packet handlers entries count
+ * @param info An initialized WorkerStartupInfo structure.
  * @return A pointer to an allocated Worker.
  */
 Worker *
 Worker_new (
-    uint16_t workerId,
-    uint16_t serverId,
-    char *globalServerIp,
-    int globalServerPort,
-    MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo,
-    PacketHandler *packetHandlers,
-    int packetHandlersCount
+    WorkerStartupInfo *info
 );
-
 
 /**
  * @brief Initialize an allocated Worker structure.
  * @param self An allocated Worker to initialize.
+ * @param info An initialized WorkerStartupInfo structure.
+ * @return true on success, false otherwise.
+ */
+bool
+Worker_init (
+    Worker *self,
+    WorkerStartupInfo *info
+);
+
+/**
+ * @brief Initialize an allocated WorkerStartupInfo structure.
+ * @param self An allocated WorkerStartupInfo to initialize.
  * @param workerId The worker ID.
- * @param serverId The Server ID
+ * @param routerId The Server ID
  * @param globalServerIp The IP of the global server
  * @param globalServerPort The private port exposed to the global server
- * @param sqlInfo The information about the SQL Database
+ * @param sqlHost The information about the SQL Database
  * @param redisInfo The information about the Redis Database
  * @param packetHandlers Array of packet handlers
  * @param packetHandlersCount Packet handlers entries count
  * @return true on success, false otherwise.
  */
 bool
-Worker_init (
-    Worker *self,
+WorkerStartupInfo_init (
+    WorkerStartupInfo *self,
     uint16_t workerId,
-    uint16_t serverId,
+    uint16_t routerId,
     char *globalServerIp,
     int globalServerPort,
-    MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo,
-    PacketHandler *packetHandlers,
+    MySQLStartupInfo *sqlInfo,
+    RedisStartupInfo *redisInfo,
+    const PacketHandler *packetHandlers,
     int packetHandlersCount
+);
+
+
+/**
+ * @brief Start a new Worker
+ * @param self An allocated Worker to start
+ * @return true on success, false otherwise.
+ */
+bool
+Worker_start (
+    Worker *self
 );
 
 
@@ -135,7 +156,7 @@ Worker_init (
  * @return Always NULL
  */
 void *
-Worker_worker (
+Worker_mainLoop (
     void *arg
 );
 

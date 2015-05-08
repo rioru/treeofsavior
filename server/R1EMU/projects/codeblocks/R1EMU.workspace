@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_workspace_file>
 	<Workspace title="Workspace">
-		<Project filename="GlobalServer/GlobalServer.cbp" />
 		<Project filename="ZoneServer/ZoneServer.cbp" />
-		<Project filename="BarrackServer/BarrackServer.cbp" />
+		<Project filename="GlobalServer/GlobalServer.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>

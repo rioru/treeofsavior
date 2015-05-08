@@ -35,8 +35,8 @@ struct SocketSession
 {
     /** The account ID of the account associated with the socket */
     uint64_t accountId;
-    /** The zone server handling the client socket */
-    uint16_t serverId;
+    /** The router ID handling the client socket */
+    uint16_t routerId;
     /** The map Id of the commander currently played */
     uint16_t mapId;
     /** Socket Redis key */
@@ -52,12 +52,14 @@ typedef struct SocketSession SocketSession;
 
 /**
  * @brief Allocate a new SocketSession structure.
+ * @param accountId The accoundId associated with the connection
+ * @param serverId The serverId
  * @return A pointer to an allocated SocketSession.
  */
 SocketSession *
 SocketSession_new (
     uint64_t accountId,
-    uint16_t zoneId,
+    uint16_t serverId,
     uint16_t mapId,
     unsigned char *socketIdKey,
     bool authenticated
@@ -73,7 +75,7 @@ bool
 SocketSession_init (
     SocketSession *self,
     uint64_t accountId,
-    uint16_t zoneId,
+    uint16_t serverId,
     uint16_t mapId,
     unsigned char *socketIdKey,
     bool authenticated

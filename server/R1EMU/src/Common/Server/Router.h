@@ -19,8 +19,6 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
-#include "Common/MySQL/MySQL.h"
-#include "Common/Redis/Redis.h"
 
 // ---------- Defines -------------
 #define ROUTER_FRONTEND_ENDPOINT           "tcp://%s:%d"
@@ -64,63 +62,83 @@ typedef enum RouterSendHeader {
 // ------ Structure declaration -------
 typedef struct Router Router;
 
+
+typedef struct {
+
+    uint16_t routerId;
+    char *ip;
+    int *ports;
+    int portsCount;
+    int workersCount;
+
+}   RouterStartupInfo;
+
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new Router structure.
- * @param serverId The Server ID
- * @param ip The IP of the router
- * @param ports The ports binded by the Router
- * @param portsCount Ports count
- * @param workersCount Number of workers linked to the Router
- * @param globalServerIp The IP of the global server
- * @param globalServerPort The private port exposed to the global server
- * @param sqlInfo The information about the SQL Database
- * @param redisInfo The information about the Redis Database
+ * @param info An allocated RouterStartupInfo already initialized.
  * @return A pointer to an allocated Router.
  */
 Router *
 Router_new (
-    uint16_t serverId,
-    char *ip,
-    int *ports,
-    int portsCount,
-    int workersCount,
-    char *globalServerIp,
-    int globalServerPort,
-    MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo
+    RouterStartupInfo *info
 );
 
 
 /**
  * @brief Initialize an allocated Router structure.
  * @param self An allocated Router to initialize.
- * @param serverId The Server ID
- * @param ip The IP of the router
- * @param ports The ports binded by the Router
- * @param portsCount Ports count
- * @param workersCount Number of workers linked to the Router
- * @param globalServerIp The IP of the global server
- * @param globalServerPort The private port exposed to the global server
- * @param sqlInfo The information about the SQL Database
- * @param redisInfo The information about the Redis Database
  * @return true on success, false otherwise.
  */
 bool
 Router_init (
     Router *self,
-    uint16_t serverId,
+    RouterStartupInfo *info
+);
+
+
+/**
+ * @brief Initialize an allocated RouterStartupInfo structure.
+ * @param self An allocated RouterStartupInfo to initialize.
+ * @param routerId The Server ID
+ * @param ip The IP of the router
+ * @param ports The ports binded by the Router
+ * @param portsCount Ports count
+ * @param workersCount Number of workers linked to the Router
+ * @return true on success, false otherwise
+ */
+bool
+RouterStartupInfo_init (
+    RouterStartupInfo *self,
+    uint16_t routerId,
     char *ip,
     int *ports,
     int portsCount,
-    int workersCount,
-    char *globalServerIp,
-    int globalServerPort,
-    MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo
+    int workersCount
 );
 
+
+/**
+ * @brief Start a new Router
+ * @param self An allocated Router to start
+ * @return true on success, false otherwise.
+ */
+bool
+Router_start (
+    Router *self
+);
+
+
+/**
+ * @brief Return the ID of a Router
+ * @param self An allocated Router
+ * @return The Router ID
+ */
+int
+Router_getId (
+    Router *self
+);
 
 /**
  * @brief Free an allocated Router structure and nullify the content of the pointer.

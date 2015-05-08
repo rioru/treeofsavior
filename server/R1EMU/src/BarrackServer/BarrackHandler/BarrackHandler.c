@@ -15,9 +15,9 @@
 #include "BarrackHandler.h"
 #include "Common/utils/random.h"
 #include "Common/Packet/Packet.h"
+#include "Common/Server/Worker.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"
-#include "BarrackServer/BarrackWorker/BarrackWorker.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 
 // ------ Static declaration -------
@@ -86,7 +86,7 @@ BarrackHandler_login (
 ) {
     SocketSession *socketSession = &session->socket;
 
-    BarrackWorker * self = (BarrackWorker *) arg;
+    Worker *self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -135,7 +135,7 @@ BarrackHandler_loginByPassport (
     void *arg
 ) {
     SocketSession *socketSession = &session->socket;
-    BarrackWorker * self = (BarrackWorker *) arg;
+    Worker * self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -299,7 +299,7 @@ BarrackHandler_commanderMove (
     zmsg_t *reply,
     void *arg
 ) {
-    // BarrackWorker * self = (BarrackWorker *) arg;
+    // Worker * self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -377,8 +377,6 @@ BarrackHandler_unkHandler1 (
     replyPacket.unk2 = 0;
     replyPacket.unk3 = 0;
 
-    buffer_print (&replyPacket, sizeof(replyPacket), ">> ");
-
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -449,12 +447,12 @@ BarrackHandler_unkHandler3 (
     size_t memSize;
 
     void *memory = dumpToMem (
-		"[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 51 00 0B 00 00 00 8D FA 41 00 | O.....Q.......A."
-		"[11:09:37][           ToSClient:                     dbgBuffer]  0D CA B9 0D 80 40 0C 45 C1 E7 FD F6 7A 0F 89 80 | .....@.E....z..."
-		"[11:09:37][           ToSClient:                     dbgBuffer]  8C 0E 90 10 01 FD 97 43 44 4E 01 30 F1 BC 26 1E | .......CDN.0..&."
-		"[11:09:37][           ToSClient:                     dbgBuffer]  0D 22 E9 95 96 D4 4E 0A BF 60 A7 6C E8 C4 0E 6E | ......N..`.l...n"
-		"[11:09:37][           ToSClient:                     dbgBuffer]  0F B4 50 26 AC D8 C0 1B 33 82 62 18 E8 EF 01 C1 | ..P&....3.b....."
-		"[11:09:37][           ToSClient:                     dbgBuffer]  07                                              | ."
+		"[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 51 00 0B 00 00 00 8D FA 41 00 | O.....Q.......A.\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0D CA B9 0D 80 40 0C 45 C1 E7 FD F6 7A 0F 89 80 | .....@.E....z...\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  8C 0E 90 10 01 FD 97 43 44 4E 01 30 F1 BC 26 1E | .......CDN.0..&.\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0D 22 E9 95 96 D4 4E 0A BF 60 A7 6C E8 C4 0E 6E | ......N..`.l...n\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  0F B4 50 26 AC D8 C0 1B 33 82 62 18 E8 EF 01 C1 | ..P&....3.b.....\n"
+		"[11:09:37][           ToSClient:                     dbgBuffer]  07                                              | .\n"
         , NULL, &memSize
     );
 
@@ -584,7 +582,7 @@ BarrackHandler_commanderCreate (
     GameSession *gameSession = &session->game;
     SocketSession *socketSession = &session->socket;
 
-    BarrackWorker *self = (BarrackWorker *) arg;
+    Worker *self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {

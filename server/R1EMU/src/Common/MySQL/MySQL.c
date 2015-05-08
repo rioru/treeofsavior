@@ -16,7 +16,11 @@
 
 // ------ Structure declaration -------
 struct MySQL {
+    /** Information about the database connection */
+    MySQLStartupInfo   info;
+    /** Handle to the MySQL connection */
 	MYSQL		*handle;
+	/** Last result */
 	MYSQL_RES	*result;
 };
 
@@ -27,7 +31,7 @@ struct MySQL {
 
 MySQL *
 MySQL_new (
-    void
+    MySQLStartupInfo *info
 ) {
     MySQL *self;
 
@@ -35,7 +39,7 @@ MySQL_new (
         return NULL;
     }
 
-    if (!MySQL_init (self)) {
+    if (!MySQL_init (self, info)) {
         MySQL_destroy (&self);
         error ("MySQL failed to initialize.");
         return NULL;
@@ -46,24 +50,43 @@ MySQL_new (
 
 bool
 MySQL_init (
-    MySQL *self
+    MySQL *self,
+    MySQLStartupInfo *info
 ) {
     self->result = NULL;
     self->handle = mysql_init (NULL);
+    memcpy (&self->info, info, sizeof (self->info));
+
+    return true;
+}
+
+bool
+MySQLStartupInfo_init (
+    MySQLStartupInfo *self,
+    char *hostname,
+    char *login,
+    char *password,
+    char *database
+) {
+    self->hostname = hostname;
+    self->login = login;
+    self->password = password;
+    self->database = database;
 
     return true;
 }
 
 bool
 MySQL_connect (
-    MySQL *self,
-    MySQLInfo *sqlInfo
+    MySQL *self
 ) {
-    info ("Connecting to the MySQL Server (%s@%s -> %s)...", sqlInfo->login, sqlInfo->hostname, sqlInfo->database);
+    MySQLStartupInfo *info = &self->info;
 
-    if (!mysql_real_connect (self->handle, sqlInfo->hostname, sqlInfo->login, sqlInfo->password, sqlInfo->database, 0, NULL, 0)) {
+    info ("Connecting to the MySQL Server (%s@%s -> %s)...", info->login, info->hostname, info->database);
+
+    if (!mysql_real_connect (self->handle, info->hostname, info->login, info->password, info->database, 0, NULL, 0)) {
         error ("Could not connect to the '%s' database (%s@%s. (mysql_errno = %d)",
-            sqlInfo->database, sqlInfo->login, sqlInfo->hostname, mysql_errno (self->handle));
+            info->database, info->login, info->hostname, mysql_errno (self->handle));
         return false;
     }
 

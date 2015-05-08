@@ -8,9 +8,7 @@
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
  * @file BarrackServer.h
- * @brief Entry point for clients on the login screen
- *
- * This module accepts login requests from clients and manage the connection through the barrack phase.
+ * @brief BarrackServer controls and processes the client actions
  *
  * @license <license placeholder>
  */
@@ -19,99 +17,71 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Server/Server.h"
 
 // ---------- Defines -------------
-#define BARRACK_SERVER_FRONTEND_ENDPOINT        "tcp://%s:%d"
-#define BARRACK_SERVER_BACKEND_ENDPOINT         "inproc://barrackServerWorkersBackend"
-#define BARRACK_SERVER_SUBSCRIBER_ENDPOINT      "inproc://barrackServerWorkersSubscriber-%d"
-#define BARRACK_SERVER_ZONE_ID                  0
-#define BARRACK_SERVER_MAP_ID                   -1
+#define BARRACK_SERVER_EXECUTABLE_NAME             "BarrackServer"
 
 // Configuration default values
-#define BARRACK_SERVER_PORTS_DEFAULT            (char []) {"2000 2001"}
-#define BARRACK_SERVER_WORKERS_COUNT_DEFAULT    3
-#define BARRACK_SERVER_FRONTEND_IP_DEFAULT      (char []) {"127.0.0.1"}
-
-/** Enumeration of all the packets headers that the barrack server handles */
-// We want to differentiate the recv header from the send header, but we want to keep a list
-// with uniques header id. So let's declare all the ids here, and distribute them afterward
-typedef enum BarrackServerHeader {
-    _BARRACK_SERVER_WORKER_READY,            // Ready
-    _BARRACK_SERVER_WORKER_NORMAL,           // Normal message
-    _BARRACK_SERVER_WORKER_MULTICAST,        // Normal message
-    _BARRACK_SERVER_WORKER_ERROR,            // Error message received from a worker
-    _BARRACK_SERVER_PING,                    // Ping
-    _BARRACK_SERVER_PONG,                    // Pong
-}   BarrackServerHeader;
-
-// Macro helper for the distribution
-#define DECL_BARRACK_SERVER_HEADER(x) \
-    x = _##x
-
-/** Enumeration of all the packets header that the barrack server accepts */
-typedef enum BarrackServerRecvHeader {
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_PING),
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_READY),
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_ERROR),
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_NORMAL),
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_WORKER_MULTICAST),
-}   BarrackServerRecvHeader;
-
-/** Enumeration of all the packets header that the barrack server sends */
-typedef enum BarrackServerSendHeader {
-    DECL_BARRACK_SERVER_HEADER (BARRACK_SERVER_PONG),
-}   BarrackServerSendHeader;
-
-#undef DECL_BARRACK_SERVER_HEADER
+#define BARRACK_SERVER_PORTS_DEFAULT               (char []) {"2000"}
+#define BARRACK_SERVER_WORKERS_COUNT_DEFAULT       1
+#define BARRACK_SERVER_ROUTER_ID                   0
+#define BARRACK_SERVER_MAP_ID                      -1           /** The Barrack map hasn't any mapId, let's define one */
+#define BARRACK_SERVER_FRONTEND_IP_DEFAULT         (char []) {"127.0.0.1"}
 
 
 // ------ Structure declaration -------
-
-// Barrack Server is opaque
+// BarrackServer is opaque
 typedef struct BarrackServer BarrackServer;
-
 
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new BarrackServer structure.
- * @param confFilePath The path to the configuration file associated with the Barrack Server
+ * @param BarrackServerId The barrack server ID
+ * @param serverIp The IP of the barrack server
+ * @param frontendPort The barrack server port opened to the internet
+ * @param workersCount Count of worker per barrack server
+ * @param privateGlobalPort The private port exposed to the global server
+ * @param confFilePath The configuration file path
  * @return A pointer to an allocated BarrackServer.
  */
 BarrackServer *
 BarrackServer_new (
-    char * confFilePath
+    Server *server
 );
 
 
 /**
  * @brief Initialize an allocated BarrackServer structure.
  * @param self An allocated BarrackServer to initialize.
- * @param confFilePath The path to the configuration file associated with the Barrack Server
- * @return true on success, false otherwise
+ * @param BarrackServerId The barrack server ID
+ * @param serverIp The IP of the barrack server
+ * @param frontendPort The barrack server port opened to the internet
+ * @param workersCount Count of worker per barrack server
+ * @param confFilePath The configuration file path
+ * @return true on success, false otherwise.
  */
 bool
 BarrackServer_init (
     BarrackServer *self,
-    char *confFilePath
+    Server *server
 );
 
 
-
 /**
- * @brief Free an allocated BarrackServer structure and nullify the content of the pointer
- * @param self A pointer to an allocated BarrackServer
+ * @brief Free an allocated BarrackServer structure and nullify the content of the pointer.
+ * @param self A pointer to an allocated BarrackServer.
  */
 void
 BarrackServer_destroy (
     BarrackServer **self
 );
 
-
 /**
- * @brief Start the Barrack Server main loop.
+ * @brief Start the barrack Server main loop.
  * @param self An allocated BarrackServer
- * @return true on success, false otherwise
+ * @return always NULL
  */
 bool
 BarrackServer_start (

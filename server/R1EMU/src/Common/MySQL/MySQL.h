@@ -36,51 +36,80 @@ typedef enum MySQLStatus {
 // ------ Structure declaration -------
 typedef struct MySQL MySQL;
 
-typedef struct MySQLInfo
+typedef struct MySQLStartupInfo
 {
+    /** The MySQL hostname */
     char *hostname;
+
+    /** The username of the MySQL user with read/write privilege */
     char *login;
+
+    /** The password of the MySQL user */
     char *password;
+
+    /** The database name containing all the data */
     char *database;
 
-}   MySQLInfo;
+}   MySQLStartupInfo;
 
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new MySQL structure.
+ * @param info An initialized MySQLStartupInfo.
  * @return A pointer to an allocated MySQL, or NULL if an error occured.
  */
 MySQL *
 MySQL_new (
-    void
+    MySQLStartupInfo *info
 );
 
 /**
  * @brief Initialize an allocated MySQL structure.
  * @param self An allocated MySQL to initialize.
+ * @param info An initialized MySQLStartupInfo.
  * @return true on success, false otherwise.
  */
 bool
 MySQL_init (
-    MySQL *self
+    MySQL *self,
+    MySQLStartupInfo *info
+);
+
+
+/**
+ * @brief Initialize an allocated MySQLStartupInfo structure.
+ * @param self An allocated MySQLStartupInfo to initialize.
+ * @param hostname The MySQL hostname
+ * @param login The username of the MySQL user with read/write privilege
+ * @param password The password of the MySQL user
+ * @param database The database name containing all the data
+ * @return true on success, false otherwise.
+ */
+bool
+MySQLStartupInfo_init (
+    MySQLStartupInfo *self,
+    char *hostname,
+    char *login,
+    char *password,
+    char *database
 );
 
 /**
  * @brief : Connect to the MySQL database
  * @param self An allocated MySQL instance
- * @param sqlInfo The information about the SQL database connection to etablish
  * @return true on success, false otherwise
  */
 bool
 MySQL_connect (
-    MySQL *self,
-    MySQLInfo *sqlInfo
+    MySQL *self
 );
 
 /**
- * @brief
- * @param
+ * @brief Send a query to the MySQL server
+ * @param self An allocated MySQL
+ * @param query The SQL formatted query
+ * @return a MySQLStatus
  */
 MySQLStatus
 MySQL_query (
@@ -91,8 +120,8 @@ MySQL_query (
 
 
 /**
- * @brief
- * @param
+ * @brief Free the result of the last query
+ * @param self An allocated MySQL
  */
 void
 MySQL_freeResult (

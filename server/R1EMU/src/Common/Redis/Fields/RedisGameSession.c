@@ -26,7 +26,7 @@
 // ------ Extern variables implementation -------
 const char *redisGameSessionsStr [] = {
 	[REDIS_GAME_SESSION_socketKey]               = REDIS_GAME_SESSION_socketKey_str,
-	[REDIS_GAME_SESSION_serverId]                = REDIS_GAME_SESSION_serverId_str,
+	[REDIS_GAME_SESSION_routerId]                = REDIS_GAME_SESSION_routerId_str,
 	[REDIS_GAME_SESSION_familyName]              = REDIS_GAME_SESSION_familyName_str,
 	[REDIS_GAME_SESSION_commanderName]           = REDIS_GAME_SESSION_commanderName_str,
 	[REDIS_GAME_SESSION_charactersBarrackCount]  = REDIS_GAME_SESSION_charactersBarrackCount_str,
@@ -79,7 +79,7 @@ const char *redisGameSessionsStr [] = {
 bool
 Redis_requestSession (
     Redis *self,
-    int serverId,
+    int routerId,
     char *socketId,
     Session *session
 ) {
@@ -92,7 +92,7 @@ Redis_requestSession (
     SocketSession_genKey (socketId, socketKey);
 
     // Search for the Socket Session
-    if (!Redis_getSocketSession (self, serverId, socketKey, socketSession)) {
+    if (!Redis_getSocketSession (self, routerId, socketKey, socketSession)) {
         error ("Cannot get Socket Session.");
         return false;
     }
@@ -126,7 +126,7 @@ Redis_getGameSession (
     reply = Redis_commandDbg (self,
         "HMGET zone%x:map%x:acc%llx"
         " " REDIS_GAME_SESSION_socketKey_str
-        " " REDIS_GAME_SESSION_serverId_str
+        " " REDIS_GAME_SESSION_routerId_str
         " " REDIS_GAME_SESSION_familyName_str
         " " REDIS_GAME_SESSION_commanderName_str
         " " REDIS_GAME_SESSION_charactersBarrackCount_str
@@ -182,7 +182,7 @@ Redis_getGameSession (
         // [UNKNOWN] "commander.unk10 "
         // [UNKNOWN] "commander.unk11 "
         // [UNKNOWN] "commander.unk12 "
-        , socketSession->serverId, socketSession->mapId, socketSession->accountId
+        , socketSession->routerId, socketSession->mapId, socketSession->accountId
     );
 
     if (!reply) {
@@ -293,7 +293,7 @@ Redis_updateGameSession (
     reply = Redis_commandDbg (self,
         "HMSET zone%x:map%x:acc%llx"
         " " REDIS_GAME_SESSION_socketKey_str " %s"
-        " " REDIS_GAME_SESSION_serverId_str " %x"
+        " " REDIS_GAME_SESSION_routerId_str " %x"
         " " REDIS_GAME_SESSION_familyName_str " %s"
         " " REDIS_GAME_SESSION_commanderName_str " %s"
         " " REDIS_GAME_SESSION_charactersBarrackCount_str " %x"
@@ -346,9 +346,9 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_maxSP_str " %x"
         " " REDIS_GAME_SESSION_commander_cPosX_str " %f"
         " " REDIS_GAME_SESSION_commander_cPosY_str " %f"
-        , socketSession->serverId, socketSession->mapId, socketSession->accountId,
+        , socketSession->routerId, socketSession->mapId, socketSession->accountId,
         socketSession->key,
-        socketSession->serverId,
+        socketSession->routerId,
         (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
         (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
         gameSession->charactersBarrackCount,
@@ -433,7 +433,7 @@ Redis_updateGameSession (
 zlist_t *
 Redis_getClientsWithinDistance (
     Redis *self,
-    uint16_t serverId, uint16_t mapId,
+    uint16_t routerId, uint16_t mapId,
     float posX, float posY, float posZ,
     float range
 ) {
@@ -460,7 +460,7 @@ Redis_getClientsWithinDistance (
         // Get all the accounts within the same area
         reply = Redis_commandDbg (self,
             "SCAN %d MATCH zone%x:map%x:acc*",
-            iterator, serverId, mapId
+            iterator, routerId, mapId
         );
 
         if (!reply) {

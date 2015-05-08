@@ -17,6 +17,8 @@
 // GameSession Fields
 #include "Fields/RedisGameSession.h"
 
+// ---------- Private defines ------------
+#define REDIS_COMMAND_BUFFER_SIZE 1024*100
 
 // ------ Structure declaration -------
 /**
@@ -24,10 +26,14 @@
  */
 struct Redis
 {
+    /** Start up information about the Redis connection */
+    RedisStartupInfo info;
+
     /** Redis context, handle of the connection to the redis server */
     redisContext *context;
 
-    char *commandBuffer;
+    /** A command buffer */
+    char commandBuffer[REDIS_COMMAND_BUFFER_SIZE];
 };
 
 
@@ -37,7 +43,7 @@ struct Redis
 
 Redis *
 Redis_new (
-    void
+    RedisStartupInfo *info
 ) {
     Redis *self;
 
@@ -45,7 +51,7 @@ Redis_new (
         return NULL;
     }
 
-    if (!Redis_init (self)) {
+    if (!Redis_init (self, info)) {
         Redis_destroy (&self);
         error ("Redis failed to initialize.");
         return NULL;
@@ -56,25 +62,36 @@ Redis_new (
 
 bool
 Redis_init (
-    Redis *self
+    Redis *self,
+    RedisStartupInfo *info
 ) {
-    if (!(self->commandBuffer = calloc (1, REDIS_COMMAND_BUFFER_SIZE))) {
-        error ("Cannot allocate a command buffer.");
-        return false;
-    }
+    memcpy (&self->info, info, sizeof (self->info));
+
+    return true;
+}
+
+bool
+RedisStartupInfo_init (
+    RedisStartupInfo *self,
+    char *hostname,
+    int port
+) {
+    self->hostname = hostname;
+    self->port = port;
 
     return true;
 }
 
 bool
 Redis_connect (
-    Redis *self,
-    RedisInfo *redisInfo
+    Redis *self
 ) {
-    info ("Connecting to the Redis Server (%s:%d)...", redisInfo->hostname, atoi(redisInfo->port));
+    RedisStartupInfo *info = &self->info;
+
+    info ("Connecting to the Redis Server (%s:%d)...", info->hostname, info->port);
 
     while (1) {
-        self->context = redisConnectWithTimeout (redisInfo->hostname, atoi(redisInfo->port), (struct timeval) {.tv_sec = 3, .tv_usec = 0});
+        self->context = redisConnectWithTimeout (info->hostname, info->port, (struct timeval) {.tv_sec = 3, .tv_usec = 0});
 
         if (self->context != NULL && self->context->err) {
             warning ("Redis server not detected (%s)... Retrying in 3 seconds.", self->context->errstr);
@@ -158,7 +175,7 @@ Redis_set (
 
     // Build the Redis command
 	sprintf (self->commandBuffer, "HMSET zone%x:map%x:acc%llx ",
-        socketSession->serverId, socketSession->mapId, socketSession->accountId); // Identifiers
+        socketSession->routerId, socketSession->mapId, socketSession->accountId); // Identifiers
 
     // Current position to the buffer = end of the HMSET key
     curPos = strlen (self->commandBuffer);

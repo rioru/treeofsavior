@@ -17,7 +17,7 @@
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
-#include "ZoneServer/ZoneWorker/ZoneWorker.h"
+#include "Common/Server/Worker.h"
 #include "BarrackServer/BarrackServer.h"
 
 
@@ -117,7 +117,7 @@ ZoneHandler_connect (
     GameSession *gameSession = &session->game;
     SocketSession *socketSession = &session->socket;
 
-    ZoneWorker *self = (ZoneWorker *) arg;
+    Worker *self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -170,14 +170,14 @@ ZoneHandler_connect (
     unsigned char socketKey[SOCKET_SESSION_KEY_SIZE];
     // Generate the socketId key
     SocketSession_genKey (socketId, socketKey);
-    SocketSession_init (socketSession, clientPacket->accountId, BARRACK_SERVER_ZONE_ID, BARRACK_SERVER_MAP_ID, socketKey, true);
+    SocketSession_init (socketSession, clientPacket->accountId, BARRACK_SERVER_ROUTER_ID, BARRACK_SERVER_MAP_ID, socketKey, true);
     if (!(Redis_getGameSession (self->redis, session))) {
         error ("Cannot retrieve the session from the barrack server.");
         return PACKET_HANDLER_ERROR;
     }
 
     // Update the Socket Session
-    socketSession->serverId = self->serverId;
+    socketSession->routerId = self->info.routerId;
     socketSession->mapId = gameSession->currentCommander.mapId;
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;

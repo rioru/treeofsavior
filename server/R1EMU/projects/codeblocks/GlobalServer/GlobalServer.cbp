@@ -50,6 +50,10 @@
 			<Add directory="../../../lib/x64" />
 			<Add directory="/usr/local/mysql/lib/" />
 		</Linker>
+		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.h" />
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -80,6 +84,22 @@
 		<Unit filename="../../../src/Common/Redis/Redis.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/Common/Server/Router.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/Router.h" />
+		<Unit filename="../../../src/Common/Server/Server.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/Server.h" />
+		<Unit filename="../../../src/Common/Server/ServerFactory.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/ServerFactory.h" />
+		<Unit filename="../../../src/Common/Server/Worker.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/Worker.h" />
 		<Unit filename="../../../src/Common/Session/GameSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -108,9 +128,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/ZoneServer/ZoneServer.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="../../../src/ZoneServer/ZoneWorker/ZoneWorker.c">
 			<Option compilerVar="CC" />
 		</Unit>
 		<Extensions>

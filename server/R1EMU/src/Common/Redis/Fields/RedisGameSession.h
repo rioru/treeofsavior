@@ -24,7 +24,7 @@
 
 // ---------- Defines -------------
 #define REDIS_GAME_SESSION_socketKey_str               "socketKey"
-#define REDIS_GAME_SESSION_serverId_str                "serverId"
+#define REDIS_GAME_SESSION_routerId_str                "routerId"
 #define REDIS_GAME_SESSION_familyName_str              "familyName"
 #define REDIS_GAME_SESSION_commanderName_str           "commanderName"
 #define REDIS_GAME_SESSION_charactersBarrackCount_str  "charactersBarrackCount"
@@ -73,7 +73,7 @@
 
 enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_socketKey,
-	REDIS_GAME_SESSION_serverId,
+	REDIS_GAME_SESSION_routerId,
 	REDIS_GAME_SESSION_familyName,
 	REDIS_GAME_SESSION_commanderName,
 	REDIS_GAME_SESSION_charactersBarrackCount,
@@ -134,7 +134,7 @@ extern const char *redisGameSessionsStr [];
 /**
  * @brief Request the session associated with the ZoneId and the Socket ID
  * @param self An allocated Redis
- * @param zoneId A zone Id
+ * @param serverId A zone Id
  * @param socketId A socket ID
  * @param[out] session The resulting Session
  * @return
@@ -142,7 +142,7 @@ extern const char *redisGameSessionsStr [];
 bool
 Redis_requestSession (
     Redis *self,
-    int zoneId,
+    int serverId,
     char *socketId,
     Session *session
 );
@@ -177,8 +177,8 @@ Redis_updateGameSession (
 
 /**
  * @brief Return a list of clients into the area of a given position
- * @param self An allocated ZoneWorker
- * @param zoneId The zoneId of the position
+ * @param self An allocated Worker
+ * @param serverId The serverId concerned
  * @param mapId The mapId of the position
  * @param posX, posY, posZ The position
  * @param range Radius of the circle
@@ -187,7 +187,7 @@ Redis_updateGameSession (
 zlist_t *
 Redis_getClientsWithinDistance (
     Redis *self,
-    uint16_t zoneId, uint16_t mapId,
+    uint16_t serverId, uint16_t mapId,
     float posX, float posY, float posZ,
     float range
 );

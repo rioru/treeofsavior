@@ -17,53 +17,17 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Server/Server.h"
 
 // ---------- Defines -------------
-#define ZONE_SERVER_FRONTEND_ENDPOINT           "tcp://%s:%d"
-#define ZONE_SERVER_GLOBAL_ENDPOINT             "tcp://127.0.0.1:%d"
-#define ZONE_SERVER_BACKEND_ENDPOINT            "inproc://zoneServerWorkersBackend-%d"
-#define ZONE_SERVER_SUBSCRIBER_ENDPOINT         "inproc://zoneServerWorkersSubscriber-%d-%d"
 #define ZONE_SERVER_EXECUTABLE_NAME             "ZoneServer"
 
 // Configuration default values
-#define ZONE_SERVER_PORTS_DEFAULT               (char []) {"2004 2005 2006"}
-#define ZONE_SERVER_WORKERS_COUNT_DEFAULT       3
-
-/** Enumeration of all the packets headers that the zone server handles */
-// We want to differentiate the recv header from the send header, but we want to keep a list
-// with uniques header id. So let's declare all the ids here, and distribute them afterward
-typedef enum ZoneServerHeader {
-    _ZONE_SERVER_WORKER_READY,            // Ready
-    _ZONE_SERVER_WORKER_NORMAL,           // Normal message
-    _ZONE_SERVER_WORKER_MULTICAST,        // Multicast message
-    _ZONE_SERVER_WORKER_ERROR,            // Error message received from a worker
-    _ZONE_SERVER_PING,                    // Ping
-    _ZONE_SERVER_PONG,                    // Pong
-}   ZoneServerHeader;
-
-// Macro helper for the distribution
-#define DECL_ZONE_SERVER_HEADER(x) \
-    x = _##x
-
-/** Enumeration of all the packets header that the zone server accepts */
-typedef enum ZoneServerRecvHeader {
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_READY),
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_NORMAL),
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_MULTICAST),
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_WORKER_ERROR),
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_PING),
-}   ZoneServerRecvHeader;
-
-/** Enumeration of all the packets header that the zone server sends */
-typedef enum ZoneServerSendHeader {
-    DECL_ZONE_SERVER_HEADER (ZONE_SERVER_PONG),
-}   ZoneServerSendHeader;
-
-#undef DECL_ZONE_SERVER_HEADER
+#define ZONE_SERVER_PORTS_DEFAULT               (char []) {"2004"}
+#define ZONE_SERVER_WORKERS_COUNT_DEFAULT       1
 
 
 // ------ Structure declaration -------
-
 // ZoneServer is opaque
 typedef struct ZoneServer ZoneServer;
 
@@ -81,12 +45,7 @@ typedef struct ZoneServer ZoneServer;
  */
 ZoneServer *
 ZoneServer_new (
-    int zoneServerId,
-    char *serverIp,
-    int frontendPort,
-    int workersCount,
-    int privateGlobalPort,
-    char *confFilePath
+    Server *server
 );
 
 
@@ -103,12 +62,7 @@ ZoneServer_new (
 bool
 ZoneServer_init (
     ZoneServer *self,
-    int zoneServerId,
-    char *serverIp,
-    int frontendPort,
-    int workersCount,
-    int privateGlobalPort,
-    char *confFilePath
+    Server *server
 );
 
 
@@ -121,22 +75,12 @@ ZoneServer_destroy (
     ZoneServer **self
 );
 
-
-/**
- * @brief Launch a new Zone Server
- * @param self A pointer to an allocated ZoneServer.
- */
-bool
-ZoneServer_launchZoneServer (
-    ZoneServer *self
-);
-
 /**
  * @brief Start the Zone Server main loop.
- * @param args An allocated ZoneServer
+ * @param self An allocated ZoneServer
  * @return always NULL
  */
-void *
+bool
 ZoneServer_start (
-    void *args
+    ZoneServer *self
 );
