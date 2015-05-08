@@ -115,6 +115,10 @@
 		<Unit filename="../../../src/Common/utils/random.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/Common/utils/string.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/utils/string.h" />
 		<Unit filename="../../../src/Common/utils/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
