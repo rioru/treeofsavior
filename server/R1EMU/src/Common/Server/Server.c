@@ -15,6 +15,7 @@
 #include "Server.h"
 #include "Router.h"
 #include "Worker.h"
+#include "Common/utils/string.h"
 
 
 // ------ Structure declaration -------
@@ -122,35 +123,37 @@ Server_createProcess (
 
     #ifdef WIN32
         executableName = zsys_sprintf ("%s.exe", executableName);
+    #endif
 
-        char *commandLine = zsys_sprintf ("%s %d %s %d",
-            executableName,
-            self->routerInfo.routerId,
-            self->routerInfo.ip,
-            self->routerInfo.portsCount
-        );
+    char *commandLine = zsys_sprintf ("%s %d %s %d",
+        executableName,
+        self->routerInfo.routerId,
+        self->routerInfo.ip,
+        self->routerInfo.portsCount
+    );
 
-        char *lastCommandLine;
-        for (int i = 0; i < self->routerInfo.portsCount; i++) {
-            lastCommandLine = zsys_sprintf ("%s %d", commandLine, self->routerInfo.ports[i]);
-            zstr_free (&commandLine);
-            commandLine = lastCommandLine;
-        }
-
-        lastCommandLine = zsys_sprintf ("%s %d %s %d %s %s %s %s %s %d",
-            commandLine,
-            self->routerInfo.workersCount,
-            globalServerIp,
-            globalServerPort,
-            sqlInfo->hostname, sqlInfo->login, sqlInfo->password, sqlInfo->database,
-            redisInfo->hostname, redisInfo->port
-        );
-
+    char *lastCommandLine;
+    for (int i = 0; i < self->routerInfo.portsCount; i++) {
+        lastCommandLine = zsys_sprintf ("%s %d", commandLine, self->routerInfo.ports[i]);
         zstr_free (&commandLine);
         commandLine = lastCommandLine;
+    }
 
-        info ("CommandLine : %s", commandLine);
+    lastCommandLine = zsys_sprintf ("%s %d %s %d %s %s %s %s %s %d",
+        commandLine,
+        self->routerInfo.workersCount,
+        globalServerIp,
+        globalServerPort,
+        sqlInfo->hostname, sqlInfo->login, sqlInfo->password, sqlInfo->database,
+        redisInfo->hostname, redisInfo->port
+    );
 
+    zstr_free (&commandLine);
+    commandLine = lastCommandLine;
+
+    info ("CommandLine : %s", commandLine);
+
+    #ifdef WIN32
         STARTUPINFO si = {0};
         PROCESS_INFORMATION pi = {0};
         if (!CreateProcess (executableName, commandLine, NULL, NULL, FALSE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi)) {
@@ -160,38 +163,19 @@ Server_createProcess (
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR) &errorReason, 0, NULL
             );
             error ("Error reason : %s", errorReason);
+            return false;
         }
-
-
-        zstr_free (&commandLine);
     #else
-    /*
-    char *routerIdArg = zsys_sprintf ("%d", self->routerId);
-    char *zoneServerPortArg = zsys_sprintf ("%d", self->frontendPort);
-    char *zoneWorkersCountArg = zsys_sprintf ("%d", self->workersCount);
-    char *zonePrivateGlobalPort = zsys_sprintf ("%d", self->privateGlobalPort);
-
-    const char *argv[] = {
-        ZONE_SERVER_EXECUTABLE_NAME, routerIdArg, self->routerIp, zoneServerPortArg,
-        zoneWorkersCountArg,  zonePrivateGlobalPort, NULL
-    };
-    if (fork () == 0) {
-        info ("Command line (zone server ID %d) : ", self->routerId);
-        int argPos = 0;
-        while (argv[argPos] != NULL) {
-            info ("\t - %s", argv[argPos++]);
+        char **argv = str_split (commandLine, " ");
+        if (fork () == 0) {
+            if (execv (executableName, (char * const *) argv) == -1) {
+                error ("Cannot launch Zone Server executable : %s.", executableName);
+                return false;
+            }
         }
-        if (execv (ZONE_SERVER_EXECUTABLE_NAME, (char * const *) argv) == -1) {
-            error ("Cannot launch Zone Server executable : %s.", ZONE_SERVER_EXECUTABLE_NAME);
-        }
-    }
-    zstr_free (&routerIdArg);
-    zstr_free (&zoneServerPortArg);
-    zstr_free (&zoneWorkersCountArg);
-    zstr_free (&zonePrivateGlobalPort);
-    */
     #endif
 
+    zstr_free (&commandLine);
     return true;
 }
 

@@ -13,6 +13,7 @@
 
 // ---------- Includes ------------
 #include "utils.h"
+#include "string.h"
 
 
 // ------ Structure declaration -------
@@ -22,41 +23,6 @@
 
 
 // ------ Extern function implementation -------
-
-int
-str_getline (
-    char *str,
-    char *dest,
-    int maxlen,
-    int pos
-) {
-	int len = strlen (str);
-	int i;
-	int bufpos = 0;
-	char c;
-
-	if (pos >= len) {
-        return -1;
-	}
-
-	for (i = pos ; i < len; i++)
-	{
-		if (bufpos >= maxlen)
-			return i;
-
-		c = str[i];
-		dest[bufpos++] = str[i];
-
-		if (c == '\n')
-		{
-			dest[--bufpos] = '\0';
-			return i + 1;
-		}
-	}
-
-	dest[bufpos] = '\0';
-	return len + 1;
-}
 
 void *dumpToMem (
     char *dump,

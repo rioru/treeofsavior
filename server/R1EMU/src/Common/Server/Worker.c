@@ -308,7 +308,7 @@ Worker_start (
     Worker *self
 ) {
     if (zthread_new (Worker_mainLoop, self) != 0) {
-        error ("Cannot create Barrack Server worker thread ID %d.", self->info.workerId);
+        error ("Cannot create Server worker ID = %d.", self->info.workerId);
         return false;
     }
 
@@ -368,7 +368,7 @@ Worker_mainLoop (
     if (!(readyFrame = zframe_new (PACKET_HEADER (ROUTER_WORKER_READY), sizeof (ROUTER_WORKER_READY)))
     ||  zframe_send (&readyFrame, worker, 0) == -1
     ) {
-        error ("[routerId=%d][WorkerId=%d] cannot send a correct ZONE_WORKER_READY state.",
+        error ("[routerId=%d][WorkerId=%d] cannot send a correct ROUTER_WORKER_READY state.",
                self->info.routerId, self->info.workerId);
         return NULL;
     }

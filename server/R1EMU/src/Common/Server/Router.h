@@ -27,7 +27,7 @@
 
 #define ROUTER_GLOBAL_ENDPOINT             "tcp://%s:%d"
 
-/** Enumeration of all the packets headers that the zone server handles */
+/** Enumeration of all the packets headers that the Router handles */
 // We want to differentiate the headers being received from the the ones being send, but we also want to keep a list
 // with uniques header IDs. So, let's declare all the IDs here, and distribute them afterward
 typedef enum RouterHeader {
@@ -43,7 +43,7 @@ typedef enum RouterHeader {
 #define DECL_ROUTER_HEADER(x) \
     x = _##x
 
-/** Enumeration of all the packets header that the zone server accepts */
+/** Enumeration of all the packets header that the Router accepts */
 typedef enum RouterRecvHeader {
     DECL_ROUTER_HEADER (ROUTER_WORKER_READY),
     DECL_ROUTER_HEADER (ROUTER_WORKER_NORMAL),
@@ -52,7 +52,7 @@ typedef enum RouterRecvHeader {
     DECL_ROUTER_HEADER (ROUTER_PING),
 }   RouterRecvHeader;
 
-/** Enumeration of all the packets header that the zone server sends */
+/** Enumeration of all the packets header that the Router sends */
 typedef enum RouterSendHeader {
     DECL_ROUTER_HEADER (ROUTER_PONG),
 }   RouterSendHeader;
