@@ -181,7 +181,7 @@ Router_init (
     self->subscribers = calloc (1, sizeof (zsock_t *) * self->info.workersCount);
     for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
         if (!(self->subscribers[workerId] = zsock_new (ZMQ_SUB))) {
-            error ("Cannot allocate a Barrack Server SUBSCRIBER");
+            error ("Cannot allocate a Server SUBSCRIBER");
             return false;
         }
     }
@@ -262,7 +262,7 @@ Router_subscribe (
         } break;
 
         default:
-            warning ("Barrack Server subscriber received an unknown header : %x", packetHeader);
+            warning ("Server subscriber received an unknown header : %x", packetHeader);
         break;
     }
 
@@ -378,8 +378,8 @@ Router_frontend (
 
     // Retrieve a workerIdentity (round robin)
     if (!(workerIdentity = (zframe_t *) zlist_pop (self->readyWorkers))) {
-        // All Barrack Workers seem to be busy.
-        warning ("All Barrack Workers seem to be busy. Transfer the request to the overload worker.");
+        // All Workers seem to be busy.
+        warning ("All Workers seem to be busy. Transfer the request to the overload worker.");
         // Transfer the request to the overload worker
         zframe_destroy (&workerIdentity);
 
@@ -417,7 +417,7 @@ Router_initFrontend (
     // Bind the endpoints for the ROUTER frontend
     for (int i = 0; i < self->info.portsCount; i++) {
         if (zsock_bind (self->frontend, ROUTER_FRONTEND_ENDPOINT, self->info.ip, self->info.ports[i]) == -1) {
-            error ("Failed to bind Barrack Server frontend to the endpoint : %s:%d.", self->info.ip, self->info.ports[i]);
+            error ("Failed to bind Server frontend to the endpoint : %s:%d.", self->info.ip, self->info.ports[i]);
             return false;
         }
         info ("Frontend listening on port %d.", self->info.ports[i]);
@@ -435,7 +435,7 @@ Router_initBackend (
     // ===================================
     // Create and connect a socket to the backend
     if (zsock_bind (self->backend, ROUTER_BACKEND_ENDPOINT, self->info.routerId) == -1) {
-        error ("Failed to bind Barrack Server ROUTER backend.");
+        error ("Failed to bind Server ROUTER backend.");
         return false;
     }
     info ("Backend listening on %s.", zsys_sprintf (ROUTER_BACKEND_ENDPOINT, self->info.routerId));
