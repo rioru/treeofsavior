@@ -24,7 +24,7 @@
 
 // ---------- Defines -------------
 #define REDIS_GAME_SESSION_socketKey_str               "socketKey"
-#define REDIS_GAME_SESSION_zoneId_str                  "zoneId"
+#define REDIS_GAME_SESSION_serverId_str                "serverId"
 #define REDIS_GAME_SESSION_familyName_str              "familyName"
 #define REDIS_GAME_SESSION_commanderName_str           "commanderName"
 #define REDIS_GAME_SESSION_charactersBarrackCount_str  "charactersBarrackCount"
@@ -73,7 +73,7 @@
 
 enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_socketKey,
-	REDIS_GAME_SESSION_zoneId,
+	REDIS_GAME_SESSION_serverId,
 	REDIS_GAME_SESSION_familyName,
 	REDIS_GAME_SESSION_commanderName,
 	REDIS_GAME_SESSION_charactersBarrackCount,

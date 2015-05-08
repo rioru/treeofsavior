@@ -36,7 +36,7 @@ struct SocketSession
     /** The account ID of the account associated with the socket */
     uint64_t accountId;
     /** The zone server handling the client socket */
-    uint16_t zoneId;
+    uint16_t serverId;
     /** The map Id of the commander currently played */
     uint16_t mapId;
     /** Socket Redis key */

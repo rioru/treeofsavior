@@ -7,7 +7,7 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file ZoneWorker.h
+ * @file Worker.h
  * @brief
  *
  *
@@ -16,9 +16,8 @@
  */
 
 // ---------- Includes ------------
-#include "ZoneWorker.h"
-#include "ZoneServer/ZoneServer.h"
-#include "ZoneServer/ZoneHandler/ZoneHandler.h"
+#include "Worker.h"
+#include "Router.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 
@@ -27,13 +26,12 @@
 
 
 // ------ Static declaration -------
-
 /**
  * @brief Handle a PING request from any entity.
  * @return a zframe_t containing the PONG. Never returns NULL.
  */
 static zframe_t *
-ZoneWorker_handlePingPacket (
+Worker_handlePingPacket (
     void
 );
 
@@ -41,49 +39,49 @@ ZoneWorker_handlePingPacket (
 /**
  * @brief Handle a client request.
  *        The first frame contains client entity, the second frame contains packet data.
- * @param self An allocated ZoneWorker structure
+ * @param self An allocated Worker structure
  * @param msg The message of the client
  * @return true on success, false otherwise
  */
 static bool
-ZoneWorker_processClientPacket (
-    ZoneWorker *self,
+Worker_processClientPacket (
+    Worker *self,
     zmsg_t *msg
 );
 
 
 /**
  * @brief Handle a request from the public ports
- * @param self An allocated ZoneWorker structure
+ * @param self An allocated Worker structure
  * @param worker The socket listening on the public port
  * @return -2 on end of stream, -1 on error, 0 on success
 */
 static int
-ZoneWorker_handlePublicRequest (
-    ZoneWorker *self,
+Worker_handlePublicRequest (
+    Worker *self,
     zsock_t *worker
 );
 
 /**
  * @brief Handle a request from the private ports (coming from global server)
- * @param self An allocated ZoneWorker structure
+ * @param self An allocated Worker structure
  * @param worker The socket listening on the public port
  * @return -2 on end of stream, -1 on error, 0 on success
 */
 static int
-ZoneWorker_handlePrivateRequest (
-    ZoneWorker *self,
+Worker_handlePrivateRequest (
+    Worker *self,
     zsock_t *global
 );
 
 /**
  * @brief Process a message from the the global server
- * @param self An allocated ZoneWorker structure
+ * @param self An allocated Worker structure
  * @param msg The message coming from the global server
 */
 static void
-ZoneWorker_processGlobalPacket (
-    ZoneWorker *self,
+Worker_processGlobalPacket (
+    Worker *self,
     zmsg_t *msg
 );
 
@@ -91,24 +89,26 @@ ZoneWorker_processGlobalPacket (
 
 // ------ Extern function implementation -------
 
-ZoneWorker *
-ZoneWorker_new (
-    int workerId,
-    int zoneServerId,
-    int frontendPort,
-    int globalPort,
+Worker *
+Worker_new (
+    uint16_t workerId,
+    uint16_t serverId,
+    char *globalServerIp,
+    int globalServerPort,
     MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo
+    RedisInfo *redisInfo,
+    PacketHandler *packetHandlers,
+    int packetHandlersCount
 ) {
-    ZoneWorker *self;
+    Worker *self;
 
-    if ((self = calloc (1, sizeof (ZoneWorker))) == NULL) {
+    if ((self = calloc (1, sizeof (Worker))) == NULL) {
         return NULL;
     }
 
-    if (!ZoneWorker_init (self, workerId, zoneServerId, frontendPort, globalPort, sqlInfo, redisInfo)) {
-        ZoneWorker_destroy (&self);
-        error ("ZoneWorker failed to initialize.");
+    if (!Worker_init (self, workerId, serverId, globalServerIp, globalServerPort, sqlInfo, redisInfo, packetHandlers, packetHandlersCount)) {
+        Worker_destroy (&self);
+        error ("Worker failed to initialize.");
         return NULL;
     }
 
@@ -117,19 +117,23 @@ ZoneWorker_new (
 
 
 bool
-ZoneWorker_init (
-    ZoneWorker *self,
-    int workerId,
-    int serverId,
-    int frontendPort,
-    int globalPort,
+Worker_init (
+    Worker *self,
+    uint16_t workerId,
+    uint16_t serverId,
+    char *globalServerIp,
+    int globalServerPort,
     MySQLInfo *sqlInfo,
-    RedisInfo *redisInfo
+    RedisInfo *redisInfo,
+    PacketHandler *packetHandlers,
+    int packetHandlersCount
 ) {
     self->workerId = workerId;
     self->serverId = serverId;
-    self->frontendPort = frontendPort;
-    self->globalPort = globalPort;
+    self->globalServerIp = globalServerIp;
+    self->globalServerPort = globalServerPort;
+    self->packetHandlers = packetHandlers;
+    self->packetHandlersCount = packetHandlersCount;
 
     // ===================================
     //          Initialize MySQL
@@ -153,15 +157,15 @@ ZoneWorker_init (
 }
 
 bool
-ZoneWorker_sendToClients (
-    ZoneWorker *self,
+Worker_sendToClients (
+    Worker *self,
     zlist_t *clients,
     unsigned char *packet,
     size_t packetLen
 ) {
     zmsg_t *msg = zmsg_new ();
 
-    if (zmsg_addmem (msg, PACKET_HEADER (ZONE_SERVER_WORKER_MULTICAST), sizeof (ZONE_SERVER_WORKER_MULTICAST)) != 0
+    if (zmsg_addmem (msg, PACKET_HEADER (ROUTER_WORKER_MULTICAST), sizeof (ROUTER_WORKER_MULTICAST)) != 0
     ||  zmsg_addmem (msg, packet, packetLen) != 0
     ) {
         error ("Cannot build the multicast packet.");
@@ -186,8 +190,8 @@ ZoneWorker_sendToClients (
 }
 
 zlist_t *
-ZoneWorker_getClientsWithinDistance (
-    ZoneWorker *self,
+Worker_getClientsWithinDistance (
+    Worker *self,
     Session *session,
     float x, float y, float z,
     float range
@@ -196,15 +200,15 @@ ZoneWorker_getClientsWithinDistance (
 }
 
 static zframe_t *
-ZoneWorker_handlePingPacket (
+Worker_handlePingPacket (
     void
 ) {
-    return zframe_new (PACKET_HEADER (ZONE_SERVER_PONG), sizeof (ZONE_SERVER_PONG));
+    return zframe_new (PACKET_HEADER (ROUTER_PONG), sizeof (ROUTER_PONG));
 }
 
 static bool
-ZoneWorker_processClientPacket (
-    ZoneWorker *self,
+Worker_processClientPacket (
+    Worker *self,
     zmsg_t *msg
 ) {
     Session session = {{0}};
@@ -219,20 +223,20 @@ ZoneWorker_processClientPacket (
         return false;
     }
 
-    // Build the reply
+    // === Build the reply ===
     // We don't need the client packet in the reply
     zmsg_remove (msg, packet);
 
     // Consider the message as a "normal" message by default
-    zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ZONE_SERVER_WORKER_NORMAL), sizeof (ZONE_SERVER_WORKER_NORMAL));
+    zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ROUTER_WORKER_NORMAL), sizeof (ROUTER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
-    switch (PacketHandler_buildReply (zoneHandlers, sizeof_array (zoneHandlers), &session, zframe_data (packet), zframe_size (packet), msg, self))
+    switch (PacketHandler_buildReply (self->packetHandlers, self->packetHandlersCount, &session, zframe_data (packet), zframe_size (packet), msg, self))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
             buffer_print (zframe_data (packet), zframe_size (packet), NULL);
-            zframe_reset (headerAnswer, PACKET_HEADER (ZONE_SERVER_WORKER_ERROR), sizeof (ZONE_SERVER_WORKER_ERROR));
+            zframe_reset (headerAnswer, PACKET_HEADER (ROUTER_WORKER_ERROR), sizeof (ROUTER_WORKER_ERROR));
         break;
 
         case PACKET_HANDLER_OK:
@@ -250,9 +254,7 @@ ZoneWorker_processClientPacket (
         break;
 
         case PACKET_HANDLER_DELETE_SESSION:
-            // TODO :
-            /*
-            */
+            // TODO
         break;
     }
 
@@ -263,8 +265,8 @@ ZoneWorker_processClientPacket (
 }
 
 void
-ZoneWorker_handleRequest (
-    ZoneWorker *self,
+Worker_handleRequest (
+    Worker *self,
     zmsg_t *msg
 ) {
     // Extract the request
@@ -273,12 +275,12 @@ ZoneWorker_handleRequest (
     zframe_t *headerFrame = zmsg_pop (msg);
     zframe_t *requestAnswer = NULL;
 
-    ZoneServerRecvHeader header = *((ZoneServerRecvHeader *) zframe_data (headerFrame));
+    RouterRecvHeader header = *((RouterRecvHeader *) zframe_data (headerFrame));
 
     // Handle the request
     switch (header) {
-        case ZONE_SERVER_PING:
-            requestAnswer = ZoneWorker_handlePingPacket ();
+        case ROUTER_PING:
+            requestAnswer = Worker_handlePingPacket ();
         break;
 
         default:
@@ -297,7 +299,7 @@ ZoneWorker_handleRequest (
 
 
 void *
-ZoneWorker_worker (
+Worker_worker (
     void *arg
 ) {
     zframe_t *readyFrame;
@@ -305,7 +307,7 @@ ZoneWorker_worker (
     zsock_t *worker, *global;
     bool isRunning = true;
 
-    ZoneWorker *self = (ZoneWorker *) arg;
+    Worker *self = (Worker *) arg;
 
     // ============================
     //    Initialize connections
@@ -313,68 +315,76 @@ ZoneWorker_worker (
 
     // Create and connect a socket to the backend
     if (!(worker = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (worker, ZONE_SERVER_BACKEND_ENDPOINT, self->serverId) == -1
+    ||  zsock_connect (worker, ROUTER_BACKEND_ENDPOINT, self->serverId) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot connect to the backend socket.", self->serverId, self->workerId);
+        error ("[serverId=%d][WorkerId=%d] cannot connect to the backend socket.", self->serverId, self->workerId);
         return NULL;
     }
-    info ("[%d] Session worker ID %d connected to the backend %s.", self->serverId, self->workerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->serverId));
+    info ("[serverId=%d][WorkerId=%d] connected to the backend %s.",
+          self->serverId, self->workerId, zsys_sprintf (ROUTER_BACKEND_ENDPOINT, self->serverId));
 
-    // Create and listen to a socket with the global server
+
+    // Create and connect a socket to the global server
     if (!(global = zsock_new (ZMQ_REQ))
-    ||  zsock_connect (global, ZONE_SERVER_GLOBAL_ENDPOINT, self->globalPort) == -1
+    ||  zsock_connect (global, ROUTER_GLOBAL_ENDPOINT, self->globalServerIp, self->globalServerPort) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot bind to the global port %d.", self->serverId, self->globalPort);
+        error ("[serverId=%d][WorkerId=%d] cannot bind to the global server %s:%d.", self->serverId, self->globalServerIp, self->globalServerPort);
         return NULL;
     }
-    info ("[%d] Zone worker ID = %d connected to the global server %s.", self->serverId, self->workerId, zsys_sprintf (ZONE_SERVER_BACKEND_ENDPOINT, self->serverId));
+    info ("[serverId=%d][WorkerId=%d] connected to the global server %s.",
+          self->serverId, self->workerId, zsys_sprintf (ROUTER_GLOBAL_ENDPOINT, self->globalServerIp, self->globalServerPort));
 
-    // Create a publisher to send asynchronous messages to the zone server
+
+    // Create and bind a publisher to send asynchronous messages to the Router
     if (!(self->publisher = zsock_new (ZMQ_PUB))
-    ||  zsock_bind (self->publisher, ZONE_SERVER_SUBSCRIBER_ENDPOINT, self->serverId, self->workerId) == -1
+    ||  zsock_bind (self->publisher, ROUTER_SUBSCRIBER_ENDPOINT, self->serverId, self->workerId) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot bind to the subscriber endpoint.", self->serverId);
+        error ("[serverId=%d][WorkerId=%d] cannot bind to the subscriber endpoint.", self->serverId);
         return NULL;
     }
-    info ("[%d] Session worker ID %d bind to the subscriber endpoint %s", self->serverId, self->workerId, zsys_sprintf (ZONE_SERVER_SUBSCRIBER_ENDPOINT, self->serverId, self->workerId));
+    info ("[serverId=%d][WorkerId=%d] bind to the subscriber endpoint %s",
+          self->serverId, self->workerId, zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->serverId, self->workerId));
+
 
     // Tell to the broker we're ready for work
-    if (!(readyFrame = zframe_new (PACKET_HEADER (ZONE_SERVER_WORKER_READY), sizeof (ZONE_SERVER_WORKER_READY)))
+    if (!(readyFrame = zframe_new (PACKET_HEADER (ROUTER_WORKER_READY), sizeof (ROUTER_WORKER_READY)))
     ||  zframe_send (&readyFrame, worker, 0) == -1
     ) {
-        error ("[%d] Zone worker ID = %d cannot send a correct ZONE_WORKER_READY state.", self->serverId, self->workerId);
+        error ("[serverId=%d][WorkerId=%d] cannot send a correct ZONE_WORKER_READY state.",
+               self->serverId, self->workerId);
         return NULL;
     }
+
 
     // Define a poller with the global and the worker socket
     if (!(poller = zpoller_new (global, worker, NULL))) {
-        error ("[%d] Zone worker ID = %d cannot create a poller.", self->serverId, self->workerId);
+        error ("[serverId=%d][WorkerId=%d] cannot create a poller.", self->serverId, self->workerId);
         return NULL;
     }
+    dbg ("[serverId=%d][WorkerId=%d] is running and waiting for messages.", self->serverId, self->workerId);
 
-    dbg ("[%d] Zone worker ID %d is running and waiting for messages.", self->serverId, self->workerId);
 
     // TODO : Refactor zpoller into zreactor ?
     while (isRunning) {
 
         zsock_t *actor = zpoller_wait (poller, -1);
-        typedef int (*ZoneWorkerRequestHandler) (ZoneWorker *self, zsock_t *actor);
-        ZoneWorkerRequestHandler handler;
+        typedef int (*WorkerRequestHandler) (Worker *self, zsock_t *actor);
+        WorkerRequestHandler handler;
 
         // Get the correct handler based on the actor
         if (actor == worker) {
-            handler = ZoneWorker_handlePublicRequest;
+            handler = Worker_handlePublicRequest;
         } else if (actor == global) {
-            handler = ZoneWorker_handlePrivateRequest;
+            handler = Worker_handlePrivateRequest;
         }
         else {
-            warning ("[%d] Unknown actor talked to the ZoneWorker ID = %d. Maybe SIGINT signal?", self->serverId, self->workerId);
+            warning ("[serverId=%d][WorkerId=%d] received a message from an unknown actor. Maybe it is a SIGINT signal?", self->serverId, self->workerId);
             break;
         }
 
         switch (handler (self, actor)) {
             case -1: // ERROR
-                error ("[%d] Zone worker ID %d encountered an error when handling a request.", self->serverId, self->workerId);
+                error ("[serverId=%d][WorkerId=%d] encountered an error when handling a request.", self->serverId, self->workerId);
             case -2: // Connection stopped
                 isRunning = false;
             break;
@@ -387,28 +397,28 @@ ZoneWorker_worker (
     zsock_destroy (&worker);
     zsock_destroy (&global);
 
-    dbg ("[%d] Zone worker ID = %d exits.", self->serverId, self->workerId);
+    dbg ("[serverId=%d][WorkerId=%d] exits.", self->serverId, self->workerId);
     return NULL;
 }
 
 static int
-ZoneWorker_handlePrivateRequest (
-    ZoneWorker *self,
+Worker_handlePrivateRequest (
+    Worker *self,
     zsock_t *global
 ) {
     zmsg_t *msg;
 
     // Process messages as they arrive
     if (!(msg = zmsg_recv (global))) {
-        dbg ("[%d] Zone worker ID = %d stops working.", self->serverId, self->workerId);
+        dbg ("[serverId=%d][WorkerId=%d] stops working.", self->serverId, self->workerId);
         return -2;
     }
 
-    ZoneWorker_processGlobalPacket (self, msg);
+    Worker_processGlobalPacket (self, msg);
 
     // Reply back to the sender
     if (zmsg_send (&msg, global) != 0) {
-        warning ("[%d] Zone worker ID = %d failed to send a message to the backend.", self->serverId, self->workerId);
+        warning ("[serverId=%d][WorkerId=%d] failed to send a message to the backend.", self->serverId, self->workerId);
         return -1;
     }
 
@@ -416,24 +426,24 @@ ZoneWorker_handlePrivateRequest (
 }
 
 static void
-ZoneWorker_processGlobalPacket (
-    ZoneWorker *self,
+Worker_processGlobalPacket (
+    Worker *self,
     zmsg_t *msg
 ) {
     // Extract the request
     zframe_t *headerFrame = zmsg_pop (msg);
     zframe_t *requestAnswer = NULL;
 
-    ZoneServerRecvHeader header = *((ZoneServerRecvHeader *) zframe_data (headerFrame));
+    RouterRecvHeader header = *((RouterRecvHeader *) zframe_data (headerFrame));
 
     // Handle the request
     switch (header) {
-        case ZONE_SERVER_PING:
-            requestAnswer = ZoneWorker_handlePingPacket ();
+        case ROUTER_PING:
+            requestAnswer = Worker_handlePingPacket ();
         break;
 
         default:
-            error ("Packet type %d not handled.", header);
+            error ("[serverId=%d][WorkerId=%d] : Packet type %d not handled.", self->serverId, self->workerId, header);
         break;
     }
 
@@ -445,21 +455,21 @@ ZoneWorker_processGlobalPacket (
 }
 
 static int
-ZoneWorker_handlePublicRequest (
-    ZoneWorker *self,
+Worker_handlePublicRequest (
+    Worker *self,
     zsock_t *worker
 ) {
     zmsg_t *msg;
 
     // Process messages as they arrive
     if (!(msg = zmsg_recv (worker))) {
-        dbg ("[%d] Zone worker ID = %d stops working.", self->serverId, self->workerId);
+        dbg ("[serverId=%d][WorkerId=%d] stops working.", self->serverId, self->workerId);
         return -2;
     }
 
     // No message should be with less than 3 frames
     if (zmsg_size (msg) < 2) {
-        error ("[%d] Zone worker ID = %d received a malformed message.", self->serverId, self->workerId);
+        error ("[serverId=%d][WorkerId=%d] received a malformed message.", self->serverId, self->workerId);
         zmsg_destroy (&msg);
         return -1;
     }
@@ -468,22 +478,22 @@ ZoneWorker_handlePublicRequest (
     if (zmsg_size (msg) == 2) {
         // The first frame is the client identity
         // The second frame is the data of the packet
-        ZoneWorker_processClientPacket (self, msg);
+        Worker_processClientPacket (self, msg);
     }
 
     // Reply back to the sender
     if (zmsg_send (&msg, worker) != 0) {
-        warning ("[%d] Zone worker ID = %d failed to send a message to the backend.", self->serverId, self->workerId);
+        warning ("[serverId=%d][WorkerId=%d] failed to send a message to the backend.", self->serverId, self->workerId);
     }
 
     return 0;
 }
 
 void
-ZoneWorker_destroy (
-    ZoneWorker **_self
+Worker_destroy (
+    Worker **_self
 ) {
-    ZoneWorker *self = *_self;
+    Worker *self = *_self;
 
     free (self);
     *_self = NULL;

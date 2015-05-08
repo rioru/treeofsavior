@@ -158,7 +158,7 @@ Redis_set (
 
     // Build the Redis command
 	sprintf (self->commandBuffer, "HMSET zone%x:map%x:acc%llx ",
-        socketSession->zoneId, socketSession->mapId, socketSession->accountId); // Identifiers
+        socketSession->serverId, socketSession->mapId, socketSession->accountId); // Identifiers
 
     // Current position to the buffer = end of the HMSET key
     curPos = strlen (self->commandBuffer);

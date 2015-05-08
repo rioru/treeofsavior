@@ -338,7 +338,7 @@ BarrackHandler_commanderMove (
     replyPacket.x = clientPacket->x;
     replyPacket.y = clientPacket->y;
 
-    // zlist_t * clients = Redis_getClientsWithinDistance (self->redis, session->socket.zoneId, session->socket.mapId, replyPacket.x, replyPacket.y, 0.0, 100.0);
+    // zlist_t * clients = Redis_getClientsWithinDistance (self->redis, session->socket.serverId, session->socket.mapId, replyPacket.x, replyPacket.y, 0.0, 100.0);
 
     // Update session
     session->game.currentCommander.cPosX = replyPacket.x;

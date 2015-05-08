@@ -24,7 +24,7 @@
 // ------ Extern variables implementation -------
 const char *redisSocketSessionsStr [] = {
 	[REDIS_SOCKET_SESSION_accountId] = REDIS_SOCKET_SESSION_accountId_str,
-	[REDIS_SOCKET_SESSION_zoneId] = REDIS_SOCKET_SESSION_zoneId_str,
+	[REDIS_SOCKET_SESSION_serverId] = REDIS_SOCKET_SESSION_serverId_str,
 	[REDIS_SOCKET_SESSION_mapId] = REDIS_SOCKET_SESSION_mapId_str,
 	[REDIS_SOCKET_SESSION_authenticated] = REDIS_SOCKET_SESSION_authenticated_str
 };
@@ -34,7 +34,7 @@ const char *redisSocketSessionsStr [] = {
 bool
 Redis_getSocketSession (
     Redis *self,
-    int zoneId,
+    int serverId,
     char *socketIdKey,
     SocketSession *socketSession
 ) {
@@ -43,10 +43,10 @@ Redis_getSocketSession (
 	reply = Redis_commandDbg (self,
         "HMGET zone%x:socket%s "
         REDIS_SOCKET_SESSION_accountId_str " "
-        REDIS_SOCKET_SESSION_zoneId_str " "
+        REDIS_SOCKET_SESSION_serverId_str " "
         REDIS_SOCKET_SESSION_mapId_str " "
         REDIS_SOCKET_SESSION_authenticated_str " ",
-        zoneId, socketIdKey
+        serverId, socketIdKey
     );
 
     if (!reply) {
@@ -77,7 +77,7 @@ Redis_getSocketSession (
 
             if (Redis_anyElementIsNull (reply->element, reply->elements) != -1) {
                 // The socket session doesn't exist : create a new one and set it to its default value
-                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, zoneId, SOCKET_SESSION_UNDEFINED_MAP, socketIdKey, false);
+                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, serverId, SOCKET_SESSION_UNDEFINED_MAP, socketIdKey, false);
 
                 // Update the newly created socketSession to the Redis Session
                 if (!Redis_updateSocketSession (self, socketSession)) {
@@ -89,7 +89,7 @@ Redis_getSocketSession (
             else {
                 // Read the socket Session from the Redis server
                 socketSession->accountId = strtoll (reply->element[REDIS_SOCKET_SESSION_accountId]->str, NULL, 16);
-                socketSession->zoneId = strtol (reply->element[REDIS_SOCKET_SESSION_zoneId]->str, NULL, 16);
+                socketSession->serverId = strtol (reply->element[REDIS_SOCKET_SESSION_serverId]->str, NULL, 16);
                 socketSession->mapId = strtol (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
                 socketSession->authenticated = strtol (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
                 memcpy (socketSession->key, socketIdKey, sizeof (socketSession->key));
@@ -118,12 +118,12 @@ Redis_updateSocketSession (
     reply = Redis_commandDbg (self,
         "HMSET zone%x:socket%s"
         " accountId %llx"
-        " zoneId %x"
+        " serverId %x"
         " mapId %x"
         " authenticated %x"
-        , socketSession->zoneId, socketSession->key,
+        , socketSession->serverId, socketSession->key,
         socketSession->accountId,
-        socketSession->zoneId,
+        socketSession->serverId,
         socketSession->mapId,
         socketSession->authenticated
     );

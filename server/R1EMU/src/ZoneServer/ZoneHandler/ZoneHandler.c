@@ -177,7 +177,7 @@ ZoneHandler_connect (
     }
 
     // Update the Socket Session
-    socketSession->zoneId = self->serverId;
+    socketSession->serverId = self->serverId;
     socketSession->mapId = gameSession->currentCommander.mapId;
 
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;

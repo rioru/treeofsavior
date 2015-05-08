@@ -23,13 +23,13 @@
 
 // ---------- Defines -------------
 #define REDIS_SOCKET_SESSION_accountId_str "accountId"
-#define REDIS_SOCKET_SESSION_zoneId_str "zoneId"
+#define REDIS_SOCKET_SESSION_serverId_str "serverId"
 #define REDIS_SOCKET_SESSION_mapId_str "mapId"
 #define REDIS_SOCKET_SESSION_authenticated_str "authenticated"
 
 enum RedisSocketSessionFields {
 	REDIS_SOCKET_SESSION_accountId,
-	REDIS_SOCKET_SESSION_zoneId,
+	REDIS_SOCKET_SESSION_serverId,
 	REDIS_SOCKET_SESSION_mapId,
 	REDIS_SOCKET_SESSION_authenticated,
 	REDIS_SOCKET_SESSION_COUNT
