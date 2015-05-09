@@ -50,7 +50,7 @@ void _dbg (
         case DBG_LEVEL_DEBUG: fprintf (output, "\x1b[37m"); break;
         case DBG_LEVEL_WARNING: fprintf (output, "\x1b[33m"); break;
         case DBG_LEVEL_ERROR: fprintf (output, "\x1b[31m"); break;
-        case DBG_LEVEL_SPECIAL: fprintf (output, "\x1b[34m"); break;
+        case DBG_LEVEL_SPECIAL: fprintf (output, "\x1b[35m"); break;
         #endif
     }
 

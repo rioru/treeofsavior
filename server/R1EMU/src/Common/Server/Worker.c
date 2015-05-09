@@ -341,7 +341,6 @@ Worker_mainLoop (
     info ("[routerId=%d][WorkerId=%d] connected to the backend %s.",
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_BACKEND_ENDPOINT, self->info.routerId));
 
-
     // Create and connect a socket to the global server
     if (!(global = zsock_new (ZMQ_REQ))
     ||  zsock_connect (global, ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort) == -1
