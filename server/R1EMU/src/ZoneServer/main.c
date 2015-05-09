@@ -32,6 +32,12 @@ int main (int argc, char **argv)
 
     #ifndef WIN32
     dbg_set_output (fopen (zsys_sprintf ("ZoneServer%d_output.txt", routerId), "w+"));
+    #else
+    if (routerId == BARRACK_SERVER_ROUTER_ID) {
+        SetConsoleTitle (zsys_sprintf ("Barrack Server (RouterID = %d)", BARRACK_SERVER_ROUTER_ID));
+    } else {
+        SetConsoleTitle (zsys_sprintf ("Zone Server (RouterID = %d)", routerId));
+    }
     #endif
 
     char *routerIp = argv[curArg++];
