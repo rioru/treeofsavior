@@ -156,3 +156,12 @@ void
 dbg_set_output (
     FILE *output
 );
+
+
+/**
+ * @brief Close the custom debug file
+ */
+void
+dbg_close (
+    void
+);

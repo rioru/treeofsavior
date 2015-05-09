@@ -211,7 +211,7 @@ RouterStartupInfo_init (
     int workersCount
 ) {
     self->routerId = routerId;
-    self->ip = ip;
+    self->ip = strdup(ip);
     self->ports = ports;
     self->portsCount = portsCount;
     self->workersCount = workersCount;
@@ -524,6 +524,13 @@ Router_getId (
     return self->info.routerId;
 }
 
+void
+RouterStartupInfo_free (
+    RouterStartupInfo *self
+) {
+    free (self->ip);
+    free (self->ports);
+}
 
 void
 Router_destroy (
@@ -539,6 +546,10 @@ Router_destroy (
         zsock_destroy (&self->backend);
     }
 
+    for (int i = 0; i < self->info.workersCount; i++) {
+        zsock_destroy (&self->subscribers[i]);
+    }
+
     if (self->workers) {
         free (self->workers);
     }
@@ -546,6 +557,8 @@ Router_destroy (
     if (self->readyWorkers) {
         zlist_destroy (&self->readyWorkers);
     }
+
+    RouterStartupInfo_free (&self->info);
 
     free (self);
     *_self = NULL;

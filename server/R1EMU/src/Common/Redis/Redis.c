@@ -76,7 +76,7 @@ RedisStartupInfo_init (
     char *hostname,
     int port
 ) {
-    self->hostname = hostname;
+    self->hostname = strdup (hostname);
     self->port = port;
 
     return true;
@@ -228,17 +228,22 @@ Redis_set (
 */
 
 void
+RedisStartupInfo_free (
+    RedisStartupInfo *self
+) {
+    free (self->hostname);
+}
+
+void
 Redis_destroy (
     Redis **_self
 ) {
     Redis *self = *_self;
 
+    RedisStartupInfo_free (&self->info);
+
     if (self->context) {
         redisFree (self->context);
-    }
-
-    if (self->commandBuffer) {
-        free (self->commandBuffer);
     }
 
     free (self);

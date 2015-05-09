@@ -505,12 +505,20 @@ Worker_handlePublicRequest (
 }
 
 void
+WorkerStartupInfo_free (
+    WorkerStartupInfo *self
+) {
+    MySQLStartupInfo_free (&self->sqlInfo);
+    RedisStartupInfo_free (&self->redisInfo);
+    free (self->globalServerIp);
+
+}
+
+void
 Worker_destroy (
     Worker **_self
 ) {
     Worker *self = *_self;
-
-    free (self->info.globalServerIp);
 
     Redis_destroy (&self->redis);
     MySQL_destroy (&self->sqlConn);

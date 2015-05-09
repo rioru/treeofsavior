@@ -30,6 +30,7 @@ int main (int argc, char **argv)
     // === Read the command line arguments ===
     int routerId = atoi (argv[curArg++]);
 
+    // Set a custom output for linux for each servers,
     #ifndef WIN32
     dbg_set_output (fopen (zsys_sprintf ("ZoneServer%d_output.txt", routerId), "w+"));
     #else
@@ -134,6 +135,9 @@ int main (int argc, char **argv)
 
     // Shutdown the CZMQ layer properly
     zsys_shutdown ();
+
+    // Close the custom debug file if necessary
+    dbg_close ();
 
     info ("Press any key to exit...");
     fgetc (stdin);

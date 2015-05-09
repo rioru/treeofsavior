@@ -147,6 +147,14 @@ Redis_printElements (
     const char **elementsName
 );
 
+/**
+ * @brief Free the members of the RedisStartupInfo structure
+ * @param self A pointer to an allocated RedisStartupInfo.
+ */
+void
+RedisStartupInfo_free (
+    RedisStartupInfo *self
+);
 
 /**
  * @brief Free an allocated Redis structure and nullify the content of the pointer.

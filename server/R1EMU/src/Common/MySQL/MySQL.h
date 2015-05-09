@@ -128,6 +128,14 @@ MySQL_freeResult (
 	MySQL *self
 );
 
+/**
+ * @brief Free the members of the MySQLStartupInfo structure
+ * @param self A pointer to an allocated MySQLStartupInfo.
+ */
+void
+MySQLStartupInfo_free (
+    MySQLStartupInfo *self
+);
 
 /**
  * @brief Free an allocated MySQL structure and nullify the content of the pointer

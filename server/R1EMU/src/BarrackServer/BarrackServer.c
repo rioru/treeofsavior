@@ -80,6 +80,8 @@ BarrackServer_destroy (
 ) {
     BarrackServer *self = *_self;
 
+    Server_destroy (&self->server);
+
     free (self);
     *_self = NULL;
 }

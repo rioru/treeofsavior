@@ -206,6 +206,12 @@ Server_destroy (
 ) {
     Server *self = *_self;
 
+    for (int i = 0; i < self->info.workersInfoCount; i++) {
+        Worker_destroy (&self->workers[i]);
+    }
+
+    Router_destroy (&self->router);
+
     free (self);
     *_self = NULL;
 }

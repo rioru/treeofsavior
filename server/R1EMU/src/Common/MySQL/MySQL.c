@@ -134,12 +134,25 @@ MySQL_freeResult (
 	}
 }
 
+void
+MySQLStartupInfo_free (
+    MySQLStartupInfo *self
+) {
+    free (self->hostname);
+    free (self->database);
+    free (self->login);
+    free (self->password);
+}
 
 void
 MySQL_destroy (
     MySQL **_self
 ) {
     MySQL *self = *_self;
+
+    MySQLStartupInfo_free (&self->info);
+    MySQL_freeResult (self);
+    // TODO : free handler
 
     free (self);
     *_self = NULL;

@@ -32,6 +32,18 @@ dbg_set_output (
     _output = output;
 }
 
+
+void
+dbg_close (
+    void
+) {
+    if (_output && _output != stdout && _output != stderr) {
+        fclose (_output);
+    }
+
+    _output = stdout;
+}
+
 void _dbg (
     int level,
     char *format,

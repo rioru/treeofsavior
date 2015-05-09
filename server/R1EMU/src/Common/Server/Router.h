@@ -140,6 +140,16 @@ Router_getId (
     Router *self
 );
 
+
+/**
+ * @brief Free the members of the RouterStartupInfo structure
+ * @param self A pointer to an allocated RouterStartupInfo.
+ */
+void
+RouterStartupInfo_free (
+    RouterStartupInfo *self
+);
+
 /**
  * @brief Free an allocated Router structure and nullify the content of the pointer.
  * @param self A pointer to an allocated Router.
