@@ -107,7 +107,7 @@ Redis_requestSession (
             error ("Cannot get Game Session.");
             return false;
         }
-        dbg ("Welcome back, SOCKET_%s !", socketKey);
+        // dbg ("Welcome back, SOCKET_%s !", socketKey);
     }
 
     return true;
@@ -279,6 +279,7 @@ Redis_getGameSession (
         default : warning ("Unexpected Redis status (%d).", reply->type); return false;
     }
 
+    freeReplyObject (reply);
     return true;
 }
 
@@ -421,12 +422,13 @@ Redis_updateGameSession (
         break;
 
         case REDIS_REPLY_STATUS:
-            info ("Redis status : %s", reply->str);
+            // info ("Redis status : %s", reply->str);
         break;
 
         default : warning ("Unexpected Redis status. (%d)", reply->type); return false;
     }
 
+    freeReplyObject (reply);
     return true;
 }
 
@@ -500,7 +502,7 @@ Redis_getClientsWithinDistance (
                         break;
 
                         case REDIS_REPLY_STATUS:
-                            info ("Redis status : %s", reply->str);
+                            // info ("Redis status : %s", reply->str);
                         break;
 
                         case REDIS_REPLY_ARRAY: {

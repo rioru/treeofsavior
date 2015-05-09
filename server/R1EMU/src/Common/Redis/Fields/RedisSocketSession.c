@@ -63,7 +63,7 @@ Redis_getSocketSession (
         break;
 
         case REDIS_REPLY_STATUS:
-            info ("Redis status : %s", reply->str);
+            // info ("Redis status : %s", reply->str);
             freeReplyObject (reply);
             return false;
         break;
@@ -141,11 +141,13 @@ Redis_updateSocketSession (
         break;
 
         case REDIS_REPLY_STATUS:
-            info ("Redis status : %s", reply->str);
+            // info ("Redis status : %s", reply->str);
         break;
 
         default : warning ("Unexpected Redis status."); return false;
     }
+
+    freeReplyObject (reply);
 
     return true;
 }

@@ -23,27 +23,37 @@
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static PacketHandlerState ZoneHandler_connect   (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_connect       (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Client is ready to enter the zone */
-static PacketHandlerState ZoneHandler_gameReady (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_gameReady     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send information about quickslots */
-static void ZoneHandler_quickSlotListHandler    (Worker *self, Session *session, zmsg_t *reply);
+static void ZoneHandler_quickSlotListHandler        (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about the UI */
-static void ZoneHandler_uiInfoList              (Worker *self, Session *session, zmsg_t *reply);
+static void ZoneHandler_uiInfoList                  (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about Jobs */
-static void ZoneHandler_startInfo               (Worker *self, Session *session, zmsg_t *reply);
+static void ZoneHandler_startInfo                   (Worker *self, Session *session, zmsg_t *reply);
 /** Send a commander movement speed */
-static void ZoneHandler_moveSpeed               (Worker *self, Session *session, zmsg_t *reply);
+static void ZoneHandler_moveSpeed                   (Worker *self, Session *session, zmsg_t *reply);
 /** Alert the client that a new PC has entered */
-static void ZoneHandler_MyPCEnter               (Worker *self, Session *session, zmsg_t *reply);
+static void ZoneHandler_MyPCEnter                   (Worker *self, Session *session, zmsg_t *reply);
 /** Set the position of a commander */
-// static void ZoneHandler_setPos                  (Worker *self, Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
+// static void ZoneHandler_setPos                   (Worker *self, Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
 /** Jump handler */
-static PacketHandlerState ZoneHandler_jump      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Jump handler */
-static PacketHandlerState ZoneHandler_onAir     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
-/** Jump handler */
-static PacketHandlerState ZoneHandler_onGround  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_jump          (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On air handler */
+static PacketHandlerState ZoneHandler_onAir         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On ground handler */
+static PacketHandlerState ZoneHandler_onGround      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On move with keyboard handler */
+static PacketHandlerState ZoneHandler_keyboardMove  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On stop commander movement */
+static PacketHandlerState ZoneHandler_moveStop      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On movement information */
+static PacketHandlerState ZoneHandler_movementInfo  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On commander rotation */
+static PacketHandlerState ZoneHandler_rotate        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On log out */
+static PacketHandlerState ZoneHandler_logout        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -58,10 +68,76 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_JUMP, ZoneHandler_jump),
     REGISTER_PACKET_HANDLER (CZ_ON_AIR, ZoneHandler_onAir),
     REGISTER_PACKET_HANDLER (CZ_ON_GROUND, ZoneHandler_onGround),
+    REGISTER_PACKET_HANDLER (CZ_KEYBOARD_MOVE, ZoneHandler_keyboardMove),
+    REGISTER_PACKET_HANDLER (CZ_MOVE_STOP, ZoneHandler_moveStop),
+    REGISTER_PACKET_HANDLER (CZ_MOVEMENT_INFO, ZoneHandler_movementInfo),
+    REGISTER_PACKET_HANDLER (CZ_ROTATE, ZoneHandler_rotate),
+    REGISTER_PACKET_HANDLER (CZ_LOGOUT, ZoneHandler_logout),
 
     #undef REGISTER_PACKET_HANDLER
 };
 
+static PacketHandlerState
+ZoneHandler_logout (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
+
+
+static PacketHandlerState
+ZoneHandler_rotate (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
+
+
+static PacketHandlerState
+ZoneHandler_movementInfo (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+ZoneHandler_moveStop (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+ZoneHandler_keyboardMove (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
 
 static PacketHandlerState
 ZoneHandler_gameReady (
@@ -184,8 +260,6 @@ ZoneHandler_connect (
     replyPacket.unk1 = 1;
     replyPacket.accountPrivileges = 0;
     replyPacket.pcId = gameSession->currentPcId;
-
-    CommanderInfo_print (&gameSession->currentCommander);
 
     // CharName
     memcpy (&replyPacket.commander, &gameSession->currentCommander, sizeof (CommanderInfo));
