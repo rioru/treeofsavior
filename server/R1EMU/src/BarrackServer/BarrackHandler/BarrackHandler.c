@@ -45,7 +45,7 @@ static PacketHandlerState BarrackHandler_startGame         (Worker *self, Sessio
 /** Register new servers */
 static PacketHandlerState BarrackHandler_serverEntry       (Worker *self, zmsg_t *reply);
 /** Send a list of commanders */
-static PacketHandlerState BarrackHandler_commanderList     (Worker *self, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderList     (Worker *self, Session *session, zmsg_t *reply);
 /** Send a list of zone servers */
 static PacketHandlerState BarrackHandler_zoneTraffics      (Worker *self, zmsg_t *reply);
 /** UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
@@ -390,7 +390,7 @@ BarrackHandler_startBarrack (
 ) {
     BarrackHandler_serverEntry   (self, reply);
     // BarrackHandler_unkHandler1   (self, session, reply);
-    BarrackHandler_commanderList (self, reply);
+    BarrackHandler_commanderList (self, session, reply);
 
     return PACKET_HANDLER_OK;
 }
@@ -830,13 +830,13 @@ BarrackHandler_serverEntry (
 static PacketHandlerState
 BarrackHandler_commanderList (
     Worker *self,
+    Session *session,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
     typedef struct {
         VariableSizePacketHeader variableSizeHeader;
-        uint32_t field2;
-        uint32_t field3;
+        uint64_t accountId;
     } BcCommanderListPacket;
     #pragma pack(pop)
 
@@ -845,8 +845,7 @@ BarrackHandler_commanderList (
 
     // Empty commander list
     replyPacket.variableSizeHeader.serverHeader.type = BC_COMMANDER_LIST;
-    replyPacket.field2 = 0;
-    replyPacket.field3 = 0;
+    replyPacket.accountId = session->socket.accountId;
 
 	// Add dynamically the size of the packet
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
