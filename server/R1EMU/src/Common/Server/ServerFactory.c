@@ -116,10 +116,10 @@ ServerFactory_initServerInfo (
     int packetHandlersCount;
     if (routerId == BARRACK_SERVER_ROUTER_ID) {
         packetHandlers = barrackHandlers;
-        packetHandlersCount = ZONE_HANDLER_ARRAY_SIZE;
+        packetHandlersCount = PACKET_TYPE_COUNT;
     } else {
         packetHandlers = zoneHandlers;
-        packetHandlersCount = BARRACK_HANDLER_ARRAY_SIZE;
+        packetHandlersCount = PACKET_TYPE_COUNT;
     }
 
     for (uint16_t workerId = 0; workerId < workersCount; workerId++) {

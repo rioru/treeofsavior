@@ -59,7 +59,7 @@ static PacketHandlerState BarrackHandler_zoneTraffics      (Worker *self, zmsg_t
 /**
  * @brief barrackHandlers is a global table containing all the barrack handlers.
  */
-const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
+const PacketHandler barrackHandlers [PACKET_TYPE_COUNT] = {
     #define REGISTER_PACKET_HANDLER(packetName, handler) \
         [packetName] = {handler, STRINGIFY (packetName)}
 
@@ -676,7 +676,6 @@ BarrackHandler_commanderCreate (
     }
 
     replyPacket.commander.charPosition = gameSession->charactersBarrackCount + 1;
-    replyPacket.commander.listPosition = gameSession->charactersBarrackCount + 1;
 
     // Hair type
     // TODO : Check the hairType

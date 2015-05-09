@@ -21,12 +21,8 @@
 #include "Common/Server/Worker.h"
 
 // ---------- Defines -------------
-#define BARRACK_HANDLER_MAX_ID      CZ_LOGOUT
-#define BARRACK_HANDLER_ARRAY_SIZE  (BARRACK_HANDLER_MAX_ID + 1)
-
-
 
 // ----------- Functions ------------
 // Handlers
 /** Global table of handlers for the Barrack. It contains only the packets allowed. */
-extern const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE];
+extern const PacketHandler barrackHandlers [PACKET_TYPE_COUNT];

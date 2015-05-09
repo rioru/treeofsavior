@@ -58,7 +58,7 @@ CommanderInfo_createBasicCommander (
     commander->unk4 = 0;
     commander->unk5 = 0;
     commander->pcId = 0x604;
-    commander->listPosition = 0x19f74;
+    commander->unk13 = 0;
     commander->charPosition = 1;
     commander->unk6 = 0;
     commander->mapId = 0x3fd;
@@ -90,7 +90,7 @@ CommanderInfo_print (
     dbg ("charName = %s", commander->charName);
     dbg ("familyName = %s", commander->familyName);
     // dbg ("unk1 = %d (%x)", commander->unk1, commander->unk1);
-    dbg ("accountId = %" PRIu64, commander->accountId, commander->accountId);
+    dbg ("accountId = %llu (%llx)", commander->accountId, commander->accountId);
     dbg ("classId = %d (%x)", commander->classId, commander->classId);
     dbg ("unk2 = %d (%x)", commander->unk2, commander->unk2);
     dbg ("jobId = %d (%x)", commander->jobId, commander->jobId);
@@ -121,7 +121,7 @@ CommanderInfo_print (
     dbg ("unk4 = %d (%x)", commander->unk4, commander->unk4);
     dbg ("unk5 = %d (%x)", commander->unk5, commander->unk5);
     dbg ("pcId = %d (%x)", commander->pcId, commander->pcId);
-    dbg ("listPosition = %d (%x)", commander->listPosition, commander->listPosition);
+    dbg ("unk13 = %d (%x)", commander->unk13, commander->unk13);
     dbg ("charPosition = %d (%x)", commander->charPosition, commander->charPosition);
     dbg ("unk6 = %d (%x)", commander->unk6, commander->unk6);
     dbg ("mapId = %d (%x)", commander->mapId, commander->mapId);
@@ -130,7 +130,7 @@ CommanderInfo_print (
     dbg ("unk7 = %d (%x)", commander->unk7, commander->unk7);
     dbg ("pose = %d (%x)", commander->pose, commander->pose);
     dbg ("spriteRelated = %d (%x)", commander->spriteRelated, commander->spriteRelated);
-    dbg ("commanderId = %" PRIu64, commander->commanderId, commander->commanderId);
+    dbg ("commanderId = %llu (%llx)", commander->commanderId, commander->commanderId);
     dbg ("currentHP = %f (%x)", commander->currentHP, commander->currentHP);
     dbg ("maxHP = %f (%x)", commander->maxHP, commander->maxHP);
     dbg ("currentSP = %f (%x)", commander->currentSP, commander->currentSP);

@@ -37,7 +37,7 @@ static void ZoneHandler_moveSpeed               (Worker *self, Session *session,
 /** Alert the client that a new PC has entered */
 static void ZoneHandler_MyPCEnter               (Worker *self, Session *session, zmsg_t *reply);
 /** Set the position of a commander */
-static void ZoneHandler_setPos                  (Worker *self, Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
+// static void ZoneHandler_setPos                  (Worker *self, Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
 /** Jump handler */
 static PacketHandlerState ZoneHandler_jump      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Jump handler */
@@ -49,7 +49,7 @@ static PacketHandlerState ZoneHandler_onGround  (Worker *self, Session *session,
 /**
  * @brief zoneHandlers is a global table containing all the zone handlers.
  */
-const PacketHandler zoneHandlers [ZONE_HANDLER_ARRAY_SIZE] = {
+const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     #define REGISTER_PACKET_HANDLER(packetName, handler) \
         [packetName] = {handler, STRINGIFY (packetName)}
 
@@ -97,7 +97,7 @@ ZoneHandler_gameReady (
     ZoneHandler_startInfo (self, session, reply);
     ZoneHandler_moveSpeed (self, session, reply);
     ZoneHandler_MyPCEnter (self, session, reply);
-    ZoneHandler_setPos (self, session, reply, session->game.currentPcId, 1142.29f, 1000, -32.42f);
+    // ZoneHandler_setPos (self, session, reply, session->game.currentPcId, -643.0f, 342.0f, 503.0f);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -115,7 +115,6 @@ ZoneHandler_connect (
 ) {
     GameSession *gameSession = &session->game;
     SocketSession *socketSession = &session->socket;
-    buffer_print (packet, packetSize, ">> ");
 
     #pragma pack(push, 1)
     typedef struct {
@@ -201,15 +200,20 @@ ZoneHandler_connect (
     replyPacket.commander.commanderId = gameSession->currentCommanderId;
 
     // Character position
-    replyPacket.commander.listPosition = gameSession->charactersBarrackCount;
     replyPacket.commander.charPosition = gameSession->charactersBarrackCount;
+
+    // Set a default position
+    gameSession->currentCommander.cPosX = -628.0f; // Official starting point position (tutorial)
+    gameSession->currentCommander.cPosY = 260.0f;  //
+    replyPacket.commander.cPosX = gameSession->currentCommander.cPosX;
+    replyPacket.commander.cPosY = gameSession->currentCommander.cPosY;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
 
-
+/*
 static void
 ZoneHandler_setPos (
     Worker *self,
@@ -239,6 +243,7 @@ ZoneHandler_setPos (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
+*/
 
 static void
 ZoneHandler_MyPCEnter (
@@ -246,14 +251,10 @@ ZoneHandler_MyPCEnter (
     Session *session,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t pcId;
-        float unk1; // FSMActor.field_87
-        float unk2; // FSMActor.field_88
+        float x, y, z;
     } ZcMyPcEnterPacket;
     #pragma pack(pop)
 
@@ -262,9 +263,9 @@ ZoneHandler_MyPCEnter (
 
     replyPacket.header.type = ZC_MYPC_ENTER;
 
-    replyPacket.pcId = gameSession->currentPcId;
-    replyPacket.unk1 = 0;
-    replyPacket.unk2 = 0;
+    replyPacket.x = session->game.currentCommander.cPosX;
+    replyPacket.y = session->game.currentCommander.cPosY;
+    replyPacket.z = -1025.0f;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }

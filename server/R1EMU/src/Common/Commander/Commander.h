@@ -61,7 +61,7 @@ typedef struct CommanderInfo
     unsigned char unk4;
     uint16_t unk5;
     uint32_t pcId;
-    uint32_t listPosition;
+    uint32_t unk13;
     uint8_t charPosition;
     unsigned char unk6;
     uint16_t mapId;

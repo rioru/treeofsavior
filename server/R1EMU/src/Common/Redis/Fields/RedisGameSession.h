@@ -57,7 +57,7 @@
 #define REDIS_GAME_SESSION_commander_necklace_str      "necklace"
 #define REDIS_GAME_SESSION_commander_hairType_str      "hairType"
 #define REDIS_GAME_SESSION_commander_pcId_str          "pcId"
-#define REDIS_GAME_SESSION_commander_listPosition_str  "listPosition"
+#define REDIS_GAME_SESSION_commander_unk13_str         "unk13"
 #define REDIS_GAME_SESSION_commander_charPosition_str  "charPosition"
 #define REDIS_GAME_SESSION_commander_mapId_str         "mapId"
 #define REDIS_GAME_SESSION_commander_currentXP_str     "currentXP"
@@ -106,7 +106,7 @@ enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_commander_necklace,
 	REDIS_GAME_SESSION_commander_hairType,
 	REDIS_GAME_SESSION_commander_pcId,
-	REDIS_GAME_SESSION_commander_listPosition,
+	REDIS_GAME_SESSION_commander_unk13,
 	REDIS_GAME_SESSION_commander_charPosition,
 	REDIS_GAME_SESSION_commander_mapId,
 	REDIS_GAME_SESSION_commander_currentXP,

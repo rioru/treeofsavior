@@ -58,7 +58,7 @@ const char *redisGameSessionsStr [] = {
 	[REDIS_GAME_SESSION_commander_necklace]      = REDIS_GAME_SESSION_commander_necklace_str,
 	[REDIS_GAME_SESSION_commander_hairType]      = REDIS_GAME_SESSION_commander_hairType_str,
 	[REDIS_GAME_SESSION_commander_pcId]          = REDIS_GAME_SESSION_commander_pcId_str,
-	[REDIS_GAME_SESSION_commander_listPosition]  = REDIS_GAME_SESSION_commander_listPosition_str,
+	[REDIS_GAME_SESSION_commander_unk13]         = REDIS_GAME_SESSION_commander_unk13_str,
 	[REDIS_GAME_SESSION_commander_charPosition]  = REDIS_GAME_SESSION_commander_charPosition_str,
 	[REDIS_GAME_SESSION_commander_mapId]         = REDIS_GAME_SESSION_commander_mapId_str,
 	[REDIS_GAME_SESSION_commander_currentXP]     = REDIS_GAME_SESSION_commander_currentXP_str,
@@ -164,7 +164,7 @@ Redis_getGameSession (
         // [UNKNOWN] "commander.unk4 "
         // [UNKNOWN] "commander.unk5 "
         " " REDIS_GAME_SESSION_commander_pcId_str
-        " " REDIS_GAME_SESSION_commander_listPosition_str
+        " " REDIS_GAME_SESSION_commander_unk13_str
         " " REDIS_GAME_SESSION_commander_charPosition_str
         // [UNKNOWN] "commander.unk6 "
         " " REDIS_GAME_SESSION_commander_mapId_str
@@ -255,7 +255,7 @@ Redis_getGameSession (
             // [UNKNOWN] gameSession->currentCommander.unk4,
             // [UNKNOWN] gameSession->currentCommander.unk5,
             gameSession->currentCommander.pcId          = strtol (reply->element[REDIS_GAME_SESSION_commander_pcId]->str, NULL, 16);
-            gameSession->currentCommander.listPosition  = strtol (reply->element[REDIS_GAME_SESSION_commander_listPosition]->str, NULL, 16);
+            gameSession->currentCommander.unk13         = strtol (reply->element[REDIS_GAME_SESSION_commander_unk13]->str, NULL, 16);
             gameSession->currentCommander.charPosition  = strtol (reply->element[REDIS_GAME_SESSION_commander_charPosition]->str, NULL, 16);
             // [UNKNOWN] gameSession->currentCommander.unk6,
             gameSession->currentCommander.mapId         = strtol (reply->element[REDIS_GAME_SESSION_commander_mapId]->str, NULL, 16);
@@ -331,7 +331,7 @@ Redis_updateGameSession (
         // [UNKNOWN] "commander_unk4 " " %x"
         // [UNKNOWN] "commander_unk5 " " %x"
         " " REDIS_GAME_SESSION_commander_pcId_str " %x"
-        " " REDIS_GAME_SESSION_commander_listPosition_str " %x"
+        " " REDIS_GAME_SESSION_commander_unk13_str " %x"
         " " REDIS_GAME_SESSION_commander_charPosition_str " %x"
         // [UNKNOWN] "commander_unk6 " " %x"
         " " REDIS_GAME_SESSION_commander_mapId_str " %x"
@@ -386,7 +386,7 @@ Redis_updateGameSession (
         // [UNKNOWN] gameSession->currentCommander.unk4,
         // [UNKNOWN] gameSession->currentCommander.unk5,
         gameSession->currentCommander.pcId,
-        gameSession->currentCommander.listPosition,
+        gameSession->currentCommander.unk13,
         gameSession->currentCommander.charPosition,
         // [UNKNOWN] gameSession->currentCommander.unk6,
         gameSession->currentCommander.mapId,

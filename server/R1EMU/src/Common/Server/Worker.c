@@ -331,7 +331,7 @@ Worker_buildReply (
 
     // Get the corresponding packet handler
     if (header.type > handlersCount) {
-        error ("Invalid packet type. Ignore request.");
+        error ("Invalid packet type (%#x / %#x). Ignore request.", header.type, handlersCount);
         return PACKET_HANDLER_ERROR;
     }
 
@@ -345,10 +345,9 @@ Worker_buildReply (
     }
 
     // Call the handler
-    dbg ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
+    special ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
     return handler (self, session, packet, dataSize, reply);
 }
-
 
 
 void
