@@ -38,7 +38,7 @@ static PacketHandlerState BarrackHandler_commanderDestroy  (Worker *self, Sessio
 /** Change the commander position in the barrack */
 static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Makes the commander jumps in the barrack */
-static PacketHandlerState BarrackHandler_jump              (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+// static PacketHandlerState BarrackHandler_jump              (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Request for the player to enter in game */
 static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
@@ -49,8 +49,11 @@ static PacketHandlerState BarrackHandler_commanderList     (Worker *self, Sessio
 /** Send a list of zone servers */
 static PacketHandlerState BarrackHandler_zoneTraffics      (Worker *self, zmsg_t *reply);
 /** UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
-static PacketHandlerState BarrackHandler_unkHandler1       (Worker *self, Session *session, zmsg_t *reply);
-
+// static PacketHandlerState BarrackHandler_unkHandler1       (Worker *self, Session *session, zmsg_t *reply);
+/** UNKNOWN. */
+// static PacketHandlerState BarrackHandler_unkHandler3       (Worker *self, zmsg_t *reply);
+/** Send information about pets. */
+// static PacketHandlerState BarrackHandler_petInformation    (Worker *self, Session *session, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -68,7 +71,7 @@ const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
     REGISTER_PACKET_HANDLER (CB_COMMANDER_CREATE,   BarrackHandler_commanderCreate),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_DESTROY,  BarrackHandler_commanderDestroy),
     REGISTER_PACKET_HANDLER (CB_COMMANDER_MOVE,     BarrackHandler_commanderMove),
-    REGISTER_PACKET_HANDLER (CB_JUMP,               BarrackHandler_jump),
+    // REGISTER_PACKET_HANDLER (CB_JUMP,               BarrackHandler_jump),
     REGISTER_PACKET_HANDLER (CB_START_GAME,         BarrackHandler_startGame),
 
     #undef REGISTER_PACKET_HANDLER
@@ -76,7 +79,7 @@ const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
 
 
 
-static PacketHandlerState
+PacketHandlerState
 BarrackHandler_login (
     Worker *self,
     Session *session,
@@ -238,7 +241,7 @@ BarrackHandler_startGame (
     return PACKET_HANDLER_OK;
 }
 
-
+/*
 static PacketHandlerState
 BarrackHandler_jump (
     Worker *self,
@@ -288,6 +291,7 @@ BarrackHandler_jump (
 
     return PACKET_HANDLER_OK;
 }
+*/
 
 static PacketHandlerState
 BarrackHandler_commanderMove (
@@ -346,7 +350,7 @@ BarrackHandler_commanderMove (
     return PACKET_HANDLER_UPDATE_SESSION;
 }
 
-
+/*
 static PacketHandlerState
 BarrackHandler_unkHandler1 (
     Worker *self,
@@ -379,6 +383,7 @@ BarrackHandler_unkHandler1 (
 
     return PACKET_HANDLER_OK;
 }
+*/
 
 static PacketHandlerState
 BarrackHandler_startBarrack (
@@ -395,6 +400,7 @@ BarrackHandler_startBarrack (
     return PACKET_HANDLER_OK;
 }
 
+/*
 static PacketHandlerState
 BarrackHandler_petInformation (
     Worker *self,
@@ -437,7 +443,9 @@ BarrackHandler_petInformation (
 
     return PACKET_HANDLER_OK;
 }
+*/
 
+/*
 static PacketHandlerState
 BarrackHandler_unkHandler3 (
     Worker *self,
@@ -459,6 +467,7 @@ BarrackHandler_unkHandler3 (
 
     return PACKET_HANDLER_OK;
 }
+*/
 
 static PacketHandlerState
 BarrackHandler_currentBarrack (
@@ -468,11 +477,11 @@ BarrackHandler_currentBarrack (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    /*   [CLIENT SEND] Packet type : <CB_CURRENT_BARRACK>
-         =================================================
-          4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111
-          size pktType  checksum     accountId               float    float
-    */
+    //   [CLIENT SEND] Packet type : <CB_CURRENT_BARRACK>
+    //   =================================================
+    //    4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111
+    //    size pktType  checksum     accountId               float    float
+
     // BarrackHandler_petInformation (session, reply);
     // BarrackHandler_unkHandler3 (reply);
     BarrackHandler_zoneTraffics (self, reply);
