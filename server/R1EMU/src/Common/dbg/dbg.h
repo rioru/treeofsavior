@@ -43,7 +43,7 @@ typedef enum {
 #define dbg_ex(level, output, format, ...)                            \
     do {                                                              \
         char *__time_now__ = zclock_timestr();                        \
-        _dbg (level, output, "[%s][%s:%d in %s] " format,             \
+        _dbg (level, "[%s][%s:%d in %s] " format,                     \
             __time_now__,                                             \
             __FILENAME__,                                             \
             __LINE__,                                                 \
@@ -129,7 +129,6 @@ typedef enum {
  */
 void _dbg (
     int level,
-    FILE *output,
     char *format,
     ...
 );
@@ -146,4 +145,14 @@ _buffer_print (
     void *buffer,
     int bufferSize,
     char *prefix
+);
+
+
+/**
+ * @brief Redirect the default output of the debug messages to a chosen FILE
+ * @param output The destination stream of the debug messages
+ */
+void
+dbg_set_output (
+    FILE *output
 );

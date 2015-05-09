@@ -29,6 +29,11 @@ int main (int argc, char **argv)
 
     // === Read the command line arguments ===
     int routerId = atoi (argv[curArg++]);
+
+    #ifndef WIN32
+    dbg_set_output (fopen (zsys_sprintf ("ZoneServer%d_output.txt", routerId), "w+"));
+    #endif
+
     char *routerIp = argv[curArg++];
     int portsCount = atoi (argv[curArg++]);
     int *ports;

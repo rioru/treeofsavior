@@ -345,7 +345,7 @@ Worker_mainLoop (
     if (!(global = zsock_new (ZMQ_REQ))
     ||  zsock_connect (global, ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort) == -1
     ) {
-        error ("[routerId=%d][WorkerId=%d] cannot bind to the global server %s:%d.", self->info.routerId, self->info.globalServerIp, self->info.globalServerPort);
+        error ("[routerId=%d][WorkerId=%d] cannot bind to the global server %s:%d.", self->info.routerId, self->info.workerId, self->info.globalServerIp, self->info.globalServerPort);
         return NULL;
     }
     info ("[routerId=%d][WorkerId=%d] connected to the global server %s.",
@@ -362,7 +362,6 @@ Worker_mainLoop (
     info ("[routerId=%d][WorkerId=%d] bind to the subscriber endpoint %s",
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId));
 
-
     // Tell to the broker we're ready for work
     if (!(readyFrame = zframe_new (PACKET_HEADER (ROUTER_WORKER_READY), sizeof (ROUTER_WORKER_READY)))
     ||  zframe_send (&readyFrame, worker, 0) == -1
@@ -371,7 +370,6 @@ Worker_mainLoop (
                self->info.routerId, self->info.workerId);
         return NULL;
     }
-
 
     // Define a poller with the global and the worker socket
     if (!(poller = zpoller_new (global, worker, NULL))) {

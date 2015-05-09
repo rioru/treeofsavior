@@ -19,14 +19,21 @@
 
 // ------ Structure declaration -------
 zmutex_t *mutex = NULL;
+FILE *_output = NULL;
 
 // ------ Static declaration -------
 
 // ------ Extern function implementation ------
 
+void
+dbg_set_output (
+    FILE *output
+) {
+    _output = output;
+}
+
 void _dbg (
     int level,
-    FILE *output,
     char *format,
     ...
 ) {
@@ -34,6 +41,10 @@ void _dbg (
 
     if (mutex == NULL) {
         mutex = zmutex_new ();
+    }
+
+    if (_output == NULL) {
+        _output = stdout;
     }
 
     zmutex_lock (mutex);
@@ -46,24 +57,25 @@ void _dbg (
         case DBG_LEVEL_ERROR:   SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0C); break;
         case DBG_LEVEL_SPECIAL: SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x0B); break;
         #else
-        case DBG_LEVEL_INFO: fprintf (output, "\x1b[32m"); break;
-        case DBG_LEVEL_DEBUG: fprintf (output, "\x1b[37m"); break;
-        case DBG_LEVEL_WARNING: fprintf (output, "\x1b[33m"); break;
-        case DBG_LEVEL_ERROR: fprintf (output, "\x1b[31m"); break;
-        case DBG_LEVEL_SPECIAL: fprintf (output, "\x1b[35m"); break;
+        case DBG_LEVEL_INFO: fprintf (_output, "\x1b[32m"); break;
+        case DBG_LEVEL_DEBUG: fprintf (_output, "\x1b[37m"); break;
+        case DBG_LEVEL_WARNING: fprintf (_output, "\x1b[33m"); break;
+        case DBG_LEVEL_ERROR: fprintf (_output, "\x1b[31m"); break;
+        case DBG_LEVEL_SPECIAL: fprintf (_output, "\x1b[35m"); break;
         #endif
     }
 
     va_start (args, format);
-        vfprintf (output, format, args);
-        fflush (output);
+        vfprintf (_output, format, args);
     va_end (args);
 
     #ifdef WIN32
     SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), 0x07);
     #else
-    fprintf (output, "\033[0m");
+    fprintf (_output, "\033[0m");
     #endif
+
+    fflush (_output);
 
     zmutex_unlock (mutex);
 }

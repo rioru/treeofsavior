@@ -166,7 +166,7 @@ Server_createProcess (
             return false;
         }
     #else
-        char **argv = str_split (commandLine, " ");
+        char **argv = str_split (commandLine, ' ');
         if (fork () == 0) {
             if (execv (executableName, (char * const *) argv) == -1) {
                 error ("Cannot launch Zone Server executable : %s.", executableName);

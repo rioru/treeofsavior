@@ -324,7 +324,7 @@ Router_backend (
                     return -1;
                 }
 
-                info ("Router ID=%d is ready and running.");
+                info ("Router ID=%d is ready and running.", self->info.routerId);
             }
         break;
 
