@@ -22,34 +22,34 @@
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
-static PacketHandlerState BarrackHandler_loginByPassport   (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_loginByPassport   (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Read the login / password and accepts or refuse the authentification */
-static PacketHandlerState BarrackHandler_login             (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_login             (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Start the barrack : call other handlers that initializes the barrack */
-static PacketHandlerState BarrackHandler_startBarrack      (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_startBarrack      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Once the commander list has been received, request to start the barrack */
-static PacketHandlerState BarrackHandler_currentBarrack    (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_currentBarrack    (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Change a barrack name */
-static PacketHandlerState BarrackHandler_barracknameChange (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_barracknameChange (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Create a commander */
-static PacketHandlerState BarrackHandler_commanderCreate   (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_commanderCreate   (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
-static PacketHandlerState BarrackHandler_commanderDestroy  (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_commanderDestroy  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Change the commander position in the barrack */
-static PacketHandlerState BarrackHandler_commanderMove     (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Makes the commander jumps in the barrack */
-static PacketHandlerState BarrackHandler_jump              (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_jump              (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Request for the player to enter in game */
-static PacketHandlerState BarrackHandler_startGame         (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 /** Register new servers */
-static PacketHandlerState BarrackHandler_serverEntry       (zmsg_t *reply);
+static PacketHandlerState BarrackHandler_serverEntry       (Worker *self, zmsg_t *reply);
 /** Send a list of commanders */
-static PacketHandlerState BarrackHandler_commanderList     (zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderList     (Worker *self, zmsg_t *reply);
 /** Send a list of zone servers */
-static PacketHandlerState BarrackHandler_zoneTraffics      (zmsg_t *reply);
+static PacketHandlerState BarrackHandler_zoneTraffics      (Worker *self, zmsg_t *reply);
 /** UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
-static PacketHandlerState BarrackHandler_unkHandler1       (Session *session, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_unkHandler1       (Worker *self, Session *session, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
@@ -78,15 +78,14 @@ const PacketHandler barrackHandlers [BARRACK_HANDLER_ARRAY_SIZE] = {
 
 static PacketHandlerState
 BarrackHandler_login (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     SocketSession *socketSession = &session->socket;
 
-    Worker *self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -128,14 +127,13 @@ BarrackHandler_login (
 
 static PacketHandlerState
 BarrackHandler_loginByPassport (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     SocketSession *socketSession = &session->socket;
-    Worker * self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -176,11 +174,11 @@ BarrackHandler_loginByPassport (
 
 static PacketHandlerState
 BarrackHandler_startGame (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     #pragma pack(push, 1)
     typedef struct {
@@ -243,11 +241,11 @@ BarrackHandler_startGame (
 
 static PacketHandlerState
 BarrackHandler_jump (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     SocketSession *socketSession = &session->socket;
 
@@ -293,14 +291,12 @@ BarrackHandler_jump (
 
 static PacketHandlerState
 BarrackHandler_commanderMove (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
-    // Worker * self = (Worker *) arg;
-
     #pragma pack(push, 1)
     typedef struct {
         uint8_t commanderListId;
@@ -353,6 +349,7 @@ BarrackHandler_commanderMove (
 
 static PacketHandlerState
 BarrackHandler_unkHandler1 (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -385,21 +382,22 @@ BarrackHandler_unkHandler1 (
 
 static PacketHandlerState
 BarrackHandler_startBarrack (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
-    BarrackHandler_serverEntry   (reply);
-    // BarrackHandler_unkHandler1   (session, reply);
-    BarrackHandler_commanderList (reply);
+    BarrackHandler_serverEntry   (self, reply);
+    // BarrackHandler_unkHandler1   (self, session, reply);
+    BarrackHandler_commanderList (self, reply);
 
     return PACKET_HANDLER_OK;
 }
 
 static PacketHandlerState
 BarrackHandler_petInformation (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -442,6 +440,7 @@ BarrackHandler_petInformation (
 
 static PacketHandlerState
 BarrackHandler_unkHandler3 (
+    Worker *self,
     zmsg_t *reply
 ) {
     size_t memSize;
@@ -463,11 +462,11 @@ BarrackHandler_unkHandler3 (
 
 static PacketHandlerState
 BarrackHandler_currentBarrack (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     /*   [CLIENT SEND] Packet type : <CB_CURRENT_BARRACK>
          =================================================
@@ -476,18 +475,18 @@ BarrackHandler_currentBarrack (
     */
     // BarrackHandler_petInformation (session, reply);
     // BarrackHandler_unkHandler3 (reply);
-    BarrackHandler_zoneTraffics (reply);
+    BarrackHandler_zoneTraffics (self, reply);
 
     return PACKET_HANDLER_OK;
 }
 
 static PacketHandlerState
 BarrackHandler_barracknameChange (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     GameSession *gameSession = &session->game;
 
@@ -543,11 +542,11 @@ BarrackHandler_barracknameChange (
 
 static PacketHandlerState
 BarrackHandler_commanderDestroy (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     GameSession *gameSession = &session->game;
 
@@ -573,16 +572,14 @@ BarrackHandler_commanderDestroy (
 
 static PacketHandlerState
 BarrackHandler_commanderCreate (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     GameSession *gameSession = &session->game;
     SocketSession *socketSession = &session->socket;
-
-    Worker *self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -717,6 +714,7 @@ BarrackHandler_commanderCreate (
 
 static PacketHandlerState
 BarrackHandler_zoneTraffics (
+    Worker *self,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
@@ -801,6 +799,7 @@ BarrackHandler_zoneTraffics (
 
 static PacketHandlerState
 BarrackHandler_serverEntry (
+    Worker *self,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
@@ -830,6 +829,7 @@ BarrackHandler_serverEntry (
 
 static PacketHandlerState
 BarrackHandler_commanderList (
+    Worker *self,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)

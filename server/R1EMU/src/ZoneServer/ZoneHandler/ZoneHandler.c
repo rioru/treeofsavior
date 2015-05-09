@@ -23,27 +23,27 @@
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static PacketHandlerState ZoneHandler_connect   (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState ZoneHandler_connect   (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Client is ready to enter the zone */
-static PacketHandlerState ZoneHandler_gameReady (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState ZoneHandler_gameReady (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Send information about quickslots */
-static void ZoneHandler_quickSlotListHandler    (Session *session, zmsg_t *reply);
+static void ZoneHandler_quickSlotListHandler    (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about the UI */
-static void ZoneHandler_uiInfoList              (Session *session, zmsg_t *reply);
+static void ZoneHandler_uiInfoList              (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about Jobs */
-static void ZoneHandler_startInfo               (Session *session, zmsg_t *reply);
+static void ZoneHandler_startInfo               (Worker *self, Session *session, zmsg_t *reply);
 /** Send a commander movement speed */
-static void ZoneHandler_moveSpeed               (Session *session, zmsg_t *reply);
+static void ZoneHandler_moveSpeed               (Worker *self, Session *session, zmsg_t *reply);
 /** Alert the client that a new PC has entered */
-static void ZoneHandler_MyPCEnter               (Session *session, zmsg_t *reply);
+static void ZoneHandler_MyPCEnter               (Worker *self, Session *session, zmsg_t *reply);
 /** Set the position of a commander */
-static void ZoneHandler_setPos                  (Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
+static void ZoneHandler_setPos                  (Worker *self, Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
 /** Jump handler */
-static PacketHandlerState ZoneHandler_jump      (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState ZoneHandler_jump      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Jump handler */
-static PacketHandlerState ZoneHandler_onAir     (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState ZoneHandler_onAir     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** Jump handler */
-static PacketHandlerState ZoneHandler_onGround  (Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply, void *arg);
+static PacketHandlerState ZoneHandler_onGround  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -63,14 +63,13 @@ const PacketHandler zoneHandlers [ZONE_HANDLER_ARRAY_SIZE] = {
 };
 
 
-
 static PacketHandlerState
 ZoneHandler_gameReady (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     #pragma pack(push, 1)
     typedef struct {
@@ -93,12 +92,12 @@ ZoneHandler_gameReady (
 
     // ===== The game starts from this point =====
     // Add additional information
-    ZoneHandler_quickSlotListHandler (session, reply);
-    ZoneHandler_uiInfoList (session, reply);
-    ZoneHandler_startInfo (session, reply);
-    ZoneHandler_moveSpeed (session, reply);
-    ZoneHandler_MyPCEnter (session, reply);
-    ZoneHandler_setPos (session, reply, session->game.currentPcId, 1142.29f, 1000, -32.42f);
+    ZoneHandler_quickSlotListHandler (self, session, reply);
+    ZoneHandler_uiInfoList (self, session, reply);
+    ZoneHandler_startInfo (self, session, reply);
+    ZoneHandler_moveSpeed (self, session, reply);
+    ZoneHandler_MyPCEnter (self, session, reply);
+    ZoneHandler_setPos (self, session, reply, session->game.currentPcId, 1142.29f, 1000, -32.42f);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -108,16 +107,14 @@ ZoneHandler_gameReady (
 
 static PacketHandlerState
 ZoneHandler_connect (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     GameSession *gameSession = &session->game;
     SocketSession *socketSession = &session->socket;
-
-    Worker *self = (Worker *) arg;
 
     #pragma pack(push, 1)
     typedef struct {
@@ -214,6 +211,7 @@ ZoneHandler_connect (
 
 static void
 ZoneHandler_setPos (
+    Worker *self,
     Session *session,
     zmsg_t *reply,
     uint32_t pcId,
@@ -243,6 +241,7 @@ ZoneHandler_setPos (
 
 static void
 ZoneHandler_MyPCEnter (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -271,6 +270,7 @@ ZoneHandler_MyPCEnter (
 
 static void
 ZoneHandler_moveSpeed (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -299,6 +299,7 @@ ZoneHandler_moveSpeed (
 
 static void
 ZoneHandler_startInfo (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -306,6 +307,7 @@ ZoneHandler_startInfo (
 
 static void
 ZoneHandler_uiInfoList (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -313,6 +315,7 @@ ZoneHandler_uiInfoList (
 
 static void
 ZoneHandler_quickSlotListHandler (
+    Worker *self,
     Session *session,
     zmsg_t *reply
 ) {
@@ -335,11 +338,11 @@ ZoneHandler_quickSlotListHandler (
 
 static PacketHandlerState
 ZoneHandler_jump (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     GameSession *gameSession = &session->game;
 
@@ -384,22 +387,22 @@ ZoneHandler_jump (
 
 static PacketHandlerState
 ZoneHandler_onAir (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     return PACKET_HANDLER_OK;
 }
 
 static PacketHandlerState
 ZoneHandler_onGround (
+    Worker *self,
     Session *session,
     unsigned char *packet,
     size_t packetSize,
-    zmsg_t *reply,
-    void *arg
+    zmsg_t *reply
 ) {
     return PACKET_HANDLER_OK;
 }

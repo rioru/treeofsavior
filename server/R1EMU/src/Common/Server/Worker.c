@@ -21,6 +21,7 @@
 #include "Common/utils/random.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
+#include "Common/Crypto/Crypto.h"
 
 
 // ------ Structure declaration -------
@@ -83,7 +84,27 @@ Worker_processGlobalPacket (
     zmsg_t *msg
 );
 
-
+/**
+ * @brief Build a reply based on the packet handler
+ * @param[in] self A pointer to the current worker
+ * @param[in] packetHandlers The packet handlers
+ * @param[in] handlersCount The number of handlers in the handlers array
+ * @param[in] session The game session associated with the packet
+ * @param[in] packet The packet sent by the client
+ * @param[in] packetSize The size of the packet
+ * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
+ * @return PacketHandlerState
+ */
+static PacketHandlerState
+Worker_buildReply (
+    Worker *self,
+    const PacketHandler *packetHandlers,
+    size_t handlersCount,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+);
 
 // ------ Extern function implementation -------
 
@@ -105,7 +126,6 @@ Worker_new (
 
     return self;
 }
-
 
 bool
 Worker_init (
@@ -237,7 +257,7 @@ Worker_processClientPacket (
     zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ROUTER_WORKER_NORMAL), sizeof (ROUTER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
-    switch (PacketHandler_buildReply (self->info.packetHandlers, self->info.packetHandlersCount, &session, zframe_data (packet), zframe_size (packet), msg, self))
+    switch (Worker_buildReply (self, self->info.packetHandlers, self->info.packetHandlersCount, &session, zframe_data (packet), zframe_size (packet), msg))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
@@ -269,6 +289,67 @@ Worker_processClientPacket (
 
     return true;
 }
+
+
+static PacketHandlerState
+Worker_buildReply (
+    Worker *self,
+    const PacketHandler *packetHandlers,
+    size_t handlersCount,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    PacketHandlerFunction handler;
+
+    // Preconditions
+    if (packetSize < sizeof (CryptPacketHeader)) {
+        error ("The packet received is too small to be read. Ignore request.");
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Unwrap the crypt packet header
+    CryptPacketHeader cryptHeader;
+    CryptPacket_unwrapHeader (&packet, &cryptHeader);
+    if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
+        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
+            packetSize, cryptHeader.size);
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Uncrypt the packet
+    if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
+        error ("Cannot uncrypt the client packet. Ignore request.");
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Read the packet
+    ClientPacketHeader header;
+    ClientPacket_unwrapHeader (&packet, &header);
+    size_t dataSize = packetSize - sizeof (CryptPacketHeader) - sizeof (ClientPacketHeader);
+
+    // Get the corresponding packet handler
+    if (header.type > handlersCount) {
+        error ("Invalid packet type. Ignore request.");
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Test if a handler is associated with the packet type requested.
+    if (!(handler = packetHandlers [header.type].handler)) {
+        error ("Cannot find handler for the requested packet type : %s",
+            (header.type <PACKET_TYPES_MAX_INDEX) ?
+               packetTypeInfo.packets[header.type].string : "UNKNOWN"
+        );
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Call the handler
+    dbg ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
+    return handler (self, session, packet, dataSize, reply);
+}
+
+
 
 void
 Worker_handleRequest (

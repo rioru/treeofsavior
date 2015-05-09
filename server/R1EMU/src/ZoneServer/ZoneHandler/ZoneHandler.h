@@ -18,7 +18,7 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Packet/PacketType.h"
-#include "Common/Packet/PacketHandler.h"
+#include "Common/Server/Worker.h"
 
 // ---------- Defines -------------
 #define ZONE_HANDLER_MAX_ID      CZ_HACKSHIELD_BUFFER

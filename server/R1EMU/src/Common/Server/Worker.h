@@ -27,13 +27,31 @@
 #include "Common/MySQL/MySQL.h"
 #include "Common/Redis/Redis.h"
 #include "Common/Session/Session.h"
-#include "Common/Packet/PacketHandler.h"
 
 // ---------- Defines -------------
 
 
 // ------ Structure declaration -------
-typedef struct
+typedef struct _PacketHandler PacketHandler;
+typedef struct _WorkerStartupInfo WorkerStartupInfo;
+typedef struct _Worker Worker;
+typedef enum _PacketHandlerState PacketHandlerState;
+
+/** @return PacketHandlerState (see above) */
+typedef PacketHandlerState (*PacketHandlerFunction) (
+    /** A pointer to the current Worker */
+    Worker *self,
+    /** Session of the current player */
+    Session *session,
+    /** Packet sent by the client */
+    unsigned char *packet,
+    /** Size of the packet sent by the client */
+    size_t packetSize,
+    /** Reply buffer. If you need to send multiple replies, add multiple frames to this zmsg_t */
+    zmsg_t *reply
+);
+
+struct _WorkerStartupInfo
 {
     /** The worker ID */
     uint16_t workerId;
@@ -59,13 +77,13 @@ typedef struct
     /** Packet handlers entries count */
     int packetHandlersCount;
 
-}   WorkerStartupInfo;
+};
 
 /**
  * @brief Worker is the minimal structure that a worker needs to work
  *        Everything else goes through the messaging system
  */
-struct Worker
+struct _Worker
 {
     /** Start up information */
     WorkerStartupInfo info;
@@ -84,7 +102,23 @@ struct Worker
     Redis *redis;
 };
 
-typedef struct Worker Worker;
+/**
+ * @brief PacketHandler contains a function handler and its name
+ */
+struct _PacketHandler {
+    /** Function handler */
+    PacketHandlerFunction handler;
+    /** The packet name  */
+    char *packetName;
+};
+
+/** Return state of the packet handlers. */
+enum _PacketHandlerState {
+    PACKET_HANDLER_ERROR          = -1,
+    PACKET_HANDLER_OK             = 0,
+    PACKET_HANDLER_UPDATE_SESSION = 1,
+    PACKET_HANDLER_DELETE_SESSION = 2
+};
 
 
 
@@ -176,7 +210,6 @@ Worker_getClientsWithinDistance (
     float x, float y, float z,
     float range
 );
-
 
 /**
  * @brief Send the same packet to multiple clients
