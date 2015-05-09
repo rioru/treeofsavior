@@ -22,7 +22,7 @@
 #include <czmq.h>
 /** This is only for differenciate ZMQ RAW ROUTER from ZMQ ROUTER */
 #define ZMQ_RAW_ROUTER ZMQ_ROUTER
-#define PACKET_HEADER(x) (int[]){x}
+#define PACKET_HEADER(x) (typeof(x)[]){x}
 
 // MySQL environment
 #include <mysql/mysql.h>

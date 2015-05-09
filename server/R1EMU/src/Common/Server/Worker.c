@@ -401,7 +401,6 @@ void *
 Worker_mainLoop (
     void *arg
 ) {
-    zframe_t *readyFrame;
     zpoller_t *poller;
     zsock_t *worker, *global;
     bool isRunning = true;
@@ -444,8 +443,10 @@ Worker_mainLoop (
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId));
 
     // Tell to the broker we're ready for work
-    if (!(readyFrame = zframe_new (PACKET_HEADER (ROUTER_WORKER_READY), sizeof (ROUTER_WORKER_READY)))
-    ||  zframe_send (&readyFrame, worker, 0) == -1
+    zmsg_t *readyMsg = zmsg_new ();
+    if (zmsg_addmem (readyMsg, PACKET_HEADER (ROUTER_WORKER_READY), sizeof (ROUTER_WORKER_READY)) == -1
+    ||  zmsg_addmem (readyMsg, PACKET_HEADER (self->info.workerId), sizeof (self->info.workerId)) == -1
+    ||  zmsg_send (&readyMsg, worker) == -1
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot send a correct ROUTER_WORKER_READY state.",
                self->info.routerId, self->info.workerId);
