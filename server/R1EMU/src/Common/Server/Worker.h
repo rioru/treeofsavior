@@ -37,7 +37,10 @@ typedef struct _WorkerStartupInfo WorkerStartupInfo;
 typedef struct _Worker Worker;
 typedef enum _PacketHandlerState PacketHandlerState;
 
-/** @return PacketHandlerState (see above) */
+/**
+ * @brief PacketHandlerState is the generic function call that a Worker is going to process.
+ * It takes the packet and reply to it using the @reply argument.
+ */
 typedef PacketHandlerState (*PacketHandlerFunction) (
     /** A pointer to the current Worker */
     Worker *self,
@@ -51,6 +54,9 @@ typedef PacketHandlerState (*PacketHandlerFunction) (
     zmsg_t *reply
 );
 
+/**
+ * @brief WorkerStartupInfo contains all the information needed for a worker to start.
+ */
 struct _WorkerStartupInfo
 {
     /** The worker ID */
@@ -80,8 +86,8 @@ struct _WorkerStartupInfo
 };
 
 /**
- * @brief Worker is the minimal structure that a worker needs to work
- *        Everything else goes through the messaging system
+ * @brief Worker is the main component of the network architecture, as it processes the packets received
+ * It connects to the database and fullfil requests based on its packetHandlers table.
  */
 struct _Worker
 {
@@ -112,7 +118,9 @@ struct _PacketHandler {
     char *packetName;
 };
 
-/** Return state of the packet handlers. */
+/**
+ * @brief Return state of the packet handlers.
+ */
 enum _PacketHandlerState {
     PACKET_HANDLER_ERROR          = -1,
     PACKET_HANDLER_OK             = 0,
