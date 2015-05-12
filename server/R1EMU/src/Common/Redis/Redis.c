@@ -103,7 +103,36 @@ Redis_connect (
     }
 
     info ("Connected to the Redis Server !");
-    return false;
+    return true;
+}
+
+bool
+Redis_flush (
+    Redis *self
+) {
+    redisReply *reply = NULL;
+    reply = Redis_commandDbg (self, "FLUSHALL");
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        return false;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            return false;
+        break;
+
+        case REDIS_REPLY_STATUS:
+            info ("Redis status : %s", reply->str);
+        break;
+
+        default : warning ("Unexpected Redis status (%d).", reply->type); return false;
+    }
+
+    return true;
 }
 
 void

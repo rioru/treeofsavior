@@ -20,6 +20,9 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Redis/Redis.h"
+#include "Common/MySQL/MySQL.h"
+#include "Common/Server/Server.h"
 
 // ---------- Defines -------------
 #define GLOBAL_SERVER_CLI_ENDPOINT        "tcp://%s:%d"
@@ -59,29 +62,100 @@ typedef enum GlobalServerSendHeader {
 // GlobalServer is opaque
 typedef struct GlobalServer GlobalServer;
 
+typedef struct {
+
+    // === Global Server ===
+    /** Server IP for the global server. */
+    char *ip;
+
+    /** Frontend port of the global server. It shouldn't be opened on internet. */
+    int cliPort;
+
+    // === Zone Server ===
+    /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
+    int *zoneServersPorts;
+
+    /** Zone servers IP. */
+    char **zoneServersIp;
+
+    /** Count of zone servers */
+    int zoneServersCount;
+
+    /** Count of worker for each zone servers */
+    int zoneWorkersCount;
+
+    /** Port for communicating with the zones */
+    int zonesPort;
+
+    // === Barrack Server ===
+    /** Barrack servers ports. They should be opened to the internet, as clients will connect to them */
+    int *barrackServerPort;
+
+    /** Number of ports */
+    int barrackServerPortCount;
+
+    /** Barrack servers IP. */
+    char *barrackServerIp;
+
+    /** Count of workers */
+    int barrackWorkersCount;
+
+    /** Configuration file path */
+    char *confFilePath;
+
+    // === Database ===
+    MySQLStartupInfo sqlInfo;
+    RedisStartupInfo redisInfo;
+
+} GlobalServerStartupInfo;
+
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new GlobalServer structure.
- * @param confFilePath The path to the configuration file associated with the Global Server
+ * @param info An allocated GlobalServerStartupInfo.
  * @return A pointer to an allocated GlobalServer.
  */
 GlobalServer *
 GlobalServer_new (
-    char *confFilePath
+    GlobalServerStartupInfo *info
 );
 
 
 /**
  * @brief Initialize an allocated GlobalServer structure.
  * @param self An allocated GlobalServer to initialize.
- * @param confFilePath The path to the configuration file associated with the Global Server
+ * @param info An allocated GlobalServerStartupInfo.
  * @return true on success, false otherwise.
  */
 bool
 GlobalServer_init (
     GlobalServer *self,
+    GlobalServerStartupInfo *info
+);
+
+
+/**
+ * @brief Initialize an allocated GlobalServerStartupInfo structure.
+ * @param self An allocated GlobalServerStartupInfo to initialize.
+ * @param confFilePath The configuration file of the Global Server.
+ * @return true on success, false otherwise.
+ */
+bool
+GlobalServerStartupInfo_init (
+    GlobalServerStartupInfo *self,
     char *confFilePath
+);
+
+
+/**
+ * @brief Request to the GlobalServer to flush the Redis Server
+ * @param self An allocated GlobalServer
+ * @return true on success, false otherwise.
+ */
+bool
+GlobalServer_flushRedis (
+    GlobalServer *self
 );
 
 

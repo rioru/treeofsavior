@@ -91,6 +91,16 @@ Redis_connect (
 );
 
 
+/**
+ * @brief : Flush the Redis database
+ * @param self An allocated Redis instance
+ * @return true on success, false otherwise
+ */
+bool
+Redis_flush (
+    Redis *self
+);
+
 
 /**
  * @brief Send a command to the redis server AND display it in the console.

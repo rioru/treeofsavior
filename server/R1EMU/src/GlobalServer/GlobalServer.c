@@ -24,55 +24,17 @@
  */
 struct GlobalServer
 {
+    /** Global information */
+    GlobalServerStartupInfo info;
+
     /** Socket listening to the CLI */
     zsock_t *cliConnection;
 
     /** Socket talking to the zones */
     zsock_t *zonesConnection;
 
-    // ----- Configuration -----
-    // === Global Server ===
-    /** Server IP for the global server. */
-    char *ip;
-
-    /** Frontend port of the global server. It shouldn't be opened on internet. */
-    int cliPort;
-
-    // === Zone Server ===
-    /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
-    int *zoneServersPorts;
-
-    /** Zone servers IP. */
-    char **zoneServersIp;
-
-    /** Count of zone servers */
-    int zoneServersCount;
-
-    /** Count of worker for each zone servers */
-    int zoneWorkersCount;
-
-    /** Port for communicating with the zones */
-    int zonesPort;
-
-    // === Barrack Server ===
-    /** Barrack servers ports. They should be opened to the internet, as clients will connect to them */
-    int *barrackServerPort;
-
-    /** Number of ports */
-    int barrackServerPortCount;
-
-    /** Barrack servers IP. */
-    char *barrackServerIp;
-
-    /** Count of workers */
-    int barrackWorkersCount;
-
-    /** Configuration file path */
-    char *confFilePath;
-
-    // === Database ===
-    MySQLStartupInfo sqlInfo;
-    RedisStartupInfo redisInfo;
+    /** Connection to Redis */
+    Redis *redis;
 };
 
 
@@ -83,7 +45,7 @@ struct GlobalServer
 
 GlobalServer *
 GlobalServer_new (
-    char *confFilePath
+    GlobalServerStartupInfo *info
 ) {
     GlobalServer *self;
 
@@ -91,7 +53,7 @@ GlobalServer_new (
         return NULL;
     }
 
-    if (!GlobalServer_init (self, confFilePath)) {
+    if (!GlobalServer_init (self, info)) {
         GlobalServer_destroy (&self);
         error ("GlobalServer failed to initialize.");
         return NULL;
@@ -104,12 +66,53 @@ GlobalServer_new (
 bool
 GlobalServer_init (
     GlobalServer *self,
+    GlobalServerStartupInfo *info
+) {
+    memcpy (&self->info, info, sizeof (GlobalServerStartupInfo));
+
+    // ==========================
+    //   Allocate ZMQ objects
+    // ==========================
+    if (!(self->cliConnection = zsock_new (ZMQ_RAW_ROUTER))) {
+        error ("Cannot allocate a new CLI zsock.");
+        return false;
+    }
+    if (!(self->zonesConnection = zsock_new (ZMQ_REQ))) {
+        error ("Cannot allocate a new zones zsock.");
+        return false;
+    }
+
+    // Connect to Redis Server
+    if (!(self->redis = Redis_new (&self->info.redisInfo))) {
+        error ("Cannot initialize Redis connection.");
+        return false;
+    }
+
+    if (!(Redis_connect (self->redis))) {
+        error ("Cannot connect to Redis.");
+        return false;
+    }
+
+    return true;
+}
+
+
+bool
+GlobalServer_flushRedis (
+    GlobalServer *self
+) {
+    return Redis_flush (self->redis);
+}
+
+bool
+GlobalServerStartupInfo_init (
+    GlobalServerStartupInfo *self,
     char *confFilePath
 ) {
+    memset (self, 0, sizeof (GlobalServerStartupInfo));
+
     zconfig_t *conf;
     char *portsArray;
-
-    self->confFilePath = confFilePath;
 
     // ==================================
     //     Read the configuration file
@@ -186,7 +189,9 @@ GlobalServer_init (
     }
 
     if (nbZoneServersIp != self->zoneServersCount) {
-        error ("Number of zone ports different from number of zone interfaces IP.");
+        error ("Number of zone ports different from the number of zone interfaces IP. (%d / %d)",
+            nbZoneServersIp, self->zoneServersCount
+        );
         return false;
     }
 
@@ -279,20 +284,9 @@ GlobalServer_init (
     // Close the configuration file
     zconfig_destroy (&conf);
 
-    // ==========================
-    //   Allocate ZMQ objects
-    // ==========================
-    if (!(self->cliConnection = zsock_new (ZMQ_RAW_ROUTER))) {
-        error ("Cannot allocate a new CLI zsock.");
-        return false;
-    }
-    if (!(self->zonesConnection = zsock_new (ZMQ_REQ))) {
-        error ("Cannot allocate a new zones zsock.");
-        return false;
-    }
-
     return true;
 }
+
 
 int
 GlobalServer_handleZonesRequest (
@@ -329,6 +323,8 @@ bool
 GlobalServer_start (
     GlobalServer *self
 ) {
+    GlobalServerStartupInfo *info = &self->info;
+
     zpoller_t *poller;
     bool isRunning = true;
     ServerStartupInfo serverInfo;
@@ -339,33 +335,33 @@ GlobalServer_start (
     // CLI should communicates through BSD sockets
     zsock_set_router_raw (self->cliConnection, true);
 
-    if (zsock_bind (self->cliConnection, GLOBAL_SERVER_CLI_ENDPOINT, self->ip, self->cliPort) == -1) {
+    if (zsock_bind (self->cliConnection, GLOBAL_SERVER_CLI_ENDPOINT, info->ip, info->cliPort) == -1) {
         error ("Failed to bind CLI port.");
         return false;
     }
-    info ("CLI connection binded on port %s.", zsys_sprintf (GLOBAL_SERVER_CLI_ENDPOINT, self->ip, self->cliPort));
+    info ("CLI connection binded on port %s.", zsys_sprintf (GLOBAL_SERVER_CLI_ENDPOINT, info->ip, info->cliPort));
 
 
     // ===================================
     //     Initialize Zones connection
     // ===================================
-    if ((self->zonesPort = zsock_bind (self->zonesConnection, GLOBAL_SERVER_ZONES_ENDPOINT, self->ip)) == -1) {
+    if ((info->zonesPort = zsock_bind (self->zonesConnection, GLOBAL_SERVER_ZONES_ENDPOINT, info->ip)) == -1) {
         error ("Failed to bind zones port.");
         return false;
     }
-    info ("Zones connection binded on port %s.", zsys_sprintf (GLOBAL_SERVER_CLI_ENDPOINT, self->ip, self->zonesPort));
+    info ("Zones connection binded on port %s.", zsys_sprintf (GLOBAL_SERVER_ZONES_ENDPOINT, info->ip, info->zonesPort));
 
     // ===================================
     //     Initialize 1 Barrack Server
     // ===================================
     if (!(ServerFactory_initServerInfo (&serverInfo,
         BARRACK_SERVER_ROUTER_ID,
-        self->barrackServerIp,
-        self->barrackServerPortCount, self->barrackServerPort,
-        self->zoneWorkersCount,
-        self->ip, self->cliPort,
-        self->sqlInfo.hostname, self->sqlInfo.login, self->sqlInfo.password, self->sqlInfo.database,
-        self->redisInfo.hostname, self->redisInfo.port)
+        info->barrackServerIp,
+        info->barrackServerPortCount, info->barrackServerPort,
+        info->zoneWorkersCount,
+        info->ip, info->cliPort,
+        info->sqlInfo.hostname, info->sqlInfo.login, info->sqlInfo.password, info->sqlInfo.database,
+        info->redisInfo.hostname, info->redisInfo.port)
     )) {
         error ("[Barrack] Cannot create a new ServerInfo.");
         return false;
@@ -379,16 +375,15 @@ GlobalServer_start (
     // ===================================
     //     Initialize N Zone Server
     // ===================================
-    for (uint16_t routerId = 0; routerId < self->zoneServersCount; routerId++)
-    {
+    for (uint16_t routerId = 0; routerId < info->zoneServersCount; routerId++) {
         ServerFactory_initServerInfo (&serverInfo,
             routerId + 1, // The ID = 0 is reserved for the Barrack Server, start at 1.
-            self->zoneServersIp[routerId],
-            1, &self->zoneServersPorts[routerId], // Only 1 port for each Zone server
-            self->zoneWorkersCount,
-            self->ip, self->cliPort,
-            self->sqlInfo.hostname, self->sqlInfo.login, self->sqlInfo.password, self->sqlInfo.database,
-            self->redisInfo.hostname, self->redisInfo.port
+            info->zoneServersIp[routerId],
+            1, &info->zoneServersPorts[routerId], // Only 1 port for each Zone server
+            info->zoneWorkersCount,
+            info->ip, info->cliPort,
+            info->sqlInfo.hostname, info->sqlInfo.login, info->sqlInfo.password, info->sqlInfo.database,
+            info->redisInfo.hostname, info->redisInfo.port
         );
 
         if (!(Server_createProcess (&serverInfo, ZONE_SERVER_EXECUTABLE_NAME))) {

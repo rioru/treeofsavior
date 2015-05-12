@@ -28,7 +28,9 @@
 
 // ----------- Functions ------------
 
-
+/**
+ * @brief : Factory for creating a generic Server
+ */
 Server *
 ServerFactory_createServer (
     int routerId,
@@ -47,6 +49,9 @@ ServerFactory_createServer (
 );
 
 
+/**
+ * @brief : Factory for initializing a generic Server
+ */
 bool
 ServerFactory_initServerInfo (
     ServerStartupInfo *serverInfo,

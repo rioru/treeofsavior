@@ -14,6 +14,8 @@
  *
  */
 
+#pragma once
+
 // Integers printf format
 #include <inttypes.h>
 
@@ -23,6 +25,11 @@
 /** This is only for differenciate ZMQ RAW ROUTER from ZMQ ROUTER */
 #define ZMQ_RAW_ROUTER ZMQ_ROUTER
 #define PACKET_HEADER(x) (typeof(x)[]){x}
+/** Router unique IDs */
+typedef enum RouterUniqueId {
+    BARRACK_SERVER_ROUTER_ID = 0,
+    GLOBAL_SERVER_ROUTER_ID = -1
+} RouterUniqueId;
 
 // MySQL environment
 #include <mysql/mysql.h>
