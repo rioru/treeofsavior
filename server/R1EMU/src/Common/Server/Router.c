@@ -19,6 +19,7 @@
 typedef struct {
     zframe_t *frame;
     uint16_t workerId;
+    zframe_t *curClient;
 } WorkerIdentity;
 
 /**
@@ -43,9 +44,6 @@ struct Router
 
     /** Identity frames of the workers. */
     WorkerIdentity *workers;
-
-    /** Identity frames of the clients being processed for each worker */
-    zframe_t **identityClients;
 
     /** Count the number of workers that sent a READY signal. */
     int workersReadyCount;
@@ -203,12 +201,6 @@ Router_init (
     // Allocate the workers array
     if ((self->workers = calloc (self->info.workersCount, sizeof (WorkerIdentity))) == NULL) {
         error ("Cannot allocate the workers array.");
-        return false;
-    }
-
-    // Allocate the identityClients array
-    if ((self->identityClients = calloc (self->info.workersCount, sizeof (zframe_t *))) == NULL) {
-        error ("Cannot allocate the identityClients array.");
         return false;
     }
 
@@ -387,7 +379,8 @@ Router_backend (
 
     // The worker finished its job; add it at the end of the list (round robin load balancing)
     // Remove the responsability of the ClientIdentity for the current worker
-    zframe_destroy (&self->identityClients [workerIdentity->workerId]);
+    zframe_destroy (&self->workers [workerIdentity->workerId].curClient);
+
     zlist_append (self->readyWorkers, workerIdentity);
 
     return 0;
@@ -414,8 +407,8 @@ Router_frontend (
     // Check if the client is not currently processed by another Worker
     zframe_t *identityClient = zmsg_first (msg);
     for (int i = 0; i < self->info.workersCount; i++) {
-        if (self->identityClients[i] != NULL) {
-            if (zframe_eq (identityClient, self->identityClients[i])) {
+        if (self->workers[i].curClient != NULL) {
+            if (zframe_eq (identityClient, self->workers[i].curClient)) {
                 // Already processed by this worker !
                 workerIdentityDest = zframe_dup (self->workers[i].frame);
             }
@@ -446,10 +439,10 @@ Router_frontend (
         }
 
         // Replace the new identity
-        if (self->identityClients [workerIdInCharge]) {
-            zframe_destroy (&self->identityClients [workerIdInCharge]);
+        if (self->workers[workerIdInCharge].curClient) {
+            zframe_destroy (&self->workers[workerIdInCharge].curClient);
         }
-        self->identityClients [workerIdInCharge] = zframe_dup (identityClient);
+        self->workers[workerIdInCharge].curClient = zframe_dup (identityClient);
     }
 
     // Wrap the worker's identity which receives the message
