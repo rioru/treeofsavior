@@ -18,9 +18,18 @@
 // ------ Structure declaration -------
 typedef struct {
     zframe_t *frame;
-    uint16_t workerId;
-    zframe_t *curClient;
+    int fd;
+} ClientIdentity;
+
+typedef struct {
+    zframe_t *frame;
+    uint16_t id;
 } WorkerIdentity;
+
+typedef struct {
+    WorkerIdentity identity;
+    ClientIdentity curClientId;
+} WorkerState;
 
 /**
  * @brief Router is the routing component of the network.
@@ -43,7 +52,7 @@ struct Router
     zlist_t *readyWorkers;
 
     /** Identity frames of the workers. */
-    WorkerIdentity *workers;
+    WorkerState *workers;
 
     /** Count the number of workers that sent a READY signal. */
     int workersReadyCount;
@@ -199,7 +208,7 @@ Router_init (
     }
 
     // Allocate the workers array
-    if ((self->workers = calloc (self->info.workersCount, sizeof (WorkerIdentity))) == NULL) {
+    if ((self->workers = calloc (self->info.workersCount, sizeof (WorkerState))) == NULL) {
         error ("Cannot allocate the workers array.");
         return false;
     }
@@ -282,7 +291,7 @@ Router_backend (
     void *_self
 ) {
     zmsg_t *msg;
-    zframe_t *workerIdentityFrame;
+    zframe_t *workerStateFrame;
     zframe_t *header;
     Router *self = (Router *) _self;
 
@@ -292,8 +301,8 @@ Router_backend (
         return 0;
     }
 
-    // Retrieve the workerIdentityFrame who sent the message
-    if (!(workerIdentityFrame = zmsg_unwrap (msg))) {
+    // Retrieve the workerStateFrame who sent the message
+    if (!(workerStateFrame = zmsg_unwrap (msg))) {
         error ("Worker identity cannot be retrieved.");
         return -1;
     }
@@ -319,8 +328,8 @@ Router_backend (
             // The worker sent a 'ready' signal. Register it.
             zframe_t *workerIdFrame = zmsg_pop (msg);
             uint16_t workerId = *((uint16_t *) zframe_data (workerIdFrame));
-            self->workers [workerId].frame = zframe_dup (workerIdentityFrame);
-            self->workers [workerId].workerId = workerId;
+            self->workers [workerId].identity.frame = zframe_dup (workerStateFrame);
+            self->workers [workerId].identity.id= workerId;
             self->workersReadyCount++;
             zmsg_destroy (&msg);
 
@@ -364,24 +373,24 @@ Router_backend (
         break;
     }
 
-    // Get the WorkerIdentity
-    WorkerIdentity *workerIdentity = NULL;
+    // Get the WorkerState
+    WorkerState *workerState = NULL;
     for (int i = 0; i < self->info.workersCount; i++) {
-        if (zframe_eq (workerIdentityFrame, self->workers[i].frame)) {
-            workerIdentity = &self->workers[i];
+        if (zframe_eq (workerStateFrame, self->workers[i].identity.frame)) {
+            workerState = &self->workers[i];
         }
     }
 
-    if (!workerIdentity) {
+    if (!workerState) {
         error ("Cannot find the Worker in the Worker list.");
         return -1;
     }
 
     // The worker finished its job; add it at the end of the list (round robin load balancing)
     // Remove the responsability of the ClientIdentity for the current worker
-    zframe_destroy (&self->workers [workerIdentity->workerId].curClient);
+    zframe_destroy (&self->workers [workerState->identity.id].curClientId.frame);
 
-    zlist_append (self->readyWorkers, workerIdentity);
+    zlist_append (self->readyWorkers, workerState);
 
     return 0;
 }
@@ -394,8 +403,8 @@ Router_frontend (
     void *_self
 ) {
     zmsg_t *msg;
-    WorkerIdentity *workerIdentity = NULL;
-    zframe_t *workerIdentityDest = NULL;
+    WorkerState *workerState = NULL;
+    zframe_t *workerStateDest = NULL;
     Router *self = (Router *) _self;
 
     // Receive the message from the frontend router
@@ -407,19 +416,20 @@ Router_frontend (
     // Check if the client is not currently processed by another Worker
     zframe_t *identityClient = zmsg_first (msg);
     for (int i = 0; i < self->info.workersCount; i++) {
-        if (self->workers[i].curClient != NULL) {
-            if (zframe_eq (identityClient, self->workers[i].curClient)) {
-                // Already processed by this worker !
-                workerIdentityDest = zframe_dup (self->workers[i].frame);
+        if (self->workers[i].curClientId.frame != NULL) {
+            if (zframe_eq (identityClient, self->workers[i].curClientId.frame)) {
+                // Already processed by this worker : Keep the responsibility to this worker so we
+                // don't break the protocol by processing a packet before another one
+                workerStateDest = zframe_dup (self->workers[i].identity.frame);
             }
         }
     }
 
-    // Retrieve a workerIdentity if not already done (round robin)
-    if (!workerIdentityDest) {
+    // Retrieve a workerState if not already done (round robin)
+    if (!workerStateDest) {
         uint16_t workerIdInCharge;
 
-        if (!(workerIdentity = (WorkerIdentity *) zlist_pop (self->readyWorkers))) {
+        if (!(workerState = (WorkerState *) zlist_pop (self->readyWorkers))) {
             // All Workers seem to be busy.
             warning ("All Workers seem to be busy. Transfer the request to the overload worker.");
 
@@ -428,25 +438,25 @@ Router_frontend (
                 return 0;
             }
 
-            workerIdentityDest = zframe_dup (self->workers[self->overloadWorker].frame);
+            workerStateDest = zframe_dup (self->workers[self->overloadWorker].identity.frame);
             workerIdInCharge = self->overloadWorker;
 
             // We don't want only one Worker takes the overload charge, do a round robin here too
             self->overloadWorker = (self->overloadWorker + 1) % self->workersReadyCount;
         } else {
-            workerIdentityDest = zframe_dup (workerIdentity->frame);
-            workerIdInCharge = workerIdentity->workerId;
+            workerStateDest = zframe_dup (workerState->identity.frame);
+            workerIdInCharge = workerState->identity.id;
         }
 
         // Replace the new identity
-        if (self->workers[workerIdInCharge].curClient) {
-            zframe_destroy (&self->workers[workerIdInCharge].curClient);
+        if (self->workers[workerIdInCharge].curClientId.frame) {
+            zframe_destroy (&self->workers[workerIdInCharge].curClientId.frame);
         }
-        self->workers[workerIdInCharge].curClient = zframe_dup (identityClient);
+        self->workers[workerIdInCharge].curClientId.frame = zframe_dup (identityClient);
     }
 
     // Wrap the worker's identity which receives the message
-    zmsg_wrap (msg, workerIdentityDest);
+    zmsg_wrap (msg, workerStateDest);
 
     // Forward message to backend
     if (zmsg_send (&msg, self->backend) != 0) {
