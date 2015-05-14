@@ -15,14 +15,6 @@
 
 
 // ------ Structure declaration -------
-struct MySQL {
-    /** Information about the database connection */
-    MySQLStartupInfo   info;
-    /** Handle to the MySQL connection */
-	MYSQL		*handle;
-	/** Last result */
-	MYSQL_RES	*result;
-};
 
 // ------ Static declaration -------
 

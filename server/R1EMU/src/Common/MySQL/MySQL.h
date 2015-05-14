@@ -34,8 +34,6 @@ typedef enum MySQLStatus {
 #define MYSQL_DATABASE_DEFAULT     (char []) {"r1emu"}
 
 // ------ Structure declaration -------
-typedef struct MySQL MySQL;
-
 typedef struct MySQLStartupInfo
 {
     /** The MySQL hostname */
@@ -51,6 +49,16 @@ typedef struct MySQLStartupInfo
     char *database;
 
 }   MySQLStartupInfo;
+
+struct MySQL {
+    /** Information about the database connection */
+    MySQLStartupInfo   info;
+    /** Handle to the MySQL connection */
+	MYSQL		*handle;
+	/** Last result */
+	MYSQL_RES	*result;
+};
+typedef struct MySQL MySQL;
 
 // ----------- Functions ------------
 
