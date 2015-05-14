@@ -17,9 +17,6 @@
 // GameSession Fields
 #include "Fields/RedisGameSession.h"
 
-// ---------- Private defines ------------
-#define REDIS_COMMAND_BUFFER_SIZE 1024*100
-
 // ------ Structure declaration -------
 /**
  * @brief Redis is a structure containing the necessary variables for communicating with the redis server
@@ -31,9 +28,6 @@ struct Redis
 
     /** Redis context, handle of the connection to the redis server */
     redisContext *context;
-
-    /** A command buffer */
-    char commandBuffer[REDIS_COMMAND_BUFFER_SIZE];
 };
 
 
