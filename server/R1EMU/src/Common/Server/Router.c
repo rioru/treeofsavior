@@ -13,22 +13,29 @@
 // ---------- Includes ------------
 #include "Router.h"
 #include "Worker.h"
-
-#define ROUTER_FDKEY_SIZE ((sizeof (int) * 2) + 1)
+#include "RouterMonitor.h"
 
 // ------ Structure declaration -------
 typedef struct {
+    /** The frame of the client, or NULL if the client is not being processed */
     zframe_t *frame;
+    /** The fd of the client */
     int fd;
 } ClientIdentity;
 
 typedef struct {
+    /** The frame of the Worker */
     zframe_t *frame;
+    /** The WorkerId */
     uint16_t id;
 } WorkerIdentity;
 
 typedef struct {
+    /** Subscriber connection to the worker. */
+    zsock_t *zsock;
+    /** Worker identity */
     WorkerIdentity identity;
+    /** Client identity current treated */
     ClientIdentity curClientId;
 } WorkerState;
 
@@ -45,24 +52,20 @@ struct Router
     /** Router backend socket. */
     zsock_t *backend;
 
-    /** Subscribers connection to the workers.
-     * It receives asynchronous messages to send to clients. */
-    zsock_t **subscribers;
+    /** Workers state. */
+    WorkerState *workers;
+
+    /** Publisher to the Router Monitor */
+    zsock_t *monitor;
 
     /** List of workers entities. */
     zlist_t *readyWorkers;
-
-    /** Identity frames of the workers. */
-    WorkerState *workers;
 
     /** Count the number of workers that sent a READY signal. */
     int workersReadyCount;
 
     /** Index of the worker in the worker array that is going to take the charge if there is an overload */
     int overloadWorker;
-
-    /** FD => Socket Id hashtable */
-    zhash_t *connected;
 
     // === Startup information ===
     /** Router information */
@@ -131,6 +134,17 @@ Router_initFrontend (
     Router *self
 );
 
+
+/**
+ * @brief Initialize the monitor of the Router
+ * @param self The Router
+ * @return true on success, false otherwise
+ */
+static bool
+Router_initMonitor (
+    Router *self
+);
+
 /**
  * @brief Initialize the backend of the Router
  * @param self The Router
@@ -139,18 +153,6 @@ Router_initFrontend (
 static bool
 Router_initBackend (
     Router *self
-);
-
-/**
- * @brief Initialize the FD key from the fd value
- * @param fd The file descriptor
- * @param[out] fdKey The formated fd key
- * @return
- */
-static void
-Router_genFdKey (
-    int fd,
-    unsigned char fdKey[ROUTER_FDKEY_SIZE]
 );
 
 // ------ Extern function implementation ------
@@ -199,19 +201,16 @@ Router_init (
         return false;
     }
 
-    // Backend listens to a 0MQ socket.
+    // Backend listens to a ØMQ ROUTER socket.
     if (!(self->backend = zsock_new (ZMQ_ROUTER))) {
         error ("Cannot allocate ROUTER backend");
         return false;
     }
 
-    // The Router can communicate asynchronously with the workers with a pub/sub socket.
-    self->subscribers = calloc (self->info.workersCount, sizeof (zsock_t *));
-    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        if (!(self->subscribers[workerId] = zsock_new (ZMQ_SUB))) {
-            error ("Cannot allocate a Server SUBSCRIBER");
-            return false;
-        }
+    // Router Monitor listens to a ØMQ PUBLISHER socket.
+    if (!(self->monitor = zsock_new (ZMQ_PUB))) {
+        error ("Cannot allocate ROUTER backend");
+        return false;
     }
 
     // Allocate the workers entity list
@@ -226,10 +225,12 @@ Router_init (
         return false;
     }
 
-    // Allocate the connected clients hashtable
-    if (!(self->connected = zhash_new ())) {
-        error ("Cannot allocate a new connected clients hashtable.");
-        return false;
+    // The Router can communicate asynchronously with the workers with a pub/sub socket.
+    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
+        if (!(self->workers[workerId].zsock = zsock_new (ZMQ_SUB))) {
+            error ("Cannot allocate a new Server SUBSCRIBER");
+            return false;
+        }
     }
 
     return true;
@@ -269,12 +270,13 @@ Router_subscribe (
         return 0;
     }
 
-    // Get the header of the message
+    // Get the frame header of the message
     if (!(header = zmsg_pop (msg))) {
         error ("Frame header cannot be retrieved.");
         return -1;
     }
 
+    // Convert the frame to a RouterHeader
     RouterHeader packetHeader = *((RouterHeader *) zframe_data (header));
     zframe_destroy (&header);
 
@@ -299,6 +301,9 @@ Router_subscribe (
             warning ("Server subscriber received an unknown header : %x", packetHeader);
         break;
     }
+
+    // Cleanup
+    zmsg_destroy (&msg);
 
     return 0;
 }
@@ -326,12 +331,13 @@ Router_backend (
         return -1;
     }
 
-    // Get the header the message
+    // Get the frame header the message
     if (!(header = zmsg_pop (msg))) {
         error ("Frame data cannot be retrieved.");
         return -1;
     }
 
+    // Convert the frame to a RouterHeader
     RouterHeader packetHeader = *((RouterHeader *) zframe_data (header));
     zframe_destroy (&header);
 
@@ -348,18 +354,24 @@ Router_backend (
             zframe_t *workerIdFrame = zmsg_pop (msg);
             uint16_t workerId = *((uint16_t *) zframe_data (workerIdFrame));
             self->workers [workerId].identity.frame = zframe_dup (workerStateFrame);
-            self->workers [workerId].identity.id= workerId;
+            self->workers [workerId].identity.id = workerId;
             self->workersReadyCount++;
             zmsg_destroy (&msg);
 
             if (self->workersReadyCount == self->info.workersCount) {
-                // All the workers are ready. Open the frontend to the outside world !
+                // All the workers are ready. Start the monitor
+                if (!(Router_initMonitor (self))) {
+                    error ("Cannot initialize the monitor.");
+                    return -1;
+                }
+
+                // Everything is ready from here. Open the frontend to the outside world !
                 if (!(Router_initFrontend (self))) {
                     error ("Cannot initialize the frontend.");
                     return -1;
                 }
 
-                info ("All the Workers are ready ! Router ID=%d is ready and running.", self->info.routerId);
+                info ("Router ID=%d is listening to clients from now.", self->info.routerId);
             }
         }
         break;
@@ -392,35 +404,46 @@ Router_backend (
         break;
     }
 
-    // Get the WorkerState
+    // Get the WorkerState corresponding to the frame of the worker
     WorkerState *workerState = NULL;
     for (int i = 0; i < self->info.workersCount; i++) {
         if (zframe_eq (workerStateFrame, self->workers[i].identity.frame)) {
             workerState = &self->workers[i];
         }
     }
-
     if (!workerState) {
         error ("Cannot find the Worker in the Worker list.");
         return -1;
     }
 
-    // The worker finished its job; add it at the end of the list (round robin load balancing)
-    // Remove the responsability of the ClientIdentity for the current worker
+    // Remove the responsability of the client for the current worker
     zframe_destroy (&self->workers [workerState->identity.id].curClientId.frame);
 
+    // The worker finished its job; add it at the end of the list (round robin load balancing)
     zlist_append (self->readyWorkers, workerState);
 
     return 0;
 }
 
-static void
-Router_genFdKey (
-    int fd,
-    unsigned char fdKey[ROUTER_FDKEY_SIZE]
+static bool
+Router_informMonitor (
+    Router *self,
+    zframe_t *identityClient
 ) {
-    // Format the fdKey from the fd
-    snprintf (fdKey, ROUTER_FDKEY_SIZE, "%x", fd);
+    int fdClient = zframe_fd (identityClient);
+
+    zmsg_t *msg;
+    if ((msg = zmsg_new ()) == NULL
+    ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_MONITOR_ADD_FD), sizeof (ROUTER_MONITOR_ADD_FD)) != 0
+    ||  zmsg_addmem (msg, PACKET_HEADER (fdClient), sizeof (fdClient)) != 0
+    ||  zmsg_append (msg, (zframe_t *[]) {zframe_dup (identityClient)}) != 0
+    ||  zmsg_send   (&msg, self->monitor)
+    ) {
+        error ("Cannot send a " STRINGIFY (ROUTER_MONITOR_ADD_FD) " packet to the router monitor.");
+        return false;
+    }
+
+    return true;
 }
 
 static int
@@ -440,18 +463,15 @@ Router_frontend (
         return 0;
     }
 
-    // Check if the client is not currently processed by another Worker
     zframe_t *identityClient = zmsg_first (msg);
-    int fdClient = zframe_fd (identityClient);
 
-    // Check if the client just connected
-    unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
-    Router_genFdKey (fdClient, fdClientKey);
-    if (zhash_lookup (self->connected, fdClientKey) == NULL) {
-        // The client just connected, add the identity frame to the hashtable
-        zhash_insert (self->connected, fdClientKey, zframe_dup (identityClient));
+    // Inform the RouterMonitor that the client sent a request
+    if (!(Router_informMonitor (self, identityClient))) {
+        error ("Cannot inform the Router Monitor.");
+        return 0;
     }
 
+    // Check if the client is not currently processed by another Worker
     for (int i = 0; i < self->info.workersCount; i++) {
         if (self->workers[i].curClientId.frame != NULL) {
             if (zframe_eq (identityClient, self->workers[i].curClientId.frame)) {
@@ -504,87 +524,37 @@ Router_frontend (
     return 0;
 }
 
-static void *
-Router_monitor (
-    void *_self
+static bool
+Router_initMonitor (
+    Router *self
 ) {
-    Router *self = _self;
+    // ===================================
+    //     Initialize Router Monitor
+    // ===================================
+    if (zsock_bind (self->monitor, ROUTER_MONITOR_SUBSCRIBER_ENDPOINT, self->info.routerId) == -1) {
+        error ("Cannot bind to the Router Monitor endpoint");
+        return false;
+    }
+    info ("Binded to the Router Monitor endpoint %s", zsys_sprintf (ROUTER_MONITOR_SUBSCRIBER_ENDPOINT, self->info.routerId));
 
-    zactor_t *servermon = zactor_new (zmonitor, self->frontend);
-
-    zstr_sendx (servermon, "VERBOSE", NULL);
-    zstr_sendx (servermon, "LISTEN", "ACCEPTED", "DISCONNECTED", NULL);
-    zstr_sendx (servermon, "START", NULL);
-    zsock_wait (servermon);
-
-    zmsg_t *msg;
-
-    while ((msg = zmsg_recv (servermon)))
-    {
-        zframe_t *action = zmsg_first (msg);
-
-        if (zframe_streq (action, "ACCEPTED")) {
-            // A client just connected to the Router.
-
-            // Get the socket file descriptor
-            zframe_t *fdFrame = zmsg_next (msg);
-            int fdClient = atoi (zframe_data (fdFrame));
-
-            // Check if this file descriptor is still used
-            unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
-            Router_genFdKey (fdClient, fdClientKey);
-
-            zframe_t *clientFrame;
-            if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) != NULL) {
-                unsigned char sessionKey [SOCKET_SESSION_KEY_SIZE];
-                SocketSession_genKey (zframe_data (clientFrame), sessionKey);
-                error ("The client FD=%d just connected, but another client has still this FD (%s)", sessionKey);
-                // TODO : Decide what to do in this case
-            }
-        }
-
-        else if (zframe_streq (action, "DISCONNECTED")) {
-            // A client just disconnected from the Router.
-
-            // Get the socket file descriptor
-            zframe_t *fdFrame = zmsg_next (msg);
-            int fdClient = atoi (zframe_data (fdFrame));
-
-            // Check if this file descriptor is already used
-            unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
-            Router_genFdKey (fdClient, fdClientKey);
-
-            zframe_t *clientFrame;
-            if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) == NULL) {
-                error ("The client FD=%d just disconnected, but no client has been registred using this fd.");
-                // TODO : Decide what to do in this case
-            }
-
-            else {
-                unsigned char sessionKey [SOCKET_SESSION_KEY_SIZE];
-                SocketSession_genKey (zframe_data (clientFrame), sessionKey);
-                // TODO : Flush the session
-
-                // Remove the key from the connected hashtable
-                zhash_delete (self->connected, fdClientKey);
-                info ("%s session successfully flushed !", sessionKey);
-            }
-        }
-
-        // Cleanup
-        zmsg_destroy (&msg);
+    RouterMonitorStartupInfo *routerMonitorInfo;
+    if (!(routerMonitorInfo = RouterMonitorStartupInfo_new (self->frontend, self->info.routerId))) {
+        error ("Cannot allocate a new Router Monitor Info.");
+        return false;
     }
 
+    if (zthread_new (RouterMonitor_start, routerMonitorInfo) != 0) {
+        error ("Cannot create a new thread for the Router Monitor.");
+        return false;
+    }
 
-    return NULL;
+    return true;
 }
 
 static bool
 Router_initFrontend (
     Router *self
 ) {
-    zthread_new (Router_monitor, self);
-
     // ===================================
     //        Initialize frontend
     // ===================================
@@ -627,13 +597,13 @@ Router_initSubscribers (
     //       Initialize subscribers
     // ===================================
     for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        if (zsock_connect (self->subscribers[workerId], ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId) != 0) {
-            error ("Failed to connect to the subscriber endpoint %d.", workerId);
+        if (zsock_connect (self->workers[workerId].zsock, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId) != 0) {
+            error ("Failed to connect to the subscriber endpoint %d:%d.", self->info.routerId, workerId);
             return false;
         }
         info ("Subscriber connected to %s", zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId));
         // Subscribe to all messages, without any filter
-        zsock_set_subscribe (self->subscribers[workerId], "");
+        zsock_set_subscribe (self->workers[workerId].zsock, "");
     }
 
     return true;
@@ -675,7 +645,7 @@ Router_start (
 
     // Attach a callback to subscribers sockets
     for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        if (zloop_reader (reactor, self->subscribers[workerId], Router_subscribe, self) == -1) {
+        if (zloop_reader (reactor, self->workers[workerId].zsock, Router_subscribe, self) == -1) {
             error ("Cannot register the subscribers with the reactor.");
             return false;
         }
@@ -721,8 +691,8 @@ Router_destroy (
         zsock_destroy (&self->backend);
     }
 
-    for (int i = 0; i < self->info.workersCount; i++) {
-        zsock_destroy (&self->subscribers[i]);
+    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
+        zsock_destroy (&self->workers[workerId].zsock);
     }
 
     if (self->workers) {

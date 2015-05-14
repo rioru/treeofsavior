@@ -61,20 +61,9 @@ int main (int argc, char **argv)
     char *redisHostname = argv[curArg++];
     int redisPort = atoi(argv[curArg++]);
 
-    special ("Parameters received : ");
-    special ("routerId = %d", routerId);
-    special ("routerIp = %s", routerIp);
-    special ("portsCount = %d", portsCount);
-    special ("workersCount = %d", workersCount);
-    special ("globalServerIp = %s", globalServerIp);
-    special ("globalServerPort = %d", globalServerPort);
-    special ("sqlHostname = %s", sqlHostname);
-    special ("sqlUsername = %s", sqlUsername);
-    special ("sqlPassword = %s", sqlPassword);
-    special ("sqlDatabase = %s", sqlDatabase);
-    special ("redisHostname = %s", redisHostname);
-    special ("redisPort = %d", redisPort);
-
+    special ("=====================");
+    special ("=== Zone server %d ===", routerId);
+    special ("=====================");
 
     // === Build the Server ===
     Server *server;
@@ -93,9 +82,6 @@ int main (int argc, char **argv)
     // Initialize the Server
     if (routerId == BARRACK_SERVER_ROUTER_ID)
     {
-        special ("======================");
-        special ("=== Barrack server ===");
-        special ("======================");
         // Initialize the Barrack Server
         if ((barrackServer = BarrackServer_new (server))) {
 
@@ -114,9 +100,6 @@ int main (int argc, char **argv)
 
     else
     {
-        special ("=====================");
-        special ("=== Zone server %d ===", routerId);
-        special ("=====================");
         // Initialize the Zone Server
         if ((zoneServer = ZoneServer_new (server))) {
 
