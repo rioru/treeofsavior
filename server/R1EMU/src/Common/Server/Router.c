@@ -14,6 +14,7 @@
 #include "Router.h"
 #include "Worker.h"
 
+#define ROUTER_FDKEY_SIZE ((sizeof (int) * 2) + 1)
 
 // ------ Structure declaration -------
 typedef struct {
@@ -59,6 +60,9 @@ struct Router
 
     /** Index of the worker in the worker array that is going to take the charge if there is an overload */
     int overloadWorker;
+
+    /** FD => Socket Id hashtable */
+    zhash_t *connected;
 
     // === Startup information ===
     /** Router information */
@@ -137,8 +141,17 @@ Router_initBackend (
     Router *self
 );
 
-
-
+/**
+ * @brief Initialize the FD key from the fd value
+ * @param fd The file descriptor
+ * @param[out] fdKey The formated fd key
+ * @return
+ */
+static void
+Router_genFdKey (
+    int fd,
+    unsigned char fdKey[ROUTER_FDKEY_SIZE]
+);
 
 // ------ Extern function implementation ------
 
@@ -210,6 +223,12 @@ Router_init (
     // Allocate the workers array
     if ((self->workers = calloc (self->info.workersCount, sizeof (WorkerState))) == NULL) {
         error ("Cannot allocate the workers array.");
+        return false;
+    }
+
+    // Allocate the connected clients hashtable
+    if (!(self->connected = zhash_new ())) {
+        error ("Cannot allocate a new connected clients hashtable.");
         return false;
     }
 
@@ -395,6 +414,14 @@ Router_backend (
     return 0;
 }
 
+static void
+Router_genFdKey (
+    int fd,
+    unsigned char fdKey[ROUTER_FDKEY_SIZE]
+) {
+    // Format the fdKey from the fd
+    snprintf (fdKey, ROUTER_FDKEY_SIZE, "%x", fd);
+}
 
 static int
 Router_frontend (
@@ -415,6 +442,16 @@ Router_frontend (
 
     // Check if the client is not currently processed by another Worker
     zframe_t *identityClient = zmsg_first (msg);
+    int fdClient = zframe_fd (identityClient);
+
+    // Check if the client just connected
+    unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
+    Router_genFdKey (fdClient, fdClientKey);
+    if (zhash_lookup (self->connected, fdClientKey) == NULL) {
+        // The client just connected, add the identity frame to the hashtable
+        zhash_insert (self->connected, fdClientKey, zframe_dup (identityClient));
+    }
+
     for (int i = 0; i < self->info.workersCount; i++) {
         if (self->workers[i].curClientId.frame != NULL) {
             if (zframe_eq (identityClient, self->workers[i].curClientId.frame)) {
