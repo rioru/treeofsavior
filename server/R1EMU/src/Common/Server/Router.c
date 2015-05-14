@@ -524,6 +524,13 @@ Router_monitor (
 
         if (zframe_streq (action, "ACCEPTED")) {
             zframe_t *fdFrame = zmsg_next (msg);
+            int fdClient = atoi (zframe_data (fdFrame));
+            unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
+            Router_genFdKey (fdClient, fdClientKey);
+            if (zhash_lookup (self->connected, fdClientKey) != NULL) {
+                error ("The client FD=%d just connected, but another client has still this FD.");
+                // TODO : Decide what to do in this case
+            }
         }
 
         else if (zframe_streq (action, "DISCONNECTED")) {
