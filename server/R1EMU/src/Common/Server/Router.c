@@ -519,24 +519,62 @@ Router_monitor (
 
     zmsg_t *msg;
 
-    while ((msg = zmsg_recv (servermon))) {
+    while ((msg = zmsg_recv (servermon)))
+    {
         zframe_t *action = zmsg_first (msg);
 
         if (zframe_streq (action, "ACCEPTED")) {
+            // A client just connected to the Router.
+
+            // Get the socket file descriptor
             zframe_t *fdFrame = zmsg_next (msg);
             int fdClient = atoi (zframe_data (fdFrame));
+
+            // Check if this file descriptor is still used
             unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
             Router_genFdKey (fdClient, fdClientKey);
-            if (zhash_lookup (self->connected, fdClientKey) != NULL) {
-                error ("The client FD=%d just connected, but another client has still this FD.");
+
+            zframe_t *clientFrame;
+            if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) != NULL) {
+                unsigned char sessionKey [SOCKET_SESSION_KEY_SIZE];
+                SocketSession_genKey (zframe_data (clientFrame), sessionKey);
+                error ("The client FD=%d just connected, but another client has still this FD (%s)", sessionKey);
                 // TODO : Decide what to do in this case
             }
         }
 
         else if (zframe_streq (action, "DISCONNECTED")) {
+            // A client just disconnected from the Router.
+
+            // Get the socket file descriptor
             zframe_t *fdFrame = zmsg_next (msg);
+            int fdClient = atoi (zframe_data (fdFrame));
+
+            // Check if this file descriptor is already used
+            unsigned char fdClientKey[ROUTER_FDKEY_SIZE];
+            Router_genFdKey (fdClient, fdClientKey);
+
+            zframe_t *clientFrame;
+            if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) == NULL) {
+                error ("The client FD=%d just disconnected, but no client has been registred using this fd.");
+                // TODO : Decide what to do in this case
+            }
+
+            else {
+                unsigned char sessionKey [SOCKET_SESSION_KEY_SIZE];
+                SocketSession_genKey (zframe_data (clientFrame), sessionKey);
+                // TODO : Flush the session
+
+                // Remove the key from the connected hashtable
+                zhash_delete (self->connected, fdClientKey);
+                info ("%s session successfully flushed !", sessionKey);
+            }
         }
+
+        // Cleanup
+        zmsg_destroy (&msg);
     }
+
 
     return NULL;
 }
