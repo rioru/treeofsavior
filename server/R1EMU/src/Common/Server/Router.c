@@ -464,10 +464,35 @@ Router_frontend (
     return 0;
 }
 
+static void *
+Router_monitor (
+    void *_self
+) {
+    Router *self = _self;
+
+    zactor_t *servermon = zactor_new (zmonitor, self->frontend);
+
+    zstr_sendx (servermon, "VERBOSE", NULL);
+    zstr_sendx (servermon, "LISTEN", "CONNECTED", "DISCONNECTED", NULL);
+    zstr_sendx (servermon, "START", NULL);
+    zsock_wait (servermon);
+
+    zmsg_t *msg;
+
+    while ((msg = zmsg_recv (servermon))) {
+        special ("Monitor :");
+        zmsg_print (msg);
+    }
+
+    return NULL;
+}
+
 static bool
 Router_initFrontend (
     Router *self
 ) {
+    zthread_new (Router_monitor, self);
+
     // ===================================
     //        Initialize frontend
     // ===================================
