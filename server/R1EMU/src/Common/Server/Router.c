@@ -520,8 +520,15 @@ Router_monitor (
     zmsg_t *msg;
 
     while ((msg = zmsg_recv (servermon))) {
-        special ("Monitor :");
-        zmsg_print (msg);
+        zframe_t *action = zmsg_first (msg);
+
+        if (zframe_streq (action, "ACCEPTED")) {
+            zframe_t *fdFrame = zmsg_next (msg);
+        }
+
+        else if (zframe_streq (action, "DISCONNECTED")) {
+            zframe_t *fdFrame = zmsg_next (msg);
+        }
     }
 
     return NULL;
