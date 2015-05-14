@@ -466,7 +466,7 @@ Router_monitor (
     zactor_t *servermon = zactor_new (zmonitor, self->frontend);
 
     zstr_sendx (servermon, "VERBOSE", NULL);
-    zstr_sendx (servermon, "LISTEN", "CONNECTED", "DISCONNECTED", NULL);
+    zstr_sendx (servermon, "LISTEN", "ACCEPTED", "DISCONNECTED", NULL);
     zstr_sendx (servermon, "START", NULL);
     zsock_wait (servermon);
 
