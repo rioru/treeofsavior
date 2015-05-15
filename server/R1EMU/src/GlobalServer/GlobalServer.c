@@ -377,7 +377,7 @@ GlobalServer_start (
     // ===================================
     for (uint16_t routerId = 0; routerId < info->zoneServersCount; routerId++) {
         ServerFactory_initServerInfo (&serverInfo,
-            routerId + 1, // The ID = 0 is reserved for the Barrack Server, start at 1.
+            routerId,
             info->zoneServersIp[routerId],
             1, &info->zoneServersPorts[routerId], // Only 1 port for each Zone server
             info->zoneWorkersCount,

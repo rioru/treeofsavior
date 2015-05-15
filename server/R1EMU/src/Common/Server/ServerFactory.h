@@ -33,7 +33,7 @@
  */
 Server *
 ServerFactory_createServer (
-    int routerId,
+    uint16_t routerId,
     char *routerIp,
     int portsCount,
     int *ports,
@@ -55,7 +55,7 @@ ServerFactory_createServer (
 bool
 ServerFactory_initServerInfo (
     ServerStartupInfo *serverInfo,
-    int routerId,
+    uint16_t routerId,
     char *routerIp,
     int portsCount,
     int *ports,

@@ -25,7 +25,6 @@
 // Configuration default values
 #define BARRACK_SERVER_PORTS_DEFAULT               (char []) {"2000"}
 #define BARRACK_SERVER_WORKERS_COUNT_DEFAULT       1
-#define BARRACK_SERVER_ROUTER_ID                   0
 #define BARRACK_SERVER_MAP_ID                      -1           /** The Barrack map hasn't any mapId, let's define one */
 #define BARRACK_SERVER_FRONTEND_IP_DEFAULT         (char []) {"127.0.0.1"}
 

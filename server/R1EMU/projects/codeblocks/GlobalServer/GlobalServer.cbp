@@ -148,6 +148,7 @@
 		<Unit filename="../../../src/GlobalServer/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/R1EMU.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>

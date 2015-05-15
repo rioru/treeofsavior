@@ -134,7 +134,7 @@ extern const char *redisGameSessionsStr [];
 /**
  * @brief Request the session associated with the ZoneId and the Socket ID
  * @param self An allocated Redis
- * @param serverId A zone Id
+ * @param routerId A zone Id
  * @param socketId A socket ID
  * @param[out] session The resulting Session
  * @return
@@ -142,7 +142,7 @@ extern const char *redisGameSessionsStr [];
 bool
 Redis_requestSession (
     Redis *self,
-    int serverId,
+    uint16_t routerId,
     char *socketId,
     Session *session
 );

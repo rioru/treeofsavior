@@ -46,7 +46,7 @@ extern const char *redisSocketSessionsStr [];
 /**
  * @brief Get the SocketSession associated with the Socket ID
  * @param self An allocated Redis
- * @param serverId The zone ID requesting the socket session
+ * @param routerId The router ID requesting the socket session
  * @param socketIdKey A socket ID key
  * @param[out] socketSession The socket Session
  * @return
@@ -54,7 +54,7 @@ extern const char *redisSocketSessionsStr [];
 bool
 Redis_getSocketSession (
     Redis *self,
-    int serverId,
+    uint16_t routerId,
     char *socketIdKey,
     SocketSession *socketSession
 );

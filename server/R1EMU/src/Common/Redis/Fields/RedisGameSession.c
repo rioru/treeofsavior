@@ -79,7 +79,7 @@ const char *redisGameSessionsStr [] = {
 bool
 Redis_requestSession (
     Redis *self,
-    int routerId,
+    uint16_t routerId,
     char *socketId,
     Session *session
 ) {

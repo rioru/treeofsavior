@@ -35,7 +35,7 @@ const char *redisSocketSessionsStr [] = {
 bool
 Redis_getSocketSession (
     Redis *self,
-    int routerId,
+    uint16_t routerId,
     char *socketKey,
     SocketSession *socketSession
 ) {

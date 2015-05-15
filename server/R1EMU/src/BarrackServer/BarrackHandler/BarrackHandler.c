@@ -185,7 +185,7 @@ BarrackHandler_startGame (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        uint16_t channelListId;
+        uint16_t routerId;
         uint8_t commanderListId;
     } CbStartGamePacket;
     #pragma pack(pop)
@@ -216,15 +216,24 @@ BarrackHandler_startGame (
     BcStartGamePacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Retrieve zone servers IPs from global server
+    // Retrieve zone servers IPs from Redis
+    // Fake IPs here until we can retrieve the IP server database
     char *zoneServerIps[] = {
         "127.0.0.1",
         "46.105.97.46",
         "192.168.33.10"
     };
     //! TODO : Check BOF
-    char *zoneServerIp = zoneServerIps [clientPacket->channelListId];
+    int maxServerCount = sizeof_array (zoneServerIps);
+    if (clientPacket->routerId >= maxServerCount) {
+        error ("Invalid RouterId.");
+        return PACKET_HANDLER_ERROR;
+    }
 
+    char *zoneServerIp = zoneServerIps [clientPacket->routerId];
+
+    // Load Zone Server options
+    // Until we can do it, fake server options
     replyPacket.header.type = BC_START_GAMEOK;
     replyPacket.zoneServerId = 0x12345678;
     strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));

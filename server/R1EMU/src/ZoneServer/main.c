@@ -28,7 +28,7 @@ int main (int argc, char **argv)
     int curArg = 1;
 
     // === Read the command line arguments ===
-    int routerId = atoi (argv[curArg++]);
+    uint16_t routerId = atoi (argv[curArg++]);
 
     // Set a custom output for linux for each servers,
     #ifndef WIN32

@@ -26,10 +26,8 @@
 #define ZMQ_RAW_ROUTER ZMQ_ROUTER
 #define PACKET_HEADER(x) (typeof(x)[]){x}
 /** Router unique IDs */
-typedef enum RouterUniqueId {
-    BARRACK_SERVER_ROUTER_ID = 0,
-    GLOBAL_SERVER_ROUTER_ID = -1
-} RouterUniqueId;
+#define BARRACK_SERVER_ROUTER_ID ((uint16_t) -1)
+#define GLOBAL_SERVER_ROUTER_ID  ((uint16_t) -2)
 
 // MySQL environment
 #include <mysql/mysql.h>

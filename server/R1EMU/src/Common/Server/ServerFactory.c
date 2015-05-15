@@ -28,7 +28,7 @@
 
 Server *
 ServerFactory_createServer (
-    int routerId,
+    uint16_t routerId,
     char *routerIp,
     int portsCount,
     int *ports,
@@ -69,7 +69,7 @@ ServerFactory_createServer (
 bool
 ServerFactory_initServerInfo (
     ServerStartupInfo *serverInfo,
-    int routerId,
+    uint16_t routerId,
     char *routerIp,
     int portsCount,
     int *ports,
@@ -114,6 +114,7 @@ ServerFactory_initServerInfo (
     // Use the correct packetHandlers based on the ID
     const PacketHandler *packetHandlers;
     int packetHandlersCount;
+    warning ("routerId = %#x, BARRACK_SERVER_ROUTER_ID = %#x", routerId, BARRACK_SERVER_ROUTER_ID);
     if (routerId == BARRACK_SERVER_ROUTER_ID) {
         packetHandlers = barrackHandlers;
         packetHandlersCount = PACKET_TYPE_COUNT;
