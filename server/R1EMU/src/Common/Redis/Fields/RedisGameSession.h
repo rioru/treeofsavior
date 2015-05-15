@@ -140,7 +140,7 @@ extern const char *redisGameSessionsStr [];
  * @return
  */
 bool
-Redis_requestSession (
+Redis_getSession (
     Redis *self,
     uint16_t routerId,
     char *socketId,

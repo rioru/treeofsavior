@@ -244,7 +244,7 @@ Worker_processClientPacket (
     zframe_t *packet = zmsg_next (msg);
 
     // Request a Game Session
-    if (!(Redis_requestSession (self->redis, self->info.routerId, zframe_data (socketIdFrame), &session))) {
+    if (!(Redis_getSession (self->redis, self->info.routerId, zframe_data (socketIdFrame), &session))) {
         error ("Cannot retrieve a Game Session.");
         return false;
     }
