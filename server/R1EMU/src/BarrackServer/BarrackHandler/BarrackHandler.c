@@ -19,6 +19,7 @@
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
+#include "Common/Redis/Fields/RedisSocketSession.h"
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
@@ -244,8 +245,11 @@ BarrackHandler_startGame (
     replyPacket.spriteIdRelated = 2;
     replyPacket.isSingleMap = false;
 
-    // TODO : Send the session directly to the Zone Server
-
+    // Update and transfer the session directly to the concerned Zone Server
+    session->socket.mapId = replyPacket.mapId;
+    session->socket.routerId = clientPacket->routerId;
+    Redis_updateSocketSession (self->redis, session->socket.routerId, session->socket.key, &session->socket);
+    Redis_updateGameSession (self->redis, session->socket.routerId, session->socket.mapId, session->socket.accountId, session->socket.key, &session->game);
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));

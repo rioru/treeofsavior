@@ -231,31 +231,15 @@ ZoneHandler_connect (
     ZcConnectPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Authenticate here
-    // TODO
-
-    // Authentication OK!
-    // A new user just connected to the zone server
-    // Its session is empty and must be updated from the barrack server.
-    // Ask for the session to the barrack server
-    // Register a valid SocketSession for the BarrackServer
-    /*
-    unsigned char *socketId = zframe_data (zmsg_last (reply));
-    unsigned char socketKey[SOCKET_SESSION_KEY_SIZE];
-    // Generate the socketId key
-    SocketSession_genKey (socketId, socketKey);
-    SocketSession_init (socketSession, clientPacket->accountId, BARRACK_SERVER_ROUTER_ID, BARRACK_SERVER_MAP_ID, socketKey, true);
-    if (!(Redis_getGameSession (self->redis, session))) {
-        error ("Cannot retrieve the session from the barrack server.");
+    // Check the client packet here :
+    if ((clientPacket->accountId != socketSession->accountId)
+    // TODO : Complete the check
+    ) {
+        error ("Wrong account authentication.");
         return PACKET_HANDLER_ERROR;
     }
-    */
-    die ("Session transfer : TODO");
 
-    // Update the Socket Session
-    socketSession->routerId = self->info.routerId;
-    socketSession->mapId = gameSession->currentCommander.mapId;
-
+    // Build the reply packet
     replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
     replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
 

@@ -81,7 +81,7 @@ Redis_getSocketSession (
                 SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, routerId, SOCKET_SESSION_UNDEFINED_MAP, socketKey, false);
 
                 // Update the newly created socketSession to the Redis Session
-                if (!Redis_updateSocketSession (self, socketSession)) {
+                if (!Redis_updateSocketSession (self, socketSession->routerId, socketSession->key, socketSession)) {
                     dbg ("Cannot update the socket session");
                     freeReplyObject (reply);
                     return false;
@@ -112,6 +112,7 @@ Redis_getSocketSession (
 bool
 Redis_updateSocketSession (
     Redis *self,
+    uint16_t routerId, unsigned char *key,
     SocketSession *socketSession
 ) {
     redisReply *reply = NULL;
@@ -122,9 +123,9 @@ Redis_updateSocketSession (
         " routerId %x"
         " mapId %x"
         " authenticated %x"
-        , socketSession->routerId, socketSession->key,
+        , routerId, key,
         socketSession->accountId,
-        socketSession->routerId,
+        routerId,
         socketSession->mapId,
         socketSession->authenticated
     );

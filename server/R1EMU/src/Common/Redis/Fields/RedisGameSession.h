@@ -165,14 +165,16 @@ Redis_getGameSession (
 /**
  * @brief Save an entire GameSession to the Redis server.
  * @param self An allocated Redis instance
- * @param[in] socketSession The Socket Session
- * @param[out] gameSession The Game Session
+ * @param routerId, mapId, accountId Identificators of the Game Session
+ * @param socketKey The socketKey linked with the Game Session
+ * @param gameSession The Game Session to save
  * @return true on success, false otherwise
  */
 bool
 Redis_updateGameSession (
     Redis *self,
-    SocketSession *socketSession,
+    uint16_t routerId, uint16_t mapId, uint64_t accountId,
+    unsigned char *socketKey,
     GameSession *gameSession
 );
 

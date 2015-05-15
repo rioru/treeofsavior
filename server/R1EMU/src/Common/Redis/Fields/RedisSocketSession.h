@@ -7,8 +7,8 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file GameSession.h
- * @brief GameSession fields definition
+ * @file RedisSocketSession.h
+ * @brief RedisSocketSession fields definition
  *
  *
  *
@@ -61,14 +61,16 @@ Redis_getSocketSession (
 
 
 /**
- * @brief Save an entire GameSession to the Redis server.
+ * @brief Save an entire SocketSession to the Redis server.
  * @param self An allocated Redis instance
- * @param[out] socketSession An allocated socket session to refresh
+ * @param routerId, key The identificators of the Socket Session
+ * @param socketSession An allocated socket session to refresh
  * @return true on success, false otherwise
  */
 bool
 Redis_updateSocketSession (
     Redis *self,
+    uint16_t routerId, unsigned char *key,
     SocketSession *socketSession
 );
 

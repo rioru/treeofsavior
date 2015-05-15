@@ -284,7 +284,8 @@ Redis_getGameSession (
 bool
 Redis_updateGameSession (
     Redis *self,
-    SocketSession *socketSession,
+    uint16_t routerId, uint16_t mapId, uint64_t accountId,
+    unsigned char *socketKey,
     GameSession *gameSession
 ) {
     redisReply *reply = NULL;
@@ -345,13 +346,13 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_maxSP_str " %x"
         " " REDIS_GAME_SESSION_commander_cPosX_str " %f"
         " " REDIS_GAME_SESSION_commander_cPosY_str " %f"
-        , socketSession->routerId, socketSession->mapId, socketSession->accountId,
-        socketSession->key,
-        socketSession->routerId,
+        , routerId, mapId, accountId,
+        socketKey,
+        routerId,
         (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
         (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
         gameSession->charactersBarrackCount,
-        socketSession->accountId,
+        accountId,
         gameSession->currentCommanderId,
         gameSession->currentPcId,
         // [UNKNOWN] gameSession->currentCommander.unk1,

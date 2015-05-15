@@ -269,11 +269,16 @@ Worker_processClientPacket (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!Redis_updateSocketSession (self->redis, &session.socket)) {
+            if (!Redis_updateSocketSession (self->redis, session.socket.routerId, session.socket.key, &session.socket)) {
                 error ("Cannot update the socket session.");
                 return false;
             }
-            if (!Redis_updateGameSession (self->redis, &session.socket, &session.game)) {
+            SocketSession *socketSession = &session.socket;
+            if (!Redis_updateGameSession (self->redis,
+                    socketSession->routerId, socketSession->mapId, socketSession->accountId,
+                    socketSession->key,
+                    &session.game)
+            ) {
                 error ("Cannot update the game session");
                 return false;
             }
