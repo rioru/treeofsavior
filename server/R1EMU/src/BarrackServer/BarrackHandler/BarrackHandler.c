@@ -224,7 +224,6 @@ BarrackHandler_startGame (
         "46.105.97.46",
         "192.168.33.10"
     };
-    //! TODO : Check BOF
     int maxServerCount = sizeof_array (zoneServerIps);
     if (clientPacket->routerId >= maxServerCount) {
         error ("Invalid RouterId.");

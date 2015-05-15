@@ -86,7 +86,28 @@ Worker_processGlobalPacket (
 );
 
 /**
- * @brief Build a reply based on the packet handler
+ * @brief Build a reply for a given packet
+ * @param[in] self A pointer to the current worker
+ * @param[in] packetHandlers The packet handlers
+ * @param[in] handlersCount The number of handlers in the handlers array
+ * @param[in] session The game session associated with the packet
+ * @param[in] packet The packet sent by the client
+ * @param[in] packetSize The size of the packet
+ * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
+ * @return PacketHandlerState
+ */
+static bool
+Worker_buildReply (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *msg,
+    zframe_t *headerAnswer
+);
+
+/**
+ * @brief Read the packet and reply based on the packet handler
  * @param[in] self A pointer to the current worker
  * @param[in] packetHandlers The packet handlers
  * @param[in] handlersCount The number of handlers in the handlers array
@@ -97,7 +118,7 @@ Worker_processGlobalPacket (
  * @return PacketHandlerState
  */
 static PacketHandlerState
-Worker_buildReply (
+Worker_handlePacket (
     Worker *self,
     const PacketHandler *packetHandlers,
     size_t handlersCount,
@@ -317,7 +338,6 @@ Worker_processClientPacket (
         return false;
     }
 
-    // === Build the message reply ===
     // We don't need the client packet in the reply
     zmsg_remove (msg, packetFrame);
 
@@ -325,30 +345,14 @@ Worker_processClientPacket (
     zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ROUTER_WORKER_NORMAL), sizeof (ROUTER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
-    // === Check the packet Size ===
+    // === Build the message reply ===
     unsigned char *packet = zframe_data (packetFrame);
     size_t packetSize = zframe_size (packetFrame);
-    CryptPacketHeader cryptHeader;
 
-    if (!(Worker_checkPacketSize (packetSize, packet, &cryptHeader))) {
-        error ("Wrong sub packet size.");
+    if (!(Worker_buildReply (self, &session, packet, packetSize, msg, headerAnswer))) {
+        error ("Cannot build a reply for the following packet :");
+        buffer_print (packet, packetSize, NULL);
         return false;
-    }
-
-    // A single packet may contain multiple requests
-    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size) {
-        if (!(Worker_processMultipleRequests (self, &session, packet, packetSize, msg, headerAnswer))) {
-            error ("Cannot process properly one of multiple requests.");
-            return false;
-        }
-    }
-
-    // Everything normal here, a single packet contains a single request
-    else {
-        if (!(Worker_processOneRequest (self, &session, packet, packetSize, msg, headerAnswer))) {
-            error ("Cannot process properly a reply.");
-            return false;
-        }
     }
 
     // Cleanup
@@ -356,6 +360,43 @@ Worker_processClientPacket (
 
     return true;
 }
+
+static bool
+Worker_buildReply (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *msg,
+    zframe_t *headerAnswer
+) {
+    // Check the packet size
+    CryptPacketHeader cryptHeader;
+
+    if (!(Worker_checkPacketSize (packetSize, packet, &cryptHeader))) {
+        error ("Wrong packet size, cannot build a reply");
+        return false;
+    }
+
+    // A single packet may contain multiple requests
+    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size) {
+        if (!(Worker_processMultipleRequests (self, session, packet, packetSize, msg, headerAnswer))) {
+            error ("Cannot process properly one of multiple requests.");
+            return false;
+        }
+    }
+
+    // Everything normal here, a single packet contains a single request
+    else {
+        if (!(Worker_processOneRequest (self, session, packet, packetSize, msg, headerAnswer))) {
+            error ("Cannot process properly a reply.");
+            return false;
+        }
+    }
+
+    return true;
+}
+
 
 static bool
 Worker_processMultipleRequests (
@@ -445,7 +486,7 @@ Worker_processOneRequest (
     }
 
     // Answer
-    switch (Worker_buildReply (self, self->info.packetHandlers, self->info.packetHandlersCount, session, packet, packetSize, msg))
+    switch (Worker_handlePacket (self, self->info.packetHandlers, self->info.packetHandlersCount, session, packet, packetSize, msg))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
@@ -473,7 +514,7 @@ Worker_processOneRequest (
 
 
 static PacketHandlerState
-Worker_buildReply (
+Worker_handlePacket (
     Worker *self,
     const PacketHandler *packetHandlers,
     size_t handlersCount,
