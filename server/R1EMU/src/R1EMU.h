@@ -46,14 +46,3 @@
 
 // Utils
 #include "Common/utils/utils.h"
-
-
-/** R1EMU Errors */
-extern int R1EMULastError;
-
-typedef enum {
-    R1EMU_OK = 0,
-    R1EMU_ERROR,
-    R1EMU_NOT_ENOUGH_MEMORY,
-} R1EMUError;
-

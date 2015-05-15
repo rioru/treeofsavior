@@ -78,8 +78,9 @@ Worker_handlePrivateRequest (
  * @brief Process a message from the the global server
  * @param self An allocated Worker structure
  * @param msg The message coming from the global server
+ * @return true on success, false otherwise
 */
-static void
+static bool
 Worker_processGlobalPacket (
     Worker *self,
     zmsg_t *msg
@@ -209,7 +210,15 @@ Worker_init (
     Worker *self,
     WorkerStartupInfo *info
 ) {
-    memcpy (&self->info, info, sizeof (self->info));
+    if (!(WorkerStartupInfo_init (
+        &self->info, info->workerId, info->routerId,
+        info->globalServerIp, info->globalServerPort,
+        &info->sqlInfo, &info->redisInfo,
+        info->packetHandlers, info->packetHandlersCount))
+    ) {
+        error ("Cannot initialize worker start up info.");
+        return false;
+    }
 
     // ===================================
     //          Initialize MySQL
@@ -218,7 +227,11 @@ Worker_init (
         error ("Cannot initialize a new MySQL connection.");
         return false;
     }
-    MySQL_connect (self->sqlConn);
+
+    if (!(MySQL_connect (self->sqlConn))) {
+        error ("Cannot connect to the MySQL server.");
+        return false;
+    }
 
     // ===================================
     //     Initialize Redis connection
@@ -227,7 +240,11 @@ Worker_init (
         error ("Cannot initialize a new Redis connection.");
         return false;
     }
-    Redis_connect (self->redis);
+
+    if (!(Redis_connect (self->redis))) {
+        error ("Cannot connect to the Redis server.");
+        return false;
+    }
 
     // Initialize random seed
     self->seed = R1EMU_seed_random (self->info.routerId);
@@ -249,10 +266,24 @@ WorkerStartupInfo_init (
 ) {
     self->workerId = workerId;
     self->routerId = routerId;
-    self->globalServerIp = globalServerIp;
+
+    if (!(self->globalServerIp = strdup (globalServerIp))) {
+        error ("Cannot allocated globalServerIp.");
+        return false;
+    }
+
     self->globalServerPort = globalServerPort;
-    memcpy (&self->sqlInfo, sqlInfo, sizeof (self->sqlInfo));
-    memcpy (&self->redisInfo, redisInfo, sizeof (self->redisInfo));
+
+    if (!(RedisStartupInfo_init (&self->redisInfo, redisInfo->hostname, redisInfo->port))) {
+        error ("Cannot initialize Redis Start up info.");
+        return false;
+    }
+
+    if (!(MySQLStartupInfo_init (&self->sqlInfo, sqlInfo->hostname, sqlInfo->login, sqlInfo->password, sqlInfo->database))) {
+        error ("Cannot initialize MySQL start up info.");
+        return false;
+    }
+
     self->packetHandlers = packetHandlers;
     self->packetHandlersCount = packetHandlersCount;
 
@@ -266,30 +297,40 @@ Worker_sendToClients (
     unsigned char *packet,
     size_t packetLen
 ) {
-    zmsg_t *msg = zmsg_new ();
+    bool result = true;
+    zmsg_t *msg = NULL;
 
-    if (zmsg_addmem (msg, PACKET_HEADER (ROUTER_WORKER_MULTICAST), sizeof (ROUTER_WORKER_MULTICAST)) != 0
+    if ((!(msg = zmsg_new ()))
+    ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_WORKER_MULTICAST), sizeof (ROUTER_WORKER_MULTICAST)) != 0
     ||  zmsg_addmem (msg, packet, packetLen) != 0
     ) {
         error ("Cannot build the multicast packet.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
     char *identityKey;
-    while ((identityKey = zlist_pop (clients)) != NULL) {
+    for (identityKey = zlist_first (clients); identityKey != NULL; identityKey = zlist_next (clients)) {
         // Add all the clients to the packet
         unsigned char identityBytes[5];
         SocketSession_genId (identityKey, identityBytes);
-        zmsg_addmem (msg, identityBytes, sizeof (identityBytes));
+        if (zmsg_addmem (msg, identityBytes, sizeof (identityBytes)) != 0) {
+            error ("Cannot add the identity in the message.");
+            result = false;
+            goto cleanup;
+        }
     }
 
     if (zmsg_send (&msg, self->publisher) != 0) {
         error ("Cannot send the multicast packet.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
-    return true;
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
 }
 
 zlist_t *
@@ -314,11 +355,15 @@ Worker_processClientPacket (
     Worker *self,
     zmsg_t *msg
 ) {
+    bool result = true;
     Session session = {{0}};
+    zframe_t *headerAnswer = NULL;
 
     // Read the message
     zframe_t *socketIdFrame = zmsg_first (msg);
     zframe_t *packetFrame = zmsg_next (msg);
+    // We don't need the client packet in the reply
+    zmsg_remove (msg, packetFrame);
 
     // Convert the frame to socketId
     unsigned char socketId [SOCKET_SESSION_ID_SIZE];
@@ -335,14 +380,12 @@ Worker_processClientPacket (
     };
     if (!(Redis_getSession (self->redis, &sessionKey, &session))) {
         error ("Cannot retrieve a Game Session.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
-    // We don't need the client packet in the reply
-    zmsg_remove (msg, packetFrame);
-
     // Consider the message as a "normal" message by default
-    zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ROUTER_WORKER_NORMAL), sizeof (ROUTER_WORKER_NORMAL));
+    headerAnswer = zframe_new (PACKET_HEADER (ROUTER_WORKER_NORMAL), sizeof (ROUTER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
     // === Build the message reply ===
@@ -352,13 +395,14 @@ Worker_processClientPacket (
     if (!(Worker_buildReply (self, &session, packet, packetSize, msg, headerAnswer))) {
         error ("Cannot build a reply for the following packet :");
         buffer_print (packet, packetSize, NULL);
-        return false;
+        result = false;
+        goto cleanup;
     }
 
+cleanup:
     // Cleanup
     zframe_destroy (&packetFrame);
-
-    return true;
+    return result;
 }
 
 static bool
@@ -560,39 +604,6 @@ Worker_handlePacket (
 }
 
 
-void
-Worker_handleRequest (
-    Worker *self,
-    zmsg_t *msg
-) {
-    // Extract the request
-    zframe_t *identityFrame = zmsg_pop (msg); (void) identityFrame;
-    zframe_t *emptyFrame = zmsg_pop (msg); (void) emptyFrame;
-    zframe_t *headerFrame = zmsg_pop (msg);
-    zframe_t *requestAnswer = NULL;
-
-    RouterRecvHeader header = *((RouterRecvHeader *) zframe_data (headerFrame));
-
-    // Handle the request
-    switch (header) {
-        case ROUTER_PING:
-            requestAnswer = Worker_handlePingPacket ();
-        break;
-
-        default:
-            error ("Packet type %d not handled.", header);
-        break;
-    }
-
-    // Rebuild the answer message
-    zmsg_add (msg, identityFrame);
-    zmsg_add (msg, emptyFrame);
-    zmsg_add (msg, requestAnswer);
-
-    // Clean up
-    zframe_destroy (&headerFrame);
-}
-
 bool
 Worker_start (
     Worker *self
@@ -610,8 +621,8 @@ void *
 Worker_mainLoop (
     void *arg
 ) {
-    zpoller_t *poller;
-    zsock_t *worker, *global;
+    zpoller_t *poller = NULL;
+    zsock_t *worker = NULL, *global = NULL;
     bool isRunning = true;
 
     Worker *self = (Worker *) arg;
@@ -625,7 +636,7 @@ Worker_mainLoop (
     ||  zsock_connect (worker, ROUTER_BACKEND_ENDPOINT, self->info.routerId) == -1
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot connect to the backend socket.", self->info.routerId, self->info.workerId);
-        return NULL;
+        goto cleanup;
     }
     info ("[routerId=%d][WorkerId=%d] connected to the backend %s.",
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_BACKEND_ENDPOINT, self->info.routerId));
@@ -635,7 +646,7 @@ Worker_mainLoop (
     ||  zsock_connect (global, ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort) == -1
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot bind to the global server %s:%d.", self->info.routerId, self->info.workerId, self->info.globalServerIp, self->info.globalServerPort);
-        return NULL;
+        goto cleanup;
     }
     info ("[routerId=%d][WorkerId=%d] connected to the global server %s.",
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort));
@@ -646,7 +657,7 @@ Worker_mainLoop (
     ||  zsock_bind (self->publisher, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot bind to the subscriber endpoint.", self->info.routerId);
-        return NULL;
+        goto cleanup;
     }
     info ("[routerId=%d][WorkerId=%d] bind to the subscriber endpoint %s",
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId));
@@ -659,13 +670,13 @@ Worker_mainLoop (
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot send a correct ROUTER_WORKER_READY state.",
                self->info.routerId, self->info.workerId);
-        return NULL;
+        goto cleanup;
     }
 
     // Define a poller with the global and the worker socket
     if (!(poller = zpoller_new (global, worker, NULL))) {
         error ("[routerId=%d][WorkerId=%d] cannot create a poller.", self->info.routerId, self->info.workerId);
-        return NULL;
+        goto cleanup;
     }
     info ("[routerId=%d][WorkerId=%d] is running and waiting for messages.", self->info.routerId, self->info.workerId);
 
@@ -701,7 +712,9 @@ Worker_mainLoop (
         }
     }
 
+cleanup:
     // Cleanup
+    zpoller_destroy (&poller);
     zsock_destroy (&worker);
     zsock_destroy (&global);
 
@@ -714,30 +727,41 @@ Worker_handlePrivateRequest (
     Worker *self,
     zsock_t *global
 ) {
-    zmsg_t *msg;
+    int result = 0;
+    zmsg_t *msg = NULL;
 
     // Process messages as they arrive
     if (!(msg = zmsg_recv (global))) {
-        dbg ("[routerId=%d][WorkerId=%d] stops working.", self->info.routerId, self->info.workerId);
-        return -2;
+        error ("[routerId=%d][WorkerId=%d] stops working.", self->info.routerId, self->info.workerId);
+        result = -2;
+        goto cleanup;
     }
 
-    Worker_processGlobalPacket (self, msg);
+    if (!(Worker_processGlobalPacket (self, msg))) {
+        error ("[routerId=%d][WorkerId=%d] Worker cannot process the global packet.", self->info.routerId, self->info.workerId);
+        result = -2;
+        goto cleanup;
+    }
 
     // Reply back to the sender
     if (zmsg_send (&msg, global) != 0) {
         warning ("[routerId=%d][WorkerId=%d] failed to send a message to the backend.", self->info.routerId, self->info.workerId);
-        return -1;
+        result = -1;
+        goto cleanup;
     }
 
-    return 0;
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
 }
 
-static void
+static bool
 Worker_processGlobalPacket (
     Worker *self,
     zmsg_t *msg
 ) {
+    bool result = true;
+
     // Extract the request
     zframe_t *headerFrame = zmsg_pop (msg);
     zframe_t *requestAnswer = NULL;
@@ -752,14 +776,18 @@ Worker_processGlobalPacket (
 
         default:
             error ("[routerId=%d][WorkerId=%d] : Packet type %d not handled.", self->info.routerId, self->info.workerId, header);
+            result = false;
+            goto cleanup;
         break;
     }
 
     // Rebuild the answer message
     zmsg_add (msg, requestAnswer);
 
+cleanup:
     // Clean up
     zframe_destroy (&headerFrame);
+    return result;
 }
 
 static int
@@ -767,37 +795,41 @@ Worker_handlePublicRequest (
     Worker *self,
     zsock_t *worker
 ) {
-    zmsg_t *msg;
+    int result = 0;
+    zmsg_t *msg = NULL;
 
     // Process messages as they arrive
     if (!(msg = zmsg_recv (worker))) {
         dbg ("[routerId=%d][WorkerId=%d] stops working.", self->info.routerId, self->info.workerId);
-        return -2;
+        result = -2;
+        goto cleanup;
     }
 
     // No message should be with less than 3 frames
-    if (zmsg_size (msg) < 2) {
+    // The first frame is the client identity
+    // The second frame is the data of the packet
+    if (zmsg_size (msg) != 2) {
         error ("[routerId=%d][WorkerId=%d] received a malformed message.", self->info.routerId, self->info.workerId);
-        zmsg_destroy (&msg);
-        return -1;
+        result = -1;
+        goto cleanup;
     }
 
-    // Only ToS clients send messages with 2 frames
-    if (zmsg_size (msg) == 2) {
-        // The first frame is the client identity
-        // The second frame is the data of the packet
-        if (!(Worker_processClientPacket (self, msg))) {
-            error ("Cannot handle correctly the client packet.");
-        }
+    if (!(Worker_processClientPacket (self, msg))) {
+        error ("Cannot handle correctly the client packet.");
+        result = -1;
+        // Don't return, we want to send back an answer so the Worker doesn't quit
     }
 
     // Reply back to the sender
     if (zmsg_send (&msg, worker) != 0) {
         warning ("[routerId=%d][WorkerId=%d] failed to send a message to the backend.", self->info.routerId, self->info.workerId);
-        return -1;
+        result = -1;
+        goto cleanup;
     }
 
-    return 0;
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
 }
 
 void
@@ -807,7 +839,14 @@ WorkerStartupInfo_free (
     MySQLStartupInfo_free (&self->sqlInfo);
     RedisStartupInfo_free (&self->redisInfo);
     free (self->globalServerIp);
+}
 
+void
+Worker_free (
+    Worker *self
+) {
+    Redis_destroy (&self->redis);
+    MySQL_destroy (&self->sqlConn);
 }
 
 void
@@ -816,9 +855,10 @@ Worker_destroy (
 ) {
     Worker *self = *_self;
 
-    Redis_destroy (&self->redis);
-    MySQL_destroy (&self->sqlConn);
+    if (self) {
+        Worker_free (self);
+        free (self);
+    }
 
-    free (self);
     *_self = NULL;
 }

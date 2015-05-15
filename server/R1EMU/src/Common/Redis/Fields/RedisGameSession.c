@@ -82,6 +82,7 @@ Redis_getGameSession (
     RedisGameSessionKey *key,
     GameSession *gameSession
 ) {
+    bool result = true;
     redisReply *reply = NULL;
 
     reply = Redis_commandDbg (self,
@@ -148,14 +149,16 @@ Redis_getGameSession (
 
     if (!reply) {
         error ("Redis error encountered : The request is invalid.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     switch (reply->type)
     {
         case REDIS_REPLY_ERROR:
             error ("Redis error encountered : %s", reply->str);
-            return false;
+            result = false;
+            goto cleanup;
         break;
 
         case REDIS_REPLY_STATUS:
@@ -167,14 +170,16 @@ Redis_getGameSession (
             // Check the number of elements retrieved
             if (reply->elements != REDIS_GAME_SESSION_COUNT) {
                 error ("Wrong number of elements received.");
-                return false;
+                result = false;
+                goto cleanup;
             }
 
             // Check if any element of the reply is NULL
             size_t elementIndex;
             if ((elementIndex = Redis_anyElementIsNull (reply->element, reply->elements)) != -1) {
                 error ("Element <%s> returned by Redis is NULL.", redisGameSessionsStr[elementIndex]);
-                return false;
+                result = false;
+                goto cleanup;
             }
 
             // Write the reply to the session
@@ -237,11 +242,19 @@ Redis_getGameSession (
         }
         break;
 
-        default : warning ("Unexpected Redis status (%d).", reply->type); return false;
+        default :
+            error ("Unexpected Redis status (%d).", reply->type);
+            result = false;
+            goto cleanup;
+        break;
     }
 
-    freeReplyObject (reply);
-    return true;
+cleanup:
+    if (reply) {
+        Redis_replyDestroy (&reply);
+    }
+
+    return result;
 }
 
 bool
@@ -251,6 +264,7 @@ Redis_updateGameSession (
     unsigned char *socketId,
     GameSession *gameSession
 ) {
+    bool result = true;
     redisReply *reply = NULL;
 
     reply = Redis_commandDbg (self,
@@ -373,25 +387,35 @@ Redis_updateGameSession (
 
     if (!reply) {
         error ("Redis error encountered : The request is invalid.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     switch (reply->type)
     {
         case REDIS_REPLY_ERROR:
             error ("Redis error encountered : %s", reply->str);
-            return false;
+            result = false;
+            goto cleanup;
         break;
 
         case REDIS_REPLY_STATUS:
             // info ("Redis status : %s", reply->str);
         break;
 
-        default : warning ("Unexpected Redis status. (%d)", reply->type); return false;
+        default :
+            error ("Unexpected Redis status. (%d)", reply->type);
+            result = false;
+            goto cleanup;
+        break;
     }
 
-    freeReplyObject (reply);
-    return true;
+cleanup:
+    if (reply) {
+        Redis_replyDestroy (&reply);
+    }
+
+    return result;
 }
 
 zlist_t *
@@ -401,14 +425,16 @@ Redis_getClientsWithinDistance (
     float posX, float posY, float posZ,
     float range
 ) {
-    zlist_t *clients;
-    redisReply *reply;
+    bool result = true;
+    zlist_t *clients = NULL;
+    redisReply *reply = NULL;
+    redisReply *posReply = NULL;
 
     // TODO : Could be better. Don't allocate a new zlist everytime we call this function.
     // Who got this list then ? The Worker?
     if (!(clients = zlist_new ())) {
         error ("Cannot allocate a new zlist.");
-        return NULL;
+        goto cleanup;
     }
 
     // Iterate through all the clients
@@ -429,13 +455,15 @@ Redis_getClientsWithinDistance (
 
         if (!reply) {
             error ("Redis error encountered : The request is invalid.");
-            return false;
+            result = false;
+            goto cleanup;
         }
 
         switch (reply->type) {
             case REDIS_REPLY_ERROR:
                 error ("Redis error encountered : %s", reply->str);
-                return false;
+                result = false;
+                goto cleanup;
             break;
 
             case REDIS_REPLY_ARRAY: {
@@ -444,7 +472,7 @@ Redis_getClientsWithinDistance (
                 // [1] = results
                 for (int i = 0; i < reply->element[1]->elements; i++) {
                     // Get the position of all accounts in the map
-                    redisReply *posReply = Redis_commandDbg (self,
+                    posReply = Redis_commandDbg (self,
                         "HMGET %s " REDIS_GAME_SESSION_commander_cPosX_str
                                 " " REDIS_GAME_SESSION_commander_cPosY_str // Get position
                                 " " REDIS_GAME_SESSION_socketId_str, // SocketKey
@@ -453,14 +481,16 @@ Redis_getClientsWithinDistance (
 
                     if (!posReply) {
                         error ("Redis error encountered : The request is invalid.");
-                        return false;
+                        result = false;
+                        goto cleanup;
                     }
 
                     switch (posReply->type) {
 
                         case REDIS_REPLY_ERROR:
                             error ("Redis error encountered : %s", reply->str);
-                            return false;
+                            result = false;
+                            goto cleanup;
                         break;
 
                         case REDIS_REPLY_STATUS:
@@ -470,7 +500,8 @@ Redis_getClientsWithinDistance (
                         case REDIS_REPLY_ARRAY: {
                             if (posReply->elements != 3) {
                                 error ("Abnormal number of elements (%d, should be 3).", posReply->elements);
-                                return false;
+                                result = false;
+                                goto cleanup;
                             }
 
                             // [0] = X, [1] = Y, [2] = socketId
@@ -485,19 +516,38 @@ Redis_getClientsWithinDistance (
                             }
                         } break;
 
-                        default : warning ("Unexpected Redis status. (%d)", reply->type); return NULL;
+                        default :
+                            error ("Unexpected Redis status. (%d)", reply->type);
+                            result = false;
+                            goto cleanup;
+                        break;
                     }
 
-                    freeReplyObject (posReply);
+                    Redis_replyDestroy (&posReply);
                 }
             } break;
 
-            default : warning ("Unexpected Redis status. (%d)", reply->type); return NULL;
+            default :
+                error ("Unexpected Redis status. (%d)", reply->type);
+                result = false;
+                goto cleanup;
+            break;
         }
 
-        freeReplyObject (reply);
+        Redis_replyDestroy (&reply);
 
     } while (iterator != 0);
+
+cleanup:
+    if (!result) {
+        zlist_destroy (&clients);
+    }
+    if (reply) {
+        Redis_replyDestroy (&reply);
+    }
+    if (posReply) {
+        Redis_replyDestroy (&posReply);
+    }
 
     return clients;
 }
@@ -509,6 +559,7 @@ Redis_flushGameSession (
     Redis *self,
     RedisGameSessionKey *key
 ) {
+    bool result = true;
     redisReply *reply = NULL;
 
     // Delete the key from the Redis
@@ -519,14 +570,16 @@ Redis_flushGameSession (
 
     if (!reply) {
         error ("Redis error encountered : The request is invalid.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     switch (reply->type)
     {
         case REDIS_REPLY_ERROR:
             error ("Redis error encountered : %s", reply->str);
-            return false;
+            result = false;
+            goto cleanup;
         break;
 
         case REDIS_REPLY_INTEGER:
@@ -534,13 +587,16 @@ Redis_flushGameSession (
         break;
 
         default :
-            warning ("Unexpected Redis status : %d", reply->type);
-            freeReplyObject (reply);
-            return false;
+            error ("Unexpected Redis status : %d", reply->type);
+            result = false;
+            goto cleanup;
         break;
     }
 
-    freeReplyObject (reply);
+cleanup:
+    if (reply) {
+        Redis_replyDestroy (&reply);
+    }
 
-    return true;
+    return result;
 }

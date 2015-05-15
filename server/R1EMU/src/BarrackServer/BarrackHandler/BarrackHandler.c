@@ -90,7 +90,6 @@ BarrackHandler_login (
 ) {
     SocketSession *socketSession = &session->socket;
 
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;

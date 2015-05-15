@@ -103,6 +103,15 @@ Server_createProcess (
 
 
 /**
+ * @brief Free an allocated Server structure.
+ * @param self A pointer to an allocated Server.
+ */
+void
+Server_free (
+    Server *self
+);
+
+/**
  * @brief Free an allocated Server structure and nullify the content of the pointer.
  * @param self A pointer to an allocated Server.
  */

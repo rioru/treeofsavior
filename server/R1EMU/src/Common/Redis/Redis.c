@@ -59,7 +59,7 @@ Redis_init (
     Redis *self,
     RedisStartupInfo *info
 ) {
-    memcpy (&self->info, info, sizeof (self->info));
+    RedisStartupInfo_init (&self->info, info->hostname, info->port);
 
     return true;
 }
@@ -123,7 +123,7 @@ Redis_flushDatabase (
             info ("Redis status : %s", reply->str);
         break;
 
-        default : warning ("Unexpected Redis status (%d).", reply->type); return false;
+        default : error ("Unexpected Redis status (%d).", reply->type); return false;
     }
 
     return true;
@@ -179,6 +179,14 @@ Redis_commandDbg (
 
     // special ("%s", buffer);
     return redisCommand (self->context, buffer);
+}
+
+void
+Redis_replyDestroy (
+    redisReply **reply
+) {
+    freeReplyObject (*reply);
+    *reply = NULL;
 }
 
 /*
@@ -243,7 +251,7 @@ Redis_set (
             info ("Redis status : %s", reply->str);
         break;
 
-        default : warning ("Unexpected Redis status : %d.", reply->type); return false;
+        default : error ("Unexpected Redis status : %d.", reply->type); return false;
     }
 
 	return true;

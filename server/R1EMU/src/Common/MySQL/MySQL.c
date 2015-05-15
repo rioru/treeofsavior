@@ -47,7 +47,8 @@ MySQL_init (
 ) {
     self->result = NULL;
     self->handle = mysql_init (NULL);
-    memcpy (&self->info, info, sizeof (self->info));
+
+    MySQLStartupInfo_init (&self->info, info->hostname, info->login, info->password, info->database);
 
     return true;
 }
@@ -60,10 +61,10 @@ MySQLStartupInfo_init (
     char *password,
     char *database
 ) {
-    self->hostname = hostname;
-    self->login = login;
-    self->password = password;
-    self->database = database;
+    self->hostname = strdup (hostname);
+    self->login = strdup (login);
+    self->password = strdup (password);
+    self->database = strdup (database);
 
     return true;
 }

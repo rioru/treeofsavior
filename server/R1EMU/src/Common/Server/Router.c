@@ -182,7 +182,14 @@ Router_init (
     RouterStartupInfo *info
 ) {
     // Get a private copy of the Router Information
-    memcpy (&self->info, info, sizeof (self->info));
+    if (!(RouterStartupInfo_init (
+            &self->info, info->routerId, info->ip,
+            info->ports, info->portsCount, info->workersCount,
+            &info->redisInfo, &info->sqlInfo))
+    ) {
+        error ("Cannot initialize router start up info.");
+        return false;
+    }
 
     // No Worker is ready at the startup
     self->workersReadyCount = 0;
@@ -248,13 +255,29 @@ RouterStartupInfo_init (
     MySQLStartupInfo *sqlInfo
 ) {
     self->routerId = routerId;
-    self->ip = strdup(ip);
-    self->ports = ports;
+    if (!(self->ip = strdup (ip))) {
+        error ("Cannot allocate ip.");
+        return false;
+    }
+
+    if (!(self->ports = calloc (portsCount, sizeof (int)))) {
+        error ("Cannot allocate ports array.");
+        return false;
+    }
+
+    memcpy (self->ports, ports, sizeof (int) * portsCount);
     self->portsCount = portsCount;
     self->workersCount = workersCount;
 
-    memcpy (&self->redisInfo, redisInfo, sizeof (self->redisInfo));
-    memcpy (&self->sqlInfo, sqlInfo, sizeof (self->sqlInfo));
+    if (!(RedisStartupInfo_init (&self->redisInfo, redisInfo->hostname, redisInfo->port))) {
+        error ("Cannot initialize Redis Start up info.");
+        return false;
+    }
+
+    if (!(MySQLStartupInfo_init (&self->sqlInfo, sqlInfo->hostname, sqlInfo->login, sqlInfo->password, sqlInfo->database))) {
+        error ("Cannot initialize MySQL start up info.");
+        return false;
+    }
 
     return true;
 }
@@ -319,32 +342,35 @@ Router_backend (
     zsock_t *backend,
     void *_self
 ) {
-    zmsg_t *msg;
-    zframe_t *workerStateFrame;
-    zframe_t *header;
+    int result = 0;
+    zmsg_t *msg = NULL;
+    zframe_t *workerStateFrame = NULL;
+    zframe_t *header = NULL;
     Router *self = (Router *) _self;
 
     // Receive the message from the backend router
     if (!(msg = zmsg_recv (backend))) {
         // Interrupt
-        return 0;
+        result = 0;
+        goto cleanup;
     }
 
     // Retrieve the workerStateFrame who sent the message
     if (!(workerStateFrame = zmsg_unwrap (msg))) {
         error ("Worker identity cannot be retrieved.");
-        return -1;
+        result = -1;
+        goto cleanup;
     }
 
     // Get the header frame of the message
     if (!(header = zmsg_pop (msg))) {
         error ("Frame data cannot be retrieved.");
-        return -1;
+        result = -1;
+        goto cleanup;
     }
 
     // Convert the header frame to a RouterHeader
     RouterHeader packetHeader = *((RouterHeader *) zframe_data (header));
-    zframe_destroy (&header);
 
     switch (packetHeader)
     {
@@ -352,29 +378,31 @@ Router_backend (
             // The worker sent an 'error' signal.
             // TODO : logging ?
             error ("Router received an error from a worker.");
-            zmsg_destroy (&msg);
+            result = 0;
+            goto cleanup;
         break;
 
         case ROUTER_WORKER_READY: {
             // The worker sent a 'ready' signal. Register it.
-            zframe_t *workerIdFrame = zmsg_pop (msg);
+            zframe_t *workerIdFrame = zmsg_next (msg);
             uint16_t workerId = *((uint16_t *) zframe_data (workerIdFrame));
             self->workers [workerId].identity.frame = zframe_dup (workerStateFrame);
             self->workers [workerId].identity.id = workerId;
             self->workersReadyCount++;
-            zmsg_destroy (&msg);
 
             if (self->workersReadyCount == self->info.workersCount) {
                 // All the workers are ready. Start the monitor
                 if (!(Router_initMonitor (self))) {
                     error ("Cannot initialize the monitor.");
-                    return -1;
+                    result = -1;
+                    goto cleanup;
                 }
 
                 // Everything is ready from here. Open the frontend to the outside world !
                 if (!(Router_initFrontend (self))) {
                     error ("Cannot initialize the frontend.");
-                    return -1;
+                    result = -1;
+                    goto cleanup;
                 }
 
                 info ("Router ID=%d is listening to clients from now.", self->info.routerId);
@@ -388,7 +416,8 @@ Router_backend (
                 // Simple message : [1 frame identity] + [1 frame data]
                 if (zmsg_send (&msg, self->frontend) != 0) {
                     error ("Cannot send message to the frontend.");
-                    return -1;
+                    result = -1;
+                    goto cleanup;
                 }
             } else {
                 // Multiple messages : [1 frame identity] + [1 frame data] + [1 frame data] + ... + [1 frame data]
@@ -419,7 +448,8 @@ Router_backend (
     }
     if (!workerState) {
         error ("Cannot find the Worker in the Worker list.");
-        return -1;
+        result = -1;
+        goto cleanup;
     }
 
     // Remove the responsability of the client for the current worker
@@ -428,7 +458,12 @@ Router_backend (
     // The worker finished its job; add it at the end of the list (round robin load balancing)
     zlist_append (self->readyWorkers, workerState);
 
-    return 0;
+cleanup:
+    zmsg_destroy (&msg);
+    zframe_destroy (&workerStateFrame);
+    zframe_destroy (&header);
+
+    return result;
 }
 
 static bool

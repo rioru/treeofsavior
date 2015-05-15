@@ -58,20 +58,20 @@ Redis_getSocketSession (
     {
         case REDIS_REPLY_ERROR:
             error ("Redis error encountered : %s", reply->str);
-            freeReplyObject (reply);
+            Redis_replyDestroy (&reply);
             return false;
         break;
 
         case REDIS_REPLY_STATUS:
             // info ("Redis status : %s", reply->str);
-            freeReplyObject (reply);
+            Redis_replyDestroy (&reply);
             return false;
         break;
 
         case REDIS_REPLY_ARRAY:
             if (reply->elements != REDIS_SOCKET_SESSION_COUNT) {
                 error ("Wrong number of elements received.");
-                freeReplyObject (reply);
+                Redis_replyDestroy (&reply);
                 return false;
             }
 
@@ -86,7 +86,7 @@ Redis_getSocketSession (
                 };
                 if (!Redis_updateSocketSession (self, &socketKey, socketSession)) {
                     dbg ("Cannot update the socket session");
-                    freeReplyObject (reply);
+                    Redis_replyDestroy (&reply);
                     return false;
                 }
             }
@@ -101,13 +101,13 @@ Redis_getSocketSession (
         break;
 
         default :
-            warning ("Unexpected Redis status : %d", reply->type);
-            freeReplyObject (reply);
+            error ("Unexpected Redis status : %d", reply->type);
+            Redis_replyDestroy (&reply);
             return false;
         break;
     }
 
-    freeReplyObject (reply);
+    Redis_replyDestroy (&reply);
     return true;
 }
 
@@ -150,13 +150,13 @@ Redis_updateSocketSession (
         break;
 
         default :
-            warning ("Unexpected Redis status : %d", reply->type);
-            freeReplyObject (reply);
+            error ("Unexpected Redis status : %d", reply->type);
+            Redis_replyDestroy (&reply);
             return false;
         break;
     }
 
-    freeReplyObject (reply);
+    Redis_replyDestroy (&reply);
 
     return true;
 }
@@ -193,13 +193,13 @@ Redis_flushSocketSession (
         break;
 
         default :
-            warning ("Unexpected Redis status : %d", reply->type);
-            freeReplyObject (reply);
+            error ("Unexpected Redis status : %d", reply->type);
+            Redis_replyDestroy (&reply);
             return false;
         break;
     }
 
-    freeReplyObject (reply);
+    Redis_replyDestroy (&reply);
 
     return true;
 }

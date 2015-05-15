@@ -54,6 +54,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.h" />
+		<Unit filename="../../../src/BarrackServer/BarrackServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/BarrackServer/BarrackServer.h" />
 		<Unit filename="../../../src/Common/Commander/Commander.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -62,6 +66,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Crypto/Crypto.h" />
+		<Unit filename="../../../src/Common/MySQL/Fields/MySQLSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/MySQL/Fields/MySQLSession.h" />
 		<Unit filename="../../../src/Common/MySQL/MySQL.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -149,6 +157,7 @@
 		<Unit filename="../../../src/GlobalServer/GlobalServer.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
 		<Unit filename="../../../src/GlobalServer/main.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -156,9 +165,11 @@
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneServer.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneServer.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

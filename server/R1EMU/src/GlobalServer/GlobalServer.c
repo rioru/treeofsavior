@@ -68,7 +68,7 @@ GlobalServer_init (
     GlobalServer *self,
     GlobalServerStartupInfo *info
 ) {
-    memcpy (&self->info, info, sizeof (GlobalServerStartupInfo));
+    memcpy (&self->info, info, sizeof (self->info));
 
     // ==========================
     //   Allocate ZMQ objects
@@ -111,8 +111,9 @@ GlobalServerStartupInfo_init (
 ) {
     memset (self, 0, sizeof (GlobalServerStartupInfo));
 
-    zconfig_t *conf;
-    char *portsArray;
+    bool result = true;
+    zconfig_t *conf = NULL;
+    char *portsArray = NULL;
 
     // ==================================
     //     Read the configuration file
@@ -122,7 +123,8 @@ GlobalServerStartupInfo_init (
     // Open the configuration file
     if (!(conf = zconfig_load (confFilePath))) {
         error ("Cannot read the global configuration file (%s).", confFilePath);
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     // Read the CLI serverIP
@@ -157,7 +159,8 @@ GlobalServerStartupInfo_init (
 
     if (self->zoneServersCount == 0) {
         error ("Cannot read correctly the zone ports array.");
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     // Fill the server ports array
@@ -178,7 +181,8 @@ GlobalServerStartupInfo_init (
     // Read the zone server interfaces IP
     if (!(zoneServersIp = zconfig_resolve (conf, "zoneServer/serversIP", NULL))) {
         error ("Cannot read correctly the zone servers interface IP in the configuration file (%s). ", confFilePath);
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     int nbZoneServersIp = 0;
@@ -192,7 +196,8 @@ GlobalServerStartupInfo_init (
         error ("Number of zone ports different from the number of zone interfaces IP. (%d / %d)",
             nbZoneServersIp, self->zoneServersCount
         );
-        return false;
+        result = false;
+        goto cleanup;
     }
 
     // Fill the zone server IPs array
@@ -281,10 +286,12 @@ GlobalServerStartupInfo_init (
         self->redisInfo.port = REDIS_PORT_DEFAULT;
     }
 
+
+cleanup:
     // Close the configuration file
     zconfig_destroy (&conf);
 
-    return true;
+    return result;
 }
 
 

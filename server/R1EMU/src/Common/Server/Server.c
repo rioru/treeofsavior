@@ -63,7 +63,10 @@ Server_init (
     ServerStartupInfo *info
 ) {
     // Make a private copy
-    ServerStartupInfo_init (&self->info, &info->routerInfo, info->workersInfo, info->workersInfoCount);
+    if (!(ServerStartupInfo_init (&self->info, &info->routerInfo, info->workersInfo, info->workersInfoCount))) {
+        error ("Cannot init the ServerStartupInfo");
+        return false;
+    }
 
     // Initialize router
     if (!(self->router = Router_new (&info->routerInfo))) {
@@ -201,17 +204,26 @@ Server_start (
 }
 
 void
-Server_destroy (
-    Server **_self
+Server_free (
+    Server *self
 ) {
-    Server *self = *_self;
-
     for (int i = 0; i < self->info.workersInfoCount; i++) {
         Worker_destroy (&self->workers[i]);
     }
 
     Router_destroy (&self->router);
+}
 
-    free (self);
+void
+Server_destroy (
+    Server **_self
+) {
+    Server *self = *_self;
+
+    if (self) {
+        Server_free (self);
+        free (self);
+    }
+
     *_self = NULL;
 }

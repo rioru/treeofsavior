@@ -236,6 +236,15 @@ Worker_sendToClients (
 );
 
 /**
+ * @brief Free an allocated Worker structure.
+ * @param self A pointer to an allocated Worker.
+ */
+void
+Worker_free (
+    Worker *self
+);
+
+/**
  * @brief Free an allocated Worker structure and nullify the content of the pointer.
  * @param self A pointer to an allocated Worker.
  */

@@ -166,6 +166,16 @@ RedisStartupInfo_free (
     RedisStartupInfo *self
 );
 
+
+/**
+ * @brief Free an allocated redisReply structure and nullify the content of the pointer.
+ * @param self A pointer to an allocated redisReply.
+ */
+void
+Redis_replyDestroy (
+    redisReply **reply
+);
+
 /**
  * @brief Free an allocated Redis structure and nullify the content of the pointer.
  * @param self A pointer to an allocated Redis.
