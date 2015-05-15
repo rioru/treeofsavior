@@ -150,13 +150,15 @@ Redis_requestSession (
 /**
  * @brief Get the GameSession associated with the SocketSession
  * @param self An allocated Redis
- * @param[in, out] session The Session
+ * @param routerId, mapId, accountId Identificators of the Game Session
+ * @param[out] gameSession The output gameSession
  * @return
  */
 bool
 Redis_getGameSession (
     Redis *self,
-    Session *session
+    uint16_t routerId, uint16_t mapId,  uint64_t accountId,
+    GameSession *gameSession
 );
 
 

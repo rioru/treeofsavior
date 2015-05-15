@@ -246,6 +246,7 @@ BarrackHandler_startGame (
 
     // TODO : Send the session directly to the Zone Server
 
+
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 

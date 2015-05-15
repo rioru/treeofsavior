@@ -103,7 +103,7 @@ Redis_requestSession (
         GameSession_init (gameSession);
         dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey);
     } else {
-        if (!Redis_getGameSession (self, session)) {
+        if (!Redis_getGameSession (self, socketSession->routerId, socketSession->mapId, socketSession->accountId, gameSession)) {
             error ("Cannot get Game Session.");
             return false;
         }
@@ -116,11 +116,9 @@ Redis_requestSession (
 bool
 Redis_getGameSession (
     Redis *self,
-    Session *session
+    uint16_t routerId, uint16_t mapId,  uint64_t accountId,
+    GameSession *gameSession
 ) {
-    GameSession *gameSession = &session->game;
-    SocketSession *socketSession = &session->socket;
-
     redisReply *reply = NULL;
 
     reply = Redis_commandDbg (self,
@@ -182,7 +180,7 @@ Redis_getGameSession (
         // [UNKNOWN] "commander.unk10 "
         // [UNKNOWN] "commander.unk11 "
         // [UNKNOWN] "commander.unk12 "
-        , socketSession->routerId, socketSession->mapId, socketSession->accountId
+        , routerId, mapId, accountId
     );
 
     if (!reply) {
