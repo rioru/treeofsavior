@@ -71,3 +71,18 @@ Redis_updateSocketSession (
     Redis *self,
     SocketSession *socketSession
 );
+
+
+/**
+ * @brief Flush a socket session
+ * @param self An allocated Redis instance
+ * @param routerId The routerId containing the sessionKey
+ * @param socketKey An allocated socket key to flush
+ * @return true on success, false otherwise
+ */
+bool
+Redis_flushSocketSession (
+    Redis *self,
+    uint16_t routerId,
+    unsigned char *socketKey
+);

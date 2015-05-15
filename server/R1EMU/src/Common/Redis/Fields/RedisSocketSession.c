@@ -13,6 +13,7 @@
 
 // ---------- Includes ------------
 #include "RedisSocketSession.h"
+#include "RedisGameSession.h"
 
 
 // ------ Structure declaration -------
@@ -35,7 +36,7 @@ bool
 Redis_getSocketSession (
     Redis *self,
     int routerId,
-    char *socketIdKey,
+    char *socketKey,
     SocketSession *socketSession
 ) {
 	redisReply *reply = NULL;
@@ -46,7 +47,7 @@ Redis_getSocketSession (
         REDIS_SOCKET_SESSION_routerId_str " "
         REDIS_SOCKET_SESSION_mapId_str " "
         REDIS_SOCKET_SESSION_authenticated_str " ",
-        routerId, socketIdKey
+        routerId, socketKey
     );
 
     if (!reply) {
@@ -77,7 +78,7 @@ Redis_getSocketSession (
 
             if (Redis_anyElementIsNull (reply->element, reply->elements) != -1) {
                 // The socket session doesn't exist : create a new one and set it to its default value
-                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, routerId, SOCKET_SESSION_UNDEFINED_MAP, socketIdKey, false);
+                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, routerId, SOCKET_SESSION_UNDEFINED_MAP, socketKey, false);
 
                 // Update the newly created socketSession to the Redis Session
                 if (!Redis_updateSocketSession (self, socketSession)) {
@@ -92,7 +93,7 @@ Redis_getSocketSession (
                 socketSession->routerId = strtol (reply->element[REDIS_SOCKET_SESSION_routerId]->str, NULL, 16);
                 socketSession->mapId = strtol (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
                 socketSession->authenticated = strtol (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
-                memcpy (socketSession->key, socketIdKey, sizeof (socketSession->key));
+                memcpy (socketSession->key, socketKey, sizeof (socketSession->key));
             }
         break;
 
@@ -144,7 +145,11 @@ Redis_updateSocketSession (
             // info ("Redis status : %s", reply->str);
         break;
 
-        default : warning ("Unexpected Redis status."); return false;
+        default :
+            warning ("Unexpected Redis status : %d", reply->type);
+            freeReplyObject (reply);
+            return false;
+        break;
     }
 
     freeReplyObject (reply);
@@ -152,3 +157,60 @@ Redis_updateSocketSession (
     return true;
 }
 
+
+bool
+Redis_flushSocketSession (
+    Redis *self,
+    uint16_t routerId,
+    unsigned char *socketKey
+) {
+    redisReply *reply = NULL;
+
+    // Retrieve the real SocketSession
+    SocketSession socketSession;
+
+    if (!(Redis_getSocketSession (self, routerId, socketKey, &socketSession))) {
+        error ("Cannot get the SocketSession for %s.", socketKey);
+        return false;
+    }
+
+    // Flush the game session
+    if (!(Redis_flushGameSession (self, socketSession.routerId, socketSession.mapId, socketSession.accountId))) {
+        error ("Cannot flush the Game Session associated with the Socket Session.");
+        return false;
+    }
+
+    // Delete the key from the Redis
+    reply = Redis_commandDbg (self,
+        "DEL zone%x:socket%s",
+        routerId, socketKey
+    );
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        return false;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            return false;
+        break;
+
+        case REDIS_REPLY_INTEGER:
+            // Delete OK
+            info ("OK");
+        break;
+
+        default :
+            warning ("Unexpected Redis status : %d", reply->type);
+            freeReplyObject (reply);
+            return false;
+        break;
+    }
+
+    freeReplyObject (reply);
+
+    return true;
+}

@@ -540,3 +540,47 @@ Redis_getClientsWithinDistance (
     return clients;
 }
 
+
+
+bool
+Redis_flushGameSession (
+    Redis *self,
+    uint16_t routerId,
+    uint16_t mapId,
+    uint64_t accountId
+) {
+    redisReply *reply = NULL;
+
+    // Delete the key from the Redis
+    reply = Redis_commandDbg (self,
+        "DEL zone%x:map%x:acc%llx",
+        routerId, mapId, accountId
+    );
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        return false;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            return false;
+        break;
+
+        case REDIS_REPLY_INTEGER:
+            // Delete OK
+        break;
+
+        default :
+            warning ("Unexpected Redis status : %d", reply->type);
+            freeReplyObject (reply);
+            return false;
+        break;
+    }
+
+    freeReplyObject (reply);
+
+    return true;
+}

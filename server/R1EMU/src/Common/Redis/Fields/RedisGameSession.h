@@ -191,3 +191,20 @@ Redis_getClientsWithinDistance (
     float posX, float posY, float posZ,
     float range
 );
+
+
+/**
+ * @brief Flush a GameSession
+ * @param self An allocated Redis instance
+ * @param routerId The routerId containing the game session
+ * @param mapId The mapId containing the game session
+ * @param accountId The accountId of the game session
+ * @return true on success, false otherwise
+ */
+bool
+Redis_flushGameSession (
+    Redis *self,
+    uint16_t routerId,
+    uint16_t mapId,
+    uint64_t accountId
+);

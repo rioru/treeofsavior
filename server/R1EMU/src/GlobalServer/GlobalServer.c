@@ -101,7 +101,7 @@ bool
 GlobalServer_flushRedis (
     GlobalServer *self
 ) {
-    return Redis_flush (self->redis);
+    return Redis_flushDatabase (self->redis);
 }
 
 bool

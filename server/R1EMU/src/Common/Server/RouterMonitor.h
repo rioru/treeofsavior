@@ -19,14 +19,17 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Redis/Redis.h"
+#include "Common/MySQL/MySQL.h"
 
 // ---------- Defines -------------
-#define ROUTER_MONITOR_FDKEY_SIZE ((sizeof (int) * 2) + 1)
+#define ROUTER_MONITOR_FDKEY_SIZE ((sizeof (uint64_t) * 2) + 1)
 #define ROUTER_MONITOR_SUBSCRIBER_ENDPOINT "inproc://routerMonitorSubscriber-%d"
 
 /** All the Router Monitor Packet headers */
 typedef enum {
-    ROUTER_MONITOR_ADD_FD
+    ROUTER_MONITOR_ADD_FD,
+    ROUTER_MONITOR_READY,
 } RouterMonitorHeader;
 
 
@@ -40,6 +43,10 @@ typedef struct {
 
     /** The Router frontend socket */
     zsock_t *frontend;
+
+    /** Database info */
+    RedisStartupInfo redisInfo;
+    MySQLStartupInfo sqlInfo;
 
 } RouterMonitorStartupInfo;
 
@@ -77,7 +84,9 @@ RouterMonitor_init (
 RouterMonitorStartupInfo *
 RouterMonitorStartupInfo_new (
     zsock_t *frontend,
-    uint16_t routerId
+    uint16_t routerId,
+    RedisStartupInfo *redisInfo,
+    MySQLStartupInfo *sqlInfo
 );
 
 
@@ -91,16 +100,20 @@ bool
 RouterMonitorStartupInfo_init (
     RouterMonitorStartupInfo *self,
     zsock_t *frontend,
-    uint16_t routerId
+    uint16_t routerId,
+    RedisStartupInfo *redisInfo,
+    MySQLStartupInfo *sqlInfo
 );
 
 
 /**
  * @brief Start the Router Monitor
+ * @param pipe A pipe to the parent process
  * @param info a RouterMonitorStartupInfo initialized
  */
-void *
+void
 RouterMonitor_start (
+    zsock_t *pipe,
     void *info
 );
 
@@ -113,7 +126,7 @@ RouterMonitor_start (
  */
 void
 RouterMonitor_genKey (
-    int fd,
+    uint64_t fd,
     unsigned char fdKey[ROUTER_MONITOR_FDKEY_SIZE]
 );
 

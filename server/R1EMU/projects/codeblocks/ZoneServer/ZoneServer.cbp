@@ -68,6 +68,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Crypto/Crypto.h" />
+		<Unit filename="../../../src/Common/MySQL/Fields/MySQLSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/MySQL/Fields/MySQLSession.h" />
 		<Unit filename="../../../src/Common/MySQL/MySQL.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -100,6 +104,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Server/Router.h" />
+		<Unit filename="../../../src/Common/Server/RouterMonitor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/RouterMonitor.h" />
 		<Unit filename="../../../src/Common/Server/Server.c">
 			<Option compilerVar="CC" />
 		</Unit>

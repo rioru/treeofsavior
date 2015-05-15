@@ -83,13 +83,6 @@ ServerFactory_initServerInfo (
     char *redisHostname,
     int redisPort
 ) {
-    // Initialize Router start up information
-    RouterStartupInfo routerInfo;
-    if (!(RouterStartupInfo_init (&routerInfo, routerId, routerIp, ports, portsCount, workersCount))) {
-        error ("Cannot initialize correctly the Router start up information.");
-        return false;
-    }
-
     // Initialize MySQL start up information
     MySQLStartupInfo sqlInfo;
     if (!(MySQLStartupInfo_init (&sqlInfo, sqlHostname, sqlUsername, sqlPassword, sqlDatabase))) {
@@ -101,6 +94,13 @@ ServerFactory_initServerInfo (
     RedisStartupInfo redisInfo;
     if (!(RedisStartupInfo_init (&redisInfo, redisHostname, redisPort))) {
         error ("Cannot initialize correctly the Redis start up information.");
+        return false;
+    }
+
+    // Initialize Router start up information
+    RouterStartupInfo routerInfo;
+    if (!(RouterStartupInfo_init (&routerInfo, routerId, routerIp, ports, portsCount, workersCount, &redisInfo, &sqlInfo))) {
+        error ("Cannot initialize correctly the Router start up information.");
         return false;
     }
 

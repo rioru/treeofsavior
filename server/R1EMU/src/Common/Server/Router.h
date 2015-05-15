@@ -19,6 +19,8 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Redis/Redis.h"
+#include "Common/MySQL/MySQL.h"
 
 // ---------- Defines -------------
 #define ROUTER_FRONTEND_ENDPOINT           "tcp://%s:%d"
@@ -71,6 +73,9 @@ typedef struct {
     int portsCount;
     int workersCount;
 
+    RedisStartupInfo redisInfo;
+    MySQLStartupInfo sqlInfo;
+
 }   RouterStartupInfo;
 
 // ----------- Functions ------------
@@ -115,7 +120,9 @@ RouterStartupInfo_init (
     char *ip,
     int *ports,
     int portsCount,
-    int workersCount
+    int workersCount,
+    RedisStartupInfo *redisInfo,
+    MySQLStartupInfo *sqlInfo
 );
 
 

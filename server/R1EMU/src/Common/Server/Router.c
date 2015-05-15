@@ -196,7 +196,7 @@ Router_init (
     // ==========================
 
     // The frontend listens to a BSD socket, not a ØMQ socket.
-    if (!(self->frontend = zsock_new (ZMQ_STREAM))) {
+    if (!(self->frontend = zsock_new (ZMQ_ROUTER))) {
         error ("Cannot allocate ROUTER frontend");
         return false;
     }
@@ -243,13 +243,18 @@ RouterStartupInfo_init (
     char *ip,
     int *ports,
     int portsCount,
-    int workersCount
+    int workersCount,
+    RedisStartupInfo *redisInfo,
+    MySQLStartupInfo *sqlInfo
 ) {
     self->routerId = routerId;
     self->ip = strdup(ip);
     self->ports = ports;
     self->portsCount = portsCount;
     self->workersCount = workersCount;
+
+    memcpy (&self->redisInfo, redisInfo, sizeof (self->redisInfo));
+    memcpy (&self->sqlInfo, sqlInfo, sizeof (self->sqlInfo));
 
     return true;
 }
@@ -428,15 +433,14 @@ Router_backend (
 static bool
 Router_informMonitor (
     Router *self,
-    zframe_t *identityClient
+    zframe_t *identityClient,
+    uint64_t fdClient
 ) {
-    int fdClient = zframe_fd (identityClient);
-
     zmsg_t *msg;
     if ((msg = zmsg_new ()) == NULL
     ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_MONITOR_ADD_FD), sizeof (ROUTER_MONITOR_ADD_FD)) != 0
     ||  zmsg_addmem (msg, PACKET_HEADER (fdClient), sizeof (fdClient)) != 0
-    ||  zmsg_append (msg, (zframe_t *[]) {zframe_dup (identityClient)}) != 0
+    ||  zmsg_append (msg, &identityClient) != 0
     ||  zmsg_send   (&msg, self->monitor)
     ) {
         error ("Cannot send a " STRINGIFY (ROUTER_MONITOR_ADD_FD) " packet to the router monitor.");
@@ -457,28 +461,41 @@ Router_frontend (
     zframe_t *workerStateDest = NULL;
     Router *self = (Router *) _self;
 
-    // Receive the message from the frontend router
     if (!(msg = zmsg_recv (frontend))) {
         // Interrupt
         return 0;
     }
 
     zframe_t *identityClient = zmsg_first (msg);
+    zframe_t *data = zmsg_next (msg);
+
+    // Retrieve the FD of the client
+    zframe_t *identityClientDup = zframe_dup (identityClient);
+    unsigned char *identity = zframe_data (identityClientDup);
+    zmq_getsockopt (zsock_resolve (frontend), ZMQ_IDENTITY_FD, identity, (size_t[]) {5});
+    uint64_t fdClient = *((uint64_t *) identity);
+    zframe_destroy (&identityClientDup);
+
+    // Don't process the packet if it is empty, or if an invalid fd
+    if (zframe_size (data) == 0 || fdClient == -1) {
+        zmsg_destroy (&msg);
+        return 0;
+    }
 
     // Inform the RouterMonitor that the client sent a request
-    if (!(Router_informMonitor (self, identityClient))) {
+    if (!(Router_informMonitor (self, zframe_dup (identityClient), fdClient))) {
         error ("Cannot inform the Router Monitor.");
         return 0;
     }
 
     // Check if the client is not currently processed by another Worker
     for (int i = 0; i < self->info.workersCount; i++) {
-        if (self->workers[i].curClientId.frame != NULL) {
-            if (zframe_eq (identityClient, self->workers[i].curClientId.frame)) {
-                // Already processed by this worker : Keep the responsibility to this worker so we
-                // don't break the protocol by processing a packet before another one
-                workerStateDest = zframe_dup (self->workers[i].identity.frame);
-            }
+        if ((self->workers[i].curClientId.frame != NULL)
+        &&  (zframe_eq (identityClient, self->workers[i].curClientId.frame))
+        ) {
+            // Already processed by this worker : Keep the responsibility to this worker so we
+            // don't break the protocol by processing a packet before another one
+            workerStateDest = zframe_dup (self->workers[i].identity.frame);
         }
     }
 
@@ -538,15 +555,27 @@ Router_initMonitor (
     info ("Binded to the Router Monitor endpoint %s", zsys_sprintf (ROUTER_MONITOR_SUBSCRIBER_ENDPOINT, self->info.routerId));
 
     RouterMonitorStartupInfo *routerMonitorInfo;
-    if (!(routerMonitorInfo = RouterMonitorStartupInfo_new (self->frontend, self->info.routerId))) {
+    if (!(routerMonitorInfo = RouterMonitorStartupInfo_new (self->frontend, self->info.routerId, &self->info.redisInfo, &self->info.sqlInfo))) {
         error ("Cannot allocate a new Router Monitor Info.");
         return false;
     }
 
-    if (zthread_new (RouterMonitor_start, routerMonitorInfo) != 0) {
+    zactor_t *monitorActor;
+    if ((monitorActor = zactor_new (RouterMonitor_start, routerMonitorInfo)) == NULL) {
         error ("Cannot create a new thread for the Router Monitor.");
         return false;
     }
+
+    // Wait for the READY signal from the monitor actor
+    zmsg_t *msg;
+    if ((!(msg = zmsg_recv (monitorActor)))
+    || (memcmp (zframe_data (zmsg_first (msg)), PACKET_HEADER (ROUTER_MONITOR_READY), sizeof (ROUTER_MONITOR_READY)) != 0)
+    ) {
+        error ("Cannot received correctly an answer from the monitor actor.");
+        return false;
+    }
+
+    zmsg_destroy (&msg);
 
     return true;
 }
@@ -558,6 +587,7 @@ Router_initFrontend (
     // ===================================
     //        Initialize frontend
     // ===================================
+    zsock_set_router_raw (self->frontend, 1);
 
     // Bind the endpoints for the ROUTER frontend
     for (int i = 0; i < self->info.portsCount; i++) {

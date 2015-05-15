@@ -97,7 +97,7 @@ Redis_connect (
  * @return true on success, false otherwise
  */
 bool
-Redis_flush (
+Redis_flushDatabase (
     Redis *self
 );
 

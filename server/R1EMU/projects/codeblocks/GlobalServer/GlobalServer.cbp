@@ -94,6 +94,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Server/Router.h" />
+		<Unit filename="../../../src/Common/Server/RouterMonitor.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/RouterMonitor.h" />
 		<Unit filename="../../../src/Common/Server/Server.c">
 			<Option compilerVar="CC" />
 		</Unit>
