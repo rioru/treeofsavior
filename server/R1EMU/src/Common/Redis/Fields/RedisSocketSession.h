@@ -39,6 +39,13 @@ enum RedisSocketSessionFields {
 
 
 // ------ Global variables declaration -------
+typedef struct {
+
+    uint16_t routerId;
+    unsigned char *socketId;
+
+} RedisSocketSessionKey;
+
 extern const char *redisSocketSessionsStr [];
 
 
@@ -46,16 +53,14 @@ extern const char *redisSocketSessionsStr [];
 /**
  * @brief Get the SocketSession associated with the Socket ID
  * @param self An allocated Redis
- * @param routerId The router ID requesting the socket session
- * @param socketIdKey A socket ID key
+ * @param key The SocketSession key
  * @param[out] socketSession The socket Session
  * @return
  */
 bool
 Redis_getSocketSession (
     Redis *self,
-    uint16_t routerId,
-    char *socketIdKey,
+    RedisSocketSessionKey *key,
     SocketSession *socketSession
 );
 
@@ -63,14 +68,14 @@ Redis_getSocketSession (
 /**
  * @brief Save an entire SocketSession to the Redis server.
  * @param self An allocated Redis instance
- * @param routerId, key The identificators of the Socket Session
+ * @param key The SocketSession key
  * @param socketSession An allocated socket session to refresh
  * @return true on success, false otherwise
  */
 bool
 Redis_updateSocketSession (
     Redis *self,
-    uint16_t routerId, unsigned char *key,
+    RedisSocketSessionKey *key,
     SocketSession *socketSession
 );
 
@@ -78,13 +83,11 @@ Redis_updateSocketSession (
 /**
  * @brief Flush a socket session
  * @param self An allocated Redis instance
- * @param routerId The routerId containing the sessionKey
- * @param socketKey An allocated socket key to flush
+ * @param key The SocketSession key
  * @return true on success, false otherwise
  */
 bool
-Redis_flushSession (
+Redis_flushSocketSession (
     Redis *self,
-    uint16_t routerId,
-    unsigned char *socketKey
+    RedisSocketSessionKey *key
 );

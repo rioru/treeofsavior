@@ -19,6 +19,7 @@
 #include "Worker.h"
 #include "Router.h"
 #include "Common/utils/random.h"
+#include "Common/Redis/Fields/RedisSession.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 #include "Common/Crypto/Crypto.h"
@@ -108,7 +109,7 @@ Worker_buildReply (
 
 
 /**
- * @brief Build a reply based on the packet handler
+ * @brief Build a reply based on a single request
  * @param[in] self A pointer to the current worker
  * @param[in] session The game session associated with the packet
  * @param[in] packet The packet sent by the client
@@ -119,6 +120,27 @@ Worker_buildReply (
  */
 static bool
 Worker_processOneRequest (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *msg,
+    zframe_t *headerAnswer
+);
+
+
+/**
+ * @brief Build a reply based on a multiple requests
+ * @param[in] self A pointer to the current worker
+ * @param[in] session The game session associated with the packet
+ * @param[in] packet The packet sent by the client
+ * @param[in] packetSize The size of the packet
+ * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
+ * @param[in] headerAnswer The header of the answer message
+ * @return true on success, false otherwise
+ */
+static bool
+Worker_processMultipleRequests (
     Worker *self,
     Session *session,
     unsigned char *packet,
@@ -277,8 +299,20 @@ Worker_processClientPacket (
     zframe_t *socketIdFrame = zmsg_first (msg);
     zframe_t *packetFrame = zmsg_next (msg);
 
-    // Request a Game Session
-    if (!(Redis_getSession (self->redis, self->info.routerId, zframe_data (socketIdFrame), &session))) {
+    // Convert the frame to socketId
+    unsigned char socketId [SOCKET_SESSION_ID_SIZE];
+
+    // Generate the socketId key
+    SocketSession_genSocketId (zframe_data (socketIdFrame), socketId);
+
+    // Request the Session
+    RedisSessionKey sessionKey = {
+        .socketKey = {
+            .routerId = self->info.routerId,
+            .socketId = socketId
+        }
+    };
+    if (!(Redis_getSession (self->redis, &sessionKey, &session))) {
         error ("Cannot retrieve a Game Session.");
         return false;
     }
@@ -302,40 +336,16 @@ Worker_processClientPacket (
     }
 
     // A single packet may contain multiple requests
-    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size)
-    {
-        // Divide them and treat them sequentially
-        size_t packetPos = 0;
-        size_t packetSizeRemaining = packetSize;
-        while (packetSizeRemaining > 0)
-        {
-            // Don't check for the first sub packet, we already did it
-            if (packetSize != packetSizeRemaining) {
-                if (!(Worker_checkPacketSize (packetSizeRemaining, &packet[packetPos], &cryptHeader))) {
-                    error ("Wrong sub packet size.");
-                    return false;
-                }
-            }
-
-            // Copy to another packet the sub request
-            size_t subPacketSize = cryptHeader.size + sizeof (CryptPacketHeader);
-            unsigned char *subPacket = alloca (subPacketSize);
-            memcpy (subPacket, &packet[packetPos], subPacketSize);
-
-            if ((!(Worker_processOneRequest (self, &session, subPacket, subPacketSize, msg, headerAnswer)))) {
-                error ("Cannot process properly one of a multiple requests reply.");
-                return false;
-            }
-
-            // == Iterate to the next reply ==
-            packetPos += subPacketSize;
-            packetSizeRemaining -= subPacketSize;
+    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size) {
+        if (!(Worker_processMultipleRequests (self, &session, packet, packetSize, msg, headerAnswer))) {
+            error ("Cannot process properly one of multiple requests.");
+            return false;
         }
     }
 
     // Everything normal here, a single packet contains a single request
     else {
-        if ((!(Worker_processOneRequest (self, &session, packet, packetSize, msg, headerAnswer)))) {
+        if (!(Worker_processOneRequest (self, &session, packet, packetSize, msg, headerAnswer))) {
             error ("Cannot process properly a reply.");
             return false;
         }
@@ -343,6 +353,45 @@ Worker_processClientPacket (
 
     // Cleanup
     zframe_destroy (&packetFrame);
+
+    return true;
+}
+
+static bool
+Worker_processMultipleRequests (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *msg,
+    zframe_t *headerAnswer
+) {
+    CryptPacketHeader cryptHeader;
+
+    // Divide them and treat them sequentially
+    size_t packetPos = 0;
+    size_t packetSizeRemaining = packetSize;
+    while (packetSizeRemaining > 0)
+    {
+        if (!(Worker_checkPacketSize (packetSizeRemaining, &packet[packetPos], &cryptHeader))) {
+            error ("Wrong sub packet size.");
+            return false;
+        }
+
+        // Copy to another packet the sub request
+        size_t subPacketSize = cryptHeader.size + sizeof (CryptPacketHeader);
+        unsigned char *subPacket = alloca (subPacketSize);
+        memcpy (subPacket, &packet[packetPos], subPacketSize);
+
+        if ((!(Worker_processOneRequest (self, session, subPacket, subPacketSize, msg, headerAnswer)))) {
+            error ("Cannot process properly a reply.");
+            return false;
+        }
+
+        // == Iterate to the next reply ==
+        packetPos += subPacketSize;
+        packetSizeRemaining -= subPacketSize;
+    }
 
     return true;
 }
@@ -408,17 +457,8 @@ Worker_processOneRequest (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!Redis_updateSocketSession (self->redis, session->socket.routerId, session->socket.key, &session->socket)) {
-                error ("Cannot update the socket session.");
-                return false;
-            }
-            SocketSession *socketSession = &session->socket;
-            if (!Redis_updateGameSession (self->redis,
-                    socketSession->routerId, socketSession->mapId, socketSession->accountId,
-                    socketSession->key,
-                    &session->game)
-            ) {
-                error ("Cannot update the game session");
+            if (!(Redis_updateSession (self->redis, session))) {
+                error ("Cannot update the Session.");
                 return false;
             }
         break;

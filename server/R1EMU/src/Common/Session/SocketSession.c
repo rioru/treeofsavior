@@ -28,7 +28,7 @@ SocketSession_new (
     uint64_t accountId,
     uint16_t routerId,
     uint16_t mapId,
-    unsigned char *socketIdKey,
+    unsigned char *socketId,
     bool authenticated
 ) {
     SocketSession *self;
@@ -37,7 +37,7 @@ SocketSession_new (
         return NULL;
     }
 
-    if (!SocketSession_init (self, accountId, routerId, mapId, socketIdKey, authenticated)) {
+    if (!SocketSession_init (self, accountId, routerId, mapId, socketId, authenticated)) {
         SocketSession_destroy (&self);
         error ("SocketSession failed to initialize.");
         return NULL;
@@ -53,13 +53,13 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t routerId,
     uint16_t mapId,
-    unsigned char *socketIdKey,
+    unsigned char *socketId,
     bool authenticated
 ) {
     self->accountId = accountId;
     self->routerId = routerId;
     self->mapId = mapId;
-    memcpy (self->key, socketIdKey, sizeof (self->key));
+    memcpy (self->socketId, socketId, sizeof (self->socketId));
 
     self->authenticated = authenticated;
 
@@ -67,12 +67,12 @@ SocketSession_init (
 }
 
 void
-SocketSession_genKey (
+SocketSession_genSocketId (
     unsigned char *sessionId,
-    unsigned char sessionKey[SOCKET_SESSION_KEY_SIZE]
+    unsigned char sessionKey[SOCKET_SESSION_ID_SIZE]
 ) {
     // Format the session key from the sessionId
-    snprintf (sessionKey, SOCKET_SESSION_KEY_SIZE,
+    snprintf (sessionKey, SOCKET_SESSION_ID_SIZE,
         "%02X%02X%02X%02X%02X", sessionId[0], sessionId[1], sessionId[2], sessionId[3], sessionId[4]);
 }
 
@@ -96,7 +96,7 @@ SocketSession_print (
     SocketSession *self
 ) {
     dbg ("==== SocketSession %p ====", self);
-    dbg ("key = <%s>", self->key);
+    dbg ("socketId = <%s>", self->socketId);
     dbg ("accountId = <%llx>", self->accountId);
     dbg ("routerId = <%x>", self->routerId);
     dbg ("authenticated = <%x>", self->authenticated);

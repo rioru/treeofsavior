@@ -19,7 +19,7 @@
 #include "RouterMonitor.h"
 #include "Router.h"
 #include "Common/Session/Session.h"
-#include "Common/Redis/Fields/RedisSocketSession.h"
+#include "Common/Redis/Fields/RedisSession.h"
 
 // ------ Structure declaration -------
 /**
@@ -193,7 +193,7 @@ RouterMonitor_monitor (
         // Check if it already exists in the table
         if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) != NULL) {
             unsigned char sessionKey [ROUTER_MONITOR_FDKEY_SIZE];
-            SocketSession_genKey (zframe_data (clientFrame), sessionKey);
+            SocketSession_genSocketId (zframe_data (clientFrame), sessionKey);
             error ("The client FD=%d just connected, but another client has still this FD (previously : %s)",
                    fdClient, sessionKey);
             // TODO : Decide what to do in this case
@@ -222,17 +222,23 @@ RouterMonitor_monitor (
         }
         else {
             // Everything is okay here, disconnect gracefully the client
-            unsigned char sessionKey [SOCKET_SESSION_KEY_SIZE];
-            SocketSession_genKey (zframe_data (clientFrame), sessionKey);
+            unsigned char socketId [SOCKET_SESSION_ID_SIZE];
+            SocketSession_genSocketId (zframe_data (clientFrame), socketId);
 
             // Flush the session here
-            Redis_flushSession (self->redis, self->info.routerId, sessionKey);
+            RedisSessionKey sessionKey = {
+                .socketKey = {
+                    .routerId = self->info.routerId,
+                    .socketId = socketId
+                }
+            };
+            Redis_flushSession (self->redis, &sessionKey);
 
             // Remove the key from the "connected" hashtable
             zhash_delete (self->connected, fdClientKey);
             zframe_destroy (&clientFrame);
 
-            info ("%s session successfully flushed !", sessionKey);
+            info ("%s session successfully flushed !", socketId);
         }
     }
 

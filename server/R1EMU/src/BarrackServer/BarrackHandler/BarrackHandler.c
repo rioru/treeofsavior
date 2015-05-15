@@ -245,16 +245,14 @@ BarrackHandler_startGame (
     replyPacket.spriteIdRelated = 2;
     replyPacket.isSingleMap = false;
 
-    // Update and transfer the session directly to the concerned Zone Server
-    session->socket.mapId = replyPacket.mapId;
+    // Update the session to the concerned Zone Server
     session->socket.routerId = clientPacket->routerId;
-    Redis_updateSocketSession (self->redis, session->socket.routerId, session->socket.key, &session->socket);
-    Redis_updateGameSession (self->redis, session->socket.routerId, session->socket.mapId, session->socket.accountId, session->socket.key, &session->game);
+    session->socket.mapId = replyPacket.mapId;
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return PACKET_HANDLER_OK;
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 /*

@@ -25,7 +25,7 @@
 
 // ------ Extern variables implementation -------
 const char *redisGameSessionsStr [] = {
-	[REDIS_GAME_SESSION_socketKey]               = REDIS_GAME_SESSION_socketKey_str,
+	[REDIS_GAME_SESSION_socketId]               = REDIS_GAME_SESSION_socketId_str,
 	[REDIS_GAME_SESSION_routerId]                = REDIS_GAME_SESSION_routerId_str,
 	[REDIS_GAME_SESSION_familyName]              = REDIS_GAME_SESSION_familyName_str,
 	[REDIS_GAME_SESSION_commanderName]           = REDIS_GAME_SESSION_commanderName_str,
@@ -77,53 +77,16 @@ const char *redisGameSessionsStr [] = {
 // ------ Extern functions implementation -------
 
 bool
-Redis_getSession (
-    Redis *self,
-    uint16_t routerId,
-    char *socketId,
-    Session *session
-) {
-    GameSession *gameSession = &session->game;
-    SocketSession *socketSession = &session->socket;
-
-    unsigned char socketKey[SOCKET_SESSION_KEY_SIZE];
-
-    // Generate the socketId key
-    SocketSession_genKey (socketId, socketKey);
-
-    // Search for the Socket Session
-    if (!Redis_getSocketSession (self, routerId, socketKey, socketSession)) {
-        error ("Cannot get Socket Session.");
-        return false;
-    }
-
-    if (!socketSession->authenticated) {
-        // This is the first time the client connect.
-        // Initialize an empty game session
-        GameSession_init (gameSession);
-        dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey);
-    } else {
-        if (!Redis_getGameSession (self, socketSession->routerId, socketSession->mapId, socketSession->accountId, gameSession)) {
-            error ("Cannot get Game Session.");
-            return false;
-        }
-        // dbg ("Welcome back, SOCKET_%s !", socketKey);
-    }
-
-    return true;
-}
-
-bool
 Redis_getGameSession (
     Redis *self,
-    uint16_t routerId, uint16_t mapId,  uint64_t accountId,
+    RedisGameSessionKey *key,
     GameSession *gameSession
 ) {
     redisReply *reply = NULL;
 
     reply = Redis_commandDbg (self,
         "HMGET zone%x:map%x:acc%llx"
-        " " REDIS_GAME_SESSION_socketKey_str
+        " " REDIS_GAME_SESSION_socketId_str
         " " REDIS_GAME_SESSION_routerId_str
         " " REDIS_GAME_SESSION_familyName_str
         " " REDIS_GAME_SESSION_commanderName_str
@@ -180,7 +143,7 @@ Redis_getGameSession (
         // [UNKNOWN] "commander.unk10 "
         // [UNKNOWN] "commander.unk11 "
         // [UNKNOWN] "commander.unk12 "
-        , routerId, mapId, accountId
+        , key->routerId, key->mapId, key->accountId
     );
 
     if (!reply) {
@@ -215,7 +178,7 @@ Redis_getGameSession (
             }
 
             // Write the reply to the session
-            strncpy (gameSession->socketKey, reply->element[REDIS_GAME_SESSION_socketKey]->str, sizeof (gameSession->socketKey));
+            strncpy (gameSession->socketId, reply->element[REDIS_GAME_SESSION_socketId]->str, sizeof (gameSession->socketId));
             strncpy (gameSession->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_familyName]->str, sizeof (gameSession->currentCommander.familyName));
             strncpy (gameSession->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commanderName]->str, sizeof (gameSession->currentCommander.charName));
 
@@ -284,15 +247,15 @@ Redis_getGameSession (
 bool
 Redis_updateGameSession (
     Redis *self,
-    uint16_t routerId, uint16_t mapId, uint64_t accountId,
-    unsigned char *socketKey,
+    RedisGameSessionKey *key,
+    unsigned char *socketId,
     GameSession *gameSession
 ) {
     redisReply *reply = NULL;
 
     reply = Redis_commandDbg (self,
         "HMSET zone%x:map%x:acc%llx"
-        " " REDIS_GAME_SESSION_socketKey_str " %s"
+        " " REDIS_GAME_SESSION_socketId_str " %s"
         " " REDIS_GAME_SESSION_routerId_str " %x"
         " " REDIS_GAME_SESSION_familyName_str " %s"
         " " REDIS_GAME_SESSION_commanderName_str " %s"
@@ -346,13 +309,13 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_maxSP_str " %x"
         " " REDIS_GAME_SESSION_commander_cPosX_str " %f"
         " " REDIS_GAME_SESSION_commander_cPosY_str " %f"
-        , routerId, mapId, accountId,
-        socketKey,
-        routerId,
+        , key->routerId, key->mapId, key->accountId,
+        socketId,
+        key->routerId,
         (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
         (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
         gameSession->charactersBarrackCount,
-        accountId,
+        key->accountId,
         gameSession->currentCommanderId,
         gameSession->currentPcId,
         // [UNKNOWN] gameSession->currentCommander.unk1,
@@ -484,7 +447,7 @@ Redis_getClientsWithinDistance (
                     redisReply *posReply = Redis_commandDbg (self,
                         "HMGET %s " REDIS_GAME_SESSION_commander_cPosX_str
                                 " " REDIS_GAME_SESSION_commander_cPosY_str // Get position
-                                " " REDIS_GAME_SESSION_socketKey_str, // SocketKey
+                                " " REDIS_GAME_SESSION_socketId_str, // SocketKey
                         reply->element[1]->element[i]->str // account key
                     );
 
@@ -510,15 +473,15 @@ Redis_getClientsWithinDistance (
                                 return false;
                             }
 
-                            // [0] = X, [1] = Y, [2] = socketKey
+                            // [0] = X, [1] = Y, [2] = socketId
                             float x = strtof (posReply->element[0]->str, NULL),
                                   y = strtof (posReply->element[1]->str, NULL);
-                            char *socketKey = posReply->element[2]->str;
+                            char *socketId = posReply->element[2]->str;
 
                             // Check range here
                             if (Math_isWithin2DManhattanDistance (x, y, posX, posY, 300.0)) {
                                 // The current client is within the area, add it to the list
-                                zlist_append (clients, strdup (socketKey));
+                                zlist_append (clients, strdup (socketId));
                             }
                         } break;
 
@@ -544,16 +507,14 @@ Redis_getClientsWithinDistance (
 bool
 Redis_flushGameSession (
     Redis *self,
-    uint16_t routerId,
-    uint16_t mapId,
-    uint64_t accountId
+    RedisGameSessionKey *key
 ) {
     redisReply *reply = NULL;
 
     // Delete the key from the Redis
     reply = Redis_commandDbg (self,
         "DEL zone%x:map%x:acc%llx",
-        routerId, mapId, accountId
+        key->routerId, key->mapId, key->accountId
     );
 
     if (!reply) {

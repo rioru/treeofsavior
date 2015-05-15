@@ -24,7 +24,7 @@
 #define SOCKET_SESSION_UNDEFINED_MAP -1
 #define SOCKET_SESSION_UNDEFINED_ACCOUNT -1
 
-#define SOCKET_SESSION_KEY_SIZE 11
+#define SOCKET_SESSION_ID_SIZE 11
 
 // ------ Structure declaration -------
 
@@ -40,7 +40,7 @@ struct SocketSession
     /** The map Id of the commander currently played */
     uint16_t mapId;
     /** Socket Redis key */
-    unsigned char key[SOCKET_SESSION_KEY_SIZE];
+    unsigned char socketId [SOCKET_SESSION_ID_SIZE];
 
     /** States */
     bool authenticated;
@@ -61,7 +61,7 @@ SocketSession_new (
     uint64_t accountId,
     uint16_t serverId,
     uint16_t mapId,
-    unsigned char *socketIdKey,
+    unsigned char *socketId,
     bool authenticated
 );
 
@@ -77,7 +77,7 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t serverId,
     uint16_t mapId,
-    unsigned char *socketIdKey,
+    unsigned char *socketId,
     bool authenticated
 );
 
@@ -88,9 +88,9 @@ SocketSession_init (
  * @return
  */
 void
-SocketSession_genKey (
+SocketSession_genSocketId (
     unsigned char *sessionId,
-    unsigned char sessionKey[SOCKET_SESSION_KEY_SIZE]
+    unsigned char sessionKey[SOCKET_SESSION_ID_SIZE]
 );
 
 

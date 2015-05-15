@@ -35,8 +35,7 @@ const char *redisSocketSessionsStr [] = {
 bool
 Redis_getSocketSession (
     Redis *self,
-    uint16_t routerId,
-    char *socketKey,
+    RedisSocketSessionKey *key,
     SocketSession *socketSession
 ) {
 	redisReply *reply = NULL;
@@ -47,7 +46,7 @@ Redis_getSocketSession (
         REDIS_SOCKET_SESSION_routerId_str " "
         REDIS_SOCKET_SESSION_mapId_str " "
         REDIS_SOCKET_SESSION_authenticated_str " ",
-        routerId, socketKey
+        key->routerId, key->socketId
     );
 
     if (!reply) {
@@ -78,10 +77,14 @@ Redis_getSocketSession (
 
             if (Redis_anyElementIsNull (reply->element, reply->elements) != -1) {
                 // The socket session doesn't exist : create a new one and set it to its default value
-                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, routerId, SOCKET_SESSION_UNDEFINED_MAP, socketKey, false);
+                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, key->routerId, SOCKET_SESSION_UNDEFINED_MAP, key->socketId, false);
 
                 // Update the newly created socketSession to the Redis Session
-                if (!Redis_updateSocketSession (self, socketSession->routerId, socketSession->key, socketSession)) {
+                RedisSocketSessionKey socketKey = {
+                    .routerId = socketSession->routerId,
+                    .socketId = socketSession->socketId
+                };
+                if (!Redis_updateSocketSession (self, &socketKey, socketSession)) {
                     dbg ("Cannot update the socket session");
                     freeReplyObject (reply);
                     return false;
@@ -93,7 +96,7 @@ Redis_getSocketSession (
                 socketSession->routerId = strtol (reply->element[REDIS_SOCKET_SESSION_routerId]->str, NULL, 16);
                 socketSession->mapId = strtol (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
                 socketSession->authenticated = strtol (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
-                memcpy (socketSession->key, socketKey, sizeof (socketSession->key));
+                memcpy (socketSession->socketId, key->socketId, sizeof (socketSession->socketId));
             }
         break;
 
@@ -112,7 +115,7 @@ Redis_getSocketSession (
 bool
 Redis_updateSocketSession (
     Redis *self,
-    uint16_t routerId, unsigned char *key,
+    RedisSocketSessionKey *key,
     SocketSession *socketSession
 ) {
     redisReply *reply = NULL;
@@ -123,9 +126,9 @@ Redis_updateSocketSession (
         " routerId %x"
         " mapId %x"
         " authenticated %x"
-        , routerId, key,
+        , key->routerId, key->socketId,
         socketSession->accountId,
-        routerId,
+        key->routerId,
         socketSession->mapId,
         socketSession->authenticated
     );
@@ -160,31 +163,16 @@ Redis_updateSocketSession (
 
 
 bool
-Redis_flushSession (
+Redis_flushSocketSession (
     Redis *self,
-    uint16_t routerId,
-    unsigned char *socketKey
+    RedisSocketSessionKey *key
 ) {
     redisReply *reply = NULL;
-
-    // Retrieve the real SocketSession
-    SocketSession socketSession;
-
-    if (!(Redis_getSocketSession (self, routerId, socketKey, &socketSession))) {
-        error ("Cannot get the SocketSession for %s.", socketKey);
-        return false;
-    }
-
-    // Flush the game session
-    if (!(Redis_flushGameSession (self, socketSession.routerId, socketSession.mapId, socketSession.accountId))) {
-        error ("Cannot flush the Game Session associated with the Socket Session.");
-        return false;
-    }
 
     // Delete the key from the Redis
     reply = Redis_commandDbg (self,
         "DEL zone%x:socket%s",
-        routerId, socketKey
+        key->routerId, key->socketId
     );
 
     if (!reply) {

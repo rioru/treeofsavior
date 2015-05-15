@@ -23,7 +23,7 @@
 #include "Common/Session/Session.h"
 
 // ---------- Defines -------------
-#define REDIS_GAME_SESSION_socketKey_str               "socketKey"
+#define REDIS_GAME_SESSION_socketId_str               "socketId"
 #define REDIS_GAME_SESSION_routerId_str                "routerId"
 #define REDIS_GAME_SESSION_familyName_str              "familyName"
 #define REDIS_GAME_SESSION_commanderName_str           "commanderName"
@@ -72,7 +72,7 @@
 #define REDIS_GAME_SESSION_commander_cPosY_str         "cPosY"
 
 enum RedisGameSessionFields {
-	REDIS_GAME_SESSION_socketKey,
+	REDIS_GAME_SESSION_socketId,
 	REDIS_GAME_SESSION_routerId,
 	REDIS_GAME_SESSION_familyName,
 	REDIS_GAME_SESSION_commanderName,
@@ -123,6 +123,11 @@ enum RedisGameSessionFields {
 };
 
 // ------ Structure declaration -------
+typedef struct {
+    uint16_t routerId;
+    uint16_t mapId;
+    uint64_t accountId;
+} RedisGameSessionKey;
 
 
 // ------ Global variables declaration -------
@@ -132,32 +137,16 @@ extern const char *redisGameSessionsStr [];
 // ----------- Functions ------------
 
 /**
- * @brief Request the session associated with the ZoneId and the Socket ID
- * @param self An allocated Redis
- * @param routerId A zone Id
- * @param socketId A socket ID
- * @param[out] session The resulting Session
- * @return
- */
-bool
-Redis_getSession (
-    Redis *self,
-    uint16_t routerId,
-    char *socketId,
-    Session *session
-);
-
-/**
  * @brief Get the GameSession associated with the SocketSession
  * @param self An allocated Redis
- * @param routerId, mapId, accountId Identificators of the Game Session
+ * @param key The GameSession key
  * @param[out] gameSession The output gameSession
  * @return
  */
 bool
 Redis_getGameSession (
     Redis *self,
-    uint16_t routerId, uint16_t mapId,  uint64_t accountId,
+    RedisGameSessionKey *key,
     GameSession *gameSession
 );
 
@@ -165,17 +154,30 @@ Redis_getGameSession (
 /**
  * @brief Save an entire GameSession to the Redis server.
  * @param self An allocated Redis instance
- * @param routerId, mapId, accountId Identificators of the Game Session
- * @param socketKey The socketKey linked with the Game Session
+ * @param key The GameSession key
+ * @param socketId The socketId linked with the Game Session
  * @param gameSession The Game Session to save
  * @return true on success, false otherwise
  */
 bool
 Redis_updateGameSession (
     Redis *self,
-    uint16_t routerId, uint16_t mapId, uint64_t accountId,
-    unsigned char *socketKey,
+    RedisGameSessionKey *key,
+    unsigned char *socketId,
     GameSession *gameSession
+);
+
+
+/**
+ * @brief Flush a GameSession
+ * @param self An allocated Redis instance
+ * @param key The GameSession key
+ * @return true on success, false otherwise
+ */
+bool
+Redis_flushGameSession (
+    Redis *self,
+    RedisGameSessionKey *key
 );
 
 
@@ -194,21 +196,4 @@ Redis_getClientsWithinDistance (
     uint16_t serverId, uint16_t mapId,
     float posX, float posY, float posZ,
     float range
-);
-
-
-/**
- * @brief Flush a GameSession
- * @param self An allocated Redis instance
- * @param routerId The routerId containing the game session
- * @param mapId The mapId containing the game session
- * @param accountId The accountId of the game session
- * @return true on success, false otherwise
- */
-bool
-Redis_flushGameSession (
-    Redis *self,
-    uint16_t routerId,
-    uint16_t mapId,
-    uint64_t accountId
 );
