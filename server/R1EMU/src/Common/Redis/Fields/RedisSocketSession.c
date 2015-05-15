@@ -160,7 +160,7 @@ Redis_updateSocketSession (
 
 
 bool
-Redis_flushSocketSession (
+Redis_flushSession (
     Redis *self,
     uint16_t routerId,
     unsigned char *socketKey

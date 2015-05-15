@@ -83,7 +83,7 @@ Redis_updateSocketSession (
  * @return true on success, false otherwise
  */
 bool
-Redis_flushSocketSession (
+Redis_flushSession (
     Redis *self,
     uint16_t routerId,
     unsigned char *socketKey
