@@ -106,6 +106,40 @@ Worker_buildReply (
     zmsg_t *reply
 );
 
+
+/**
+ * @brief Build a reply based on the packet handler
+ * @param[in] self A pointer to the current worker
+ * @param[in] session The game session associated with the packet
+ * @param[in] packet The packet sent by the client
+ * @param[in] packetSize The size of the packet
+ * @param[out] reply The message for the reply. Each frame contains a reply to send in different packets.
+ * @param[in] headerAnswer The header of the answer message
+ * @return true on success, false otherwise
+ */
+static bool
+Worker_processOneRequest (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *msg,
+    zframe_t *headerAnswer
+);
+
+/**
+ * @brief Check the size of a packet based on the packet header
+ * @param packetSize The size of the packet
+ * @param packet The packet
+ * @param[out] cryptHeader an allocated CryptPacketHeader
+ */
+static bool
+Worker_checkPacketSize (
+    size_t packetSize,
+    unsigned char *packet,
+    CryptPacketHeader *cryptHeader
+);
+
 // ------ Extern function implementation -------
 
 Worker *
@@ -241,7 +275,7 @@ Worker_processClientPacket (
 
     // Read the message
     zframe_t *socketIdFrame = zmsg_first (msg);
-    zframe_t *packet = zmsg_next (msg);
+    zframe_t *packetFrame = zmsg_next (msg);
 
     // Request a Game Session
     if (!(Redis_getSession (self->redis, self->info.routerId, zframe_data (socketIdFrame), &session))) {
@@ -249,19 +283,124 @@ Worker_processClientPacket (
         return false;
     }
 
-    // === Build the reply ===
+    // === Build the message reply ===
     // We don't need the client packet in the reply
-    zmsg_remove (msg, packet);
+    zmsg_remove (msg, packetFrame);
 
     // Consider the message as a "normal" message by default
     zframe_t *headerAnswer = zframe_new (PACKET_HEADER (ROUTER_WORKER_NORMAL), sizeof (ROUTER_WORKER_NORMAL));
     zmsg_push (msg, headerAnswer);
 
-    switch (Worker_buildReply (self, self->info.packetHandlers, self->info.packetHandlersCount, &session, zframe_data (packet), zframe_size (packet), msg))
+    // === Check the packet Size ===
+    unsigned char *packet = zframe_data (packetFrame);
+    size_t packetSize = zframe_size (packetFrame);
+    CryptPacketHeader cryptHeader;
+
+    if (!(Worker_checkPacketSize (packetSize, packet, &cryptHeader))) {
+        error ("Wrong sub packet size.");
+        return false;
+    }
+
+    // A single packet may contain multiple requests
+    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size)
+    {
+        // Divide them and treat them sequentially
+        size_t packetPos = 0;
+        size_t packetSizeRemaining = packetSize;
+        while (packetSizeRemaining > 0)
+        {
+            // Don't check for the first sub packet, we already did it
+            if (packetSize != packetSizeRemaining) {
+                if (!(Worker_checkPacketSize (packetSizeRemaining, &packet[packetPos], &cryptHeader))) {
+                    error ("Wrong sub packet size.");
+                    return false;
+                }
+            }
+
+            // Copy to another packet the sub request
+            size_t subPacketSize = cryptHeader.size + sizeof (CryptPacketHeader);
+            unsigned char *subPacket = alloca (subPacketSize);
+            memcpy (subPacket, &packet[packetPos], subPacketSize);
+
+            if ((!(Worker_processOneRequest (self, &session, subPacket, subPacketSize, msg, headerAnswer)))) {
+                error ("Cannot process properly one of a multiple requests reply.");
+                return false;
+            }
+
+            // == Iterate to the next reply ==
+            packetPos += subPacketSize;
+            packetSizeRemaining -= subPacketSize;
+        }
+    }
+
+    // Everything normal here, a single packet contains a single request
+    else {
+        if ((!(Worker_processOneRequest (self, &session, packet, packetSize, msg, headerAnswer)))) {
+            error ("Cannot process properly a reply.");
+            return false;
+        }
+    }
+
+    // Cleanup
+    zframe_destroy (&packetFrame);
+
+    return true;
+}
+
+static bool
+Worker_checkPacketSize (
+    size_t packetSize,
+    unsigned char *packet,
+    CryptPacketHeader *cryptHeader
+) {
+    // Check if we can read a CryptPacketHeader
+    if (packetSize < sizeof (CryptPacketHeader)) {
+        error ("The packet received is too small to be read. Ignore request.");
+        return false;
+    }
+
+    // Unwrap the crypt packet header, and check the cryptHeader size
+    CryptPacket_getHeader (packet, cryptHeader);
+    if ((packetSize - sizeof (CryptPacketHeader)) < cryptHeader->size) {
+        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
+            packetSize, cryptHeader->size);
+        return false;
+    }
+
+    return true;
+}
+
+static bool
+Worker_processOneRequest (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *msg,
+    zframe_t *headerAnswer
+) {
+    // Unwrap the crypt packet header, and check the cryptHeader size
+    // In a single request process, it must match exactly the same size
+    CryptPacketHeader cryptHeader;
+    CryptPacket_unwrapHeader (&packet, &cryptHeader);
+    if ((packetSize - sizeof (cryptHeader)) != cryptHeader.size) {
+        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
+            packetSize, cryptHeader.size);
+        return false;
+    }
+
+    // Uncrypt the packet if everything is OK
+    if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
+        error ("Cannot uncrypt the client packet. Ignore request.");
+        return false;
+    }
+
+    // Answer
+    switch (Worker_buildReply (self, self->info.packetHandlers, self->info.packetHandlersCount, session, packet, packetSize, msg))
     {
         case PACKET_HANDLER_ERROR:
             error ("The following packet produced an error :");
-            buffer_print (zframe_data (packet), zframe_size (packet), NULL);
+            buffer_print (packet, packetSize, NULL);
             zframe_reset (headerAnswer, PACKET_HEADER (ROUTER_WORKER_ERROR), sizeof (ROUTER_WORKER_ERROR));
         break;
 
@@ -269,15 +408,15 @@ Worker_processClientPacket (
         break;
 
         case PACKET_HANDLER_UPDATE_SESSION:
-            if (!Redis_updateSocketSession (self->redis, session.socket.routerId, session.socket.key, &session.socket)) {
+            if (!Redis_updateSocketSession (self->redis, session->socket.routerId, session->socket.key, &session->socket)) {
                 error ("Cannot update the socket session.");
                 return false;
             }
-            SocketSession *socketSession = &session.socket;
+            SocketSession *socketSession = &session->socket;
             if (!Redis_updateGameSession (self->redis,
                     socketSession->routerId, socketSession->mapId, socketSession->accountId,
                     socketSession->key,
-                    &session.game)
+                    &session->game)
             ) {
                 error ("Cannot update the game session");
                 return false;
@@ -288,9 +427,6 @@ Worker_processClientPacket (
             // TODO
         break;
     }
-
-    // Cleanup
-    zframe_destroy (&packet);
 
     return true;
 }
@@ -307,27 +443,6 @@ Worker_buildReply (
     zmsg_t *reply
 ) {
     PacketHandlerFunction handler;
-
-    // Preconditions
-    if (packetSize < sizeof (CryptPacketHeader)) {
-        error ("The packet received is too small to be read. Ignore request.");
-        return PACKET_HANDLER_ERROR;
-    }
-
-    // Unwrap the crypt packet header
-    CryptPacketHeader cryptHeader;
-    CryptPacket_unwrapHeader (&packet, &cryptHeader);
-    if (packetSize - sizeof (cryptHeader) != cryptHeader.size) {
-        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
-            packetSize, cryptHeader.size);
-        return PACKET_HANDLER_ERROR;
-    }
-
-    // Uncrypt the packet
-    if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
-        error ("Cannot uncrypt the client packet. Ignore request.");
-        return PACKET_HANDLER_ERROR;
-    }
 
     // Read the packet
     ClientPacketHeader header;

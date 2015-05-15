@@ -43,6 +43,14 @@ CryptPacket_unwrapHeader (
 }
 
 void
+CryptPacket_getHeader (
+    unsigned char *packet,
+    CryptPacketHeader *header
+) {
+    memcpy (header, packet, sizeof (*header));
+}
+
+void
 BarrackPacket_normalHeader (
     BarrackPacketNormalHeader *normalHeader,
     uint32_t subtype,

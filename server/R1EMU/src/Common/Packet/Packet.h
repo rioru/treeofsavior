@@ -88,7 +88,7 @@ ClientPacket_unwrapHeader (
 );
 
 /**
- * @brief Unwrap the crypt packet header and stores it in the CryptPacketHeader argument
+ * @brief Unwrap the crypt packet header and stores it in the header argument
  * @param[in,out] packet A pointer to the packet to unwrap. Afterward, it points to the data of the packet.
  * @param[out] header The header unwrapped from the packet
  * @return
@@ -99,6 +99,17 @@ CryptPacket_unwrapHeader (
     CryptPacketHeader *header
 );
 
+/**
+ * @brief Get the crypt packet header and stores it in the header argument
+ * @param[in] packet A pointer to the packet to decode.
+ * @param[out] header The header unwrapped from the packet
+ * @return
+ */
+void
+CryptPacket_getHeader (
+    unsigned char *packet,
+    CryptPacketHeader *header
+);
 
 /**
  * @brief Creates a barrack normal header based on the subtype argument
