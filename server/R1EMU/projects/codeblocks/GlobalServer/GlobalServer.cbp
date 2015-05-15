@@ -82,6 +82,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Redis/Fields/RedisGameSession.h" />
+		<Unit filename="../../../src/Common/Redis/Fields/RedisSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Redis/Fields/RedisSession.h" />
 		<Unit filename="../../../src/Common/Redis/Fields/RedisSocketSession.c">
 			<Option compilerVar="CC" />
 		</Unit>

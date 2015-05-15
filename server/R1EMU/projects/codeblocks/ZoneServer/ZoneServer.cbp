@@ -92,6 +92,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Redis/Fields/RedisGameSession.h" />
+		<Unit filename="../../../src/Common/Redis/Fields/RedisSession.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Redis/Fields/RedisSession.h" />
 		<Unit filename="../../../src/Common/Redis/Fields/RedisSocketSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -153,6 +157,7 @@
 		</Unit>
 		<Unit filename="../../../src/Common/utils/utils.h" />
 		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
+		<Unit filename="../../../src/R1EMU.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>
