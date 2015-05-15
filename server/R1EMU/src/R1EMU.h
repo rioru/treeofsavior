@@ -25,6 +25,7 @@
 /** This is only for differenciate ZMQ RAW ROUTER from ZMQ ROUTER */
 #define ZMQ_RAW_ROUTER ZMQ_ROUTER
 #define PACKET_HEADER(x) (typeof(x)[]){x}
+
 /** Router unique IDs */
 #define BARRACK_SERVER_ROUTER_ID ((uint16_t) -1)
 #define GLOBAL_SERVER_ROUTER_ID  ((uint16_t) -2)
@@ -45,25 +46,14 @@
 
 // Utils
 #include "Common/utils/utils.h"
-#define STRINGIFY(x) # x
-#ifndef bool
-#define bool char
-#endif
-#ifndef false
-#define false 0
-#endif
-#ifndef true
-#define true (!false)
-#endif
 
-// Size of local array keyword
-#define sizeof_array(array) \
-    ((int)(sizeof(array) / sizeof(*(array))))
 
-// Size of structure member
-#define sizeof_struct_member(struct, member) \
-   (sizeof(((struct *)0)->member))
+/** R1EMU Errors */
+extern int R1EMULastError;
 
-// Quotify a string
-#define QUOTIFY(x) "\"" x "\""
+typedef enum {
+    R1EMU_OK = 0,
+    R1EMU_ERROR,
+    R1EMU_NOT_ENOUGH_MEMORY,
+} R1EMUError;
 

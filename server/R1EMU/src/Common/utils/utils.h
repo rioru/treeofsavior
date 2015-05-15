@@ -21,7 +21,27 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
+#define STRINGIFY(x) # x
+#ifndef bool
+#define bool char
+#endif
+#ifndef false
+#define false 0
+#endif
+#ifndef true
+#define true (!false)
+#endif
 
+// Size of local array keyword
+#define sizeof_array(array) \
+    ((int)(sizeof(array) / sizeof(*(array))))
+
+// Size of structure member
+#define sizeof_struct_member(struct, member) \
+   (sizeof(((struct *)0)->member))
+
+// Quotify a string
+#define QUOTIFY(x) "\"" x "\""
 
 // ------ Structure declaration -------
 

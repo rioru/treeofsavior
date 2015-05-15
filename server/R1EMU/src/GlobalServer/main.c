@@ -25,7 +25,7 @@ int main (int argc, char **argv)
     // Force the initialization of the CZMQ layer here.
     if (!(zsys_init ())) {
         error ("Cannot init CZMQ.");
-        goto main_cleanup;
+        goto cleanup;
     }
 
     // Get the configuration file
@@ -39,7 +39,7 @@ int main (int argc, char **argv)
     GlobalServerStartupInfo info;
     if (!(GlobalServerStartupInfo_init (&info, confFilePath))) {
         error ("Cannot initialize GlobalServer init information. (%s)", confFilePath);
-        goto main_cleanup;
+        goto cleanup;
     }
 
     // Initialize the Server
@@ -47,23 +47,24 @@ int main (int argc, char **argv)
     special ("=== Global server ===");
     special ("======================");
     // Initialize the Global Server
-    if ((globalServer = GlobalServer_new (&info))) {
-
-        // Flush the Redis server
-        if (!(GlobalServer_flushRedis (globalServer))) {
-            error ("Cannot flush the Redis server properly.");
-        }
-
-        // Start the Global Server
-        else if (!GlobalServer_start (globalServer)) {
-            error ("Cannot start the GlobalServer properly.");
-        }
-    }
-    else {
+    if (!(globalServer = GlobalServer_new (&info))) {
         error ("Cannot initialize the GlobalServer properly.");
+        goto cleanup;
     }
 
-main_cleanup:
+    // Flush the Redis server
+    if (!(GlobalServer_flushRedis (globalServer))) {
+        error ("Cannot flush the Redis server properly.");
+        goto cleanup;
+    }
+
+    // Start the Global Server
+    else if (!GlobalServer_start (globalServer)) {
+        error ("Cannot start the GlobalServer properly.");
+        goto cleanup;
+    }
+
+cleanup:
 
     // Unload the Global Server properly
     GlobalServer_destroy (&globalServer);

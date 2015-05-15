@@ -374,14 +374,14 @@ Worker_buildReply (
     CryptPacketHeader cryptHeader;
 
     if (!(Worker_checkPacketSize (packetSize, packet, &cryptHeader))) {
-        error ("Wrong packet size, cannot build a reply");
+        error ("Wrong packet size.");
         return false;
     }
 
     // A single packet may contain multiple requests
     else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size) {
         if (!(Worker_processMultipleRequests (self, session, packet, packetSize, msg, headerAnswer))) {
-            error ("Cannot process properly one of multiple requests.");
+            error ("Cannot process one of the multiple requests.");
             return false;
         }
     }
@@ -389,7 +389,7 @@ Worker_buildReply (
     // Everything normal here, a single packet contains a single request
     else {
         if (!(Worker_processOneRequest (self, session, packet, packetSize, msg, headerAnswer))) {
-            error ("Cannot process properly a reply.");
+            error ("Cannot process one request.");
             return false;
         }
     }
@@ -489,8 +489,6 @@ Worker_processOneRequest (
     switch (Worker_handlePacket (self, self->info.packetHandlers, self->info.packetHandlersCount, session, packet, packetSize, msg))
     {
         case PACKET_HANDLER_ERROR:
-            error ("The following packet produced an error :");
-            buffer_print (packet, packetSize, NULL);
             zframe_reset (headerAnswer, PACKET_HEADER (ROUTER_WORKER_ERROR), sizeof (ROUTER_WORKER_ERROR));
             return false;
         break;
@@ -670,7 +668,6 @@ Worker_mainLoop (
         return NULL;
     }
     info ("[routerId=%d][WorkerId=%d] is running and waiting for messages.", self->info.routerId, self->info.workerId);
-
 
     // TODO : Refactor zpoller into zreactor ?
     while (isRunning) {
