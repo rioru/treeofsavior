@@ -504,8 +504,18 @@ Worker_processOneRequest (
             }
         break;
 
-        case PACKET_HANDLER_DELETE_SESSION:
-            // TODO
+        case PACKET_HANDLER_DELETE_SESSION: {
+            RedisSessionKey sessionKey = {
+                .socketKey = {
+                    .routerId = session->socket.routerId,
+                    .socketId = session->socket.socketId
+                }
+            };
+            if (!(Redis_flushSession (self->redis, &sessionKey))) {
+                error ("Cannot delete the Session.");
+                return false;
+            }
+        }
         break;
     }
 
