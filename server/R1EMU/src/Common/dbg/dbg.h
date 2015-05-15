@@ -92,6 +92,7 @@ typedef enum {
     #define die(format, ...)                                              \
         do {                                                              \
             dbg_ex (DBG_LEVEL_ERROR, stderr, "[FATAL ERROR] " format "\n", ##__VA_ARGS__); \
+            getc(stdin); \
             exit (-1);                                                    \
         } while (0)
 

@@ -239,6 +239,7 @@ ZoneHandler_connect (
     // Its session is empty and must be updated from the barrack server.
     // Ask for the session to the barrack server
     // Register a valid SocketSession for the BarrackServer
+    /*
     unsigned char *socketId = zframe_data (zmsg_last (reply));
     unsigned char socketKey[SOCKET_SESSION_KEY_SIZE];
     // Generate the socketId key
@@ -248,6 +249,8 @@ ZoneHandler_connect (
         error ("Cannot retrieve the session from the barrack server.");
         return PACKET_HANDLER_ERROR;
     }
+    */
+    die ("Session transfer : TODO");
 
     // Update the Socket Session
     socketSession->routerId = self->info.routerId;

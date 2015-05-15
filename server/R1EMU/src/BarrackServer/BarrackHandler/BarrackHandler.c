@@ -235,6 +235,8 @@ BarrackHandler_startGame (
     replyPacket.spriteIdRelated = 2;
     replyPacket.isSingleMap = false;
 
+    // TODO : Send the session directly to the Zone Server
+
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
