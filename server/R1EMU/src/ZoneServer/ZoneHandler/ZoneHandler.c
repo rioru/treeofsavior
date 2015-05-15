@@ -52,6 +52,8 @@ static PacketHandlerState ZoneHandler_moveStop      (Worker *self, Session *sess
 static PacketHandlerState ZoneHandler_movementInfo  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On commander rotation */
 static PacketHandlerState ZoneHandler_rotate        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On commander head rotation */
+static PacketHandlerState ZoneHandler_headRotate    (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
 static PacketHandlerState ZoneHandler_logout        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
@@ -72,6 +74,7 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_MOVE_STOP, ZoneHandler_moveStop),
     REGISTER_PACKET_HANDLER (CZ_MOVEMENT_INFO, ZoneHandler_movementInfo),
     REGISTER_PACKET_HANDLER (CZ_ROTATE, ZoneHandler_rotate),
+    REGISTER_PACKET_HANDLER (CZ_HEAD_ROTATE, ZoneHandler_headRotate),
     REGISTER_PACKET_HANDLER (CZ_LOGOUT, ZoneHandler_logout),
 
     #undef REGISTER_PACKET_HANDLER
@@ -79,6 +82,19 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
 
 static PacketHandlerState
 ZoneHandler_logout (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
+
+
+static PacketHandlerState
+ZoneHandler_headRotate (
     Worker *self,
     Session *session,
     unsigned char *packet,
