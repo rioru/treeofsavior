@@ -492,6 +492,7 @@ Worker_processOneRequest (
             error ("The following packet produced an error :");
             buffer_print (packet, packetSize, NULL);
             zframe_reset (headerAnswer, PACKET_HEADER (ROUTER_WORKER_ERROR), sizeof (ROUTER_WORKER_ERROR));
+            return false;
         break;
 
         case PACKET_HANDLER_OK:
@@ -692,7 +693,10 @@ Worker_mainLoop (
         switch (handler (self, actor)) {
             case -1: // ERROR
                 error ("[routerId=%d][WorkerId=%d] encountered an error when handling a request.", self->info.routerId, self->info.workerId);
+            break;
+
             case -2: // Connection stopped
+                error ("[routerId=%d][WorkerId=%d] The worker has been requested to stop.", self->info.routerId, self->info.workerId);
                 isRunning = false;
             break;
 
@@ -785,12 +789,15 @@ Worker_handlePublicRequest (
     if (zmsg_size (msg) == 2) {
         // The first frame is the client identity
         // The second frame is the data of the packet
-        Worker_processClientPacket (self, msg);
+        if (!(Worker_processClientPacket (self, msg))) {
+            error ("Cannot handle correctly the client packet.");
+        }
     }
 
     // Reply back to the sender
     if (zmsg_send (&msg, worker) != 0) {
         warning ("[routerId=%d][WorkerId=%d] failed to send a message to the backend.", self->info.routerId, self->info.workerId);
+        return -1;
     }
 
     return 0;
