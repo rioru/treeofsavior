@@ -97,7 +97,12 @@ get_baseaddr (char *module_name)
 
 int main (int argc, char ** argv)
 {
-    HANDLE process = get_handle_by_name ("Client_tos.exe");
+    char *processName = "Client_tos.exe";
+
+    if (argc == 2) {
+        processName = argv[1];
+    }
+    HANDLE process = get_handle_by_name (processName);
     if (!process) {
         printf ("Process not found\n");
         return 0;
