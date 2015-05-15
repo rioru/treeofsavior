@@ -275,18 +275,18 @@ Router_subscribe (
         return 0;
     }
 
-    // Get the frame header of the message
+    // Get the header frame of the message
     if (!(header = zmsg_pop (msg))) {
         error ("Frame header cannot be retrieved.");
         return -1;
     }
 
-    // Convert the frame to a RouterHeader
+    // Convert the header frame to a RouterHeader
     RouterHeader packetHeader = *((RouterHeader *) zframe_data (header));
     zframe_destroy (&header);
 
-    switch (packetHeader) {
-
+    switch (packetHeader)
+    {
         case ROUTER_WORKER_MULTICAST: {
             // The worker send a 'multicast' message : It is addressed to a group of destination clients.
             // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
@@ -336,17 +336,18 @@ Router_backend (
         return -1;
     }
 
-    // Get the frame header the message
+    // Get the header frame of the message
     if (!(header = zmsg_pop (msg))) {
         error ("Frame data cannot be retrieved.");
         return -1;
     }
 
-    // Convert the frame to a RouterHeader
+    // Convert the header frame to a RouterHeader
     RouterHeader packetHeader = *((RouterHeader *) zframe_data (header));
     zframe_destroy (&header);
 
-    switch (packetHeader) {
+    switch (packetHeader)
+    {
         case ROUTER_WORKER_ERROR:
             // The worker sent an 'error' signal.
             // TODO : logging ?
@@ -436,6 +437,9 @@ Router_informMonitor (
     zframe_t *identityClient,
     uint64_t fdClient
 ) {
+    // TODO : Don't check the FD everytime, keep a connected hashtable in the router ?
+
+    // Build the message to the Router Monitor
     zmsg_t *msg;
     if ((msg = zmsg_new ()) == NULL
     ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_MONITOR_ADD_FD), sizeof (ROUTER_MONITOR_ADD_FD)) != 0
@@ -476,7 +480,7 @@ Router_frontend (
     uint64_t fdClient = *((uint64_t *) identity);
     zframe_destroy (&identityClientDup);
 
-    // Don't process the packet if it is empty, or if an invalid fd
+    // Don't process the packet if it is empty, or if an invalid fd is used
     if (zframe_size (data) == 0 || fdClient == -1) {
         zmsg_destroy (&msg);
         return 0;

@@ -225,7 +225,7 @@ RouterMonitor_monitor (
             unsigned char sessionKey [SOCKET_SESSION_KEY_SIZE];
             SocketSession_genKey (zframe_data (clientFrame), sessionKey);
 
-            // TODO : Flush the session here
+            // Flush the session here
             Redis_flushSocketSession (self->redis, self->info.routerId, sessionKey);
 
             // Remove the key from the "connected" hashtable
