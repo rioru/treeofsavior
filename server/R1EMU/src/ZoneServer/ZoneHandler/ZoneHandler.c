@@ -54,6 +54,8 @@ static PacketHandlerState ZoneHandler_movementInfo  (Worker *self, Session *sess
 static PacketHandlerState ZoneHandler_rotate        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On commander head rotation */
 static PacketHandlerState ZoneHandler_headRotate    (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** @unknown */
+static PacketHandlerState ZoneHandler_campInfo      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
 static PacketHandlerState ZoneHandler_logout        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
@@ -75,10 +77,23 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_MOVEMENT_INFO, ZoneHandler_movementInfo),
     REGISTER_PACKET_HANDLER (CZ_ROTATE, ZoneHandler_rotate),
     REGISTER_PACKET_HANDLER (CZ_HEAD_ROTATE, ZoneHandler_headRotate),
+    REGISTER_PACKET_HANDLER (CZ_CAMPINFO, ZoneHandler_campInfo),
     REGISTER_PACKET_HANDLER (CZ_LOGOUT, ZoneHandler_logout),
 
     #undef REGISTER_PACKET_HANDLER
 };
+
+static PacketHandlerState
+ZoneHandler_campInfo (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
 
 static PacketHandlerState
 ZoneHandler_logout (
@@ -189,7 +204,6 @@ ZoneHandler_gameReady (
     ZoneHandler_startInfo (self, session, reply);
     ZoneHandler_moveSpeed (self, session, reply);
     ZoneHandler_MyPCEnter (self, session, reply);
-    // ZoneHandler_setPos (self, session, reply, session->game.currentPcId, -643.0f, 342.0f, 503.0f);
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
