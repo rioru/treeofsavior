@@ -61,19 +61,19 @@ int main (int argc, char **argv)
     // For Windows, change the console title
     switch (serverType) {
         case SERVER_TYPE_BARRACK:
-            SetConsoleTitle (zsys_sprintf ("Barrack Server (RouterID = %d) (PID = %x)", BARRACK_SERVER_ROUTER_ID, GetCurrentProcessId()));
+            SetConsoleTitle (zsys_sprintf ("Barrack (%d)", routerId));
         break;
 
         case SERVER_TYPE_ZONE:
-            SetConsoleTitle (zsys_sprintf ("Zone Server (RouterID = %d) (PID = %x)", routerId, GetCurrentProcessId()));
+            SetConsoleTitle (zsys_sprintf ("Zone (%d)", routerId));
         break;
 
         case SERVER_TYPE_SOCIAL:
-            SetConsoleTitle (zsys_sprintf ("Social Server (RouterID = %d) (PID = %x)", routerId, GetCurrentProcessId()));
+            SetConsoleTitle (zsys_sprintf ("Social (%d)", routerId));
         break;
 
         default :
-            SetConsoleTitle (zsys_sprintf ("UNKNOWN Server (RouterID = %d) (PID = %x)", routerId, GetCurrentProcessId()));
+            SetConsoleTitle (zsys_sprintf ("UNKNOWN (%d)", routerId));
         break;
     }
     #endif

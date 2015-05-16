@@ -43,7 +43,7 @@ static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Sessio
 /** Request for the player to enter in game */
 static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
-/** @unknown */
+/** @UNKNOWN */
 static PacketHandlerState BarrackHandler_iesModifyList     (Worker *self, zmsg_t *reply);
 /** Register new servers */
 static PacketHandlerState BarrackHandler_serverEntry       (Worker *self, zmsg_t *reply);
@@ -51,12 +51,12 @@ static PacketHandlerState BarrackHandler_serverEntry       (Worker *self, zmsg_t
 static PacketHandlerState BarrackHandler_commanderList     (Worker *self, Session *session, zmsg_t *reply);
 /** Send a list of zone servers */
 static PacketHandlerState BarrackHandler_zoneTraffics      (Worker *self, zmsg_t *reply);
-/** UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
+/** @UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
 // static PacketHandlerState BarrackHandler_unkHandler1       (Worker *self, Session *session, zmsg_t *reply);
-/** UNKNOWN. */
-// static PacketHandlerState BarrackHandler_unkHandler3       (Worker *self, zmsg_t *reply);
+/** @UNKNOWN. Gives information to a specific commander. */
+// static PacketHandlerState BarrackHandler_commanderInfo      (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about pets. */
-// static PacketHandlerState BarrackHandler_petInformation    (Worker *self, Session *session, zmsg_t *reply);
+// static PacketHandlerState BarrackHandler_petInfo           (Worker *self, Session *session, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -327,7 +327,8 @@ BarrackHandler_commanderMove (
     typedef struct {
         BarrackPacketNormalHeader normalHeader;
         uint64_t accountId;
-        uint32_t unk1;
+        uint16_t commanderListId;
+        uint16_t unk1;
         float x, y;
         uint8_t unk2;
     } BcNormalCommanderMoveOkPacket;
@@ -351,6 +352,7 @@ BarrackHandler_commanderMove (
     replyPacket.accountId = session->socket.accountId;
     replyPacket.x = clientPacket->x;
     replyPacket.y = clientPacket->y;
+    replyPacket.commanderListId = clientPacket->commanderListId;
 
     // zlist_t * clients = Redis_getClientsWithinDistance (self->redis, session->socket.serverId, session->socket.mapId, replyPacket.x, replyPacket.y, 0.0, 100.0);
 
@@ -363,6 +365,70 @@ BarrackHandler_commanderMove (
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
+
+/*
+static PacketHandlerState
+BarrackHandler_commanderInfo (
+    Worker *self,
+    Session *session,
+    zmsg_t *reply
+) {
+    // BC_NORMAL_COMMANDER_INFO
+
+	#pragma pack(push, 1)
+    typedef struct {
+        BarrackPacketNormalHeader normalHeader;
+        uint64_t accountId;
+    } BcNormalUnkHandler2Packet;
+    #pragma pack(pop)
+
+    size_t memSize;
+    void *memory = dumpToMem (
+        "[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 17 02 00 00 00 00 D1 A8 01 44 | O..............D\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 D1 A8 01 44 00 00 00 00 43 42 54 EC | .......D....CBT.\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  9A A9 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 1C 27 00 00 | .............'..\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  1F 00 01 00 4A 00 00 00 45 95 09 00 02 00 00 00 | ....J...E.......\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  04 00 00 00 97 1E 08 00 69 A9 07 00 83 CC 07 00 | ........i.......\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  10 27 00 00 F8 2A 00 00 77 C3 02 00 B1 5F 03 00 | .'...*..w...._..\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  15 7E 09 00 09 00 00 00 09 00 00 00 04 00 00 00 | .~..............\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  9C F3 07 00 09 00 00 00 09 00 00 00 00 30 09 00 | .............0..\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  F5 2F 09 00 E2 E1 08 00 2E 00 00 00 EC 28 00 00 | ./...........(..\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  D1 91 01 00 03 00 0B 05 04 00 00 00 49 02 00 00 | ............I...\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  EC 00 01 00 00 00 00 00 00 00 68 42 BD 63 90 41 | ..........hB.c.A\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 70 41 00 00 00 00 00 00 00 00 00 00 68 42 | ..pA..........hB\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  BD 63 90 41 00 00 70 41 00 00 00 00 00 00 00 00 | .c.A..pA........\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 00 00 06 00 A1 17 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  0C 00 FA 0F 00 00 11 45 A1 17 00 00 00 00 0C 00 | .......E........\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  FA 0F 00 80 36 45 A1 17 00 00 00 00 0C 00 FA 0F | ....6E..........\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 C0 80 45 A1 17 00 00 00 00 00 00 00 00 24 00 | ...E..........$.\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  70 10 00 00 A0 40 92 16 00 00 80 40 FA 0F 00 60 | p....@.....@...`\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  48 45 A1 17 00 00 00 00 0D 10 D0 1A 1D 49 12 10 | HE...........I..\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 A0 40 0C 00 FA 0F 00 C0 82 45 A1 17 00 00 | ...@.......E....\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 06 00 A1 17 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  0C 00 FA 0F 00 C0 80 45 A1 17 00 00 00 00 00 00 | .......E........\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 00 0C 00 FA 0F 00 00 75 45 A1 17 00 00 00 00 | ........uE......\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  17 00 6F 10 07 00 43 42 54 EC 9A A9 00 FA 0F 00 | ..o...CBT.......\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  00 75 45 A1 17 00 00 00 00 0C 00 FA 0F 00 00 75 | .uE............u\n"
+        "[11:09:37][           ToSClient:                     dbgBuffer]  45 A1 17 00 00 00 00                            | E......\n"
+        , NULL, &memSize
+    );
+
+    BcNormalUnkHandler2Packet *packet = memory;
+    packet->accountId = session->socket.accountId;
+
+    zmsg_add (reply, zframe_new (memory, memSize));
+
+    return PACKET_HANDLER_OK;
+}
+*/
 
 /*
 static PacketHandlerState
@@ -417,7 +483,7 @@ BarrackHandler_startBarrack (
 
 /*
 static PacketHandlerState
-BarrackHandler_petInformation (
+BarrackHandler_petInfo (
     Worker *self,
     Session *session,
     zmsg_t *reply
@@ -460,30 +526,6 @@ BarrackHandler_petInformation (
 }
 */
 
-/*
-static PacketHandlerState
-BarrackHandler_unkHandler3 (
-    Worker *self,
-    zmsg_t *reply
-) {
-    size_t memSize;
-
-    void *memory = dumpToMem (
-		"[11:09:37][           ToSClient:                     dbgBuffer]  4F 00 FF FF FF FF 51 00 0B 00 00 00 8D FA 41 00 | O.....Q.......A.\n"
-		"[11:09:37][           ToSClient:                     dbgBuffer]  0D CA B9 0D 80 40 0C 45 C1 E7 FD F6 7A 0F 89 80 | .....@.E....z...\n"
-		"[11:09:37][           ToSClient:                     dbgBuffer]  8C 0E 90 10 01 FD 97 43 44 4E 01 30 F1 BC 26 1E | .......CDN.0..&.\n"
-		"[11:09:37][           ToSClient:                     dbgBuffer]  0D 22 E9 95 96 D4 4E 0A BF 60 A7 6C E8 C4 0E 6E | ......N..`.l...n\n"
-		"[11:09:37][           ToSClient:                     dbgBuffer]  0F B4 50 26 AC D8 C0 1B 33 82 62 18 E8 EF 01 C1 | ..P&....3.b.....\n"
-		"[11:09:37][           ToSClient:                     dbgBuffer]  07                                              | .\n"
-        , NULL, &memSize
-    );
-
-    zmsg_add (reply, zframe_new (memory, memSize));
-
-    return PACKET_HANDLER_OK;
-}
-*/
-
 static PacketHandlerState
 BarrackHandler_currentBarrack (
     Worker *self,
@@ -494,11 +536,11 @@ BarrackHandler_currentBarrack (
 ) {
     //   [CLIENT SEND] Packet type : <CB_CURRENT_BARRACK>
     //   =================================================
-    //    4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111
-    //    size pktType  checksum     accountId               float    float
+    //    4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111E334 3FCF2635 BF
+    //    size pktType  checksum     accountId               float    float    float    float
 
-    // BarrackHandler_petInformation (session, reply);
-    // BarrackHandler_unkHandler3 (reply);
+    // BarrackHandler_petInfo (session, reply);
+    // BarrackHandler_commanderInfo (self, session, reply);
     BarrackHandler_zoneTraffics (self, reply);
 
     return PACKET_HANDLER_OK;

@@ -23,6 +23,7 @@
 // ---------- Defines -------------
 typedef enum PacketTypeBarrackNormal {
 
+    BC_NORMAL_COMMANDER_INFO = 0x0,
     BC_NORMAL_COMMANDER_MOVE_OK = 0x2,
     BC_NORMAL_UNKNOWN_1 = 0x4,
     BC_NORMAL_ZONE_TRAFFIC = 0xB,

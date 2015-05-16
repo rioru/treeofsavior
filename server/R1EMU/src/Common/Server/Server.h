@@ -25,8 +25,7 @@
 // ---------- Defines -------------
 /** Router unique IDs */
 #define BARRACK_SERVER_ROUTER_ID ((uint16_t) -1)
-#define GLOBAL_SERVER_ROUTER_ID  ((uint16_t) -2)
-#define SOCIAL_SERVER_ROUTER_ID  ((uint16_t) -3)
+#define SOCIAL_SERVER_ROUTER_ID  ((uint16_t) -2)
 
 // ------ Structure declaration -------
 typedef struct Server Server;
