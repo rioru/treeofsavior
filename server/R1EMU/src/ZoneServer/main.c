@@ -8,9 +8,9 @@
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
  * @file main.c
- * @brief Entry point of the Zone Server
+ * @brief Entry point of the Servers
  *
- * Entry point of the Zone Server
+ * Entry point of the Servers
  *
  * @license <license placeholder>
  */
@@ -18,28 +18,19 @@
 // ---------- Includes ------------
 #include "ZoneServer/ZoneServer.h"
 #include "BarrackServer/BarrackServer.h"
+#include "SocialServer/SocialServer.h"
 #include "Common/Server/ServerFactory.h"
 
 int main (int argc, char **argv)
 {
-    ZoneServer *zoneServer;
-    BarrackServer *barrackServer;
+    ZoneServer *zoneServer = NULL;
+    BarrackServer *barrackServer = NULL;
+    SocialServer *socialServer = NULL;
 
     int curArg = 1;
 
     // === Read the command line arguments ===
     uint16_t routerId = atoi (argv[curArg++]);
-
-    // Set a custom output for linux for each servers,
-    #ifndef WIN32
-    dbg_set_output (fopen (zsys_sprintf ("ZoneServer%d_output.txt", routerId), "w+"));
-    #else
-    if (routerId == BARRACK_SERVER_ROUTER_ID) {
-        SetConsoleTitle (zsys_sprintf ("Barrack Server (RouterID = %d)", BARRACK_SERVER_ROUTER_ID));
-    } else {
-        SetConsoleTitle (zsys_sprintf ("Zone Server (RouterID = %d)", routerId));
-    }
-    #endif
 
     char *routerIp = argv[curArg++];
     int portsCount = atoi (argv[curArg++]);
@@ -60,6 +51,32 @@ int main (int argc, char **argv)
     char *sqlDatabase = argv[curArg++];
     char *redisHostname = argv[curArg++];
     int redisPort = atoi(argv[curArg++]);
+    ServerType serverType = atoi(argv[curArg++]);
+
+
+    // Set a custom output for linux for each servers
+    #ifndef WIN32
+    dbg_set_output (fopen (zsys_sprintf ("ZoneServer%d_output.txt", routerId), "w+"));
+    #else
+    // For Windows, change the console title
+    switch (serverType) {
+        case SERVER_TYPE_BARRACK:
+            SetConsoleTitle (zsys_sprintf ("Barrack Server (RouterID = %d) (PID = %x)", BARRACK_SERVER_ROUTER_ID, GetCurrentProcessId()));
+        break;
+
+        case SERVER_TYPE_ZONE:
+            SetConsoleTitle (zsys_sprintf ("Zone Server (RouterID = %d) (PID = %x)", routerId, GetCurrentProcessId()));
+        break;
+
+        case SERVER_TYPE_SOCIAL:
+            SetConsoleTitle (zsys_sprintf ("Social Server (RouterID = %d) (PID = %x)", routerId, GetCurrentProcessId()));
+        break;
+
+        default :
+            SetConsoleTitle (zsys_sprintf ("UNKNOWN Server (RouterID = %d) (PID = %x)", routerId, GetCurrentProcessId()));
+        break;
+    }
+    #endif
 
     special ("=====================");
     special ("=== Zone server %d ===", routerId);
@@ -68,6 +85,7 @@ int main (int argc, char **argv)
     // === Build the Server ===
     Server *server;
     if (!(server = ServerFactory_createServer (
+        serverType,
         routerId, routerIp,
         portsCount, ports,
         workersCount,
@@ -80,40 +98,62 @@ int main (int argc, char **argv)
     }
 
     // Initialize the Server
-    if (routerId == BARRACK_SERVER_ROUTER_ID)
+    switch (serverType)
     {
-        // Initialize the Barrack Server
-        if ((barrackServer = BarrackServer_new (server))) {
+        case SERVER_TYPE_BARRACK:
+            // Initialize the Barrack Server
+            if ((barrackServer = BarrackServer_new (server))) {
 
-            // Start the Barrack Server
-            if (!BarrackServer_start (barrackServer)) {
-                error ("Cannot start the BarrackServer properly.");
+                // Start the Barrack Server
+                if (!BarrackServer_start (barrackServer)) {
+                    error ("Cannot start the BarrackServer properly.");
+                }
+
+                // Unload the Barrack Server properly
+                BarrackServer_destroy (&barrackServer);
             }
-
-            // Unload the Barrack Server properly
-            BarrackServer_destroy (&barrackServer);
-        }
-        else {
-            error ("Cannot initialize the BarrackServer properly.");
-        }
-    }
-
-    else
-    {
-        // Initialize the Zone Server
-        if ((zoneServer = ZoneServer_new (server))) {
-
-            // Start the Zone Server
-            if (!ZoneServer_start (zoneServer)) {
-                error ("Cannot start the Zone Server properly.");
+            else {
+                error ("Cannot initialize the BarrackServer properly.");
             }
+        break;
 
-            // Unload the Zone Server properly
-            ZoneServer_destroy (&zoneServer);
-        }
-        else {
-            error ("Cannot initialize the Zone Server properly.");
-        }
+        case SERVER_TYPE_ZONE:
+            // Initialize the Zone Server
+            if ((zoneServer = ZoneServer_new (server))) {
+
+                // Start the Zone Server
+                if (!ZoneServer_start (zoneServer)) {
+                    error ("Cannot start the Zone Server properly.");
+                }
+
+                // Unload the Zone Server properly
+                ZoneServer_destroy (&zoneServer);
+            }
+            else {
+                error ("Cannot initialize the Zone Server properly.");
+            }
+        break;
+
+        case SERVER_TYPE_SOCIAL:
+            // Initialize the Social Server
+            if ((socialServer = SocialServer_new (server))) {
+
+                // Start the Social Server
+                if (!SocialServer_start (socialServer)) {
+                    error ("Cannot start the Social Server properly.");
+                }
+
+                // Unload the Social Server properly
+                SocialServer_destroy (&socialServer);
+            }
+            else {
+                error ("Cannot initialize the Social Server properly.");
+            }
+        break;
+
+        default :
+            error ("Cannot start an unknown serverType.");
+        break;
     }
 
     // Shutdown the CZMQ layer properly

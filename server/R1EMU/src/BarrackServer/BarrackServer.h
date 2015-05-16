@@ -25,7 +25,6 @@
 // Configuration default values
 #define BARRACK_SERVER_PORTS_DEFAULT               (char []) {"2000"}
 #define BARRACK_SERVER_WORKERS_COUNT_DEFAULT       1
-#define BARRACK_SERVER_MAP_ID                      -1           /** The Barrack map hasn't any mapId, let's define one */
 #define BARRACK_SERVER_FRONTEND_IP_DEFAULT         (char []) {"127.0.0.1"}
 
 
@@ -37,12 +36,7 @@ typedef struct BarrackServer BarrackServer;
 
 /**
  * @brief Allocate a new BarrackServer structure.
- * @param BarrackServerId The barrack server ID
- * @param serverIp The IP of the barrack server
- * @param frontendPort The barrack server port opened to the internet
- * @param workersCount Count of worker per barrack server
- * @param privateGlobalPort The private port exposed to the global server
- * @param confFilePath The configuration file path
+ * @param server An initialized server
  * @return A pointer to an allocated BarrackServer.
  */
 BarrackServer *
@@ -54,11 +48,7 @@ BarrackServer_new (
 /**
  * @brief Initialize an allocated BarrackServer structure.
  * @param self An allocated BarrackServer to initialize.
- * @param BarrackServerId The barrack server ID
- * @param serverIp The IP of the barrack server
- * @param frontendPort The barrack server port opened to the internet
- * @param workersCount Count of worker per barrack server
- * @param confFilePath The configuration file path
+ * @param server An initialized server
  * @return true on success, false otherwise.
  */
 bool

@@ -22,6 +22,10 @@ int main (int argc, char **argv)
 {
     GlobalServer *globalServer;
 
+    #ifdef WIN32
+        SetConsoleTitle ("Global Server");
+    #endif // WIN32
+
     // Force the initialization of the CZMQ layer here.
     if (!(zsys_init ())) {
         error ("Cannot init CZMQ.");

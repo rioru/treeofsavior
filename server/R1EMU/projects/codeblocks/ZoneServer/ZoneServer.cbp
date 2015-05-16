@@ -158,6 +158,14 @@
 		<Unit filename="../../../src/Common/utils/utils.h" />
 		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
 		<Unit filename="../../../src/R1EMU.h" />
+		<Unit filename="../../../src/SocialServer/SocialHandler/SocialHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SocialServer/SocialHandler/SocialHandler.h" />
+		<Unit filename="../../../src/SocialServer/SocialServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SocialServer/SocialServer.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>

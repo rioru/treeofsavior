@@ -73,6 +73,22 @@ typedef struct {
 
     // === Zone Server ===
     /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
+    int *socialServersPorts;
+
+    /** Zone servers IP. */
+    char **socialServersIp;
+
+    /** Count of zone servers */
+    int socialServersCount;
+
+    /** Count of worker for each zone servers */
+    int socialWorkersCount;
+
+    /** Port for communicating with the zones */
+    int socialPort;
+
+    // === Zone Server ===
+    /** Zone servers ports. They should be opened to the internet, as clients will connect to them */
     int *zoneServersPorts;
 
     /** Zone servers IP. */

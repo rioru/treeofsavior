@@ -23,6 +23,17 @@
 #include "Worker.h"
 
 // ---------- Defines -------------
+/** Router unique IDs */
+#define BARRACK_SERVER_ROUTER_ID ((uint16_t) -1)
+#define GLOBAL_SERVER_ROUTER_ID  ((uint16_t) -2)
+#define SOCIAL_SERVER_ROUTER_ID  ((uint16_t) -3)
+
+typedef enum {
+    SERVER_TYPE_GLOBAL,
+    SERVER_TYPE_BARRACK,
+    SERVER_TYPE_SOCIAL,
+    SERVER_TYPE_ZONE
+} ServerType;
 
 
 // ------ Structure declaration -------
@@ -32,6 +43,7 @@ typedef struct {
     RouterStartupInfo routerInfo;
     WorkerStartupInfo *workersInfo;
     int workersInfoCount;
+    ServerType serverType;
 }   ServerStartupInfo;
 
 
@@ -64,6 +76,7 @@ Server_init (
 /**
  * @brief Initialize an allocated ServerStartupInfo structure.
  * @param self An allocated ServerStartupInfo to initialize.
+ * @param serverType The type of the server to initialize
  * @param routerInfo An allocated RouterStartupInfo already initialized
  * @param workersInfo An allocated WorkerStartupInfo array all already initialized
  * @param workersInfoCount The workersInfo elements count.
@@ -72,6 +85,7 @@ Server_init (
 bool
 ServerStartupInfo_init (
     ServerStartupInfo *self,
+    ServerType serverType,
     RouterStartupInfo *routerInfo,
     WorkerStartupInfo *workersInfo,
     int workersInfoCount

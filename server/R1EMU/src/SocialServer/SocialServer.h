@@ -7,8 +7,8 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file ZoneServer.h
- * @brief ZoneServer controls and processes the client actions
+ * @file SocialServer.h
+ * @brief SocialServer controls and processes the client social events
  *
  * @license <license placeholder>
  */
@@ -20,58 +20,60 @@
 #include "Common/Server/Server.h"
 
 // ---------- Defines -------------
-#define ZONE_SERVER_EXECUTABLE_NAME             "ZoneServer"
-
 // Configuration default values
-#define ZONE_SERVER_PORTS_DEFAULT               (char []) {"2004"}
-#define ZONE_SERVER_WORKERS_COUNT_DEFAULT       1
+#define SOCIAL_SERVER_PORTS_DEFAULT               (char []) {"1337 1338"}
+#define SOCIAL_SERVER_WORKERS_COUNT_DEFAULT       1
 
 
 // ------ Structure declaration -------
-// ZoneServer is opaque
-typedef struct ZoneServer ZoneServer;
+// SocialServer is opaque
+typedef struct SocialServer SocialServer;
 
 // ----------- Functions ------------
 
 /**
- * @brief Allocate a new ZoneServer structure.
+ * @brief Allocate a new SocialServer structure.
  * @param server An initialized server
- * @return A pointer to an allocated ZoneServer.
+ * @return A pointer to an allocated SocialServer.
  */
-ZoneServer *
-ZoneServer_new (
+SocialServer *
+SocialServer_new (
     Server *server
 );
 
 
 /**
- * @brief Initialize an allocated ZoneServer structure.
- * @param self An allocated ZoneServer to initialize.
- * @param server An initialized server
+ * @brief Initialize an allocated SocialServer structure.
+ * @param self An allocated SocialServer to initialize.
+ * @param socialServerId The social server ID
+ * @param serverIp The IP of the social server
+ * @param frontendPort The social server port opened to the internet
+ * @param workersCount Count of worker per social server
+ * @param confFilePath The configuration file path
  * @return true on success, false otherwise.
  */
 bool
-ZoneServer_init (
-    ZoneServer *self,
+SocialServer_init (
+    SocialServer *self,
     Server *server
 );
 
 
 /**
- * @brief Free an allocated ZoneServer structure and nullify the content of the pointer.
- * @param self A pointer to an allocated ZoneServer.
+ * @brief Free an allocated SocialServer structure and nullify the content of the pointer.
+ * @param self A pointer to an allocated SocialServer.
  */
 void
-ZoneServer_destroy (
-    ZoneServer **self
+SocialServer_destroy (
+    SocialServer **self
 );
 
 /**
- * @brief Start the Zone Server main loop.
- * @param self An allocated ZoneServer
+ * @brief Start the Social Server main loop.
+ * @param self An allocated SocialServer
  * @return always NULL
  */
 bool
-ZoneServer_start (
-    ZoneServer *self
+SocialServer_start (
+    SocialServer *self
 );

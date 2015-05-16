@@ -13,6 +13,7 @@
 // ---------- Includes ------------
 #include "GlobalServer.h"
 #include "ZoneServer/ZoneServer.h"
+#include "SocialServer/SocialServer.h"
 #include "BarrackServer/BarrackServer.h"
 #include "Common/Server/ServerFactory.h"
 
@@ -115,11 +116,9 @@ GlobalServerStartupInfo_init (
     zconfig_t *conf = NULL;
     char *portsArray = NULL;
 
-    // ==================================
-    //     Read the configuration file
-    // ==================================
-
-    // ====== Read the global server configuration ======
+    // ===================================
+    //       Read Global configuration
+    // ===================================
     // Open the configuration file
     if (!(conf = zconfig_load (confFilePath))) {
         error ("Cannot read the global configuration file (%s).", confFilePath);
@@ -143,7 +142,9 @@ GlobalServerStartupInfo_init (
         self->cliPort = GLOBAL_SERVER_CLI_PORT_DEFAULT;
     }
 
-    // ====== Read the zones server configuration ======
+    // ===================================
+    //       Read Zone configuration
+    // ===================================
     // Read the zone ports array
     if (!(portsArray = zconfig_resolve (conf, "zoneServer/portsArray", NULL))) {
         warning ("Public Zone ports cannot be read for Global Server. Defaults ports have been used : %s", ZONE_SERVER_PORTS_DEFAULT);
@@ -207,7 +208,75 @@ GlobalServerStartupInfo_init (
         zoneServersIp += strlen (zoneServersIp) + 1;
     }
 
-    // ====== Read the barrack server configuration ======
+    // ===================================
+    //       Read Social configuration
+    // ===================================
+    // Read the social ports array
+    if (!(portsArray = zconfig_resolve (conf, "socialServer/portsArray", NULL))) {
+        warning ("Public Social ports cannot be read for Global Server. Defaults ports have been used : %s", SOCIAL_SERVER_PORTS_DEFAULT);
+        portsArray = SOCIAL_SERVER_PORTS_DEFAULT;
+    }
+
+    // Tokenize the ports array
+    port = strtok (portsArray, " ");
+    while (port != NULL) {
+        self->socialServersCount++;
+        port = strtok (NULL, " ");
+    }
+
+    if (self->socialServersCount == 0) {
+        error ("Cannot read correctly the social ports array.");
+        result = false;
+        goto cleanup;
+    }
+
+    // Fill the server ports array
+    self->socialServersPorts = calloc (self->socialServersCount, sizeof (int));
+    for (int portIndex = 0; portIndex < self->socialServersCount; portIndex++) {
+        self->socialServersPorts[portIndex] = strtol (portsArray, &portsArray, 10);
+        portsArray++;
+    }
+
+    // Read the number of social workers
+    if (!(self->socialWorkersCount = atoi (zconfig_resolve (conf, "socialServer/workersCount", NULL)))) {
+        warning ("Cannot read correctly the social workers count in the configuration file (%s). ", confFilePath);
+        warning ("The default worker count = %d has been used.", SOCIAL_SERVER_WORKERS_COUNT_DEFAULT);
+        self->socialWorkersCount = SOCIAL_SERVER_WORKERS_COUNT_DEFAULT;
+    }
+
+    char *socialServersIp;
+    // Read the social server interfaces IP
+    if (!(socialServersIp = zconfig_resolve (conf, "socialServer/serversIP", NULL))) {
+        error ("Cannot read correctly the social servers interface IP in the configuration file (%s). ", confFilePath);
+        result = false;
+        goto cleanup;
+    }
+
+    int nbSocialServersIp = 0;
+    routerIp = strtok (socialServersIp, " ");
+    while (routerIp != NULL) {
+        routerIp = strtok (NULL, " ");
+        nbSocialServersIp++;
+    }
+
+    if (nbSocialServersIp != self->socialServersCount) {
+        error ("Number of social ports different from the number of social interfaces IP. (%d / %d)",
+            nbSocialServersIp, self->socialServersCount
+        );
+        result = false;
+        goto cleanup;
+    }
+
+    // Fill the social server IPs array
+    self->socialServersIp = calloc (self->socialServersCount, sizeof (char *));
+    for (int ipIndex = 0; ipIndex < self->socialServersCount; ipIndex++) {
+        self->socialServersIp[ipIndex] = strdup (socialServersIp);
+        socialServersIp += strlen (socialServersIp) + 1;
+    }
+
+    // ===================================
+    //       Read Barrack configuration
+    // ===================================
     // Read the ports array
     if (!(portsArray = zconfig_resolve (conf, "barrackServer/portsArray", NULL))) {
         warning ("Ports cannot be read for Barrack Server. Defaults ports have been used : %s", BARRACK_SERVER_PORTS_DEFAULT);
@@ -362,6 +431,7 @@ GlobalServer_start (
     //     Initialize 1 Barrack Server
     // ===================================
     if (!(ServerFactory_initServerInfo (&serverInfo,
+        SERVER_TYPE_BARRACK,
         BARRACK_SERVER_ROUTER_ID,
         info->barrackServerIp,
         info->barrackServerPortCount, info->barrackServerPort,
@@ -380,10 +450,32 @@ GlobalServer_start (
     }
 
     // ===================================
+    //     Initialize N Social Server
+    // ===================================
+    for (uint16_t routerId = 0; routerId < info->socialServersCount; routerId++) {
+        ServerFactory_initServerInfo (&serverInfo,
+            SERVER_TYPE_SOCIAL,
+            SOCIAL_SERVER_ROUTER_ID - routerId,
+            info->socialServersIp[routerId],
+            1, &info->socialServersPorts[routerId], // Only 1 port for each social server
+            info->socialWorkersCount,
+            info->ip, info->cliPort,
+            info->sqlInfo.hostname, info->sqlInfo.login, info->sqlInfo.password, info->sqlInfo.database,
+            info->redisInfo.hostname, info->redisInfo.port
+        );
+
+        if (!(Server_createProcess (&serverInfo, ZONE_SERVER_EXECUTABLE_NAME))) {
+            error ("[routerId=%d] Can't launch a new Server process.", routerId);
+            return false;
+        }
+    }
+
+    // ===================================
     //     Initialize N Zone Server
     // ===================================
     for (uint16_t routerId = 0; routerId < info->zoneServersCount; routerId++) {
         ServerFactory_initServerInfo (&serverInfo,
+            SERVER_TYPE_ZONE,
             routerId,
             info->zoneServersIp[routerId],
             1, &info->zoneServersPorts[routerId], // Only 1 port for each Zone server

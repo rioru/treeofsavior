@@ -15,7 +15,7 @@
 #include "ServerFactory.h"
 #include "ZoneServer/ZoneHandler/ZoneHandler.h"
 #include "BarrackServer/BarrackHandler/BarrackHandler.h"
-#include "BarrackServer/BarrackServer.h"
+#include "SocialServer/SocialHandler/SocialHandler.h"
 
 
 // ------ Structure declaration -------
@@ -28,6 +28,7 @@
 
 Server *
 ServerFactory_createServer (
+    ServerType serverType,
     uint16_t routerId,
     char *routerIp,
     int portsCount,
@@ -46,6 +47,7 @@ ServerFactory_createServer (
 
     ServerStartupInfo serverInfo;
     if (!(ServerFactory_initServerInfo (&serverInfo,
+        serverType,
         routerId, routerIp,
         portsCount, ports,
         workersCount,
@@ -69,6 +71,7 @@ ServerFactory_createServer (
 bool
 ServerFactory_initServerInfo (
     ServerStartupInfo *serverInfo,
+    ServerType serverType,
     uint16_t routerId,
     char *routerIp,
     int portsCount,
@@ -115,12 +118,26 @@ ServerFactory_initServerInfo (
     const PacketHandler *packetHandlers;
     int packetHandlersCount;
 
-    if (routerId == BARRACK_SERVER_ROUTER_ID) {
-        packetHandlers = barrackHandlers;
-        packetHandlersCount = PACKET_TYPE_COUNT;
-    } else {
-        packetHandlers = zoneHandlers;
-        packetHandlersCount = PACKET_TYPE_COUNT;
+    switch (serverType)
+    {
+        case SERVER_TYPE_BARRACK:
+            packetHandlers = barrackHandlers;
+            packetHandlersCount = PACKET_TYPE_COUNT;
+        break;
+
+        case SERVER_TYPE_ZONE:
+            packetHandlers = zoneHandlers;
+            packetHandlersCount = PACKET_TYPE_COUNT;
+        break;
+
+        case SERVER_TYPE_SOCIAL:
+            packetHandlers = socialHandlers;
+            packetHandlersCount = PACKET_TYPE_COUNT;
+        break;
+
+        default :
+            error ("Unknown serverType : %d !", serverType);
+        break;
     }
 
     for (uint16_t workerId = 0; workerId < workersCount; workerId++) {
@@ -137,7 +154,7 @@ ServerFactory_initServerInfo (
     }
 
     // Initialize Server start up information
-    if (!(ServerStartupInfo_init (serverInfo, &routerInfo, workersInfo, workersCount))) {
+    if (!(ServerStartupInfo_init (serverInfo, serverType, &routerInfo, workersInfo, workersCount))) {
         error ("Cannot initialize correctly the Server start up information.");
         return false;
     }

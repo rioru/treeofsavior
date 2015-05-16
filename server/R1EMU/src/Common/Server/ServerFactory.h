@@ -23,7 +23,6 @@
 
 // ---------- Defines -------------
 
-
 // ------ Structure declaration -------
 
 // ----------- Functions ------------
@@ -33,6 +32,7 @@
  */
 Server *
 ServerFactory_createServer (
+    ServerType serverType,
     uint16_t routerId,
     char *routerIp,
     int portsCount,
@@ -55,6 +55,7 @@ ServerFactory_createServer (
 bool
 ServerFactory_initServerInfo (
     ServerStartupInfo *serverInfo,
+    ServerType serverType,
     uint16_t routerId,
     char *routerIp,
     int portsCount,
