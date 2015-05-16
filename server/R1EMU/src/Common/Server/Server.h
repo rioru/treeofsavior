@@ -28,14 +28,6 @@
 #define GLOBAL_SERVER_ROUTER_ID  ((uint16_t) -2)
 #define SOCIAL_SERVER_ROUTER_ID  ((uint16_t) -3)
 
-typedef enum {
-    SERVER_TYPE_GLOBAL,
-    SERVER_TYPE_BARRACK,
-    SERVER_TYPE_SOCIAL,
-    SERVER_TYPE_ZONE
-} ServerType;
-
-
 // ------ Structure declaration -------
 typedef struct Server Server;
 

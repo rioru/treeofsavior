@@ -42,7 +42,7 @@ typedef struct ClientPacketHeader
 #pragma pack(push, 1)
 typedef struct CryptPacketHeader
 {
-    uint16_t size;
+    uint16_t plainSize;
 }   CryptPacketHeader;
 #pragma pack(pop)
 

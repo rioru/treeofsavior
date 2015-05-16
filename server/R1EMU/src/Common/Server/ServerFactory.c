@@ -144,6 +144,7 @@ ServerFactory_initServerInfo (
         if (!(WorkerStartupInfo_init (
             &workersInfo[workerId],
             workerId, routerId,
+            serverType,
             globalServerIp, globalServerPort,
             &sqlInfo, &redisInfo,
             packetHandlers, packetHandlersCount)

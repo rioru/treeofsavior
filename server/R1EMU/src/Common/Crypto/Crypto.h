@@ -27,13 +27,13 @@
 
 
 /**
- * @brief Unwrap the client packet header and stores it in the ClientPacketHeader argument
- * @param[out] header The header containing the crypto information of the packet
+ * @brief Unwrap the client packet header and decrypt the packet.
  * @param[in,out] packet The packet ciphered. After this call, the packet is decrypted.
+ * @param[in] packetSize The crypted packet size
  * @return true on success, false otherwise
  */
 bool
-Crypto_uncryptPacket (
-    CryptPacketHeader *header,
-    unsigned char **packet
+Crypto_decryptPacket (
+    unsigned char **packet,
+    size_t packetSize
 );

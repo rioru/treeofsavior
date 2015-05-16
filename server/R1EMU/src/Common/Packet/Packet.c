@@ -27,9 +27,9 @@ ClientPacket_unwrapHeader (
     unsigned char **packet,
     ClientPacketHeader *header
 ) {
-    memcpy (header, *packet, sizeof (*header));
+    memcpy (header, *packet, sizeof (ClientPacketHeader));
 
-    *packet = (*packet) + sizeof (*header);
+    *packet = (*packet) + sizeof (ClientPacketHeader);
 }
 
 void
@@ -37,9 +37,9 @@ CryptPacket_unwrapHeader (
     unsigned char **packet,
     CryptPacketHeader *header
 ) {
-    memcpy (header, *packet, sizeof (*header));
+    memcpy (header, *packet, sizeof (CryptPacketHeader));
 
-    *packet = (*packet) + sizeof (*header);
+    *packet = (*packet) + sizeof (CryptPacketHeader);
 }
 
 void
@@ -47,7 +47,7 @@ CryptPacket_getHeader (
     unsigned char *packet,
     CryptPacketHeader *header
 ) {
-    memcpy (header, packet, sizeof (*header));
+    memcpy (header, packet, sizeof (CryptPacketHeader));
 }
 
 void

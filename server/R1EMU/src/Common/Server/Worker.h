@@ -65,6 +65,9 @@ struct _WorkerStartupInfo
     /** The Server ID having authority on this worker */
     uint16_t routerId;
 
+    /** The server type of the current Worker */
+    ServerType serverType;
+
     /** IP of the global server */
     char *globalServerIp;
 
@@ -159,6 +162,7 @@ Worker_init (
  * @param self An allocated WorkerStartupInfo to initialize.
  * @param workerId The worker ID.
  * @param routerId The Server ID
+ * @param serverType The Server type having the responsibility of the worker
  * @param globalServerIp The IP of the global server
  * @param globalServerPort The private port exposed to the global server
  * @param sqlHost The information about the SQL Database
@@ -172,6 +176,7 @@ WorkerStartupInfo_init (
     WorkerStartupInfo *self,
     uint16_t workerId,
     uint16_t routerId,
+    ServerType serverType,
     char *globalServerIp,
     int globalServerPort,
     MySQLStartupInfo *sqlInfo,

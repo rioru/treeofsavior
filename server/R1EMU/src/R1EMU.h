@@ -26,6 +26,14 @@
 #define ZMQ_RAW_ROUTER ZMQ_ROUTER
 #define PACKET_HEADER(x) (typeof(x)[]){x}
 
+/** Global types of the servers of the architecture */
+typedef enum {
+    SERVER_TYPE_GLOBAL,
+    SERVER_TYPE_BARRACK,
+    SERVER_TYPE_SOCIAL,
+    SERVER_TYPE_ZONE
+} ServerType;
+
 // MySQL environment
 #include <mysql/mysql.h>
 

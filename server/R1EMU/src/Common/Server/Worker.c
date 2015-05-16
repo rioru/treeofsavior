@@ -88,7 +88,7 @@ Worker_processGlobalPacket (
 
 /**
  * @brief Build a reply for a given packet
- * @param[in] self A pointer to the current worker
+ * @param self A pointer to the current worker
  * @param[in] packetHandlers The packet handlers
  * @param[in] handlersCount The number of handlers in the handlers array
  * @param[in] session The game session associated with the packet
@@ -109,7 +109,7 @@ Worker_buildReply (
 
 /**
  * @brief Read the packet and reply based on the packet handler
- * @param[in] self A pointer to the current worker
+ * @param self A pointer to the current worker
  * @param[in] packetHandlers The packet handlers
  * @param[in] handlersCount The number of handlers in the handlers array
  * @param[in] session The game session associated with the packet
@@ -132,7 +132,7 @@ Worker_handlePacket (
 
 /**
  * @brief Build a reply based on a single request
- * @param[in] self A pointer to the current worker
+ * @param self A pointer to the current worker
  * @param[in] session The game session associated with the packet
  * @param[in] packet The packet sent by the client
  * @param[in] packetSize The size of the packet
@@ -153,7 +153,7 @@ Worker_processOneRequest (
 
 /**
  * @brief Build a reply based on a multiple requests
- * @param[in] self A pointer to the current worker
+ * @param self A pointer to the current worker
  * @param[in] session The game session associated with the packet
  * @param[in] packet The packet sent by the client
  * @param[in] packetSize The size of the packet
@@ -172,17 +172,33 @@ Worker_processMultipleRequests (
 );
 
 /**
- * @brief Check the size of a packet based on the packet header
+ * @brief Retrieve and check the size of a packet based on the packet header
+ * @param self A pointer to the current worker
  * @param packetSize The size of the packet
  * @param packet The packet
  * @param[out] cryptHeader an allocated CryptPacketHeader
  */
 static bool
-Worker_checkPacketSize (
+Worker_getCryptedPacketInfo (
+    Worker *self,
     size_t packetSize,
     unsigned char *packet,
     CryptPacketHeader *cryptHeader
 );
+
+/**
+ * @brief If necessary, unwrap the client packet header and decrypt the packet.
+ * @param[in,out] packet The packet. After this call, the packet is decrypted if necessary.
+ * @param[in] packetSize The packet size
+ * @return true on success, false otherwise
+ */
+static bool
+Worker_decryptPacket (
+    Worker *self,
+    unsigned char **packet,
+    size_t packetSize
+);
+
 
 // ------ Extern function implementation -------
 
@@ -210,8 +226,9 @@ Worker_init (
     Worker *self,
     WorkerStartupInfo *info
 ) {
+    // Make a private copy of the WorkerStartupInfo
     if (!(WorkerStartupInfo_init (
-        &self->info, info->workerId, info->routerId,
+        &self->info, info->workerId, info->routerId, info->serverType,
         info->globalServerIp, info->globalServerPort,
         &info->sqlInfo, &info->redisInfo,
         info->packetHandlers, info->packetHandlersCount))
@@ -257,6 +274,7 @@ WorkerStartupInfo_init (
     WorkerStartupInfo *self,
     uint16_t workerId,
     uint16_t routerId,
+    ServerType serverType,
     char *globalServerIp,
     int globalServerPort,
     MySQLStartupInfo *sqlInfo,
@@ -266,6 +284,7 @@ WorkerStartupInfo_init (
 ) {
     self->workerId = workerId;
     self->routerId = routerId;
+    self->serverType = serverType;
 
     if (!(self->globalServerIp = strdup (globalServerIp))) {
         error ("Cannot allocated globalServerIp.");
@@ -414,16 +433,15 @@ Worker_buildReply (
     zmsg_t *msg,
     zframe_t *headerAnswer
 ) {
-    // Check the packet size
+    // Check the crypted packet size
     CryptPacketHeader cryptHeader;
-
-    if (!(Worker_checkPacketSize (packetSize, packet, &cryptHeader))) {
+    if (!(Worker_getCryptedPacketInfo (self, packetSize, packet, &cryptHeader))) {
         error ("Wrong packet size.");
         return false;
     }
 
     // A single packet may contain multiple requests
-    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.size) {
+    else if ((packetSize - sizeof (CryptPacketHeader)) > cryptHeader.plainSize) {
         if (!(Worker_processMultipleRequests (self, session, packet, packetSize, msg, headerAnswer))) {
             error ("Cannot process one of the multiple requests.");
             return false;
@@ -433,14 +451,13 @@ Worker_buildReply (
     // Everything normal here, a single packet contains a single request
     else {
         if (!(Worker_processOneRequest (self, session, packet, packetSize, msg, headerAnswer))) {
-            error ("Cannot process one request.");
+            error ("Cannot process the request.");
             return false;
         }
     }
 
     return true;
 }
-
 
 static bool
 Worker_processMultipleRequests (
@@ -458,16 +475,18 @@ Worker_processMultipleRequests (
     size_t packetSizeRemaining = packetSize;
     while (packetSizeRemaining > 0)
     {
-        if (!(Worker_checkPacketSize (packetSizeRemaining, &packet[packetPos], &cryptHeader))) {
+        // Get crypto packet info
+        if (!(Worker_getCryptedPacketInfo (self, packetSizeRemaining, &packet[packetPos], &cryptHeader))) {
             error ("Wrong sub packet size.");
             return false;
         }
 
-        // Copy to another packet the sub request
-        size_t subPacketSize = cryptHeader.size + sizeof (CryptPacketHeader);
+        // Copy the sub request to another packet
+        size_t subPacketSize = cryptHeader.plainSize + sizeof (CryptPacketHeader);
         unsigned char *subPacket = alloca (subPacketSize);
         memcpy (subPacket, &packet[packetPos], subPacketSize);
 
+        // Process the request
         if ((!(Worker_processOneRequest (self, session, subPacket, subPacketSize, msg, headerAnswer)))) {
             error ("Cannot process properly a reply.");
             return false;
@@ -482,29 +501,6 @@ Worker_processMultipleRequests (
 }
 
 static bool
-Worker_checkPacketSize (
-    size_t packetSize,
-    unsigned char *packet,
-    CryptPacketHeader *cryptHeader
-) {
-    // Check if we can read a CryptPacketHeader
-    if (packetSize < sizeof (CryptPacketHeader)) {
-        error ("The packet received is too small to be read. Ignore request.");
-        return false;
-    }
-
-    // Unwrap the crypt packet header, and check the cryptHeader size
-    CryptPacket_getHeader (packet, cryptHeader);
-    if ((packetSize - sizeof (CryptPacketHeader)) < cryptHeader->size) {
-        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
-            packetSize, cryptHeader->size);
-        return false;
-    }
-
-    return true;
-}
-
-static bool
 Worker_processOneRequest (
     Worker *self,
     Session *session,
@@ -513,19 +509,9 @@ Worker_processOneRequest (
     zmsg_t *msg,
     zframe_t *headerAnswer
 ) {
-    // Unwrap the crypt packet header, and check the cryptHeader size
-    // In a single request process, it must match exactly the same size
-    CryptPacketHeader cryptHeader;
-    CryptPacket_unwrapHeader (&packet, &cryptHeader);
-    if ((packetSize - sizeof (cryptHeader)) != cryptHeader.size) {
-        error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
-            packetSize, cryptHeader.size);
-        return false;
-    }
-
-    // Uncrypt the packet if everything is OK
-    if (!Crypto_uncryptPacket (&cryptHeader, &packet)) {
-        error ("Cannot uncrypt the client packet. Ignore request.");
+    // Decrypt the packet
+    if (!Worker_decryptPacket (self, &packet, packetSize)) {
+        error ("Cannot decrypt the client packet.");
         return false;
     }
 
@@ -601,6 +587,80 @@ Worker_handlePacket (
     // Call the handler
     special ("Calling [%s] handler", packetTypeInfo.packets[header.type].string);
     return handler (self, session, packet, dataSize, reply);
+}
+
+
+static bool
+Worker_decryptPacket (
+    Worker *self,
+    unsigned char **packet,
+    size_t packetSize
+) {
+    switch (self->info.serverType)
+    {
+        // Zone and Barrack server encrypts their packets
+        case SERVER_TYPE_ZONE:
+        case SERVER_TYPE_BARRACK:
+            if (!(Crypto_decryptPacket (packet, packetSize))) {
+                error ("Cannot decrypt the packet.");
+                return false;
+            }
+        break;
+
+        // Social Server don't encrypt packet
+        case SERVER_TYPE_SOCIAL:
+        break;
+
+        default :
+            error ("Wrong server type ! %d", self->info.serverType);
+            return false;
+        break;
+    }
+
+    return true;
+}
+
+static bool
+Worker_getCryptedPacketInfo (
+    Worker *self,
+    size_t packetSize,
+    unsigned char *packet,
+    CryptPacketHeader *cryptHeader
+) {
+    memset (cryptHeader, 0, sizeof (CryptPacketHeader));
+
+    switch (self->info.serverType)
+    {
+        // Zone and Barrack server encrypts their packets
+        case SERVER_TYPE_ZONE:
+        case SERVER_TYPE_BARRACK:
+            // Check if we can read a CryptPacketHeader
+            if (packetSize < sizeof (CryptPacketHeader)) {
+                error ("The packet received is too small to be read. Ignore request.");
+                return false;
+            }
+
+            // Unwrap the crypt packet header, and check the cryptHeader size
+            CryptPacket_getHeader (packet, cryptHeader);
+            if ((packetSize - sizeof (CryptPacketHeader)) < cryptHeader->plainSize) {
+                error ("The real packet plainSize (0x%x) is inferior to the header plainSize (0x%x). Ignore request.",
+                    packetSize - sizeof (CryptPacketHeader), cryptHeader->plainSize);
+                return false;
+            }
+        break;
+
+        // Social Server don't encrypt packet
+        case SERVER_TYPE_SOCIAL:
+                cryptHeader->plainSize = packetSize;
+        break;
+
+        default :
+            error ("Wrong server type ! %d", self->info.serverType);
+            return false;
+        break;
+    }
+
+    return true;
 }
 
 
