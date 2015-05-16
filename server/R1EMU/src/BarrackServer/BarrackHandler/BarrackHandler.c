@@ -241,8 +241,8 @@ BarrackHandler_startGame (
     replyPacket.zoneServerPort = 2004;
     replyPacket.mapId = 0x3fd;
     replyPacket.commanderListId = clientPacket->commanderListId;
-    replyPacket.spriteId = 0;
-    replyPacket.spriteIdRelated = 2;
+    replyPacket.spriteId = session->game.currentCommander.spriteId;
+    replyPacket.spriteIdRelated = session->game.currentCommander.spriteIdRelated;
     replyPacket.isSingleMap = false;
 
     // Update the session to the concerned Zone Server
