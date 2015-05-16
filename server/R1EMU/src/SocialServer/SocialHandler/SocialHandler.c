@@ -67,5 +67,12 @@ SocialHandler_login (
     buffer_print (clientPacket->md5, 17, "md5 = ");
     dbg ("accountId = %llx", clientPacket->accountId);
 
-    return PACKET_HANDLER_OK;
+    // Authenticate here
+    // TODO
+
+    // Authentication OK!
+    session->socket.authenticated = true;
+    session->socket.accountId = clientPacket->accountId;
+
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
