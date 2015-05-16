@@ -363,7 +363,7 @@ RouterMonitor_start (
         error ("Cannot allocate a new server monitor actor.");
         goto cleanup;
     }
-    zstr_sendx (servermon, "LISTEN", "CONNECT_DELAYED",  "CONNECT_RETRIED", "CLOSED", "CONNECTED", "ACCEPTED", "DISCONNECTED", NULL);
+    zstr_sendx (servermon, "LISTEN", "ACCEPTED", "DISCONNECTED", NULL);
     zstr_sendx (servermon, "START", NULL);
     zsock_wait (servermon);
 
