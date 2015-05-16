@@ -43,8 +43,8 @@ static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Sessio
 /** Request for the player to enter in game */
 static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
-/** @UNKNOWN */
-static PacketHandlerState BarrackHandler_iesModifyList     (Worker *self, zmsg_t *reply);
+/** @UNKNOWN. When this packet is sent to the client, it doesn't ask for the family name even when the account is new */
+// static PacketHandlerState BarrackHandler_iesModifyList     (Worker *self, zmsg_t *reply);
 /** Register new servers */
 static PacketHandlerState BarrackHandler_serverEntry       (Worker *self, zmsg_t *reply);
 /** Send a list of commanders */
@@ -473,7 +473,7 @@ BarrackHandler_startBarrack (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    BarrackHandler_iesModifyList (self, reply);
+    // BarrackHandler_iesModifyList (self, reply);
     BarrackHandler_serverEntry   (self, reply);
     // BarrackHandler_unkHandler1   (self, session, reply);
     BarrackHandler_commanderList (self, session, reply);
@@ -862,6 +862,7 @@ BarrackHandler_zoneTraffics (
     return PACKET_HANDLER_OK;
 }
 
+/*
 static PacketHandlerState
 BarrackHandler_iesModifyList (
     Worker *self,
@@ -891,6 +892,7 @@ BarrackHandler_iesModifyList (
 
     return PACKET_HANDLER_OK;
 }
+*/
 
 static PacketHandlerState
 BarrackHandler_serverEntry (
