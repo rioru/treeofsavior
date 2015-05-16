@@ -22,6 +22,9 @@
 
 
 // ------ Static declaration -------
+/** On log in */
+static PacketHandlerState SocialHandler_login        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+
 
 // ------ Structure declaration -------
 /**
@@ -31,5 +34,19 @@ const PacketHandler socialHandlers [PACKET_TYPE_COUNT] = {
     #define REGISTER_PACKET_HANDLER(packetName, handler) \
         [packetName] = {handler, STRINGIFY (packetName)}
 
+    REGISTER_PACKET_HANDLER (CS_LOGIN, SocialHandler_login),
+
     #undef REGISTER_PACKET_HANDLER
 };
+
+static PacketHandlerState
+SocialHandler_login (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+
+    return PACKET_HANDLER_OK;
+}
