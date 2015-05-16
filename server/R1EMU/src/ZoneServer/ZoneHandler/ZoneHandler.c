@@ -91,6 +91,16 @@ ZoneHandler_campInfo (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    // Play the keyboard tutorial on login
+    // ZC_ADDON_MSG is send after CZ_CAMPINFO :
+    char *dump =
+        "[11:10:23][           ToSClient:                     dbgBuffer]  4F 0C FF FF FF FF 1F 00 11 00 00 00 00 00 4B 45 | O.............KE\n"
+        "[11:10:23][           ToSClient:                     dbgBuffer]  59 42 4F 41 52 44 5F 54 55 54 4F 52 49 41 4C    | YBOARD_TUTORIAL";
+
+    size_t memSize;
+    void *memory = dumpToMem (dump, NULL, &memSize);
+
+    zmsg_add (reply, zframe_new (memory, memSize));
 
     return PACKET_HANDLER_OK;
 }
@@ -103,7 +113,7 @@ ZoneHandler_logout (
     size_t packetSize,
     zmsg_t *reply
 ) {
-
+    warning ("CZ_LOGOUT not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -116,7 +126,7 @@ ZoneHandler_headRotate (
     size_t packetSize,
     zmsg_t *reply
 ) {
-
+    warning ("CZ_HEAD_ROTATE not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -129,7 +139,7 @@ ZoneHandler_rotate (
     size_t packetSize,
     zmsg_t *reply
 ) {
-
+    warning ("CZ_ROTATE not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -142,7 +152,7 @@ ZoneHandler_movementInfo (
     size_t packetSize,
     zmsg_t *reply
 ) {
-
+    warning ("CZ_MOVEMENT_INFO not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -154,7 +164,7 @@ ZoneHandler_moveStop (
     size_t packetSize,
     zmsg_t *reply
 ) {
-
+    warning ("CZ_MOVEMENT_INFO not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -166,7 +176,7 @@ ZoneHandler_keyboardMove (
     size_t packetSize,
     zmsg_t *reply
 ) {
-
+    warning ("CZ_KEYBOARD_MOVE not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -396,6 +406,7 @@ ZoneHandler_startInfo (
     Session *session,
     zmsg_t *reply
 ) {
+    warning ("CZ_START_INFO not implemented yet.");
 }
 
 static void
@@ -404,6 +415,7 @@ ZoneHandler_uiInfoList (
     Session *session,
     zmsg_t *reply
 ) {
+    warning ("CZ_UI_INFO_LIST not implemented yet.");
 }
 
 static void
@@ -412,6 +424,7 @@ ZoneHandler_quickSlotListHandler (
     Session *session,
     zmsg_t *reply
 ) {
+    /*
     #pragma pack(push, 1)
     typedef struct {
         VariableSizePacketHeader variableSizeHeader;
@@ -427,6 +440,20 @@ ZoneHandler_quickSlotListHandler (
     replyPacket.zlibData = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+    */
+
+    size_t memSize;
+    void *packet = dumpToMem (
+        "[11:36:22][           ToSClient:                     dbgBuffer]  30 0C FF FF FF FF 59 00 4D 00 00 00 63 60 72 9C | 0.....Y.M...c`r.\n"
+        "[11:36:22][           ToSClient:                     dbgBuffer]  C3 C0 E0 72 85 81 61 F1 7C 46 06 26 27 20 27 FF | ...r..a.|F.&' '.\n"
+        "[11:36:22][           ToSClient:                     dbgBuffer]  26 94 E3 0C E4 14 C0 38 2E 40 4E 21 94 C3 40 55 | &......8.@N!..@U\n"
+        "[11:36:22][           ToSClient:                     dbgBuffer]  C0 1C 7D 84 93 E1 D3 65 88 A5 CC 71 40 CE 67 18 | ..}....e...q@.g.\n"
+        "[11:36:22][           ToSClient:                     dbgBuffer]  27 11 C8 F9 02 E5 50 D5 CE 51 C3 06 7B 08 30 22 | '.....P..Q..{.0'\n"
+        "[11:36:22][           ToSClient:                     dbgBuffer]  3B 90 09 99 C3 8C CC 01 00                      | ;........\n"
+        , NULL, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (packet, memSize));
 }
 
 static PacketHandlerState
@@ -486,6 +513,7 @@ ZoneHandler_onAir (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    warning ("CZ_ON_AIR not implemented yet.");
     return PACKET_HANDLER_OK;
 }
 
@@ -497,5 +525,6 @@ ZoneHandler_onGround (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    warning ("CZ_ON_GROUND not implemented yet.");
     return PACKET_HANDLER_OK;
 }

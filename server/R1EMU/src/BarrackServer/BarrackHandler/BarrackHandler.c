@@ -43,6 +43,8 @@ static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Sessio
 /** Request for the player to enter in game */
 static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
+/** @unknown */
+static PacketHandlerState BarrackHandler_iesModifyList     (Worker *self, zmsg_t *reply);
 /** Register new servers */
 static PacketHandlerState BarrackHandler_serverEntry       (Worker *self, zmsg_t *reply);
 /** Send a list of commanders */
@@ -405,6 +407,7 @@ BarrackHandler_startBarrack (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    BarrackHandler_iesModifyList (self, reply);
     BarrackHandler_serverEntry   (self, reply);
     // BarrackHandler_unkHandler1   (self, session, reply);
     BarrackHandler_commanderList (self, session, reply);
@@ -813,6 +816,36 @@ BarrackHandler_zoneTraffics (
     }
 
     zmsg_add (reply, zframe_new (replyPacket, outPacketSize));
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
+BarrackHandler_iesModifyList (
+    Worker *self,
+    zmsg_t *reply
+) {
+    size_t memSize;
+    void *memory = dumpToMem (
+        "[11:09:35][           ToSClient:                     dbgBuffer]  48 00 FF FF FF FF F0 00 01 00 0C 00 53 68 61 72 | H...........Shar\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  65 64 43 6F 6E 73 74 00 03 00 FA 00 00 00 01 00 | edConst.........\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  06 00 56 61 6C 75 65 00 01 00 09 00 00 00 02 00 | ..Value.........\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  31 00 05 00 38 2E 30 30 00 0A 00 EC 9C 84 EC A0 | 1...8.00........\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  80 EB 93 9C 00 0A 00 32 30 31 35 2D 30 34 2D 32 | .......2015-04-2\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  00 0F 00 43 68 61 6E 67 65 20 42 79 20 54 6F 6F | ...Change By Too\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  6C 00 FB 00 00 00 01 00 06 00 56 61 6C 75 65 00 | l.........Value.\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  01 00 08 00 00 00 02 00 33 00 05 00 33 2E 30 30 | ........3...3.00\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  00 08 00 61 73 64 61 73 64 61 00 0A 00 32 30 31 | ...asdasda...201\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  35 2D 30 34 2D 32 00 0F 00 43 68 61 6E 67 65 20 | 5-04-2...Change \n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  42 79 20 54 6F 6F 6C 00 FF 00 00 00 01 00 06 00 | By Tool.........\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  56 61 6C 75 65 00 01 00 04 00 00 00 02 00 31 00 | Value.........1.\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  05 00 31 2E 30 30 00 0A 00 EB B2 95 EC 82 AC EB | ..1.00..........\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  82 A8 00 0A 00 32 30 31 35 2D 30 34 2D 32 00 0F | .....2015-04-2..\n"
+        "[11:09:35][           ToSClient:                     dbgBuffer]  00 43 68 61 6E 67 65 20 42 79 20 54 6F 6F 6C 00 | .Change By Tool.\n"
+        , NULL, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (memory, memSize));
 
     return PACKET_HANDLER_OK;
 }
