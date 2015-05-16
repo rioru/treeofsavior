@@ -238,7 +238,7 @@ ZoneHandler_connect (
         uint64_t accountId;
         uint32_t unk2;
         uint32_t commanderListId;
-        unsigned char accountNameId[18];
+        unsigned char accountName[18];
         uint32_t zoneServerId;
         uint16_t unk3;
         uint8_t channelListId;

@@ -29,11 +29,11 @@
 /**
  * @brief Unwrap the client packet header and decrypt the packet.
  * @param[in,out] packet The packet ciphered. After this call, the packet is decrypted.
- * @param[in] packetSize The crypted packet size
+ * @param[in] packetSize A pointer to the crypted packet size
  * @return true on success, false otherwise
  */
 bool
 Crypto_decryptPacket (
     unsigned char **packet,
-    size_t packetSize
+    size_t *packetSize
 );

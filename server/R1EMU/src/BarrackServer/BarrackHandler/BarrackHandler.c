@@ -97,7 +97,7 @@ BarrackHandler_login (
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        unsigned char accountNameId[17];
+        unsigned char accountName[17];
         uint32_t accountPrivileges;
     } BcLoginOkPacket;
     #pragma pack(pop)
@@ -117,7 +117,7 @@ BarrackHandler_login (
     replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
     info ("AccountID %llx generated !", replyPacket.accountId);
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
-    strncpy (replyPacket.accountNameId, "accountNameId", sizeof (replyPacket.accountNameId));
+    strncpy (replyPacket.accountName, "accountName", sizeof (replyPacket.accountName));
     // ==================================
 
     // Update the session
@@ -145,7 +145,7 @@ BarrackHandler_loginByPassport (
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        unsigned char accountNameId[17];
+        unsigned char accountName[17];
         uint32_t accountPrivileges;
     } BcLoginOkPacket;
     #pragma pack(pop)
@@ -165,7 +165,7 @@ BarrackHandler_loginByPassport (
     replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
     info ("AccountID %llx generated !", replyPacket.accountId);
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
-    strncpy (replyPacket.accountNameId, "accountNameId", sizeof (replyPacket.accountNameId));
+    strncpy (replyPacket.accountName, "accountName", sizeof (replyPacket.accountName));
     // ==================================
 
     // Update the session

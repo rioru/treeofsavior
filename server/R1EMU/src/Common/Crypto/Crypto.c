@@ -22,15 +22,15 @@
 bool
 Crypto_decryptPacket (
     unsigned char **packet,
-    size_t packetSize
+    size_t *packetSize
 ) {
     // Unwrap the crypt packet header, and check the cryptHeader size
     // In a single request process, it must match exactly the same size
     CryptPacketHeader cryptHeader;
-    CryptPacket_unwrapHeader (packet, &cryptHeader);
-    if ((packetSize - sizeof (CryptPacketHeader)) != cryptHeader.plainSize) {
+    CryptPacket_unwrapHeader (packet, packetSize, &cryptHeader);
+    if (*packetSize != cryptHeader.plainSize) {
         error ("The real packet size (0x%x) doesn't match with the packet size in the header (0x%x). Ignore request.",
-            packetSize - sizeof (CryptPacketHeader), cryptHeader.plainSize);
+            *packetSize, cryptHeader.plainSize);
         return false;
     }
 

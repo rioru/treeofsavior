@@ -47,6 +47,25 @@ SocialHandler_login (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    #pragma pack(push, 1)
+    typedef struct {
+        char accountName[17];
+        char md5[17];
+        uint64_t accountId;
+    } CsLoginPacket;
+    #pragma pack(pop)
+
+    if (sizeof (CsLoginPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CsLoginPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    CsLoginPacket *clientPacket = (CsLoginPacket *) packet;
+    dbg ("accountName = %s", clientPacket->accountName);
+    buffer_print (clientPacket->md5, 17, "md5 = ");
+    dbg ("accountId = %llx", clientPacket->accountId);
 
     return PACKET_HANDLER_OK;
 }

@@ -33,8 +33,7 @@ typedef struct ClientPacketHeader
 {
     uint16_t type;
     uint32_t sequence;
-    uint16_t checksum;
-    uint16_t unk1;
+    uint32_t checksum;
 }   ClientPacketHeader;
 #pragma pack(pop)
 
@@ -78,24 +77,29 @@ typedef struct BarrackPacketNormalHeader
 /**
  * @brief Unwrap the client packet header and stores it in the ClientPacketHeader argument
  * @param[in,out] packet A pointer to the packet to unwrap. Afterward, it points to the data of the packet.
+ * @param[in,out] packetSize A pointer to the packetSize. Afterward, it is updated.
  * @param[out] header The header unwrapped from the packet
  * @return
  */
 void
 ClientPacket_unwrapHeader (
     unsigned char **packet,
-    ClientPacketHeader *header
+    size_t *packetSize,
+    ClientPacketHeader *header,
+    bool isCrypted
 );
 
 /**
  * @brief Unwrap the crypt packet header and stores it in the header argument
  * @param[in,out] packet A pointer to the packet to unwrap. Afterward, it points to the data of the packet.
+ * @param[in,out] packetSize A pointer to the packetSize. Afterward, it is updated.
  * @param[out] header The header unwrapped from the packet
  * @return
  */
 void
 CryptPacket_unwrapHeader (
     unsigned char **packet,
+    size_t *packetSize,
     CryptPacketHeader *header
 );
 
