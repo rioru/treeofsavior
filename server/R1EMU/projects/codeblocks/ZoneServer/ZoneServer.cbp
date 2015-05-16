@@ -41,12 +41,14 @@
 			<Add directory="../../../include/zmq" />
 			<Add directory="../../../include/mysql" />
 			<Add directory="../../../include/hiredis" />
+			<Add directory="../../../include/zlib" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />
 			<Add library="czmq" />
 			<Add library="hiredis" />
 			<Add library="mysqlclient" />
+			<Add library="zlib1" />
 			<Add directory="../../../lib" />
 			<Add directory="../../../lib/x64" />
 			<Add directory="/usr/local/mysql/lib/" />

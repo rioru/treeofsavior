@@ -40,12 +40,14 @@
 			<Add directory="../../../include/zmq" />
 			<Add directory="../../../include/mysql" />
 			<Add directory="../../../include/hiredis" />
+			<Add directory="../../../include/zlib" />
 		</Compiler>
 		<Linker>
 			<Add library="zmq" />
 			<Add library="czmq" />
 			<Add library="hiredis" />
 			<Add library="mysqlclient" />
+			<Add library="zlib1" />
 			<Add directory="../../../lib" />
 			<Add directory="../../../lib/x64" />
 			<Add directory="/usr/local/mysql/lib/" />
@@ -162,6 +164,14 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/R1EMU.h" />
+		<Unit filename="../../../src/SocialServer/SocialHandler/SocialHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SocialServer/SocialHandler/SocialHandler.h" />
+		<Unit filename="../../../src/SocialServer/SocialServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/SocialServer/SocialServer.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>
