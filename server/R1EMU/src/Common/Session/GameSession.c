@@ -42,6 +42,7 @@ GameSession_init (
     GameSession *self
 ) {
     memset (self, 0, sizeof (GameSession));
+    CommanderInfo_createBasicCommander (&self->currentCommander);
     return true;
 }
 
@@ -51,8 +52,6 @@ GameSession_print (
 ) {
     dbg ("==== GameSession %p ====", self);
     dbg ("charactersBarrackCount = %u", self->charactersBarrackCount);
-    dbg ("currentCommanderId = 0x%llX", self->currentCommanderId);
-    dbg ("currentPcId = 0x%X", self->currentPcId);
     CommanderInfo_print (&self->currentCommander);
 }
 

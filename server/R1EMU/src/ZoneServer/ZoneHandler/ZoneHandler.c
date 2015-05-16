@@ -236,8 +236,8 @@ ZoneHandler_connect (
     typedef struct {
         uint32_t unk1;
         uint64_t accountId;
-        uint32_t unk2;
-        uint32_t commanderListId;
+        uint32_t spriteId;
+        uint32_t spriteIdRelated;
         unsigned char accountName[18];
         uint32_t zoneServerId;
         uint16_t unk3;
@@ -286,26 +286,26 @@ ZoneHandler_connect (
     replyPacket.gameMode = 0;
     replyPacket.unk1 = 1;
     replyPacket.accountPrivileges = 0;
-    replyPacket.pcId = gameSession->currentPcId;
+    replyPacket.pcId = gameSession->currentCommander.pcId;
 
-    // CharName
+    // Copy the commander Information
     memcpy (&replyPacket.commander, &gameSession->currentCommander, sizeof (CommanderInfo));
 
     // AccountID
     replyPacket.commander.accountId = socketSession->accountId;
 
     // PCID
-    replyPacket.commander.pcId = gameSession->currentPcId;
+    replyPacket.commander.pcId = gameSession->currentCommander.pcId;
 
     // CommanderID
-    replyPacket.commander.commanderId = gameSession->currentCommanderId;
+    replyPacket.commander.commanderId = gameSession->currentCommander.commanderId;
 
     // Character position
     replyPacket.commander.charPosition = gameSession->charactersBarrackCount;
 
-    // Set a default position
-    gameSession->currentCommander.cPosX = -628.0f; // Official starting point position (tutorial)
-    gameSession->currentCommander.cPosY = 260.0f;  //
+    // Position : Official starting point position (tutorial)
+    gameSession->currentCommander.cPosX = -628.0f;
+    gameSession->currentCommander.cPosY = 260.0f;
     replyPacket.commander.cPosX = gameSession->currentCommander.cPosX;
     replyPacket.commander.cPosY = gameSession->currentCommander.cPosY;
 
@@ -393,7 +393,7 @@ ZoneHandler_moveSpeed (
 
     replyPacket.header.type = ZC_MOVE_SPEED;
 
-    replyPacket.pcId = gameSession->currentPcId;
+    replyPacket.pcId = gameSession->currentCommander.pcId;
     replyPacket.movementSpeed = 100.0f;
     replyPacket.unk1 = 0.1f;
 
@@ -495,7 +495,7 @@ ZoneHandler_jump (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_JUMP;
-    replyPacket.pcId = gameSession->currentPcId;
+    replyPacket.pcId = gameSession->currentCommander.pcId;
     replyPacket.height = 300.0;
     replyPacket.unk1 = 1;
     replyPacket.charPosition = 1;

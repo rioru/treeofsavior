@@ -32,7 +32,7 @@
 		</Build>
 		<Compiler>
 			<Add option="-Wall" />
-			<Add option="-std=gnu99" />
+			<Add option="-std=c99" />
 			<Add option="-Wno-pointer-sign" />
 			<Add directory="/usr/include/" />
 			<Add directory="../../../src" />

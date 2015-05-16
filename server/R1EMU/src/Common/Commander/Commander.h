@@ -68,8 +68,8 @@ typedef struct CommanderInfo
     uint32_t currentXP;
     uint32_t maxXP;
     uint32_t unk7;
-    uint32_t pose;
-    uint32_t spriteRelated;
+    uint32_t spriteId;
+    uint32_t spriteIdRelated;
     uint64_t commanderId;
     uint32_t currentHP;
     uint32_t maxHP;

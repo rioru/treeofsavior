@@ -29,8 +29,6 @@
 #define REDIS_GAME_SESSION_commanderName_str           "commanderName"
 #define REDIS_GAME_SESSION_charactersBarrackCount_str  "charactersBarrackCount"
 #define REDIS_GAME_SESSION_accountId_str               "accountId"
-#define REDIS_GAME_SESSION_currentCommanderId_str      "currentCommanderId"
-#define REDIS_GAME_SESSION_currentPcId_str             "currentPcId"
 #define REDIS_GAME_SESSION_commander_classId_str       "classId"
 #define REDIS_GAME_SESSION_commander_jobId_str         "jobId"
 #define REDIS_GAME_SESSION_commander_gender_str        "gender"
@@ -62,8 +60,8 @@
 #define REDIS_GAME_SESSION_commander_mapId_str         "mapId"
 #define REDIS_GAME_SESSION_commander_currentXP_str     "currentXP"
 #define REDIS_GAME_SESSION_commander_maxXP_str         "maxXP"
-#define REDIS_GAME_SESSION_commander_pose_str          "pose"
-#define REDIS_GAME_SESSION_commander_spriteRelated_str "spriteRelated"
+#define REDIS_GAME_SESSION_commander_spriteId_str          "pose"
+#define REDIS_GAME_SESSION_commander_spriteIdRelated_str "spriteIdRelated"
 #define REDIS_GAME_SESSION_commander_currentHP_str     "currentHP"
 #define REDIS_GAME_SESSION_commander_maxHP_str         "maxHP"
 #define REDIS_GAME_SESSION_commander_currentSP_str     "currentSP"
@@ -78,8 +76,6 @@ enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_commanderName,
 	REDIS_GAME_SESSION_charactersBarrackCount,
 	REDIS_GAME_SESSION_accountId,
-	REDIS_GAME_SESSION_currentCommanderId,
-	REDIS_GAME_SESSION_currentPcId,
 	REDIS_GAME_SESSION_commander_classId,
 	REDIS_GAME_SESSION_commander_jobId,
 	REDIS_GAME_SESSION_commander_gender,
@@ -111,8 +107,8 @@ enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_commander_mapId,
 	REDIS_GAME_SESSION_commander_currentXP,
 	REDIS_GAME_SESSION_commander_maxXP,
-	REDIS_GAME_SESSION_commander_pose,
-	REDIS_GAME_SESSION_commander_spriteRelated,
+	REDIS_GAME_SESSION_commander_spriteId,
+	REDIS_GAME_SESSION_commander_spriteIdRelated,
 	REDIS_GAME_SESSION_commander_currentHP,
 	REDIS_GAME_SESSION_commander_maxHP,
 	REDIS_GAME_SESSION_commander_currentSP,

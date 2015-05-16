@@ -57,14 +57,13 @@ CommanderInfo_createBasicCommander (
     commander->hairType = 51;
     commander->unk4 = 0;
     commander->unk5 = 0;
-    commander->pcId = 0x604;
     commander->unk13 = 0;
     commander->charPosition = 1;
     commander->unk6 = 0;
     commander->mapId = 0x3fd;
-    commander->spriteRelated = 0x41000000;
+    commander->spriteId = 0;
+    commander->spriteIdRelated = 0x41000000;
     commander->unk7 = 0;
-    commander->pose = 0x1eefe0a0;
     commander->cPosX = 27.0;
     commander->cPosY = 29.0;
     commander->unk12 = 0;
@@ -128,8 +127,8 @@ CommanderInfo_print (
     dbg ("currentXP = %d (%x)", commander->currentXP, commander->currentXP);
     dbg ("maxXP = %d (%x)", commander->maxXP, commander->maxXP);
     dbg ("unk7 = %d (%x)", commander->unk7, commander->unk7);
-    dbg ("pose = %d (%x)", commander->pose, commander->pose);
-    dbg ("spriteRelated = %d (%x)", commander->spriteRelated, commander->spriteRelated);
+    dbg ("spriteId = %d (%x)", commander->spriteId, commander->spriteId);
+    dbg ("spriteIdRelated = %d (%x)", commander->spriteIdRelated, commander->spriteIdRelated);
     dbg ("commanderId = %llu (%llx)", commander->commanderId, commander->commanderId);
     dbg ("currentHP = %f (%x)", commander->currentHP, commander->currentHP);
     dbg ("maxHP = %f (%x)", commander->maxHP, commander->maxHP);

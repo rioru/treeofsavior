@@ -679,45 +679,39 @@ BarrackHandler_commanderCreate (
     BcCommanderCreatePacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    replyPacket.header.type = BC_COMMANDER_CREATE;
-    CommanderInfo_createBasicCommander (&replyPacket.commander);
-
     // CharName
-    strncpy (replyPacket.commander.charName, clientPacket->charName, sizeof (replyPacket.commander.charName));
-
-    // FamilyName
-    strncpy (replyPacket.commander.familyName, gameSession->currentCommander.familyName, sizeof (replyPacket.commander.familyName));
+    strncpy (gameSession->currentCommander.charName, clientPacket->charName, sizeof (gameSession->currentCommander.charName));
 
     // AccountID
-    replyPacket.commander.accountId = socketSession->accountId;
+    gameSession->currentCommander.accountId = socketSession->accountId;
 
     // JobID
     switch (clientPacket->jobId)
     {
         default:
-            error ("Invalid commander Job ID (%d)", replyPacket.commander.jobId);
+            error ("Invalid commander Job ID (%d)", gameSession->currentCommander.jobId);
             return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
-            replyPacket.commander.classId = COMMANDER_CLASS_WARRIOR;
+            gameSession->currentCommander.classId = COMMANDER_CLASS_WARRIOR;
             break ;
         case COMMANDER_JOB_ARCHER:
-            replyPacket.commander.classId = COMMANDER_CLASS_ARCHER;
+            gameSession->currentCommander.classId = COMMANDER_CLASS_ARCHER;
             break ;
         case COMMANDER_JOB_MAGE:
-            replyPacket.commander.classId = COMMANDER_CLASS_MAGE;
+            gameSession->currentCommander.classId = COMMANDER_CLASS_MAGE;
             break ;
         case COMMANDER_JOB_CLERIC:
-            replyPacket.commander.classId = COMMANDER_CLASS_CLERIC;
+            gameSession->currentCommander.classId = COMMANDER_CLASS_CLERIC;
             break ;
     }
-    replyPacket.commander.jobId = clientPacket->jobId;
+    gameSession->currentCommander.jobId = clientPacket->jobId;
 
     // Gender
     switch (clientPacket->gender) {
         case COMMANDER_GENDER_MALE:
         case COMMANDER_GENDER_FEMALE:
-            replyPacket.commander.gender = clientPacket->gender;
+            gameSession->currentCommander.gender = clientPacket->gender;
             break;
 
         case COMMANDER_GENDER_BOTH:
@@ -732,11 +726,11 @@ BarrackHandler_commanderCreate (
         warning ("Client sent a malformed charPosition.");
     }
 
-    replyPacket.commander.charPosition = gameSession->charactersBarrackCount + 1;
+    gameSession->currentCommander.charPosition = gameSession->charactersBarrackCount + 1;
 
     // Hair type
     // TODO : Check the hairType
-    replyPacket.commander.hairType = clientPacket->hairType;
+    gameSession->currentCommander.hairType = clientPacket->hairType;
     switch (clientPacket->hairType) {
         /*
         case COMMANDER_HAIR_ID1:
@@ -749,7 +743,7 @@ BarrackHandler_commanderCreate (
         case COMMANDER_HAIR_ID8:
         case COMMANDER_HAIR_ID9:
         case COMMANDER_HAIR_ID10:
-            replyPacket.commander.hairType = clientPacket->hairType;
+            gameSession->currentCommander.hairType = clientPacket->hairType;
         break;
 
         default:
@@ -760,16 +754,21 @@ BarrackHandler_commanderCreate (
     }
 
     // PCID
-    replyPacket.commander.pcId = R1EMU_generate_random (&self->seed);
+    gameSession->currentCommander.pcId = R1EMU_generate_random (&self->seed);
 
     // CommanderID
-    replyPacket.commander.commanderId = R1EMU_generate_random64 (&self->seed);
+    gameSession->currentCommander.commanderId = R1EMU_generate_random64 (&self->seed);
 
-    // Update the session
+    // Position : Center of the barrack
+    gameSession->currentCommander.cPosX = 27.0f;
+    gameSession->currentCommander.cPosY = 29.0f;
+
+    // Add the character to the count
     gameSession->charactersBarrackCount++;
-    gameSession->currentPcId = replyPacket.commander.pcId;
-    gameSession->currentCommanderId = replyPacket.commander.commanderId;
-    gameSession->currentCommander = replyPacket.commander;
+
+    // Write the reply
+    replyPacket.header.type = BC_COMMANDER_CREATE;
+    replyPacket.commander = gameSession->currentCommander;
 
     // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));

@@ -21,7 +21,7 @@ MySQL_flushSession (
     MYSQL_ROW count;
 
     // Flush the commander
-    if (MySQL_query (self, "SELECT count(*) FROM commander WHERE commander_id = %u", session->game.currentCommanderId)) {
+    if (MySQL_query (self, "SELECT count(*) FROM commander WHERE commander_id = %u", session->game.currentCommander.commanderId)) {
         error ("SQL Error : %s" , mysql_error (self->handle));
     }
     else {
@@ -68,7 +68,7 @@ MySQL_flushSession (
                 session->game.currentCommander.cPosX,
                 session->game.currentCommander.cPosY,
                 session->game.currentCommander.currentXP,
-                session->game.currentCommander.pose,
+                session->game.currentCommander.spriteId,
                 session->game.currentCommander.currentHP,
                 session->game.currentCommander.currentSP
             )) {

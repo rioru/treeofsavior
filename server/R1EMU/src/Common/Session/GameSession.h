@@ -39,12 +39,6 @@ struct GameSession
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
 
-    /** Unique current commander ID */
-    uint64_t currentCommanderId;
-
-    /** PCID of the current character */
-    uint32_t currentPcId;
-
     /** Current commander */
     CommanderInfo currentCommander;
 };

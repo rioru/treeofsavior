@@ -74,5 +74,15 @@ SocialHandler_login (
     session->socket.authenticated = true;
     session->socket.accountId = clientPacket->accountId;
 
+    /*
+    size_t memSize;
+    void *memory = dumpToMem (
+
+        , NULL, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (memory, memSize));
+    */
+
     return PACKET_HANDLER_UPDATE_SESSION;
 }
