@@ -34,12 +34,6 @@ CZMQ_EXPORT zframe_t *
 //  Destroy a frame
 CZMQ_EXPORT void
     zframe_destroy (zframe_t **self_p);
-	
-//  --------------------------------------------------------------------------
-//  PATCH :
-//  Accessor to the fd of the sender
-CZMQ_EXPORT int
-zframe_fd (zframe_t *self);
 
 //  Receive frame from socket, returns zframe_t object or NULL if the recv
 //  was interrupted. Does a blocking recv, if you want to not block then use
