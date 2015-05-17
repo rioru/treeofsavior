@@ -137,6 +137,8 @@ static PacketHandlerState ZoneHandler_czQuickSlotList (Worker *self, Session *se
 static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
 static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On cast a spell on the ground */
+static PacketHandlerState ZoneHandler_skillGround     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -160,9 +162,93 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_QUICKSLOT_LIST, ZoneHandler_czQuickSlotList),
     REGISTER_PACKET_HANDLER (CZ_LOGOUT, ZoneHandler_logout),
     REGISTER_PACKET_HANDLER (CZ_I_NEED_PARTY, ZoneHandler_iNeedParty),
+    REGISTER_PACKET_HANDLER (CZ_SKILL_GROUND, ZoneHandler_skillGround),
 
     #undef REGISTER_PACKET_HANDLER
 };
+
+static PacketHandlerState
+ZoneHandler_skillGround (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    buffer_print (packet, packetSize, "SKILL ! ");
+
+    #pragma pack(push, 1)
+    typedef struct {
+        uint8_t unk1;
+        uint32_t skillId;
+        uint32_t unk2;
+        float x, y, z;
+        float x2, y2, z2;
+        float unk3;
+        uint32_t unk4;
+        uint32_t unk5;
+        uint8_t unk6;
+        uint8_t unk7;
+    } CzSkillGroundPacket;
+    #pragma pack(pop)
+
+    /*   u1 skillId  unk2     x        y        z        x2       y2       z2       u3       u4       u5       u6 u7
+         00 419C0000 00000000 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3 FFFF7FBF 0020B539 00000000 00 01
+         00 419C0000 00000000 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3 F30435BF F40435BF 00000000 00 01
+         00 419C0000 00000000 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4 FFFF7F3F 0020B5B9 00000000 00 00
+         00 429C0000 00000000 5A00FAC3 1F7CA143 B1D3E843 5A00FAC3 1F7CA143 B1D3E843 EE04353F F60435BF 00000000 00 00
+         00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
+    */
+
+    if (sizeof (CzSkillGroundPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CzSkillGroundPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    CzSkillGroundPacket *clientPacket = (CzSkillGroundPacket *) packet;
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        uint32_t skillId;
+        uint32_t unk3;
+        uint32_t unk4;
+        float x, y, z;
+        float x2, y2, z2;
+    } ZcSkillReadyPacket;
+    #pragma pack(pop)
+
+    // Answer : ZC_SKILL_READY
+    /*  pcId     skillId  u3       u4       x        y        z        x2       y2       z2
+        5A730100 419C0000 0000803F 011CECC7 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3
+        5A730100 419C0000 0000803F 011CECC7 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3
+        5A730100 419C0000 0000803F 011CECC7 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4
+        956A0100 214E0000 0000803F 011DECA5 22A0C2C4 74768243 D25254C3 00000000 00C1D209 02011800
+    */
+
+    ZcSkillReadyPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_SKILL_READY;
+    replyPacket.pcId = session->game.currentCommander.pcId;
+    replyPacket.skillId = clientPacket->skillId;
+    replyPacket.unk3 = 0x3F800000;
+    replyPacket.unk4 = 0xC7EC1C01;
+    replyPacket.x = clientPacket->x;
+    replyPacket.y = clientPacket->y;
+    replyPacket.z = clientPacket->z;
+    replyPacket.x2 = clientPacket->x2;
+    replyPacket.y2 = clientPacket->y2;
+    replyPacket.z2 = clientPacket->z2;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return PACKET_HANDLER_OK;
+}
+
 
 static PacketHandlerState
 ZoneHandler_campInfo (
@@ -1415,6 +1501,7 @@ ZoneHandler_jump (
     zmsg_t *reply
 ) {
     GameSession *gameSession = &session->game;
+    buffer_print (packet, packetSize, "Jump :");
 
     #pragma pack(push, 1)
     typedef struct {

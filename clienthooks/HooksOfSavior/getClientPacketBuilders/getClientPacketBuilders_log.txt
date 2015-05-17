@@ -1,0 +1,24 @@
+[23:38:23][HookEngine.c:30 in HookEngine_new] HookEngine initialized correctly.
+[23:39:01][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3069 (CZ_GAME_READY) is at address 0x5fb690
+[23:39:02][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3160 (CZ_CAMPINFO) is at address 0x5fbb56
+[23:39:02][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3488 (CZ_I_NEED_PARTY) is at address 0x5ff0f6
+[23:39:03][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3088 (CZ_ON_GROUND) is at address 0x5fdef0
+[23:39:06][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3082 (CZ_JUMP) is at address 0x5fe9a3
+[23:39:06][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3087 (CZ_ON_AIR) is at address 0x5fdea0
+[23:39:07][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3088 (CZ_ON_GROUND) is at address 0x5fdef0
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:11][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:17][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:17][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:17][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3096 (CZ_ROTATE) is at address 0x5fdf40
+[23:39:24][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3268 (CZ_CUSTOM_COMMAND) is at address 0x5feb36
+[23:39:26][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3260 (CZ_CHANGE_CONFIG) is at address 0x5fc6f6
+[23:39:26][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3260 (CZ_CHANGE_CONFIG) is at address 0x5fc6f6
+[23:39:26][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3260 (CZ_CHANGE_CONFIG) is at address 0x5fc6f6
+[23:40:10][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3175 (CZ_EXCHANGE_REQUEST) is at address 0x5fbfa5
+[23:40:14][main.c:52 in CClientNet__SendPacket] sendPacketBuilder = 3433 (CZ_PROPERTY_COMPARE) is at address 0x5fdce6

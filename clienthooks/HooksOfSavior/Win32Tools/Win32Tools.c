@@ -107,7 +107,7 @@ read_from_memory (HANDLE process, void *buffer, DWORD addr, unsigned int size)
 		{
 			res = GetLastError();
 			if (res != ERROR_PARTIAL_COPY)
-				warn ("GetLastError() = %d (http://msdn.microsoft.com/en-us/library/windows/desktop/ms681382%28v=vs.85%29.aspx)", res);
+				warning ("GetLastError() = %d (http://msdn.microsoft.com/en-us/library/windows/desktop/ms681382%28v=vs.85%29.aspx)", res);
 		}
 
 		if (bytes_read != bytes_to_read)
@@ -129,7 +129,7 @@ write_to_memory (HANDLE process, void *buffer, DWORD addr, unsigned int size)
 
 	if (!WriteProcessMemory(process, (PVOID) addr, buffer, size, &bytes_read))
 	{
-		warn ("WriteProcessMemory failed. (0x%.8x -> 0x%.8x)", addr, addr + size);
+		warning ("WriteProcessMemory failed. (0x%.8x -> 0x%.8x)", addr, addr + size);
 		return 0;
 	}
 
@@ -188,19 +188,19 @@ BOOL EjectDLL (char *process_name, char *dllPath)
 					if (WaitForSingleObject (HanDLLThread, INFINITE) != WAIT_FAILED)
 						return TRUE;
 					else
-						warn ("WaitForSingleObject failed");
+						warning ("WaitForSingleObject failed");
 				}
 				else
-					warn ("CreateRemoteThread failed : %d", GetLastError());
+					warning ("CreateRemoteThread failed : %d", GetLastError());
 			}
 			else
-				warn ("OpenProcess failed : %d", GetLastError());
+				warning ("OpenProcess failed : %d", GetLastError());
         }
         else
-			warn ("ModDLLHandle = %d or BytDLLBaseAdress = %d is NULL", ModDLLHandle, BytDLLBaseAdress);
+			warning ("ModDLLHandle = %d or BytDLLBaseAdress = %d is NULL", ModDLLHandle, BytDLLBaseAdress);
     }
     else
-		warn ("ModKerl32 is NULL");
+		warning ("ModKerl32 is NULL");
 
     CloseHandle (hProcess);
     return FALSE;
@@ -211,7 +211,7 @@ InjectionInfo * injectDLL (char *process_name, char *dllPath)
 {
 	if (!file_exists(dllPath))
 	{
-		warn ("DLL \"%s\" doesn't exist", dllPath);
+		warning ("DLL \"%s\" doesn't exist", dllPath);
 		return NULL;
 	}
 
@@ -247,27 +247,27 @@ InjectionInfo * injectDLL (char *process_name, char *dllPath)
 							}
 						}
 						else {
-							warn ("CreateRemoteThread failed");
+							warning ("CreateRemoteThread failed");
 						}
 					}
 					else {
-						warn ("GetProcAddress failed");
+						warning ("GetProcAddress failed");
 					}
 				}
 				else {
-					warn ("LoadLibrary failed");
+					warning ("LoadLibrary failed");
 				}
 			}
 			else {
-				warn ("WriteProcessMemory failed");
+				warning ("WriteProcessMemory failed");
 			}
 		}
 		else {
-			warn ("VirtualAllocEx failed");
+			warning ("VirtualAllocEx failed");
 		}
 	}
 	else {
-		warn ("OpenProcess failed");
+		warning ("OpenProcess failed");
 	}
 
 	return ii;
@@ -353,13 +353,13 @@ BOOL enable_debug_privileges ()
 
 	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES, &hToken))
 	{
-		warn ("Debug privilege : OpenProcessToken ERROR.");
+		warning ("Debug privilege : OpenProcessToken ERROR.");
 		return FALSE;
 	}
 
 	if (!LookupPrivilegeValue(NULL, SE_DEBUG_NAME, &newPrivs.Privileges[0].Luid))
 	{
-		warn ("Debug privilege : LookupPrivilegeValue ERROR.");
+		warning ("Debug privilege : LookupPrivilegeValue ERROR.");
 		CloseHandle(hToken);
 		return FALSE;
 	}
@@ -369,7 +369,7 @@ BOOL enable_debug_privileges ()
 
 	if (!AdjustTokenPrivileges(hToken, FALSE, &newPrivs, cb, NULL, NULL))
 	{
-		warn ("Debug privilege : AdjustTokenPrivileges ERROR.");
+		warning ("Debug privilege : AdjustTokenPrivileges ERROR.");
 		CloseHandle(hToken);
 		return FALSE;
 	}
@@ -414,7 +414,7 @@ get_module_entry (char *process_name, DWORD pid)
 
 	if (snapshot == INVALID_HANDLE_VALUE)
 	{
-		warn ("CreateToolhelp32Snapshot failed : GetLastError() = %d", (int) GetLastError());
+		warning ("CreateToolhelp32Snapshot failed : GetLastError() = %d", (int) GetLastError());
 		return NULL;
 	}
 
@@ -428,7 +428,7 @@ get_module_entry (char *process_name, DWORD pid)
 			{
 				if (!Module32Next(snapshot, me))
 				{
-					warn ("%s module not found !", process_name);
+					warning ("%s module not found !", process_name);
 					CloseHandle(snapshot);
 					return NULL;
 				}
@@ -442,7 +442,7 @@ get_module_entry (char *process_name, DWORD pid)
 		else
 		{
 			CloseHandle(snapshot);
-			warn ("Module32First failed: GetLastError() = %d\n", (int) GetLastError());
+			warning ("Module32First failed: GetLastError() = %d\n", (int) GetLastError());
 			return NULL;
 		}
 	}
@@ -503,7 +503,7 @@ read_memory_as_int (HANDLE process, DWORD address)
 
 	if (!ReadProcessMemory(process, (PVOID) address, buffer, 4, &bytes_read))
 	{
-		warn ("ReadProcessMemory failed. (0x%.8x)", address);
+		warning ("ReadProcessMemory failed. (0x%.8x)", address);
 		return 0;
 	}
 
@@ -520,7 +520,7 @@ write_memory_as_int (HANDLE process, DWORD address, unsigned int value)
 
 	if (!WriteProcessMemory(process, (PVOID) address, buffer, 4, &bytes_read))
 	{
-		warn ("WriteProcessMemory failed. (0x%.8x)", address);
+		warning ("WriteProcessMemory failed. (0x%.8x)", address);
 		return 0;
 	}
 
@@ -535,7 +535,7 @@ read_memory_as_float (HANDLE process, DWORD address)
 
 	if (!ReadProcessMemory(process, (PVOID) address, buffer, sizeof(float), &bytes_read))
 	{
-		warn ("ReadProcessMemory failed. (0x%.8x)", address);
+		warning ("ReadProcessMemory failed. (0x%.8x)", address);
 		return 0;
 	}
 
@@ -552,7 +552,7 @@ write_memory_as_float (HANDLE process, DWORD address, float value)
 
 	if (!WriteProcessMemory(process, (PVOID) address, buffer, sizeof(float), &bytes_read))
 	{
-		warn ("WriteProcessMemory failed. (0x%.8x)", address);
+		warning ("WriteProcessMemory failed. (0x%.8x)", address);
 		return 0;
 	}
 
@@ -591,12 +591,12 @@ get_path_from_process (HANDLE process, char *buffer)
 
 	if (_GetModuleFileNameEx == NULL)
 	{
-		warn ("%d is NULL", _GetModuleFileNameEx);
+		warning ("%d is NULL", _GetModuleFileNameEx);
 	}
 
 	if (_GetModuleFileNameEx(process, NULL, buffer, MAX_PATH) == 0)
 	{
-		warn ("GetModuleFileNameEx failed.");
+		warning ("GetModuleFileNameEx failed.");
 		return 0;
 	}
 
@@ -988,12 +988,12 @@ find_pattern_process (HANDLE process, DWORD start, DWORD end, unsigned char *pat
 
 	if (!buffer)
 	{
-		warn ("buffer malloc (size %d) failed.", size + 1);
+		warning ("buffer malloc (size %d) failed.", size + 1);
 	}
 
 	else if (ReadProcessMemory(process, (PVOID) start, buffer, size, NULL) == FALSE)
 	{
-		warn ("(0x%.8x - 0x%.8x) RPM failed.", start, end);
+		warning ("(0x%.8x - 0x%.8x) RPM failed.", start, end);
 		free(buffer);
 	}
 
@@ -1105,7 +1105,7 @@ create_mask_from_file (char *filename)
 
 		if (bb_queue_get_length(line1) != bb_queue_get_length(line2))
 		{
-			warn ("Pattern lines aren't the same length.");
+			warning ("Pattern lines aren't the same length.");
 			return NULL;
 		}
 
