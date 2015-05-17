@@ -419,7 +419,7 @@ RouterMonitor_genKey (
     unsigned char fdKey[ROUTER_MONITOR_FDKEY_SIZE]
 ) {
     // Format the fdKey from the fd
-    snprintf (fdKey, ROUTER_MONITOR_FDKEY_SIZE, "%jx", fd);
+    snprintf (fdKey, ROUTER_MONITOR_FDKEY_SIZE, "%I64d", fd);
 }
 
 void
