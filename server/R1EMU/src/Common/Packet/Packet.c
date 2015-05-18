@@ -62,8 +62,8 @@ CryptPacket_getHeader (
 }
 
 void
-BarrackPacket_normalHeader (
-    BarrackPacketNormalHeader *normalHeader,
+PacketNormal_header (
+    PacketNormalHeader *normalHeader,
     uint32_t subtype,
     uint32_t packetSize
 ) {

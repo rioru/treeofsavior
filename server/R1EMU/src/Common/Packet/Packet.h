@@ -64,11 +64,11 @@ typedef struct VariableSizePacketHeader
 
 
 #pragma pack(push, 1)
-typedef struct BarrackPacketNormalHeader
+typedef struct PacketNormalHeader
 {
     VariableSizePacketHeader variableSizeHeader;
     uint32_t subtype;
-}   BarrackPacketNormalHeader;
+}   PacketNormalHeader;
 #pragma pack(pop)
 
 
@@ -116,15 +116,15 @@ CryptPacket_getHeader (
 );
 
 /**
- * @brief Creates a barrack normal header based on the subtype argument
+ * @brief Creates a normal header based on the subtype argument
  * @param[out] normalHeader An allocated normal header
  * @param[in] subtype The subtype of the normal barrack packet
  * @param[in] packetSize The total size of the packet
  * @return
  */
 void
-BarrackPacket_normalHeader (
-    BarrackPacketNormalHeader *normalHeader,
+PacketNormal_header (
+    PacketNormalHeader *normalHeader,
     uint32_t subtype,
     uint32_t packetSize
 );

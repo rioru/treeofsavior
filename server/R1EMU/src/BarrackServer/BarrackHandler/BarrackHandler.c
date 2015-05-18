@@ -325,7 +325,7 @@ BarrackHandler_commanderMove (
 
     #pragma pack(push, 1)
     typedef struct {
-        BarrackPacketNormalHeader normalHeader;
+        PacketNormalHeader normalHeader;
         uint64_t accountId;
         uint16_t commanderListId;
         uint16_t unk1;
@@ -346,7 +346,7 @@ BarrackHandler_commanderMove (
     BcNormalCommanderMoveOkPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    BarrackPacket_normalHeader (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (BcNormalCommanderMoveOkPacket));
+    PacketNormal_header (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (BcNormalCommanderMoveOkPacket));
 
     // TODO : Check position of the client
     replyPacket.accountId = session->socket.accountId;
@@ -377,7 +377,7 @@ BarrackHandler_commanderInfo (
 
 	#pragma pack(push, 1)
     typedef struct {
-        BarrackPacketNormalHeader normalHeader;
+        PacketNormalHeader normalHeader;
         uint64_t accountId;
     } BcNormalUnkHandler2Packet;
     #pragma pack(pop)
@@ -439,7 +439,7 @@ BarrackHandler_unkHandler1 (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        BarrackPacketNormalHeader normalHeader;
+        PacketNormalHeader normalHeader;
         uint64_t accountId;
         uint32_t unk1;
         uint32_t unk2;
@@ -451,7 +451,7 @@ BarrackHandler_unkHandler1 (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     // Build BC_NORMAL header
-    BarrackPacket_normalHeader (&replyPacket.normalHeader, BC_NORMAL_UNKNOWN_1, sizeof (BcNormalUnknown1Packet));
+    PacketNormal_header (&replyPacket.normalHeader, BC_NORMAL_UNKNOWN_1, sizeof (BcNormalUnknown1Packet));
 
     replyPacket.accountId = session->socket.accountId;
     replyPacket.unk1 = 0xB;
@@ -490,7 +490,7 @@ BarrackHandler_petInfo (
 ) {
 	#pragma pack(push, 1)
     typedef struct {
-        BarrackPacketNormalHeader normalHeader;
+        PacketNormalHeader normalHeader;
         uint64_t accountId;
         // TODO
         byte unk[180];
@@ -798,7 +798,7 @@ BarrackHandler_zoneTraffics (
 
 	#pragma pack(push, 1)
     typedef struct {
-        BarrackPacketNormalHeader normalHeader;
+        PacketNormalHeader normalHeader;
         uint16_t zlibHeader;
         uint16_t zoneMaxPcCount;
         uint16_t mapAvailableCount;
@@ -838,7 +838,7 @@ BarrackHandler_zoneTraffics (
     PacketStream stream;
     PacketStream_init (&stream, (unsigned char *) replyPacket);
 
-    BarrackPacket_normalHeader (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
+    PacketNormal_header (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
     PacketStream_addOffset (&stream, sizeof (replyPacket->normalHeader));
 
     PacketStream_append (&stream, &zlibHeader, sizeof_struct_member (ZoneTrafficsPacket, zlibHeader));
