@@ -206,6 +206,13 @@ Server_start (
     return true;
 }
 
+uint16_t
+Server_getRouterId (
+    Server *self
+) {
+    return self->info.routerInfo.routerId;
+}
+
 void
 Server_free (
     Server *self

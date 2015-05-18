@@ -106,6 +106,15 @@ Server_createProcess (
     char *executableName
 );
 
+/**
+ * @brief Get the routerId of the Server
+ * @param self A pointer to an allocated Server.
+ * @return The Router ID.
+ */
+uint16_t
+Server_getRouterId (
+    Server *self
+);
 
 /**
  * @brief Free an allocated Server structure.

@@ -78,10 +78,6 @@ int main (int argc, char **argv)
     }
     #endif
 
-    special ("=====================");
-    special ("=== Zone server %d ===", routerId);
-    special ("=====================");
-
     // === Build the Server ===
     Server *server;
     if (!(server = ServerFactory_createServer (

@@ -399,6 +399,14 @@ bool
 GlobalServer_start (
     GlobalServer *self
 ) {
+    #ifdef WIN32
+        SetConsoleTitle ("GlobalServer");
+    #endif // WIN32
+
+    special ("======================");
+    special ("=== Global server ====");
+    special ("======================");
+
     GlobalServerStartupInfo *info = &self->info;
 
     zpoller_t *poller;

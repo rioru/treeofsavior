@@ -66,6 +66,10 @@ bool
 ZoneServer_start (
     ZoneServer *self
 ) {
+    special ("=====================");
+    special ("=== Zone server %d ===", Server_getRouterId (self->server));
+    special ("=====================");
+
     if (!(Server_start (self->server))) {
         error ("Cannot start the Server.");
         return false;

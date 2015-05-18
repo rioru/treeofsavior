@@ -66,6 +66,10 @@ bool
 SocialServer_start (
     SocialServer *self
 ) {
+    special ("======================");
+    special ("==== Social server ===");
+    special ("======================");
+
     if (!(Server_start (self->server))) {
         error ("Cannot start the Server.");
         return false;

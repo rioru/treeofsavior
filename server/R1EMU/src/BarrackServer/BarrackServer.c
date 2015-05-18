@@ -66,6 +66,10 @@ bool
 BarrackServer_start (
     BarrackServer *self
 ) {
+    special ("======================");
+    special ("=== Barrack server ===");
+    special ("======================");
+
     if (!(Server_start (self->server))) {
         error ("Cannot start the Server.");
         return false;
