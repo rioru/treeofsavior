@@ -27,9 +27,6 @@ ZlibPacket_compress (
     char *data,
     size_t dataSize
 ) {
-    ZlibPacket ori = *self;
-
-    z_stream oriS;
     z_stream stream;
 
     stream.next_in = data;
@@ -40,7 +37,6 @@ ZlibPacket_compress (
     stream.total_out = 0;
     stream.zalloc = 0;
     stream.zfree = 0;
-    oriS = stream;
 
     if (deflateInit2_ (&stream, 1, Z_DEFLATED, -15, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY, "1.2.8", 88)) {
         warning ("Can't init compression.");
