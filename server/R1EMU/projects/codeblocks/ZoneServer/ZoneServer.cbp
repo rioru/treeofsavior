@@ -158,6 +158,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/utils/utils.h" />
+		<Unit filename="../../../src/Common/utils/zlib.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/utils/zlib.h" />
 		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
 		<Unit filename="../../../src/R1EMU.h" />
 		<Unit filename="../../../src/SocialServer/SocialHandler/SocialHandler.c">
