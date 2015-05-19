@@ -44,20 +44,24 @@ void *dumpToMem (
 
     while ((dumpPos = str_getline (dump, buffer, sizeof(buffer) - 1, dumpPos)) != -1)
     {
-        char *strPos;
-        if ((strPos = strstr (buffer, "dbgBuffer]  ")) != NULL) {
-            strPos += strlen ("dbgBuffer]  ");
-            char *end = strstr (strPos, " | ");
-            *end = 0;
+        char *strPos = buffer;
+        if ((strPos = strstr (buffer, "]  ")) != NULL) {
+            strPos += strlen ("]  ");
+        }
+        else if ((strPos = strstr (buffer, "] ")) != NULL) {
+            strPos += strlen ("] ");
+        }
 
-            while (strPos < end) {
-                char *newPos;
-                unsigned char octet = strtol (strPos, &newPos, 16);
-                if (strPos == newPos)
-                    break;
-                memoryBytes[memPos++] = octet;
-                strPos = newPos;
-            }
+        char *end = strstr (strPos, " | ");
+        *end = 0;
+
+        while (strPos < end) {
+            char *newPos;
+            unsigned char octet = strtol (strPos, &newPos, 16);
+            if (strPos == newPos)
+                break;
+            memoryBytes[memPos++] = octet;
+            strPos = newPos;
         }
     }
 

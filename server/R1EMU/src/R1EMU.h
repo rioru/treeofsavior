@@ -40,6 +40,9 @@ typedef enum {
 // Redis environment
 #include <hiredis.h>
 
+// zlib environment
+#include <zlib.h>
+
 // Debugging environment
 /** If defined, the debugging functions will be included in the executable */
 #define __DBG_ACTIVATED__ TRUE
