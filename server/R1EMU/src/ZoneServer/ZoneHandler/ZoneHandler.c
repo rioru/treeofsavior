@@ -135,6 +135,8 @@ static PacketHandlerState ZoneHandler_campInfo        (Worker *self, Session *se
 /** On log out */
 static PacketHandlerState ZoneHandler_czQuickSlotList (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
+static PacketHandlerState ZoneHandler_itemUse         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On log out */
 static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
 static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
@@ -162,6 +164,7 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_CAMPINFO, ZoneHandler_campInfo),
     REGISTER_PACKET_HANDLER (CZ_QUICKSLOT_LIST, ZoneHandler_czQuickSlotList),
     REGISTER_PACKET_HANDLER (CZ_LOGOUT, ZoneHandler_logout),
+    REGISTER_PACKET_HANDLER (CZ_ITEM_USE, ZoneHandler_itemUse),
     REGISTER_PACKET_HANDLER (CZ_I_NEED_PARTY, ZoneHandler_iNeedParty),
     REGISTER_PACKET_HANDLER (CZ_SKILL_GROUND, ZoneHandler_skillGround),
 
@@ -331,6 +334,20 @@ ZoneHandler_partyInfo (
 
 
 static PacketHandlerState
+ZoneHandler_itemUse (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    warning ("CZ_ITEM_USE not implemented yet.");
+
+    return PACKET_HANDLER_OK;
+}
+
+
+static PacketHandlerState
 ZoneHandler_iNeedParty (
     Worker *self,
     Session *session,
@@ -338,6 +355,7 @@ ZoneHandler_iNeedParty (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    warning ("CZ_I_NEED_PARTY not implemented yet.");
     // ZoneHandler_partyInfo (self, session, reply);
     // ZoneHandler_partyList (self, session, reply);
 
