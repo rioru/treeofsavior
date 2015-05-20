@@ -1285,6 +1285,24 @@ ZoneHandler_skillmapList (
 ) {
     warning ("ZC_SKILLMAP_LIST not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t unk1;
+        uint16_t unk2;
+    } ZcSkillmapListPacket;
+    #pragma pack(pop)
+
+    ZcOptionListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_SKILLMAP_LIST;
+    replyPacket.unk1 = 0xC;
+    replyPacket.unk2 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  AC 0C FF FF FF FF 0C 00 00 00 00 00             | ............\n"
@@ -1292,6 +1310,7 @@ ZoneHandler_skillmapList (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 
