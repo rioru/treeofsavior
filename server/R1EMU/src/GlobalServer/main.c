@@ -50,6 +50,7 @@ bool testZlib () {
     );
 
     ZlibPacket_decompress (&zlibPacket[0], (char *) memory + 16, 0x150);
+    buffer_print (zlibPacket[0].buffer, zlibPacket[0].header.size, ">");
     ZlibPacket_compress (&zlibPacket[1], zlibPacket[0].buffer, zlibPacket[0].header.size);
     ZlibPacket_decompress (&zlibPacket[2], zlibPacket[1].buffer, zlibPacket[0].header.size);
 
