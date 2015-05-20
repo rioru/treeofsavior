@@ -1214,6 +1214,24 @@ ZoneHandler_npcStateList (
 ) {
     warning ("ZC_NPC_STATE_LIST not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t unk1;
+        uint16_t unk2;
+    } ZcNpcStateListPacket;
+    #pragma pack(pop)
+
+    ZcNpcStateListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_NPC_STATE_LIST;
+    replyPacket.unk1 = 0xC;
+    replyPacket.unk2 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  D4 0C FF FF FF FF 0C 00 00 00 00 00             | ............\n"
@@ -1221,6 +1239,7 @@ ZoneHandler_npcStateList (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 static void
