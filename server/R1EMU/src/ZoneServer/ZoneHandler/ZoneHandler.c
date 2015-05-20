@@ -1195,6 +1195,43 @@ ZoneHandler_helpList (
 ) {
     warning ("ZC_HELP_LIST not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+
+        uint32_t nbEntries;
+
+        uint32_t unk3;
+        uint8_t  unk4;
+
+        uint32_t unk5;
+        uint8_t  unk6;
+
+        uint32_t unk7;
+        uint8_t  unk8;
+    } ZcHelpListPacket;
+    #pragma pack(pop)
+
+    ZcHelpListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_HELP_LIST;
+    replyPacket.unk1 = 0x1B;
+    replyPacket.nbEntries = 3;
+
+    replyPacket.unk3 = 2;
+    replyPacket.unk4 = 0;
+
+    replyPacket.unk5 = 3;
+    replyPacket.unk5 = 0;
+
+    replyPacket.unk5 = 4;
+    replyPacket.unk5 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  44 0D FF FF FF FF 1B 00 03 00 00 00 02 00 00 00 | D...............\n"
@@ -1203,6 +1240,7 @@ ZoneHandler_helpList (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 
