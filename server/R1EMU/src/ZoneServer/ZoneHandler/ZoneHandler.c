@@ -1230,7 +1230,26 @@ ZoneHandler_uiInfoList (
     zmsg_t *reply
 ) {
     warning ("ZC_UI_INFO_LIST not implemented yet.");
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t unk1;
+        uint32_t unk2;
+        uint16_t unk3;
+    } ZcUiInfoListPacket;
+    #pragma pack(pop)
 
+    ZcUiInfoListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_UI_INFO_LIST;
+    replyPacket.unk1 = 0x10;
+    replyPacket.unk2 = 0;
+    replyPacket.unk3 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  D1 0C FF FF FF FF 10 00 00 00 00 00 00 00 00 00 | ................\n"
@@ -1238,6 +1257,7 @@ ZoneHandler_uiInfoList (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 static void
