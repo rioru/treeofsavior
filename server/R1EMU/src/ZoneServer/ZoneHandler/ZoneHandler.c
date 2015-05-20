@@ -1322,13 +1322,29 @@ ZoneHandler_sessionObjects (
 ) {
     warning ("ZC_SESSION_OBJECTS not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t unk;
+    } ZcSessionObjectsPacket;
+    #pragma pack(pop)
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  89 0C FF FF FF FF 0A 00 00 00                   | ..........\n"
       , NULL, &memSize
     );
-
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
+
+    ZcSessionObjectsPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (ZcSessionObjectsPacket));
+
+    replyPacket.header.type = ZC_SESSION_OBJECTS;
+    replyPacket.unk = 0xA;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 
@@ -1346,6 +1362,7 @@ ZoneHandler_itemInventoryList (
         ZlibHeader zlibHeader;
     } ZcItemInventoryList;
     #pragma pack(pop)
+
     warning ("ZC_ITEM_INVENTORY_LIST not implemented yet.");
 
     /*
