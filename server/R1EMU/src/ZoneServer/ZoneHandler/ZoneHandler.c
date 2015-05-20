@@ -1303,6 +1303,24 @@ ZoneHandler_optionList (
 ) {
     warning ("ZC_OPTION_LIST not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint8_t unk2;
+    } ZcOptionListPacket;
+    #pragma pack(pop)
+
+    ZcOptionListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_OPTION_LIST;
+    replyPacket.unk1 = 9;
+    replyPacket.unk2 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  AB 0C FF FF FF FF 09 00 00                      | .........\n"
@@ -1310,6 +1328,7 @@ ZoneHandler_optionList (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 
@@ -1339,7 +1358,7 @@ ZoneHandler_sessionObjects (
     */
 
     ZcSessionObjectsPacket replyPacket;
-    memset (&replyPacket, 0, sizeof (ZcSessionObjectsPacket));
+    memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_SESSION_OBJECTS;
     replyPacket.unk = 0xA;
