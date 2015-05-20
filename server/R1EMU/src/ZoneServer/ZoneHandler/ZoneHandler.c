@@ -1293,7 +1293,7 @@ ZoneHandler_skillmapList (
     } ZcSkillmapListPacket;
     #pragma pack(pop)
 
-    ZcOptionListPacket replyPacket;
+    ZcSkillmapListPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_SKILLMAP_LIST;
