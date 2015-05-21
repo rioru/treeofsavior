@@ -518,22 +518,15 @@ ZoneHandler_normalUnk7 (
     warning ("ZC_NORMAL_UNKNOWN_7 not implemented yet.");
     /*
         300D     FFFFFFFF 2501     E1000000 0016     00 0000  139D0100 D1A80144 00000000 D1A80144 00000000
-
         EAB5ACEC9B90EC9E9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-
         000000F3 D4560030 35E313FD 0309B85A 730100
-
         EAB5ACEC9B90EC9E9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-
         000000
-
         CommanderName
         43425432000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-
         00000000 00040001
                                           x        y        z
         00000002 33560000 000000 01000000 00001DC4 00008243 002080C4
-
         69000000 77000000 69000000 77000000
     */
     size_t memSize;
@@ -1161,7 +1154,7 @@ ZoneHandler_startInfo (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("CZ_START_INFO not implemented yet.");
+    warning ("ZC_START_INFO not implemented yet.");
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1174,10 +1167,10 @@ ZoneHandler_startInfo (
     } ZcStartInfo;
     #pragma pack(pop)
 
-    ZcGuestpageMapPacket replyPacket;
+    ZcStartInfo replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    replyPacket.header.type = CZ_START_INFO;
+    replyPacket.header.type = ZC_START_INFO;
     replyPacket.unk1 = 0x18;
     replyPacket.unk2 = 1;
     replyPacket.unk3 = 4;
