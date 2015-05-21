@@ -1177,6 +1177,24 @@ ZoneHandler_myPageMap (
 ) {
     warning ("ZC_MYPAGE_MAP not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint32_t unk2;
+    } ZcMyPageMapPacket;
+    #pragma pack(pop)
+
+    ZcMyPageMapPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_MYPAGE_MAP;
+    replyPacket.unk1 = 0xD;
+    replyPacket.unk2 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  3D 0D FF FF FF FF 0D 00 01 00 00 00 00          | =............\n"
@@ -1184,6 +1202,7 @@ ZoneHandler_myPageMap (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 
