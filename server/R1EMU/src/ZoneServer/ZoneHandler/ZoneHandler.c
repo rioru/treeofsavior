@@ -1224,10 +1224,10 @@ ZoneHandler_helpList (
     replyPacket.unk4 = 0;
 
     replyPacket.unk5 = 3;
-    replyPacket.unk5 = 0;
+    replyPacket.unk6 = 0;
 
-    replyPacket.unk5 = 4;
-    replyPacket.unk5 = 0;
+    replyPacket.unk7 = 4;
+    replyPacket.unk8 = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
