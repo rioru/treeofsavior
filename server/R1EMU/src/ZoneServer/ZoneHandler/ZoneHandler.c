@@ -1274,8 +1274,8 @@ ZoneHandler_npcStateList (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
-        uint16_t unk2;
+        uint16_t unk1;
+        uint32_t unk2;
     } ZcNpcStateListPacket;
     #pragma pack(pop)
 
@@ -1309,9 +1309,9 @@ ZoneHandler_uiInfoList (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
+        uint16_t unk1;
         uint32_t unk2;
-        uint16_t unk3;
+        uint32_t unk3;
     } ZcUiInfoListPacket;
     #pragma pack(pop)
 
@@ -1347,8 +1347,8 @@ ZoneHandler_chatMacroList (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
-        uint16_t unk2;
+        uint16_t unk1;
+        uint32_t unk2;
     } ZcChatMacroListPacket;
     #pragma pack(pop)
 
@@ -1384,8 +1384,8 @@ ZoneHandler_achievePointList (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
-        uint16_t unk2;
+        uint16_t unk1;
+        uint32_t unk2;
     } ZcAchievePointListPacket;
     #pragma pack(pop)
 
@@ -1421,8 +1421,8 @@ ZoneHandler_skillmapList (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
-        uint16_t unk2;
+        uint16_t unk1;
+        uint32_t unk2;
     } ZcSkillmapListPacket;
     #pragma pack(pop)
 
@@ -1528,8 +1528,8 @@ ZoneHandler_itemInventoryList (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t unk1;
-        uint16_t unk2;
+        uint16_t unk1;
+        uint32_t unk2;
         ZlibHeader zlibHeader;
     } ZcItemInventoryList;
     #pragma pack(pop)
