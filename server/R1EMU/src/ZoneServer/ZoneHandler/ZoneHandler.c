@@ -1139,7 +1139,32 @@ ZoneHandler_startInfo (
     zmsg_t *reply
 ) {
     warning ("CZ_START_INFO not implemented yet.");
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint32_t unk2;
+        uint16_t unk3;
+        uint32_t unk4;
+        uint32_t unk5;
+        uint16_t unk6;
+    } ZcStartInfo;
+    #pragma pack(pop)
 
+    ZcGuestpageMapPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = CZ_START_INFO;
+    replyPacket.unk1 = 0x18;
+    replyPacket.unk2 = 1;
+    replyPacket.unk3 = 4;
+    replyPacket.unk4 = 0x1A12;
+    replyPacket.unk5 = 0;
+    replyPacket.unk6 = 1;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  16 0D FF FF FF FF 18 00 01 00 00 00 04 00 12 1A | ................\n"
@@ -1148,6 +1173,7 @@ ZoneHandler_startInfo (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 static void
@@ -1173,6 +1199,7 @@ ZoneHandler_guestPageMap (
     replyPacket.header.type = ZC_GUESTPAGE_MAP;
     replyPacket.unk1 = 0xD;
     replyPacket.unk2 = 1;
+    replyPacket.unk3 = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -1212,6 +1239,7 @@ ZoneHandler_myPageMap (
     replyPacket.header.type = ZC_MYPAGE_MAP;
     replyPacket.unk1 = 0xD;
     replyPacket.unk2 = 1;
+    replyPacket.unk3 = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
