@@ -1015,6 +1015,28 @@ ZoneHandler_cooldownList (
 ) {
     warning ("ZC_COOLDOWN_LIST not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint32_t unk2;
+        uint32_t unk3;
+        uint32_t unk4;
+    } ZcHelpListPacket;
+    #pragma pack(pop)
+
+    ZcHelpListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_COOLDOWN_LIST;
+    replyPacket.unk1 = 0x14;
+    replyPacket.unk2 = 0x604;
+    replyPacket.unk3 = 0x19F74;
+    replyPacket.unk4 = 0;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:36:22][           ToSClient:                     dbgBuffer]  77 0C FF FF FF FF 14 00 04 06 00 00 74 9F 01 00 | w...........t...\n"
@@ -1023,6 +1045,7 @@ ZoneHandler_cooldownList (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 static void
