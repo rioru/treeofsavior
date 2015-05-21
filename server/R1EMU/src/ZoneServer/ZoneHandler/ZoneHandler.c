@@ -1158,6 +1158,25 @@ ZoneHandler_guestPageMap (
 ) {
     warning ("ZC_GUESTPAGE_MAP not implemented yet.");
 
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint32_t unk2;
+        uint8_t  unk3;
+    } ZcGuestpageMapPacket;
+    #pragma pack(pop)
+
+    ZcGuestpageMapPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.header.type = ZC_GUESTPAGE_MAP;
+    replyPacket.unk1 = 0xD;
+    replyPacket.unk2 = 1;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    /*
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  3E 0D FF FF FF FF 0D 00 01 00 00 00 00          | >............\n"
@@ -1165,6 +1184,7 @@ ZoneHandler_guestPageMap (
     );
 
     zmsg_add (reply, zframe_new (memory, memSize));
+    */
 }
 
 
@@ -1182,6 +1202,7 @@ ZoneHandler_myPageMap (
         ServerPacketHeader header;
         uint16_t unk1;
         uint32_t unk2;
+        uint8_t  unk3;
     } ZcMyPageMapPacket;
     #pragma pack(pop)
 
@@ -1190,7 +1211,7 @@ ZoneHandler_myPageMap (
 
     replyPacket.header.type = ZC_MYPAGE_MAP;
     replyPacket.unk1 = 0xD;
-    replyPacket.unk2 = 0;
+    replyPacket.unk2 = 1;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
