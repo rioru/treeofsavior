@@ -207,7 +207,7 @@ RouterMonitor_monitor (
             error ("The client FD=%d just connected, but another client has still this FD (previously : %s)",
                    fdClient, sessionKey);
             // TODO : Decide what to do in this case
-            result = -1;
+            result = 0;
             goto cleanup;
         }
     }

@@ -610,8 +610,26 @@ ZoneHandler_normalUnk6 (
 ) {
     warning ("ZC_NORMAL_UNKNOWN_6 not implemented yet.");
 
-    size_t memSize;
-    void *memory = dumpToMem (
+    #pragma pack(push, 1)
+    typedef struct {
+        PacketNormalHeader normalHeader;
+        uint32_t unk1;
+        uint32_t unk2;
+        uint32_t unk3;
+        uint32_t unk4;
+        uint32_t unk5;
+        uint8_t  unk6[16*3+8];
+        uint8_t  unk7;
+        char commanderCharName [COMMANDER_CHAR_NAME_SIZE];
+        uint8_t unk8[79];
+    } ZcNormalUnknown6Packet;
+    #pragma pack(pop)
+
+    ZcNormalUnknown6Packet replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (ZcNormalUnknown6Packet);
+    dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF E9 00 C9 00 00 00 85 07 00 00 | 0...............\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  19 51 00 00 43 22 00 00 1C 08 00 00 FF FF FF FF | .Q..C...........\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
@@ -627,10 +645,12 @@ ZoneHandler_normalUnk6 (
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 20 04 00 00 00 00 | .......... .....\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 02 33 00 00 00 00 00 00                      | ..3......\n"
-        , NULL, &memSize
+        , &replyPacket, &memSize
     );
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    strncpy (replyPacket.commanderCharName, session->game.currentCommander.charName, sizeof (replyPacket.commanderCharName));
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
