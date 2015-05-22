@@ -142,6 +142,8 @@ static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *se
 static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On cast a spell on the ground */
 static PacketHandlerState ZoneHandler_skillGround     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+/** On commander sit */
+static PacketHandlerState ZoneHandler_restSit         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -167,9 +169,53 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_ITEM_USE, ZoneHandler_itemUse),
     REGISTER_PACKET_HANDLER (CZ_I_NEED_PARTY, ZoneHandler_iNeedParty),
     REGISTER_PACKET_HANDLER (CZ_SKILL_GROUND, ZoneHandler_skillGround),
+    REGISTER_PACKET_HANDLER (CZ_REST_SIT, ZoneHandler_restSit),
 
     #undef REGISTER_PACKET_HANDLER
 };
+
+static PacketHandlerState
+ZoneHandler_restSit (
+    Worker *self,
+    Session *session,
+    unsigned char *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        // This packet is actually empty
+    } CzRestSitPacket;
+    #pragma pack(pop)
+
+    if (sizeof (CzRestSitPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CzRestSitPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    CzRestSitPacket *clientPacket = (CzRestSitPacket *) packet;
+    (void) clientPacket; // Do nothing
+
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        uint8_t isSit;
+    } ZcRestSitPacket;
+    #pragma pack(pop)
+
+    ZcRestSitPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    replyPacket.pcId = session->game.currentCommander.pcId;
+    replyPacket.isSit = 1;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+
+    return PACKET_HANDLER_OK;
+}
 
 static PacketHandlerState
 ZoneHandler_skillGround (
@@ -1772,26 +1818,13 @@ ZoneHandler_connect (
     replyPacket.accountPrivileges = 0;
     replyPacket.pcId = gameSession->currentCommander.pcId;
 
-    // Copy the commander Information
-    memcpy (&replyPacket.commander, &gameSession->currentCommander, sizeof (CommanderInfo));
-
-    // AccountID
-    replyPacket.commander.accountId = socketSession->accountId;
-
-    // PCID
-    replyPacket.commander.pcId = gameSession->currentCommander.pcId;
-
-    // CommanderID
-    replyPacket.commander.commanderId = gameSession->currentCommander.commanderId;
-
-    // Character position
-    replyPacket.commander.charPosition = gameSession->charactersBarrackCount;
-
     // Position : Official starting point position (tutorial)
     gameSession->currentCommander.cPosX = -628.0f;
     gameSession->currentCommander.cPosY = 260.0f;
-    replyPacket.commander.cPosX = gameSession->currentCommander.cPosX;
-    replyPacket.commander.cPosY = gameSession->currentCommander.cPosY;
+    gameSession->currentCommander.accountId = socketSession->accountId;
+
+    // Copy the commander Information
+    memcpy (&replyPacket.commander, &gameSession->currentCommander, sizeof (CommanderInfo));
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
