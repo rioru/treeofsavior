@@ -575,8 +575,28 @@ ZoneHandler_normalUnk7 (
         00000002 33560000 000000 01000000 00001DC4 00008243 002080C4
         69000000 77000000 69000000 77000000
     */
-    size_t memSize;
-    void *memory = dumpToMem (
+
+    #pragma pack(push, 1)
+    typedef struct {
+        PacketNormalHeader normalHeader;
+        uint32_t unk1;
+        uint32_t socialId;
+        uint8_t unk2;
+        uint64_t accountId;
+        uint64_t accountId_2;
+        char familyName [COMMANDER_FAMILY_NAME_SIZE];
+        uint8_t unk3[14];
+        char familyName_2 [COMMANDER_FAMILY_NAME_SIZE];
+        char commanderCharName [COMMANDER_CHAR_NAME_SIZE];
+        uint8_t unk4[47];
+    } ZcNormalUnknown7Packet;
+    #pragma pack(pop)
+
+    ZcNormalUnknown7Packet replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (ZcNormalUnknown7Packet);
+    dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 25 01 E1 00 00 00 00 16 00 00 | 0.....%.........\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 13 9D 01 00 D1 A8 01 44 00 00 00 00 D1 A8 01 | ........D.......\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  44 00 00 00 00 EA B5 AC EC 9B 90 EC 9E 90 00 00 | D...............\n"
@@ -596,10 +616,16 @@ ZoneHandler_normalUnk7 (
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 01 00 00 00 00 00 1D C4 00 00 82 | ................\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  43 00 20 80 C4 69 00 00 00 77 00 00 00 69 00 00 | C. ..i...w...i..\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  00 77 00 00 00                                  | .w...\n"
-        , NULL, &memSize
+        , &replyPacket, &memSize
     );
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    replyPacket.accountId = session->socket.accountId;
+    replyPacket.accountId_2 = session->socket.accountId;
+    strncpy (replyPacket.familyName, session->game.currentCommander.familyName, sizeof (replyPacket.familyName));
+    strncpy (replyPacket.familyName_2, session->game.currentCommander.familyName, sizeof (replyPacket.familyName_2));
+    strncpy (replyPacket.commanderCharName, session->game.currentCommander.charName, sizeof (replyPacket.commanderCharName));
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
