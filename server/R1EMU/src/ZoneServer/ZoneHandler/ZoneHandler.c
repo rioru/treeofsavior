@@ -1096,7 +1096,7 @@ ZoneHandler_abilityList (
     warning ("ZC_ABILITY_LIST not implemented yet.");
 
     size_t memSize;
-    void *memory = dumpToMem (
+    void *memory = dumpToMem (                                                               //   [--PcId---]
         "[11:36:22][           ToSClient:                     dbgBuffer]  33 0C FF FF FF FF 3E 00 36 F8 01 00 03 00 8D FA | 3.....>.6.......\n"
         "[11:36:22][           ToSClient:                     dbgBuffer]  1C 00 7B 7F 99 81 61 F1 7C 46 06 41 75 06 20 F8 | ..{...a.|F.Au. .\n"
         "[11:36:22][           ToSClient:                     dbgBuffer]  CF F0 01 CA 17 87 F2 3F 42 F9 92 50 3E 00 F1 D3 | .......?B..P>...\n"
@@ -1115,8 +1115,19 @@ ZoneHandler_skillList (
 ) {
     warning ("ZC_SKILL_LIST not implemented yet.");
 
-    size_t memSize;
-    void *memory = dumpToMem (
+    #pragma pack(push, 1)
+    typedef struct {
+        VariableSizePacketHeader variableSizeHeader;
+        uint32_t pcId;
+        uint8_t unk [320];
+    } ZcSkillListPacket;
+    #pragma pack(pop)
+
+    ZcSkillListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (replyPacket);
+    dumpToMem (                                                               //   [--PcId---]
         "[11:45:10][           ToSClient:                     dbgBuffer]  31 0C FF FF FF FF 4C 01 36 F8 01 00 07 00 8D FA | 1.....L.6.......\n"
         "[11:45:10][           ToSClient:                     dbgBuffer]  3A 01 63 60 80 00 11 20 55 C1 A0 F4 0A C4 DB B4 | :.c`... U.......\n"
         "[11:45:10][           ToSClient:                     dbgBuffer]  D3 DB 3C 94 91 81 A1 C1 DE 03 48 32 30 B8 81 49 | ..<.......H20..I\n"
@@ -1138,10 +1149,12 @@ ZoneHandler_skillList (
         "[11:45:10][           ToSClient:                     dbgBuffer]  7A B6 38 4E 41 F8 AC 20 3A 7C 20 E9 D9 C1 D1 E5 | z.8NA.. :| .....\n"
         "[11:45:10][           ToSClient:                     dbgBuffer]  0A 24 BE 1C A1 EE 01 B9 06 C5 3D 06 7D A4 B9 C7 | .$........=.}...\n"
         "[11:45:10][           ToSClient:                     dbgBuffer]  61 8E 2B 22 7F CD 20 D1 3D 3C 4E 00             | a.+... .=<N.\n"
-      , NULL, &memSize
+      , &replyPacket, &memSize
     );
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    replyPacket.pcId = session->game.currentCommander.pcId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
