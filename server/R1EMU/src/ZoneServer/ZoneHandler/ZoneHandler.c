@@ -1724,9 +1724,6 @@ ZoneHandler_connect (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
-    SocketSession *socketSession = &session->socket;
-
     #pragma pack(push, 1)
     typedef struct {
         uint32_t unk1;
@@ -1816,15 +1813,13 @@ ZoneHandler_connect (
     replyPacket.gameMode = 0;
     replyPacket.unk1 = 1;
     replyPacket.accountPrivileges = 0;
-    replyPacket.pcId = gameSession->currentCommander.pcId;
-
+    replyPacket.pcId = session->game.currentCommander.pcId;
     // Position : Official starting point position (tutorial)
-    gameSession->currentCommander.cPosX = -628.0f;
-    gameSession->currentCommander.cPosY = 260.0f;
-    gameSession->currentCommander.accountId = socketSession->accountId;
+    session->game.currentCommander.cPosX = -628.0f;
+    session->game.currentCommander.cPosY = 260.0f;
 
     // Copy the commander Information
-    memcpy (&replyPacket.commander, &gameSession->currentCommander, sizeof (CommanderInfo));
+    memcpy (&replyPacket.commander, &session->game.currentCommander, sizeof (CommanderInfo));
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -1894,8 +1889,6 @@ ZoneHandler_moveSpeed (
     Session *session,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1910,7 +1903,7 @@ ZoneHandler_moveSpeed (
 
     replyPacket.header.type = ZC_MOVE_SPEED;
 
-    replyPacket.pcId = gameSession->currentCommander.pcId;
+    replyPacket.pcId = session->game.currentCommander.pcId;
     replyPacket.movementSpeed = 31.0f;
     replyPacket.unk1 = 0;
 
@@ -1925,7 +1918,6 @@ ZoneHandler_jump (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
     buffer_print (packet, packetSize, "Jump :");
 
     #pragma pack(push, 1)
@@ -1957,7 +1949,7 @@ ZoneHandler_jump (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_JUMP;
-    replyPacket.pcId = gameSession->currentCommander.pcId;
+    replyPacket.pcId = session->game.currentCommander.pcId;
     replyPacket.height = 300.0;
     replyPacket.unk1 = 1;
     replyPacket.charPosition = 1;
