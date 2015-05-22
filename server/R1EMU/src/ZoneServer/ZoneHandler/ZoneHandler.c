@@ -1127,7 +1127,7 @@ ZoneHandler_skillList (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     size_t memSize = sizeof (replyPacket);
-    dumpToMem (                                                               //   [--PcId---]
+    dumpToMem (                                                                              //   [--PcId---]
         "[11:45:10][           ToSClient:                     dbgBuffer]  31 0C FF FF FF FF 4C 01 36 F8 01 00 07 00 8D FA | 1.....L.6.......\n"
         "[11:45:10][           ToSClient:                     dbgBuffer]  3A 01 63 60 80 00 11 20 55 C1 A0 F4 0A C4 DB B4 | :.c`... U.......\n"
         "[11:45:10][           ToSClient:                     dbgBuffer]  D3 DB 3C 94 91 81 A1 C1 DE 03 48 32 30 B8 81 49 | ..<.......H20..I\n"
