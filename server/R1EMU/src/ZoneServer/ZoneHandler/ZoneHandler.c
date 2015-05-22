@@ -1687,7 +1687,8 @@ ZoneHandler_connect (
         uint64_t accountId;
         uint32_t spriteId;
         uint32_t spriteIdRelated;
-        unsigned char accountName[18];
+        unsigned char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        uint8_t unk4;
         uint32_t zoneServerId;
         uint16_t unk3;
         uint8_t channelListId;
@@ -1718,12 +1719,47 @@ ZoneHandler_connect (
     ZcConnectPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    // Check the client packet here :
-    if ((clientPacket->accountId != socketSession->accountId)
-    // TODO : Complete the check
-    ) {
-        error ("Wrong account authentication. (clientPacket accountId = %llx, socketSession AccountId = %llx",
-            clientPacket->accountId, socketSession->accountId);
+    // Get the Game Session that the Barrack Server moved
+    RedisGameSessionKey gameKey = {
+        .routerId = self->info.routerId,
+        .mapId = -1,
+        .accountId = clientPacket->accountId
+    };
+    if (!(Redis_getGameSession (self->redis, &gameKey, &session->game))) {
+        error ("Cannot retrieve the game session.");
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Check the client packet here (authentication)
+    if (strncmp (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin)) != 0) {
+        error ("Wrong account authentication. (clientPacket account = <%s>, Session account = <%s>",
+            clientPacket->accountLogin, session->game.accountLogin);
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Authentication OK !
+    // Update the Socket Session
+    SocketSession_init (&session->socket,
+        clientPacket->accountId,
+        self->info.routerId,
+        session->game.currentCommander.mapId,
+        session->socket.socketId,
+        true
+    );
+
+    // Move the game Session to the current mapId
+    RedisGameSessionKey fromKey = {
+        .routerId = session->socket.routerId,
+        .mapId = -1,
+        .accountId = session->socket.accountId
+    };
+    RedisGameSessionKey toKey = {
+        .routerId = session->socket.routerId,
+        .mapId = session->socket.mapId,
+        .accountId = session->socket.accountId
+    };
+    if (!(Redis_moveGameSession (self->redis, &fromKey, &toKey))) {
+        error ("Cannot move the game session to the current mapId.");
         return PACKET_HANDLER_ERROR;
     }
 

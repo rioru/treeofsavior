@@ -189,7 +189,6 @@ Redis_flushSocketSession (
 
         case REDIS_REPLY_INTEGER:
             // Delete OK
-            info ("OK");
         break;
 
         default :

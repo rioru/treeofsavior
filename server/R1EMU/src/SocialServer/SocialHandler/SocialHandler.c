@@ -49,7 +49,7 @@ SocialHandler_login (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        char accountName[17];
+        char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         char md5[17];
         uint64_t accountId;
     } CsLoginPacket;
@@ -63,7 +63,7 @@ SocialHandler_login (
     }
 
     CsLoginPacket *clientPacket = (CsLoginPacket *) packet;
-    dbg ("accountName = %s", clientPacket->accountName);
+    dbg ("accountLogin = %s", clientPacket->accountLogin);
     buffer_print (clientPacket->md5, 17, "md5 = ");
     dbg ("accountId = %llx", clientPacket->accountId);
 
@@ -71,6 +71,7 @@ SocialHandler_login (
     // TODO
 
     // Authentication OK!
+    strncpy (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin));
     session->socket.authenticated = true;
     session->socket.accountId = clientPacket->accountId;
 

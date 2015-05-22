@@ -539,7 +539,6 @@ Worker_getCryptedPacketInfo (
     unsigned char *packet,
     CryptPacketHeader *cryptHeader
 ) {
-    int result = 0;
     memset (cryptHeader, 0, sizeof (CryptPacketHeader));
 
     switch (self->info.serverType)
@@ -561,13 +560,13 @@ Worker_getCryptedPacketInfo (
                 return -1;
             }
 
-            result = 1;
+            return 1;
         break;
 
         // Social Server don't encrypt packet
         case SERVER_TYPE_SOCIAL:
-                cryptHeader->plainSize = packetSize;
-                result = 0;
+            cryptHeader->plainSize = packetSize;
+            return 0;
         break;
 
         default :
@@ -576,7 +575,7 @@ Worker_getCryptedPacketInfo (
         break;
     }
 
-    return result;
+    return -1;
 }
 
 

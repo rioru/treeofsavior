@@ -90,18 +90,32 @@ BarrackHandler_login (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    SocketSession *socketSession = &session->socket;
+    #pragma pack(push, 1)
+    typedef struct {
+        unsigned char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        unsigned char md5Password[17];
+        uint8_t unk1[5];
+    } CbLoginPacket;
+    #pragma pack(pop)
 
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        unsigned char accountName[17];
+        unsigned char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
     } BcLoginOkPacket;
     #pragma pack(pop)
 
+    if (sizeof (CbLoginPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (CbLoginPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    CbLoginPacket *clientPacket = (CbLoginPacket *) packet;
     BcLoginOkPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
@@ -109,7 +123,7 @@ BarrackHandler_login (
     // TODO
 
     // Authentication OK!
-    socketSession->authenticated = true;
+    session->socket.authenticated = true;
 
     // ===== Gives a random account =====
     replyPacket.header.type = BC_LOGINOK;
@@ -117,11 +131,12 @@ BarrackHandler_login (
     replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
     info ("AccountID %llx generated !", replyPacket.accountId);
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
-    strncpy (replyPacket.accountName, "accountName", sizeof (replyPacket.accountName));
+    strncpy (replyPacket.accountLogin, clientPacket->accountLogin, sizeof (replyPacket.accountLogin));
     // ==================================
 
     // Update the session
-    socketSession->accountId = replyPacket.accountId;
+    session->socket.accountId = replyPacket.accountId;
+    strncpy (session->game.accountLogin, replyPacket.accountLogin, sizeof (session->game.accountLogin));
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -138,14 +153,12 @@ BarrackHandler_loginByPassport (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    SocketSession *socketSession = &session->socket;
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        unsigned char accountName[17];
+        unsigned char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
     } BcLoginOkPacket;
     #pragma pack(pop)
@@ -157,7 +170,7 @@ BarrackHandler_loginByPassport (
     // TODO
 
     // Authentication OK!
-    socketSession->authenticated = true;
+    session->socket.authenticated = true;
 
     // ===== Gives a random account =====
     replyPacket.header.type = BC_LOGINOK;
@@ -165,11 +178,12 @@ BarrackHandler_loginByPassport (
     replyPacket.accountId = R1EMU_generate_random64 (&self->seed);
     info ("AccountID %llx generated !", replyPacket.accountId);
     replyPacket.accountPrivileges = CLIENT_SESSION_PRIVILEGES_ADMIN;
-    strncpy (replyPacket.accountName, "accountName", sizeof (replyPacket.accountName));
+    strncpy (replyPacket.accountLogin, "accountLogin", sizeof (replyPacket.accountLogin));
     // ==================================
 
     // Update the session
-    socketSession->accountId = replyPacket.accountId;
+    session->socket.accountId = replyPacket.accountId;
+    strncpy (session->game.accountLogin, "accountLogin", sizeof (session->game.accountLogin));
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -239,20 +253,32 @@ BarrackHandler_startGame (
     replyPacket.zoneServerId = 0x12345678;
     strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));
     replyPacket.zoneServerPort = 2004;
-    replyPacket.mapId = 0x3fd;
+    replyPacket.mapId = session->game.currentCommander.mapId;
     replyPacket.commanderListId = clientPacket->commanderListId;
     replyPacket.spriteId = session->game.currentCommander.spriteId;
     replyPacket.spriteIdRelated = session->game.currentCommander.spriteIdRelated;
     replyPacket.isSingleMap = false;
 
-    // Update the session to the concerned Zone Server
-    session->socket.routerId = clientPacket->routerId;
-    session->socket.mapId = replyPacket.mapId;
+    // Move the GameSession to the target Zone
+    RedisGameSessionKey fromKey = {
+        .routerId = session->socket.routerId,
+        .mapId = session->socket.mapId,
+        .accountId = session->socket.accountId
+    };
+    RedisGameSessionKey toKey = {
+        .routerId = clientPacket->routerId,
+        .mapId = -1,
+        .accountId = session->socket.accountId
+    };
+    if (!(Redis_moveGameSession (self->redis, &fromKey, &toKey))) {
+        error ("Cannot move the Game session %s.", session->socket.socketId);
+        return PACKET_HANDLER_ERROR;
+    }
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
-    return PACKET_HANDLER_UPDATE_SESSION;
+    return PACKET_HANDLER_DELETE_SESSION;
 }
 
 /*
@@ -264,8 +290,6 @@ BarrackHandler_jump (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    SocketSession *socketSession = &session->socket;
-
     #pragma pack(push, 1)
     typedef struct {
         uint32_t unk1;
@@ -298,7 +322,7 @@ BarrackHandler_jump (
     replyPacket.header.type = BC_JUMP;
     replyPacket.commanderListId = clientPacket->commanderListId;
     replyPacket.jumpHeight = 1000.0;
-    replyPacket.accountId = socketSession->accountId;
+    replyPacket.accountId = session->socket.accountId;
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -554,8 +578,6 @@ BarrackHandler_barracknameChange (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
-
     #pragma pack(push, 1)
     typedef struct {
         unsigned char barrackName [64];
@@ -599,7 +621,7 @@ BarrackHandler_barracknameChange (
     strncpy (replyPacket.barrackName, clientPacket->barrackName, sizeof (replyPacket.barrackName));
 
     // Update the session
-    strncpy (gameSession->currentCommander.familyName, clientPacket->barrackName, sizeof (gameSession->currentCommander.familyName));
+    strncpy (session->game.currentCommander.familyName, clientPacket->barrackName, sizeof (session->game.currentCommander.familyName));
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -614,8 +636,6 @@ BarrackHandler_commanderDestroy (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
-
     typedef struct {
         ServerPacketHeader header;
         uint8_t action;
@@ -627,7 +647,7 @@ BarrackHandler_commanderDestroy (
     };
 
     // Update session
-    gameSession->charactersBarrackCount = 0;
+    session->game.charactersBarrackCount = 0;
 
     // Send message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -644,9 +664,6 @@ BarrackHandler_commanderCreate (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    GameSession *gameSession = &session->game;
-    SocketSession *socketSession = &session->socket;
-
     #pragma pack(push, 1)
     typedef struct {
         uint8_t charPosition;
@@ -680,38 +697,38 @@ BarrackHandler_commanderCreate (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     // CharName
-    strncpy (gameSession->currentCommander.charName, clientPacket->charName, sizeof (gameSession->currentCommander.charName));
+    strncpy (session->game.currentCommander.charName, clientPacket->charName, sizeof (session->game.currentCommander.charName));
 
     // AccountID
-    gameSession->currentCommander.accountId = socketSession->accountId;
+    session->game.currentCommander.accountId = session->socket.accountId;
 
     // JobID
     switch (clientPacket->jobId)
     {
         default:
-            error ("Invalid commander Job ID (%d)", gameSession->currentCommander.jobId);
+            error ("Invalid commander Job ID (%d)", session->game.currentCommander.jobId);
             return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
-            gameSession->currentCommander.classId = COMMANDER_CLASS_WARRIOR;
+            session->game.currentCommander.classId = COMMANDER_CLASS_WARRIOR;
             break ;
         case COMMANDER_JOB_ARCHER:
-            gameSession->currentCommander.classId = COMMANDER_CLASS_ARCHER;
+            session->game.currentCommander.classId = COMMANDER_CLASS_ARCHER;
             break ;
         case COMMANDER_JOB_MAGE:
-            gameSession->currentCommander.classId = COMMANDER_CLASS_MAGE;
+            session->game.currentCommander.classId = COMMANDER_CLASS_MAGE;
             break ;
         case COMMANDER_JOB_CLERIC:
-            gameSession->currentCommander.classId = COMMANDER_CLASS_CLERIC;
+            session->game.currentCommander.classId = COMMANDER_CLASS_CLERIC;
             break ;
     }
-    gameSession->currentCommander.jobId = clientPacket->jobId;
+    session->game.currentCommander.jobId = clientPacket->jobId;
 
     // Gender
     switch (clientPacket->gender) {
         case COMMANDER_GENDER_MALE:
         case COMMANDER_GENDER_FEMALE:
-            gameSession->currentCommander.gender = clientPacket->gender;
+            session->game.currentCommander.gender = clientPacket->gender;
             break;
 
         case COMMANDER_GENDER_BOTH:
@@ -722,15 +739,15 @@ BarrackHandler_commanderCreate (
     }
 
     // Character position
-    if (clientPacket->charPosition != gameSession->charactersBarrackCount + 1) {
+    if (clientPacket->charPosition != session->game.charactersBarrackCount + 1) {
         warning ("Client sent a malformed charPosition.");
     }
 
-    gameSession->currentCommander.charPosition = gameSession->charactersBarrackCount + 1;
+    session->game.currentCommander.charPosition = session->game.charactersBarrackCount + 1;
 
     // Hair type
     // TODO : Check the hairType
-    gameSession->currentCommander.hairType = clientPacket->hairType;
+    session->game.currentCommander.hairType = clientPacket->hairType;
     switch (clientPacket->hairType) {
         /*
         case COMMANDER_HAIR_ID1:
@@ -743,7 +760,7 @@ BarrackHandler_commanderCreate (
         case COMMANDER_HAIR_ID8:
         case COMMANDER_HAIR_ID9:
         case COMMANDER_HAIR_ID10:
-            gameSession->currentCommander.hairType = clientPacket->hairType;
+            session->game.currentCommander.hairType = clientPacket->hairType;
         break;
 
         default:
@@ -754,21 +771,24 @@ BarrackHandler_commanderCreate (
     }
 
     // PCID
-    gameSession->currentCommander.pcId = R1EMU_generate_random (&self->seed);
+    session->game.currentCommander.pcId = R1EMU_generate_random (&self->seed);
 
     // CommanderID
-    gameSession->currentCommander.commanderId = R1EMU_generate_random64 (&self->seed);
+    session->game.currentCommander.commanderId = R1EMU_generate_random64 (&self->seed);
 
     // Position : Center of the barrack
-    gameSession->currentCommander.cPosX = 27.0f;
-    gameSession->currentCommander.cPosY = 29.0f;
+    session->game.currentCommander.cPosX = 27.0f;
+    session->game.currentCommander.cPosY = 29.0f;
+
+    // Default MapId
+    session->game.currentCommander.mapId = 0x3FD;
 
     // Add the character to the count
-    gameSession->charactersBarrackCount++;
+    session->game.charactersBarrackCount++;
 
     // Write the reply
     replyPacket.header.type = BC_COMMANDER_CREATE;
-    replyPacket.commander = gameSession->currentCommander;
+    replyPacket.commander = session->game.currentCommander;
 
     // Send the message
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));

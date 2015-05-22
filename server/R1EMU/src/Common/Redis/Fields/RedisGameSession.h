@@ -23,59 +23,61 @@
 #include "Common/Session/Session.h"
 
 // ---------- Defines -------------
-#define REDIS_GAME_SESSION_socketId_str               "socketId"
-#define REDIS_GAME_SESSION_routerId_str                "routerId"
-#define REDIS_GAME_SESSION_familyName_str              "familyName"
-#define REDIS_GAME_SESSION_commanderName_str           "commanderName"
-#define REDIS_GAME_SESSION_charactersBarrackCount_str  "charactersBarrackCount"
-#define REDIS_GAME_SESSION_accountId_str               "accountId"
-#define REDIS_GAME_SESSION_commander_classId_str       "classId"
-#define REDIS_GAME_SESSION_commander_jobId_str         "jobId"
-#define REDIS_GAME_SESSION_commander_gender_str        "gender"
-#define REDIS_GAME_SESSION_commander_level_str         "level"
-#define REDIS_GAME_SESSION_commander_head_top_str      "head_top"
-#define REDIS_GAME_SESSION_commander_head_middle_str   "head_middle"
-#define REDIS_GAME_SESSION_commander_itemUnk1_str      "itemUnk1"
-#define REDIS_GAME_SESSION_commander_body_armor_str    "body_armor"
-#define REDIS_GAME_SESSION_commander_gloves_str        "gloves"
-#define REDIS_GAME_SESSION_commander_boots_str         "boots"
-#define REDIS_GAME_SESSION_commander_itemUnk2_str      "itemUnk2"
-#define REDIS_GAME_SESSION_commander_bracelet_str      "bracelet"
-#define REDIS_GAME_SESSION_commander_weapon_str        "weapon"
-#define REDIS_GAME_SESSION_commander_shield_str        "shield"
-#define REDIS_GAME_SESSION_commander_costume_str       "costume"
-#define REDIS_GAME_SESSION_commander_itemUnk3_str      "itemUnk3"
-#define REDIS_GAME_SESSION_commander_itemUnk4_str      "itemUnk4"
-#define REDIS_GAME_SESSION_commander_itemUnk5_str      "itemUnk5"
-#define REDIS_GAME_SESSION_commander_leg_armor_str     "leg_armor"
-#define REDIS_GAME_SESSION_commander_itemUnk6_str      "itemUnk6"
-#define REDIS_GAME_SESSION_commander_itemUnk7_str      "itemUnk7"
-#define REDIS_GAME_SESSION_commander_ring_left_str     "ring_left"
-#define REDIS_GAME_SESSION_commander_ring_right_str    "ring_right"
-#define REDIS_GAME_SESSION_commander_necklace_str      "necklace"
-#define REDIS_GAME_SESSION_commander_hairType_str      "hairType"
-#define REDIS_GAME_SESSION_commander_pcId_str          "pcId"
-#define REDIS_GAME_SESSION_commander_unk13_str         "unk13"
-#define REDIS_GAME_SESSION_commander_charPosition_str  "charPosition"
-#define REDIS_GAME_SESSION_commander_mapId_str         "mapId"
-#define REDIS_GAME_SESSION_commander_currentXP_str     "currentXP"
-#define REDIS_GAME_SESSION_commander_maxXP_str         "maxXP"
-#define REDIS_GAME_SESSION_commander_spriteId_str          "pose"
+#define REDIS_GAME_SESSION_socketId_str                  "socketId"
+#define REDIS_GAME_SESSION_routerId_str                  "routerId"
+#define REDIS_GAME_SESSION_charactersBarrackCount_str    "charactersBarrackCount"
+#define REDIS_GAME_SESSION_accountLogin_str              "accountLogin"
+#define REDIS_GAME_SESSION_commander_charName_str        "charName"
+#define REDIS_GAME_SESSION_commander_familyName_str      "familyName"
+#define REDIS_GAME_SESSION_commander_accountId_str       "accountId"
+#define REDIS_GAME_SESSION_commander_classId_str         "classId"
+#define REDIS_GAME_SESSION_commander_jobId_str           "jobId"
+#define REDIS_GAME_SESSION_commander_gender_str          "gender"
+#define REDIS_GAME_SESSION_commander_level_str           "level"
+#define REDIS_GAME_SESSION_commander_head_top_str        "head_top"
+#define REDIS_GAME_SESSION_commander_head_middle_str     "head_middle"
+#define REDIS_GAME_SESSION_commander_itemUnk1_str        "itemUnk1"
+#define REDIS_GAME_SESSION_commander_body_armor_str      "body_armor"
+#define REDIS_GAME_SESSION_commander_gloves_str          "gloves"
+#define REDIS_GAME_SESSION_commander_boots_str           "boots"
+#define REDIS_GAME_SESSION_commander_itemUnk2_str        "itemUnk2"
+#define REDIS_GAME_SESSION_commander_bracelet_str        "bracelet"
+#define REDIS_GAME_SESSION_commander_weapon_str          "weapon"
+#define REDIS_GAME_SESSION_commander_shield_str          "shield"
+#define REDIS_GAME_SESSION_commander_costume_str         "costume"
+#define REDIS_GAME_SESSION_commander_itemUnk3_str        "itemUnk3"
+#define REDIS_GAME_SESSION_commander_itemUnk4_str        "itemUnk4"
+#define REDIS_GAME_SESSION_commander_itemUnk5_str        "itemUnk5"
+#define REDIS_GAME_SESSION_commander_leg_armor_str       "leg_armor"
+#define REDIS_GAME_SESSION_commander_itemUnk6_str        "itemUnk6"
+#define REDIS_GAME_SESSION_commander_itemUnk7_str        "itemUnk7"
+#define REDIS_GAME_SESSION_commander_ring_left_str       "ring_left"
+#define REDIS_GAME_SESSION_commander_ring_right_str      "ring_right"
+#define REDIS_GAME_SESSION_commander_necklace_str        "necklace"
+#define REDIS_GAME_SESSION_commander_hairType_str        "hairType"
+#define REDIS_GAME_SESSION_commander_pcId_str            "pcId"
+#define REDIS_GAME_SESSION_commander_unk13_str           "unk13"
+#define REDIS_GAME_SESSION_commander_charPosition_str    "charPosition"
+#define REDIS_GAME_SESSION_commander_mapId_str           "mapId"
+#define REDIS_GAME_SESSION_commander_currentXP_str       "currentXP"
+#define REDIS_GAME_SESSION_commander_maxXP_str           "maxXP"
+#define REDIS_GAME_SESSION_commander_spriteId_str        "pose"
 #define REDIS_GAME_SESSION_commander_spriteIdRelated_str "spriteIdRelated"
-#define REDIS_GAME_SESSION_commander_currentHP_str     "currentHP"
-#define REDIS_GAME_SESSION_commander_maxHP_str         "maxHP"
-#define REDIS_GAME_SESSION_commander_currentSP_str     "currentSP"
-#define REDIS_GAME_SESSION_commander_maxSP_str         "maxSP"
-#define REDIS_GAME_SESSION_commander_cPosX_str         "cPosX"
-#define REDIS_GAME_SESSION_commander_cPosY_str         "cPosY"
+#define REDIS_GAME_SESSION_commander_currentHP_str       "currentHP"
+#define REDIS_GAME_SESSION_commander_maxHP_str           "maxHP"
+#define REDIS_GAME_SESSION_commander_currentSP_str       "currentSP"
+#define REDIS_GAME_SESSION_commander_maxSP_str           "maxSP"
+#define REDIS_GAME_SESSION_commander_cPosX_str           "cPosX"
+#define REDIS_GAME_SESSION_commander_cPosY_str           "cPosY"
 
 enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_socketId,
 	REDIS_GAME_SESSION_routerId,
-	REDIS_GAME_SESSION_familyName,
-	REDIS_GAME_SESSION_commanderName,
 	REDIS_GAME_SESSION_charactersBarrackCount,
-	REDIS_GAME_SESSION_accountId,
+	REDIS_GAME_SESSION_accountLogin,
+	REDIS_GAME_SESSION_commander_charName,
+	REDIS_GAME_SESSION_commander_familyName,
+	REDIS_GAME_SESSION_commander_accountId,
 	REDIS_GAME_SESSION_commander_classId,
 	REDIS_GAME_SESSION_commander_jobId,
 	REDIS_GAME_SESSION_commander_gender,
@@ -176,6 +178,18 @@ Redis_flushGameSession (
     RedisGameSessionKey *key
 );
 
+/**
+ * @brief Move a game session from a server to another
+ * @param self An initialized Redis instance
+ * @param from The source server
+ * @param to The destination server
+ */
+bool
+Redis_moveGameSession (
+    Redis *self,
+    RedisGameSessionKey *from,
+    RedisGameSessionKey *to
+);
 
 /**
  * @brief Return a list of clients into the area of a given position

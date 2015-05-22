@@ -27,10 +27,11 @@
 const char *redisGameSessionsStr [] = {
 	[REDIS_GAME_SESSION_socketId]                  = REDIS_GAME_SESSION_socketId_str,
 	[REDIS_GAME_SESSION_routerId]                  = REDIS_GAME_SESSION_routerId_str,
-	[REDIS_GAME_SESSION_familyName]                = REDIS_GAME_SESSION_familyName_str,
-	[REDIS_GAME_SESSION_commanderName]             = REDIS_GAME_SESSION_commanderName_str,
 	[REDIS_GAME_SESSION_charactersBarrackCount]    = REDIS_GAME_SESSION_charactersBarrackCount_str,
-	[REDIS_GAME_SESSION_accountId]                 = REDIS_GAME_SESSION_accountId_str,
+	[REDIS_GAME_SESSION_accountLogin]              = REDIS_GAME_SESSION_accountLogin_str,
+	[REDIS_GAME_SESSION_commander_charName]        = REDIS_GAME_SESSION_commander_charName_str,
+	[REDIS_GAME_SESSION_commander_familyName]      = REDIS_GAME_SESSION_commander_familyName_str,
+	[REDIS_GAME_SESSION_commander_accountId]       = REDIS_GAME_SESSION_commander_accountId_str,
 	[REDIS_GAME_SESSION_commander_classId]         = REDIS_GAME_SESSION_commander_classId_str,
 	[REDIS_GAME_SESSION_commander_jobId]           = REDIS_GAME_SESSION_commander_jobId_str,
 	[REDIS_GAME_SESSION_commander_gender]          = REDIS_GAME_SESSION_commander_gender_str,
@@ -87,11 +88,12 @@ Redis_getGameSession (
         "HMGET zone%x:map%x:acc%llx"
         " " REDIS_GAME_SESSION_socketId_str
         " " REDIS_GAME_SESSION_routerId_str
-        " " REDIS_GAME_SESSION_familyName_str
-        " " REDIS_GAME_SESSION_commanderName_str
         " " REDIS_GAME_SESSION_charactersBarrackCount_str
-        " " REDIS_GAME_SESSION_accountId_str
+        " " REDIS_GAME_SESSION_accountLogin_str
+        " " REDIS_GAME_SESSION_commander_charName_str
+        " " REDIS_GAME_SESSION_commander_familyName_str
         // [UNKNOWN] " commander.unk1 "
+        " " REDIS_GAME_SESSION_commander_accountId_str
         " " REDIS_GAME_SESSION_commander_classId_str
         // [UNKNOWN] " commander.unk2 "
         " " REDIS_GAME_SESSION_commander_jobId_str
@@ -158,7 +160,7 @@ Redis_getGameSession (
         break;
 
         case REDIS_REPLY_STATUS:
-            info ("Redis status : %s", reply->str);
+            // info ("Redis status : %s", reply->str);
         break;
 
         case REDIS_REPLY_ARRAY: {
@@ -180,11 +182,12 @@ Redis_getGameSession (
 
             // Write the reply to the session
             strncpy (gameSession->socketId, reply->element[REDIS_GAME_SESSION_socketId]->str, sizeof (gameSession->socketId));
-            strncpy (gameSession->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_familyName]->str, sizeof (gameSession->currentCommander.familyName));
-            strncpy (gameSession->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commanderName]->str, sizeof (gameSession->currentCommander.charName));
-
             gameSession->charactersBarrackCount           = strtol (reply->element[REDIS_GAME_SESSION_charactersBarrackCount]->str, NULL, 16);
+            strncpy (gameSession->accountLogin, reply->element[REDIS_GAME_SESSION_accountLogin]->str, sizeof (gameSession->accountLogin));
+            strncpy (gameSession->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_commander_familyName]->str, sizeof (gameSession->currentCommander.familyName));
+            strncpy (gameSession->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commander_charName]->str, sizeof (gameSession->currentCommander.charName));
             // [UNKNOWN] gameSession->currentCommander.unk1,
+            gameSession->currentCommander.accountId       = strtoll (reply->element[REDIS_GAME_SESSION_commander_accountId]->str, NULL, 16);
             gameSession->currentCommander.classId         = strtol (reply->element[REDIS_GAME_SESSION_commander_classId]->str, NULL, 16);
             // [UNKNOWN] gameSession->currentCommander.unk2,
             gameSession->currentCommander.jobId           = strtol (reply->element[REDIS_GAME_SESSION_commander_jobId]->str, NULL, 16);
@@ -265,11 +268,12 @@ Redis_updateGameSession (
         "HMSET zone%x:map%x:acc%llx"
         " " REDIS_GAME_SESSION_socketId_str " %s"
         " " REDIS_GAME_SESSION_routerId_str " %x"
-        " " REDIS_GAME_SESSION_familyName_str " %s"
-        " " REDIS_GAME_SESSION_commanderName_str " %s"
         " " REDIS_GAME_SESSION_charactersBarrackCount_str " %x"
-        " " REDIS_GAME_SESSION_accountId_str " %llx"
+        " " REDIS_GAME_SESSION_accountLogin_str " %s"
+        " " REDIS_GAME_SESSION_commander_charName_str " %s"
+        " " REDIS_GAME_SESSION_commander_familyName_str " %s"
         // [UNKNOWN] " " commander.unk1 " "%s"
+        " " REDIS_GAME_SESSION_commander_accountId_str " %llx"
         " " REDIS_GAME_SESSION_commander_classId_str " %x"
         // [UNKNOWN] " " REDIS_GAME_SESSION_commander_unk2 " "%s"
         " " REDIS_GAME_SESSION_commander_jobId_str " %x"
@@ -318,11 +322,12 @@ Redis_updateGameSession (
         , key->routerId, key->mapId, key->accountId,
         socketId,
         key->routerId,
-        (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
-        (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
         gameSession->charactersBarrackCount,
-        key->accountId,
+        gameSession->accountLogin,
+        (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
+        (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
         // [UNKNOWN] gameSession->currentCommander.unk1,
+        key->accountId,
         gameSession->currentCommander.classId,
         // [UNKNOWN] gameSession->currentCommander.unk2,
         gameSession->currentCommander.jobId,
@@ -373,6 +378,57 @@ Redis_updateGameSession (
         // [UNKNOWN] gameSession->currentCommander.unk10,
         // [UNKNOWN] gameSession->currentCommander.unk11,
         // [UNKNOWN] gameSession->currentCommander.unk12,
+    );
+
+    if (!reply) {
+        error ("Redis error encountered : The request is invalid.");
+        result = false;
+        goto cleanup;
+    }
+
+    switch (reply->type)
+    {
+        case REDIS_REPLY_ERROR:
+            error ("Redis error encountered : %s", reply->str);
+            result = false;
+            goto cleanup;
+        break;
+
+        case REDIS_REPLY_STATUS:
+            // info ("Redis status : %s", reply->str);
+        break;
+
+        default :
+            error ("Unexpected Redis status. (%d)", reply->type);
+            result = false;
+            goto cleanup;
+        break;
+    }
+
+cleanup:
+    if (reply) {
+        Redis_replyDestroy (&reply);
+    }
+
+    return result;
+}
+
+
+bool
+Redis_moveGameSession (
+    Redis *self,
+    RedisGameSessionKey *from,
+    RedisGameSessionKey *to
+) {
+    bool result = true;
+    redisReply *reply = NULL;
+
+    reply = Redis_commandDbg (self,
+        "RENAME "
+        "zone%x:map%x:acc%llx "
+        "zone%x:map%x:acc%llx",
+        from->routerId, from->mapId, from->accountId,
+        to->routerId,   to->mapId,   to->accountId
     );
 
     if (!reply) {

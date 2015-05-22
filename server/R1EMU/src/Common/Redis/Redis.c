@@ -120,7 +120,7 @@ Redis_flushDatabase (
         break;
 
         case REDIS_REPLY_STATUS:
-            info ("Redis status : %s", reply->str);
+            // info ("Redis status : %s", reply->str);
         break;
 
         default : error ("Unexpected Redis status (%d).", reply->type); return false;
@@ -248,7 +248,7 @@ Redis_set (
         break;
 
         case REDIS_REPLY_STATUS:
-            info ("Redis status : %s", reply->str);
+            // info ("Redis status : %s", reply->str);
         break;
 
         default : error ("Unexpected Redis status : %d.", reply->type); return false;

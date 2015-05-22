@@ -23,6 +23,8 @@
 #include "Common/Session/SocketSession.h"
 
 // ---------- Defines -------------
+/** Max size of the Account Login */
+#define GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE 17
 
 // ------ Structure declaration -------
 /**
@@ -34,10 +36,14 @@
  */
 struct GameSession
 {
+    /** Socket ID */
     uint8_t socketId[SOCKET_SESSION_ID_SIZE];
 
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
+
+    /** The account login */
+    char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
 
     /** Current commander */
     CommanderInfo currentCommander;
