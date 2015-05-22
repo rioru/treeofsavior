@@ -1095,16 +1095,29 @@ ZoneHandler_abilityList (
 ) {
     warning ("ZC_ABILITY_LIST not implemented yet.");
 
-    size_t memSize;
-    void *memory = dumpToMem (                                                               //   [--PcId---]
+    #pragma pack(push, 1)
+    typedef struct {
+        VariableSizePacketHeader variableSizeHeader;
+        uint32_t pcId;
+        uint8_t unk [50];
+    } ZcAbilityListPacket;
+    #pragma pack(pop)
+
+    ZcAbilityListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (replyPacket);
+    dumpToMem (                                                                              //   [--PcId---]
         "[11:36:22][           ToSClient:                     dbgBuffer]  33 0C FF FF FF FF 3E 00 36 F8 01 00 03 00 8D FA | 3.....>.6.......\n"
         "[11:36:22][           ToSClient:                     dbgBuffer]  1C 00 7B 7F 99 81 61 F1 7C 46 06 41 75 06 20 F8 | ..{...a.|F.Au. .\n"
         "[11:36:22][           ToSClient:                     dbgBuffer]  CF F0 01 CA 17 87 F2 3F 42 F9 92 50 3E 00 F1 D3 | .......?B..P>...\n"
         "[11:36:22][           ToSClient:                     dbgBuffer]  00 00 A3 9F 01 00 19 27 00 00 00 00 FF 00       | .......'......\n"
-      , NULL, &memSize
+      , &replyPacket, &memSize
     );
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    replyPacket.pcId = session->game.currentCommander.pcId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
