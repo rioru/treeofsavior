@@ -731,13 +731,27 @@ ZoneHandler_buffList (
 ) {
     warning ("ZC_BUFF_LIST not implemented yet.");
 
-    size_t memSize;
-    void *memory = dumpToMem (
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint16_t unk1;
+        uint32_t pcId;
+        uint8_t  unk2;
+    } ZcBuffListPacket;
+    #pragma pack(pop)
+
+    ZcBuffListPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (ZcEnterPc);
+    dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  E2 0B FF FF FF FF 0D 00 5A 73 01 00 00          | ........Zs...\n"
-        , NULL, &memSize
+        , &replyPacket, &memSize
     );
 
-    zmsg_add (reply, zframe_new (memory, memSize));
+    replyPacket.pcId = session->game.currentCommander.pcId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
 
 static void
@@ -763,13 +777,13 @@ ZoneHandler_enterPc (
         uint8_t gender;
         uint8_t unk5;
         uint8_t unk6[88];
-    } ZcEnterPc;
+    } ZcEnterPcPacket;
     #pragma pack(pop)
 
-    ZcEnterPc replyPacket;
+    ZcEnterPcPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    size_t memSize = sizeof (ZcEnterPc);
+    size_t memSize = sizeof (ZcEnterPcPacket);
     dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  BE 0B FF FF FF FF 5A 73 01 00 00 00 1D C4 00 00 | ......Zs........\n"
         "[11:10:22][           ToSClient:                     dbgBuffer]  82 43 00 20 80 C4 00 00 80 3F 00 00 00 00 00 27 | .C. .....?.....'\n"
