@@ -772,9 +772,11 @@ BarrackHandler_commanderCreate (
 
     // PCID
     session->game.currentCommander.pcId = R1EMU_generate_random (&self->seed);
+    info ("pcId generated : %x", session->game.currentCommander.pcId);
 
     // CommanderID
     session->game.currentCommander.commanderId = R1EMU_generate_random64 (&self->seed);
+    info ("CommanderId generated : %llx", session->game.currentCommander.commanderId);
 
     // Position : Center of the barrack
     session->game.currentCommander.cPosX = 27.0f;

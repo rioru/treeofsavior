@@ -67,6 +67,12 @@ static void ZoneHandler_normalUnk4                    (Worker *self, Session *se
 /** @unknown */
 static void ZoneHandler_normalUnk5                    (Worker *self, Session *session, zmsg_t *reply);
 /** @unknown */
+static void ZoneHandler_normalUnk6                    (Worker *self, Session *session, zmsg_t *reply);
+/** @unknown */
+static void ZoneHandler_normalUnk7                    (Worker *self, Session *session, zmsg_t *reply);
+/** @unknown */
+static void ZoneHandler_normalUnk8                    (Worker *self, Session *session, zmsg_t *reply);
+/** @unknown */
 static void ZoneHandler_startGame                     (Worker *self, Session *session, zmsg_t *reply);
 /** @unknown */
 // static void ZoneHandler_partyInfo                     (Worker *self, Session *session, zmsg_t *reply);
@@ -91,29 +97,27 @@ static void ZoneHandler_enterMonster                  (Worker *self, Session *se
 /** @unknown */
 static void ZoneHandler_faction                       (Worker *self, Session *session, zmsg_t *reply);
 /** @unknown */
-static void ZoneHandler_normalUnk6                    (Worker *self, Session *session, zmsg_t *reply);
-/** @unknown */
-static void ZoneHandler_normalUnk7                    (Worker *self, Session *session, zmsg_t *reply);
-/** @unknown */
 static void ZoneHandler_jobPts                        (Worker *self, Session *session, zmsg_t *reply);
 
 /** Send information about item inventory list */
 static void ZoneHandler_itemInventoryList             (Worker *self, Session *session, zmsg_t *reply);
-/** @unknown */
+/** @unknown. Contains information about quest position ? */
 static void ZoneHandler_sessionObjects                (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about quickslots */
-static void ZoneHandler_quickSlotListHandler          (Worker *self, Session *session, zmsg_t *reply);
+static void ZoneHandler_quickSlotList          (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about the UI */
 static void ZoneHandler_uiInfoList                    (Worker *self, Session *session, zmsg_t *reply);
 /** Send information about Jobs */
 static void ZoneHandler_startInfo                     (Worker *self, Session *session, zmsg_t *reply);
 /** Send a commander movement speed */
 static void ZoneHandler_moveSpeed                     (Worker *self, Session *session, zmsg_t *reply);
-/** Alert the client that a new PC has entered */
+/** Ask to the client to play an animation */
+static void ZoneHandler_playAni                       (Worker *self, Session *session, zmsg_t *reply);
+/** Alert the client "my" PC has entered */
 static void ZoneHandler_MyPCEnter                     (Worker *self, Session *session, zmsg_t *reply);
 /** Set the position of a commander */
-
 // static void ZoneHandler_setPos                     (Worker *self, Session *session, zmsg_t *reply, uint32_t pcId, float x, float y, float z);
+
 /** Jump handler */
 static PacketHandlerState ZoneHandler_jump            (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
 /** On air handler */
@@ -210,7 +214,7 @@ ZoneHandler_restSit (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.pcId = session->game.currentCommander.pcId;
-    replyPacket.isSit = 1;
+    replyPacket.isSit = 0;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
@@ -260,30 +264,32 @@ ZoneHandler_skillGround (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t pcShrageId;
+        uint32_t pcId;
         uint32_t skillId;
-        uint32_t unk3;
+        float unk3;
         uint32_t unk4;
         float x, y, z;
         float x2, y2, z2;
     } ZcSkillReadyPacket;
     #pragma pack(pop)
 
+    // Answer ZC_PLAY_ANIM
+    ZoneHandler_playAni (self, session, reply);
+
     // Answer : ZC_SKILL_READY
     /*  pcId     skillId  u3       u4       x        y        z        x2       y2       z2
         5A730100 419C0000 0000803F 011CECC7 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3
         5A730100 419C0000 0000803F 011CECC7 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3
         5A730100 419C0000 0000803F 011CECC7 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4
-        956A0100 214E0000 0000803F 011DECA5 22A0C2C4 74768243 D25254C3 00000000 00C1D209 02011800
     */
 
     ZcSkillReadyPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     replyPacket.header.type = ZC_SKILL_READY;
-    replyPacket.pcShrageId = 0x148;
+    replyPacket.pcId = session->game.currentCommander.pcId;
     replyPacket.skillId = clientPacket->skillId;
-    replyPacket.unk3 = SWAP_UINT32 (0x0000803F);
+    replyPacket.unk3 = 1.0;
     replyPacket.unk4 = SWAP_UINT32 (0x011CECC7);
     replyPacket.x = clientPacket->x;
     replyPacket.y = clientPacket->y;
@@ -294,9 +300,77 @@ ZoneHandler_skillGround (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 
+    ZoneHandler_normalUnk8 (self, session, reply);
+
     return PACKET_HANDLER_OK;
 }
 
+
+static void
+ZoneHandler_playAni (
+    Worker *self,
+    Session *session,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        ServerPacketHeader header;
+        uint32_t unkId1;
+        uint32_t unkId2;
+        uint16_t unk3;
+        float timeDelay;
+        float unk5;
+    } ZcPlayAniPacket;
+    #pragma pack(pop)
+
+    ZcPlayAniPacket replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (ZcPlayAniPacket);
+    dumpToMem (
+        "[11:11:04][           ToSClient:                     dbgBuffer]  55 0C FF FF FF FF 4B 01 00 00 25 18 27 00 01 01 | U.....K...%.'...\n"
+        "[11:11:04][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 80 3F                         | .......?\n"
+      , &replyPacket, &memSize
+    );
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+}
+
+static void
+ZoneHandler_normalUnk8 (
+    Worker *self,
+    Session *session,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        PacketNormalHeader normalHeader;
+        uint32_t pcId;
+        uint32_t unk1;
+        uint32_t skillId;
+        uint32_t skillLevel; // ? not sure
+        uint8_t unk2[61];
+    } ZcNormalUnknown8Packet;
+    #pragma pack(pop)
+
+    ZcNormalUnknown8Packet replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (ZcNormalUnknown8Packet);
+    dumpToMem (
+        "[11:37:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 59 00 54 00 00 00 36 F8 01 00 | 0.....Y.T...6...\n"
+        "[11:37:20][           ToSClient:                     dbgBuffer]  11 18 27 00 41 9C 00 00 02 00 00 00 BC BD A9 C4 | ..'.A...........\n"
+        "[11:37:20][           ToSClient:                     dbgBuffer]  6A 1F 02 43 57 94 34 C3 4C EF 2E B4 00 00 80 3F | j..CW.4.L......?\n"
+        "[11:37:20][           ToSClient:                     dbgBuffer]  6A 21 22 B4 00 00 A0 41 1A 74 00 00 01 00 00 00 | j!.....A.t......\n"
+        "[11:37:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:37:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00                      | .........\n"
+      , &replyPacket, &memSize
+    );
+
+    replyPacket.pcId = session->game.currentCommander.pcId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+}
 
 static PacketHandlerState
 ZoneHandler_campInfo (
@@ -388,7 +462,6 @@ ZoneHandler_itemUse (
     zmsg_t *reply
 ) {
     warning ("CZ_ITEM_USE not implemented yet.");
-
     return PACKET_HANDLER_OK;
 }
 
@@ -508,7 +581,7 @@ ZoneHandler_gameReady (
     ZoneHandler_skillList (self, session, reply);
     ZoneHandler_abilityList (self, session, reply);
     ZoneHandler_cooldownList (self, session, reply);
-    ZoneHandler_quickSlotListHandler (self, session, reply);
+    ZoneHandler_quickSlotList (self, session, reply);
     ZoneHandler_normalUnk1 (self, session, reply);
     ZoneHandler_normalUnk2 (self, session, reply);
     ZoneHandler_normalUnk3 (self, session, reply);
@@ -530,7 +603,6 @@ ZoneHandler_gameReady (
     ZoneHandler_normalUnk6 (self, session, reply);
     ZoneHandler_normalUnk7 (self, session, reply);
     ZoneHandler_jobPts (self, session, reply);
-
     ZoneHandler_moveSpeed (self, session, reply);
     ZoneHandler_addonMsg (self, session, reply);
 
@@ -543,8 +615,6 @@ ZoneHandler_jobPts (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_JOB_PTS not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  18 0D FF FF FF FF 04 00 01 00                   | .........."
@@ -561,7 +631,6 @@ ZoneHandler_normalUnk7 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_7 not implemented yet.");
     /*
         300D     FFFFFFFF 2501     E1000000 0016     00 0000  139D0100 D1A80144 00000000 D1A80144 00000000
         EAB5ACEC9B90EC9E9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -635,8 +704,6 @@ ZoneHandler_normalUnk6 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_6 not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         PacketNormalHeader normalHeader;
@@ -686,8 +753,6 @@ ZoneHandler_faction (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_FACTION not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  6B 0D FF FF FF FF 48 01 00 00 CE 18 27 00       | k.....H.....'."
@@ -703,8 +768,6 @@ ZoneHandler_enterMonster (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ENTER_MONSTER not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  BF 0B FF FF FF FF 84 00 48 01 00 00 00 40 23 C4 | ........H....@#.\n"
@@ -729,8 +792,6 @@ ZoneHandler_buffList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_BUFF_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -760,13 +821,30 @@ ZoneHandler_enterPc (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ENTER_PC not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint32_t pcId;
-        uint8_t unk1[67];
+        uint32_t pcId; // 5A730100
+        float x, y, z; // 00001DC4, 00008243, 002080C4
+        float unk7; // 0000803F
+        uint32_t unk8; // 00000000
+        uint32_t unk9; // 00270406
+        uint32_t unk10; // 0000749F
+        uint8_t unk11; // 01
+        uint16_t unk12; // 0000
+        float moveSpeed; // 0000F841
+        uint32_t unk13; // 00000000
+        uint16_t currentHP; // 7700
+        uint16_t maxHP; // 7700
+        uint16_t currentSP; // 6900
+        uint16_t maxSP; // 6900
+        uint32_t curUnk; // A8610000
+        uint32_t maxUnk; // A8610000
+        uint8_t unk14; // 00
+        uint16_t unk15; // 0000
+        uint32_t unk16; // FFFFFFFF
+        uint32_t unk17; // FC7C0000
+        uint8_t unk18; // 00
         char commanderCharName [COMMANDER_CHAR_NAME_SIZE+1];
         char familyName [COMMANDER_FAMILY_NAME_SIZE+1];
         uint16_t unk2;
@@ -809,13 +887,23 @@ ZoneHandler_enterPc (
         , &replyPacket, &memSize
     );
 
+    replyPacket.header.type = ZC_ENTER_PC;
     strncpy (replyPacket.familyName, session->game.currentCommander.familyName, sizeof (replyPacket.familyName));
     strncpy (replyPacket.commanderCharName, session->game.currentCommander.charName, sizeof (replyPacket.commanderCharName));
     replyPacket.pcId = session->game.currentCommander.pcId;
+    replyPacket.x = session->game.currentCommander.cPosX;
+    replyPacket.y = session->game.currentCommander.cPosY;
+    replyPacket.z = -1025.0;
+    replyPacket.unk7 = 1.0;
     replyPacket.accountId = session->game.currentCommander.accountId;
     replyPacket.classId = session->game.currentCommander.classId;
     replyPacket.jobId = session->game.currentCommander.jobId;
     replyPacket.gender = session->game.currentCommander.gender;
+    replyPacket.moveSpeed = 31.0;
+    replyPacket.currentHP = session->game.currentCommander.currentHP;
+    replyPacket.maxHP = session->game.currentCommander.maxHP;
+    replyPacket.currentSP = session->game.currentCommander.currentSP;
+    replyPacket.maxSP = session->game.currentCommander.maxSP;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
@@ -826,8 +914,6 @@ ZoneHandler_skillAdd (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_SKILL_ADD not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  32 0C FF FF FF FF A2 00 00 00 00 00 00 00 00 00 | 2...............\n"
@@ -853,8 +939,6 @@ ZoneHandler_loginTime (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_LOGIN_TIME not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  C0 0C FF FF FF FF 30 39 FF 17 83 7F D0 01       | ......09......\n"
@@ -870,8 +954,6 @@ ZoneHandler_stamina (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_STAMINA not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  A4 0C FF FF FF FF A8 61 00 00                   | .......a..\n"
@@ -887,8 +969,6 @@ ZoneHandler_objectProperty (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_OBJECT_PROPERTY not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  63 0C FF FF FF FF 7A 02 04 06 00 00 74 9F 01 00 | c.....z.....t...\n"
@@ -943,8 +1023,6 @@ ZoneHandler_addonMsg (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ADDON_MSG not implemented yet.");
-
     // Play the keyboard tutorial
     size_t memSize;
     void *memory = dumpToMem (
@@ -962,8 +1040,6 @@ ZoneHandler_normalUnk5 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_5 not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 1D 00 15 01 00 00 8D FA 0D 00 | 0...............\n"
@@ -981,8 +1057,6 @@ ZoneHandler_normalUnk4 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_4 not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 2C 00 DF 00 00 00 04 06 00 00 | 0.....,.........\n"
@@ -1000,8 +1074,6 @@ ZoneHandler_normalUnk3 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_3 not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 10 00 D2 00 00 00 00 00 00 00 | 0...............\n"
@@ -1017,8 +1089,6 @@ ZoneHandler_normalUnk2 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_2 not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 18 00 C4 00 00 00 04 06 00 00 | 0...............\n"
@@ -1036,8 +1106,6 @@ ZoneHandler_normalUnk1 (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NORMAL_UNKNOWN_1 not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF BD 00 92 00 00 00 00 01 00 00 | 0...............\n"
@@ -1088,7 +1156,7 @@ ZoneHandler_startGame (
 }
 
 static void
-ZoneHandler_quickSlotListHandler (
+ZoneHandler_quickSlotList (
     Worker *self,
     Session *session,
     zmsg_t *reply
@@ -1133,7 +1201,7 @@ ZoneHandler_czQuickSlotList (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    // warning ("CZ_QUICKSLOT_LIST not implemented yet.");
+    warning ("CZ_QUICKSLOT_LIST not implemented yet.");
     // Answer PacketType : ZC_QUICKSLOT_REGISTER
     return PACKET_HANDLER_OK;
 }
@@ -1144,8 +1212,6 @@ ZoneHandler_cooldownList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_COOLDOWN_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1185,8 +1251,6 @@ ZoneHandler_abilityList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ABILITY_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         VariableSizePacketHeader variableSizeHeader;
@@ -1218,13 +1282,12 @@ ZoneHandler_skillList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_SKILL_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         VariableSizePacketHeader variableSizeHeader;
         uint32_t pcId;
-        uint8_t unk [320];
+        uint16_t skillCount;
+        uint8_t unk [318];
     } ZcSkillListPacket;
     #pragma pack(pop)
 
@@ -1257,6 +1320,12 @@ ZoneHandler_skillList (
       , &replyPacket, &memSize
     );
 
+    /* Uncompressed :
+        00000000 00000000 14000000 780022EA 00000000 B2B94B37 55010000 803F4801 00000000 46010000 00004C01 0000C842 4E010000 E0414F01 00006041 76010000 00006201 0000F041 75010000 00007101 00000000 70010000 803F9B01 00000000 9D010000 0000A801 00004040 C6010000 0000C701 0000803F C8010000 0000DF18 00000000 D4010000 C842D201 00000000
+        00000000 00000000 03000000 780002A8 2C010000 6E2F348F 55010000 803F4801 00009643 46010000 00004C01 0000C842 4E010000 0C424F01 00006041 76010000 00006201 00000C42 75010000 00007101 00000000 70010000 803F9B01 00000000 9D010000 0000A801 00004040 C6010000 0000C701 0000803F C8010000 0000DF18 00000000 D4010000 A042D201 00000000
+        00000000 00000000 64000000 78000060 00000000 267FFE42 55010000 803F4801 00000000 46010000 00004C01 0000C842 4E010000 20424F01 0000C041 76010000 00006201 0000C841 75010000 00007101 00000000 70010000 803F9B01 00000000 9D010000 0000A801 00004040 C6010000 0000C701 0000803F C8010000 0000DF18 00000000 D4010000 C842D201 00000000
+        71D90000 A39F0100 449C0000 7800A751 00000000 325FBA3E 55010000 803F4801 00F05246 46010000 00004C01 0000C842 4E010000 00004F01 00006041 76010000 803F6201 00000000 75010000 00007101 00000000 70010000 803F9B01 00002041 9D010000 0000A801 00008040 C6010000 7A43C701 0000803F C8010000 0000DF18 00000000 D4010000 0000D201 00000000
+    */
     replyPacket.pcId = session->game.currentCommander.pcId;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -1268,8 +1337,6 @@ ZoneHandler_itemEquipList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ITEM_EQUIP_LIST not implemented yet.");
-
     size_t memSize;
     void *memory = dumpToMem (
         "[11:10:20][           ToSClient:                     dbgBuffer]  2B 0C FF FF FF FF 12 02 02 00 00 00 00 00 00 00 | +...............\n"
@@ -1318,7 +1385,6 @@ ZoneHandler_startInfo (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_START_INFO not implemented yet.");
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1362,8 +1428,6 @@ ZoneHandler_guestPageMap (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_GUESTPAGE_MAP not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1402,8 +1466,6 @@ ZoneHandler_myPageMap (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_MYPAGE_MAP not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1441,8 +1503,6 @@ ZoneHandler_helpList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_HELP_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1498,8 +1558,6 @@ ZoneHandler_npcStateList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_NPC_STATE_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1534,7 +1592,6 @@ ZoneHandler_uiInfoList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_UI_INFO_LIST not implemented yet.");
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1571,8 +1628,6 @@ ZoneHandler_chatMacroList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_CHAT_MACRO_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1609,7 +1664,6 @@ ZoneHandler_achievePointList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ACHIEVE_POINT_LIST not implemented yet.");
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1645,8 +1699,6 @@ ZoneHandler_skillmapList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_SKILLMAP_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1682,8 +1734,6 @@ ZoneHandler_optionList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_OPTION_LIST not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
@@ -1720,31 +1770,42 @@ ZoneHandler_sessionObjects (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_SESSION_OBJECTS not implemented yet.");
-
     #pragma pack(push, 1)
     typedef struct {
-        ServerPacketHeader header;
-        uint32_t unk;
+        VariableSizePacketHeader variableSizeHeader;
     } ZcSessionObjectsPacket;
     #pragma pack(pop)
 
-    /*
     size_t memSize;
     void *memory = dumpToMem (
-        "[11:10:20][           ToSClient:                     dbgBuffer]  89 0C FF FF FF FF 0A 00 00 00                   | ..........\n"
-      , NULL, &memSize
+        "[11:15:14][           ToSClient:                     dbgBuffer]  89 0C FF FF FF FF 18 01 0A 00 D1 BF 0B 00 20 E0 | .............. .\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  02 93 05 D4 00 00 A3 9F 01 00 00 00 00 00 06 00 | ................\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  32 83 C4 0F 00 00 80 3F A0 3A 00 00 3A D7 80 17 | 2......?.:..:...\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  FE D3 00 00 A3 9F 01 00 00 00 00 00 00 00 D9 6C | ...............l\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  60 EA 00 00 C5 19 20 49 FD D3 00 00 A3 9F 01 00 | `..... I........\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 01 00 00 77 01 00 AF 03 00 00 | .........w......\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  FC D3 00 00 A3 9F 01 00 00 00 00 00 00 00 00 00 | ................\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  03 00 00 00 03 00 00 00 FB D3 00 00 A3 9F 01 00 | ................\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 A0 86 01 00 61 01 00 00 | ............a...\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  FA D3 00 00 A3 9F 01 00 00 00 00 00 00 00 18 1F | ................\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  81 38 01 00 01 00 00 00 F9 D3 00 00 A3 9F 01 00 | .8..............\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 18 73 01 00 60 D5 18 00 | .........s..`...\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  F8 D3 00 00 A3 9F 01 00 00 00 00 00 00 00 55 00 | ..............U.\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  80 38 01 00 13 D1 56 00 F7 D3 00 00 A3 9F 01 00 | .8....V.........\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 51 05 90 5F 01 00 74 D5 18 00 | ......Q.._..t...\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  F6 D3 00 00 A3 9F 01 00 00 00 00 00 18 00 3B 05 | ..............;.\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  3A 0A 00 00 96 43 41 0A 00 00 96 43 52 0A 00 00 | :....CA....CR...\n"
+        "[11:15:14][           ToSClient:                     dbgBuffer]  96 43 42 0A 00 00 96 43                         | .CB....C\n"
+        , NULL, &memSize
     );
-    zmsg_add (reply, zframe_new (memory, memSize));
-    */
 
     ZcSessionObjectsPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    replyPacket.header.type = ZC_SESSION_OBJECTS;
-    replyPacket.unk = 0xA;
+    replyPacket.variableSizeHeader.serverHeader.type = ZC_SESSION_OBJECTS;
 
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+    // zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+    zmsg_add (reply, zframe_new (memory, memSize));
 }
 
 
@@ -1754,8 +1815,6 @@ ZoneHandler_itemInventoryList (
     Session *session,
     zmsg_t *reply
 ) {
-    warning ("ZC_ITEM_INVENTORY_LIST not implemented yet.");
-
     /*
     #pragma pack(push, 1)
     typedef struct {

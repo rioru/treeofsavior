@@ -30,6 +30,7 @@ typedef enum PacketTypeZoneNormal {
     ZC_NORMAL_UNKNOWN_5 = 0x151,
     ZC_NORMAL_UNKNOWN_6 = 0xC9,
     ZC_NORMAL_UNKNOWN_7 = 0xE1,
+    ZC_NORMAL_UNKNOWN_8 = 0x54,
 
 }   PacketTypeZoneNormal;
 

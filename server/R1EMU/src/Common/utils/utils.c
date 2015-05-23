@@ -68,6 +68,7 @@ void *dumpToMem (
     if (!isLocal) {
         if (*memSize != memPos) {
             dbg ("Warning : memSize != bytes written (%lu != %lu).", (long unsigned) *memSize, (long unsigned) memPos);
+            *memSize = memPos;
         }
     } else {
         memory = malloc (memPos);
