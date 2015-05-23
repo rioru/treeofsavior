@@ -743,7 +743,7 @@ ZoneHandler_buffList (
     ZcBuffListPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
-    size_t memSize = sizeof (ZcEnterPc);
+    size_t memSize = sizeof (ZcBuffListPacket);
     dumpToMem (
         "[11:10:22][           ToSClient:                     dbgBuffer]  E2 0B FF FF FF FF 0D 00 5A 73 01 00 00          | ........Zs...\n"
         , &replyPacket, &memSize
@@ -765,7 +765,8 @@ ZoneHandler_enterPc (
     #pragma pack(push, 1)
     typedef struct {
         ServerPacketHeader header;
-        uint8_t unk1[71];
+        uint32_t pcId;
+        uint8_t unk1[67];
         char commanderCharName [COMMANDER_CHAR_NAME_SIZE+1];
         char familyName [COMMANDER_FAMILY_NAME_SIZE+1];
         uint16_t unk2;
@@ -810,6 +811,7 @@ ZoneHandler_enterPc (
 
     strncpy (replyPacket.familyName, session->game.currentCommander.familyName, sizeof (replyPacket.familyName));
     strncpy (replyPacket.commanderCharName, session->game.currentCommander.charName, sizeof (replyPacket.commanderCharName));
+    replyPacket.pcId = session->game.currentCommander.pcId;
     replyPacket.accountId = session->game.currentCommander.accountId;
     replyPacket.classId = session->game.currentCommander.classId;
     replyPacket.jobId = session->game.currentCommander.jobId;
