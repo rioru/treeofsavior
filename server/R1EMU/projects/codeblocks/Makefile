@@ -6,21 +6,21 @@
 WRKDIR = `pwd`
 MAKE = make
 
-all: zoneserver_zoneserver globalserver_globalserver
-
-zoneserver_zoneserver: 
-	$(MAKE) -C ZoneServer all -f ZoneServer.cbp.mak
+all: globalserver_globalserver zoneserver_zoneserver
 
 globalserver_globalserver: 
 	$(MAKE) -C GlobalServer all -f GlobalServer.cbp.mak
 
-clean: clean_zoneserver_zoneserver clean_globalserver_globalserver
+zoneserver_zoneserver: 
+	$(MAKE) -C ZoneServer all -f ZoneServer.cbp.mak
 
-clean_zoneserver_zoneserver: 
-	$(MAKE) -C ZoneServer clean -f ZoneServer.cbp.mak
+clean: clean_globalserver_globalserver clean_zoneserver_zoneserver
 
 clean_globalserver_globalserver: 
 	$(MAKE) -C GlobalServer clean -f GlobalServer.cbp.mak
 
-.PHONY: clean_zoneserver_zoneserver clean_globalserver_globalserver
+clean_zoneserver_zoneserver: 
+	$(MAKE) -C ZoneServer clean -f ZoneServer.cbp.mak
+
+.PHONY: clean_globalserver_globalserver clean_zoneserver_zoneserver
 

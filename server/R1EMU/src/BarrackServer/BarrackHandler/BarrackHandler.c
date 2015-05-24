@@ -244,15 +244,21 @@ BarrackHandler_startGame (
         error ("Invalid RouterId.");
         return PACKET_HANDLER_ERROR;
     }
+    // Retrieve zone servers ports from Redis
+    // Fake ports here until we can retrieve the IP server database
+    int zoneServerPorts [] = {
+        2004, 2005, 2006
+    };
 
     char *zoneServerIp = zoneServerIps [clientPacket->routerId];
+    int zoneServerPort = zoneServerPorts [clientPacket->routerId];
 
     // Load Zone Server options
     // Until we can do it, fake server options
     replyPacket.header.type = BC_START_GAMEOK;
     replyPacket.zoneServerId = 0x12345678;
     strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));
-    replyPacket.zoneServerPort = 2004;
+    replyPacket.zoneServerPort = zoneServerPort;
     replyPacket.mapId = session->game.currentCommander.mapId;
     replyPacket.commanderListId = clientPacket->commanderListId;
     replyPacket.spriteId = session->game.currentCommander.spriteId;
@@ -270,6 +276,7 @@ BarrackHandler_startGame (
         .mapId = -1,
         .accountId = session->socket.accountId
     };
+    info ("Move session from %d to %d.", session->socket.routerId, clientPacket->routerId);
     if (!(Redis_moveGameSession (self->redis, &fromKey, &toKey))) {
         error ("Cannot move the Game session %s.", session->socket.socketId);
         return PACKET_HANDLER_ERROR;

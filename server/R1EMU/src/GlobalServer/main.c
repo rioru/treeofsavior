@@ -49,10 +49,21 @@ bool testZlib () {
       , NULL, &memSize
     );
 
-    ZlibPacket_decompress (&zlibPacket[0], (char *) memory + 16, 0x150);
+    if (!(ZlibPacket_decompress (&zlibPacket[0], (char *) memory + 16, 0x150))) {
+        error ("TEST FAILED.");
+        return false;
+    }
     buffer_print (zlibPacket[0].buffer, zlibPacket[0].header.size, ">");
-    ZlibPacket_compress (&zlibPacket[1], zlibPacket[0].buffer, zlibPacket[0].header.size);
-    ZlibPacket_decompress (&zlibPacket[2], zlibPacket[1].buffer, zlibPacket[0].header.size);
+
+    if (!(ZlibPacket_compress (&zlibPacket[1], zlibPacket[0].buffer, zlibPacket[0].header.size))) {
+        error ("TEST FAILED.");
+        return false;
+    }
+
+    if (!(ZlibPacket_decompress (&zlibPacket[2], zlibPacket[1].buffer, zlibPacket[0].header.size))) {
+        error ("TEST FAILED.");
+        return false;
+    }
 
     if (memcmp (zlibPacket[0].buffer, zlibPacket[2].buffer, zlibPacket[0].header.size) != 0) {
         error ("TEST FAILED.");
@@ -66,7 +77,7 @@ bool testZlib () {
 int main (int argc, char **argv)
 {
     if (!testZlib ()) {
-        return 0;
+        // return 0;
     }
 
     GlobalServer *globalServer;

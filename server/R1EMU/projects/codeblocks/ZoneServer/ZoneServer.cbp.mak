@@ -11,11 +11,11 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = -I/usr/include/ -I../../../src -I../../../include -I../../../include/zmq -I../../../include/mysql -I../../../include/hiredis
+INC = -I/usr/include/ -I../../../src -I../../../include -I../../../include/zmq -I../../../include/mysql -I../../../include/hiredis -I../../../include/zlib
 CFLAGS = -Wall -std=gnu99 -Wno-pointer-sign
 RESINC = 
 LIBDIR = -L../../../lib -L../../../lib/x64 -L/usr/local/mysql/lib/
-LIB = -lzmq -lczmq -lhiredis -lmysqlclient
+LIB = -lzmq -lczmq -lhiredis -lmysqlclient -lz
 LDFLAGS = 
 
 INC_DEBUG = $(INC)
@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = ../../../bin/ZoneServer
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Server.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/ServerFactory.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Worker.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/GameSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/Session.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SocketSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/RouterMonitor.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/math.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/random.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/string.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/utils.o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneServer.o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/main.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/Fields/MySQLSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Redis.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Router.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/ServerFactory.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Worker.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/GameSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/Session.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SocketSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/math.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/random.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/string.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/utils.o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/zlib.o $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialHandler/SocialHandler.o $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialServer.o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneServer.o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/main.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/Fields/MySQLSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Redis.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Router.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/RouterMonitor.o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Server.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Server.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/ServerFactory.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Worker.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/GameSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/Session.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SocketSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/RouterMonitor.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/math.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/random.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/string.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/utils.o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneServer.o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/main.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/Fields/MySQLSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Redis.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Router.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/ServerFactory.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Worker.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/GameSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/Session.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SocketSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/math.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/random.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/string.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/utils.o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/zlib.o $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialHandler/SocialHandler.o $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialServer.o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneServer.o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/main.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander/Commander.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto/Crypto.o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/Fields/MySQLSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketType.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisGameSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields/RedisSocketSession.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Redis.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Router.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/RouterMonitor.o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Server.o
 
 all: debug release
 
@@ -54,14 +54,16 @@ before_debug:
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Session || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Session
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/utils || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/utils
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialHandler || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialHandler
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/SocialServer || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/SocialServer
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer
-	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/Fields || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/Fields
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL
+	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields
 	test -d $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis || mkdir -p $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis
@@ -72,9 +74,6 @@ debug: before_debug out_debug after_debug
 
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
-
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Server.o: ../../../src/Common/Server/Server.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Server/Server.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Server.o
 
 $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/ServerFactory.o: ../../../src/Common/Server/ServerFactory.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Server/ServerFactory.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/ServerFactory.o
@@ -94,9 +93,6 @@ $(OBJDIR_DEBUG)/__/__/__/src/Common/Session/SocketSession.o: ../../../src/Common
 $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o: ../../../src/Common/dbg/dbg.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/dbg/dbg.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg/dbg.o
 
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Server/RouterMonitor.o: ../../../src/Common/Server/RouterMonitor.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Server/RouterMonitor.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/RouterMonitor.o
-
 $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/math.o: ../../../src/Common/utils/math.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/utils/math.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/math.o
 
@@ -109,6 +105,15 @@ $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/string.o: ../../../src/Common/utils/st
 $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/utils.o: ../../../src/Common/utils/utils.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/utils/utils.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/utils.o
 
+$(OBJDIR_DEBUG)/__/__/__/src/Common/utils/zlib.o: ../../../src/Common/utils/zlib.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/utils/zlib.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/utils/zlib.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialHandler/SocialHandler.o: ../../../src/SocialServer/SocialHandler/SocialHandler.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/SocialServer/SocialHandler/SocialHandler.c -o $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialHandler/SocialHandler.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialServer.o: ../../../src/SocialServer/SocialServer.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/SocialServer/SocialServer.c -o $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialServer.o
+
 $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o: ../../../src/ZoneServer/ZoneHandler/ZoneHandler.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/ZoneServer/ZoneHandler/ZoneHandler.c -o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o
 
@@ -117,9 +122,6 @@ $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneServer.o: ../../../src/ZoneServer/Zo
 
 $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/main.o: ../../../src/ZoneServer/main.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/ZoneServer/main.c -o $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/main.o
-
-$(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
-	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o
 
 $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o: ../../../src/BarrackServer/BarrackServer.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackServer.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackServer.o
@@ -138,6 +140,9 @@ $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/MySQL.o: ../../../src/Common/MySQL/MyS
 
 $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o: ../../../src/Common/Packet/Packet.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/Packet.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/Packet.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet/PacketStream.o
 
 $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o: ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c -o $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o
@@ -160,6 +165,12 @@ $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Redis.o: ../../../src/Common/Redis/Red
 $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Router.o: ../../../src/Common/Server/Router.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Server/Router.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Router.o
 
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Server/RouterMonitor.o: ../../../src/Common/Server/RouterMonitor.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Server/RouterMonitor.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/RouterMonitor.o
+
+$(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Server.o: ../../../src/Common/Server/Server.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c ../../../src/Common/Server/Server.c -o $(OBJDIR_DEBUG)/__/__/__/src/Common/Server/Server.o
+
 clean_debug: 
 	rm -f $(OBJ_DEBUG) $(OUT_DEBUG)
 	rm -rf ../../../bin
@@ -167,14 +178,16 @@ clean_debug:
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Session
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/dbg
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/utils
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/SocialServer/SocialHandler
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/SocialServer
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer/ZoneHandler
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/ZoneServer
-	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Commander
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Crypto
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL/Fields
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/MySQL
+	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Packet
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/BarrackServer/BarrackHandler
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis/Fields
 	rm -rf $(OBJDIR_DEBUG)/__/__/__/src/Common/Redis
@@ -185,14 +198,16 @@ before_release:
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Session || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Session
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/utils || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/utils
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialHandler || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialHandler
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/SocialServer || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/SocialServer
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer
-	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/Fields || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/Fields
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL
+	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields
 	test -d $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis || mkdir -p $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis
@@ -203,9 +218,6 @@ release: before_release out_release after_release
 
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
-
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Server.o: ../../../src/Common/Server/Server.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Server/Server.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Server.o
 
 $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/ServerFactory.o: ../../../src/Common/Server/ServerFactory.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Server/ServerFactory.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/ServerFactory.o
@@ -225,9 +237,6 @@ $(OBJDIR_RELEASE)/__/__/__/src/Common/Session/SocketSession.o: ../../../src/Comm
 $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o: ../../../src/Common/dbg/dbg.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/dbg/dbg.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg/dbg.o
 
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Server/RouterMonitor.o: ../../../src/Common/Server/RouterMonitor.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Server/RouterMonitor.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/RouterMonitor.o
-
 $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/math.o: ../../../src/Common/utils/math.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/utils/math.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/math.o
 
@@ -240,6 +249,15 @@ $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/string.o: ../../../src/Common/utils/
 $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/utils.o: ../../../src/Common/utils/utils.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/utils/utils.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/utils.o
 
+$(OBJDIR_RELEASE)/__/__/__/src/Common/utils/zlib.o: ../../../src/Common/utils/zlib.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/utils/zlib.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/utils/zlib.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialHandler/SocialHandler.o: ../../../src/SocialServer/SocialHandler/SocialHandler.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/SocialServer/SocialHandler/SocialHandler.c -o $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialHandler/SocialHandler.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialServer.o: ../../../src/SocialServer/SocialServer.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/SocialServer/SocialServer.c -o $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialServer.o
+
 $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o: ../../../src/ZoneServer/ZoneHandler/ZoneHandler.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/ZoneServer/ZoneHandler/ZoneHandler.c -o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler/ZoneHandler.o
 
@@ -248,9 +266,6 @@ $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneServer.o: ../../../src/ZoneServer/
 
 $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/main.o: ../../../src/ZoneServer/main.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/ZoneServer/main.c -o $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/main.o
-
-$(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
-	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o
 
 $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o: ../../../src/BarrackServer/BarrackServer.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackServer.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackServer.o
@@ -269,6 +284,9 @@ $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/MySQL.o: ../../../src/Common/MySQL/M
 
 $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o: ../../../src/Common/Packet/Packet.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/Packet.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/Packet.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o: ../../../src/Common/Packet/PacketStream.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Packet/PacketStream.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet/PacketStream.o
 
 $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o: ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/BarrackServer/BarrackHandler/BarrackHandler.c -o $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler/BarrackHandler.o
@@ -291,6 +309,12 @@ $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Redis.o: ../../../src/Common/Redis/R
 $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Router.o: ../../../src/Common/Server/Router.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Server/Router.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Router.o
 
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Server/RouterMonitor.o: ../../../src/Common/Server/RouterMonitor.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Server/RouterMonitor.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/RouterMonitor.o
+
+$(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Server.o: ../../../src/Common/Server/Server.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c ../../../src/Common/Server/Server.c -o $(OBJDIR_RELEASE)/__/__/__/src/Common/Server/Server.o
+
 clean_release: 
 	rm -f $(OBJ_RELEASE) $(OUT_RELEASE)
 	rm -rf ../../../bin
@@ -298,14 +322,16 @@ clean_release:
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Session
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/dbg
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/utils
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/SocialServer/SocialHandler
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/SocialServer
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer/ZoneHandler
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/ZoneServer
-	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Commander
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Crypto
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL/Fields
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/MySQL
+	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Packet
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/BarrackServer/BarrackHandler
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis/Fields
 	rm -rf $(OBJDIR_RELEASE)/__/__/__/src/Common/Redis
