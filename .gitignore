@@ -14,6 +14,7 @@
 *.stackdump
 *.idb
 *.mak
+*.rdb
 
 # HooksOfSavior project ignored files
 clienthooks/HooksOfSavior/HooksOfSavior/log.txt
@@ -28,6 +29,9 @@ server/R1EMU/projects/codeblocks/R1EMU/doxygen
 server/R1EMU/bin/BarrackServer
 server/R1EMU/bin/ZoneServer
 server/R1EMU/bin/GlobalServer
+
+# Don't upload Zone logs
+server/R1EMU/bin/*.txt
 
 # Don't upload custom launchers
 server/R1EMU/kill.sh
