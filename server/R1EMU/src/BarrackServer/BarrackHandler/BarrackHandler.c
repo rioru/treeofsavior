@@ -276,7 +276,7 @@ BarrackHandler_startGame (
         .mapId = -1,
         .accountId = session->socket.accountId
     };
-    info ("Move session from %d to %d.", session->socket.routerId, clientPacket->routerId);
+
     if (!(Redis_moveGameSession (self->redis, &fromKey, &toKey))) {
         error ("Cannot move the Game session %s.", session->socket.socketId);
         return PACKET_HANDLER_ERROR;

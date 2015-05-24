@@ -29,7 +29,7 @@ CommanderInfo_createBasicCommander (
     memset (commander, 0, sizeof (CommanderInfo));
 
     commander->classId = 10005;
-    commander->unk2 = 0x55;
+    commander->unk2 = 0;
     commander->jobId = 4;
     commander->gender = 2;
     commander->unk3 = 1;
@@ -56,13 +56,13 @@ CommanderInfo_createBasicCommander (
     commander->necklace = 0xa;
     commander->hairType = 51;
     commander->unk4 = 0;
-    commander->unk5 = 0x552;
-    commander->unk13 = 0x43820000;
+    commander->unk5 = 0;
+    commander->unk13 = 0;
     commander->charPosition = 0;
-    commander->unk6 = 32;
+    commander->unk6 = 0;
     commander->mapId = 0x3fd;
-    commander->spriteId = 0x604;
-    commander->spriteIdRelated = 0x19f74;
+    commander->spriteId = 0;
+    commander->spriteIdRelated = 0x41000000;
     commander->unk7 = 0;
     commander->cPosX = 27.0;
     commander->cPosY = 29.0;
