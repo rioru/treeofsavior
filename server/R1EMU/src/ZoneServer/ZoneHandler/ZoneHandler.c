@@ -114,8 +114,6 @@ static void ZoneHandler_uiInfoList                    (Worker *self, Session *se
 static void ZoneHandler_startInfo                     (Worker *self, Session *session, zmsg_t *reply);
 /** Send a commander movement speed */
 static void ZoneHandler_moveSpeed                     (Worker *self, Session *session, zmsg_t *reply);
-/** Ask to the client to play an animation */
-static void ZoneHandler_playAni                       (Worker *self, Session *session, zmsg_t *reply);
 /** Alert the client "my" PC has entered */
 static void ZoneHandler_MyPCEnter                     (Worker *self, Session *session, zmsg_t *reply);
 /** Set the position of a commander */
@@ -224,8 +222,8 @@ ZoneHandler_skillGround (
         uint8_t unk1;
         uint32_t skillId;
         uint32_t unk2;
-        float x, y, z;
-        float x2, y2, z2;
+        Position3D pos1;
+        Position3D pos2;
         float unk3;
         uint32_t unk4;
         uint32_t unk5;
@@ -233,6 +231,15 @@ ZoneHandler_skillGround (
         uint8_t unk7;
     } CzSkillGroundPacket;
     #pragma pack(pop)
+
+    /*   CzSkillGroundPacket :
+         u1 skillId  unk2     x        y        z        x2       y2       z2       u3       u4       u5       u6 u7
+         00 419C0000 00000000 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3 FFFF7FBF 0020B539 00000000 00 01
+         00 419C0000 00000000 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3 F30435BF F40435BF 00000000 00 01
+         00 419C0000 00000000 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4 FFFF7F3F 0020B5B9 00000000 00 00
+         00 429C0000 00000000 5A00FAC3 1F7CA143 B1D3E843 5A00FAC3 1F7CA143 B1D3E843 EE04353F F60435BF 00000000 00 00
+         00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
+    */
 
     if (sizeof (CzSkillGroundPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
@@ -243,88 +250,35 @@ ZoneHandler_skillGround (
 
     CzSkillGroundPacket *clientPacket = (CzSkillGroundPacket *) packet;
 
-    /*   u1 skillId  unk2     x        y        z        x2       y2       z2       u3       u4       u5       u6 u7
-         00 419C0000 00000000 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3 FFFF7FBF 0020B539 00000000 00 01
-         00 419C0000 00000000 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3 F30435BF F40435BF 00000000 00 01
-         00 419C0000 00000000 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4 FFFF7F3F 0020B5B9 00000000 00 00
-         00 429C0000 00000000 5A00FAC3 1F7CA143 B1D3E843 5A00FAC3 1F7CA143 B1D3E843 EE04353F F60435BF 00000000 00 00
-         00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
-    */
+    // Not sure of the actual order
+    ZoneBuilder_skillCast (
+        session->game.currentCommander.pcId,
+        clientPacket->skillId,
+        &clientPacket->pos1,
+        &clientPacket->pos2,
+        reply
+    );
 
-    #pragma pack(push, 1)
-    typedef struct {
-        ServerPacketHeader header;
-        uint32_t pcId;
-        uint32_t skillId;
-        float unk3;
-        uint32_t unk4;
-        float x, y, z;
-        float x2, y2, z2;
-    } ZcSkillReadyPacket;
-    #pragma pack(pop)
+    ZoneBuilder_playSkillCastAni (
+        session->game.currentCommander.pcId,
+        &clientPacket->pos1,
+        reply
+    );
 
-    // Answer ZC_PLAY_ANIM
-    ZoneHandler_playAni (self, session, reply);
+    ZoneBuilder_skillReady (
+        session->game.currentCommander.pcId,
+        clientPacket->skillId,
+        &clientPacket->pos1,
+        &clientPacket->pos2,
+        reply
+    );
 
-    // Answer : ZC_SKILL_READY
-    /*  pcId     skillId  u3       u4       x        y        z        x2       y2       z2
-        5A730100 419C0000 0000803F 011CECC7 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3
-        5A730100 419C0000 0000803F 011CECC7 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3
-        5A730100 419C0000 0000803F 011CECC7 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4
-    */
-
-    ZcSkillReadyPacket replyPacket;
-    memset (&replyPacket, 0, sizeof (replyPacket));
-
-    replyPacket.header.type = ZC_SKILL_READY;
-    replyPacket.pcId = session->game.currentCommander.pcId;
-    replyPacket.skillId = clientPacket->skillId;
-    replyPacket.unk3 = 1.0;
-    replyPacket.unk4 = SWAP_UINT32 (0x011CECC7);
-    replyPacket.x = clientPacket->x;
-    replyPacket.y = clientPacket->y;
-    replyPacket.z = clientPacket->z;
-    replyPacket.x2 = clientPacket->x2;
-    replyPacket.y2 = clientPacket->y2;
-    replyPacket.z2 = clientPacket->z2;
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-
+    ZoneBuilder_playAni (reply);
     ZoneHandler_normalUnk8 (self, session, reply);
 
     return PACKET_HANDLER_OK;
 }
 
-
-static void
-ZoneHandler_playAni (
-    Worker *self,
-    Session *session,
-    zmsg_t *reply
-) {
-    #pragma pack(push, 1)
-    typedef struct {
-        ServerPacketHeader header;
-        uint32_t unkId1;
-        uint32_t unkId2;
-        uint16_t unk3;
-        float timeDelay;
-        float unk5;
-    } ZcPlayAniPacket;
-    #pragma pack(pop)
-
-    ZcPlayAniPacket replyPacket;
-    memset (&replyPacket, 0, sizeof (replyPacket));
-
-    size_t memSize = sizeof (ZcPlayAniPacket);
-    dumpToMem (
-        "[11:11:04][           ToSClient:                     dbgBuffer]  55 0C FF FF FF FF 4B 01 00 00 25 18 27 00 01 01 | U.....K...%.'...\n"
-        "[11:11:04][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 80 3F                         | .......?\n"
-      , &replyPacket, &memSize
-    );
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-}
 
 static void
 ZoneHandler_normalUnk9 (

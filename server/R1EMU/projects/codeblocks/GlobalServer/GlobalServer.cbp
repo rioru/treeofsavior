@@ -144,6 +144,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/utils/math.h" />
+		<Unit filename="../../../src/Common/utils/position.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/utils/position.h" />
 		<Unit filename="../../../src/Common/utils/random.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -176,6 +180,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/SocialServer/SocialServer.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneBuilder.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneBuilder.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>

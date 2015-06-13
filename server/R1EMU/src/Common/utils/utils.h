@@ -19,6 +19,11 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "math.h"
+#include "position.h"
+#include "random.h"
+#include "string.h"
+#include "zlib.h"
 
 // ---------- Defines -------------
 #define STRINGIFY(x) # x
@@ -44,8 +49,8 @@
 #define QUOTIFY(x) "\"" x "\""
 
 // Byte swapping
-#define SWAP_UINT32(x) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
-#define SWAP_UINT16(x) (((x) >> 8) | ((x) << 8))
+#define SWAP_UINT32(x) (uint32_t) (((x) >> 24) | (((x) & 0x00FF0000) >> 8) | (((x) & 0x0000FF00) << 8) | ((x) << 24))
+#define SWAP_UINT16(x) (uint16_t) (((x) >> 8) | ((x) << 8))
 
 // ------ Structure declaration -------
 
