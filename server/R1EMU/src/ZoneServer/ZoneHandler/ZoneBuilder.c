@@ -18,10 +18,10 @@
 #include "Common/Packet/PacketType.h"
 
 // ---------- Defines -------------
-#define BUILD_REPLY_PACKET(structureName, packetName, msgName) \
-    for (structureName packetName, *__sent = NULL; \
-         !__sent && memset (&packetName, 0, sizeof (structureName)); \
-         zmsg_add (msgName, zframe_new (&packetName, sizeof (structureName))), __sent = (void *) 1 \
+#define BUILD_REPLY_PACKET(packetName, msgName) \
+    for (bool __sent = false; \
+         !__sent && memset (&packetName, 0, sizeof (packetName)); \
+         zmsg_add (msgName, zframe_new (&packetName, sizeof (packetName))), __sent = true \
     )
 
 // ------ Static declaration -------
@@ -36,14 +36,14 @@ ZoneBuilder_restSit (
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         ServerPacketHeader header;
         uint32_t pcId;
         uint8_t isSit;
-    } ZcRestSitPacket;
+    } replyPacket;
     #pragma pack(pop)
 
-    BUILD_REPLY_PACKET (ZcRestSitPacket, replyPacket, replyMsg)
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_REST_SIT;
         replyPacket.pcId = targetPcId;
@@ -60,7 +60,7 @@ ZoneBuilder_skillReady (
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         ServerPacketHeader header;
         uint32_t pcId;
         uint32_t skillId;
@@ -69,7 +69,7 @@ ZoneBuilder_skillReady (
         uint16_t unk5;
         Position3D pos1;
         Position3D pos2;
-    } ZcSkillReadyPacket;
+    } replyPacket;
     #pragma pack(pop)
 
     /*  pcId     skillId  u3       u4        x        y        z        x2       y2       z2
@@ -77,7 +77,7 @@ ZoneBuilder_skillReady (
         5A730100 419C0000 0000803F 011C ECC7 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3
         5A730100 419C0000 0000803F 011C ECC7 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4
     */
-    BUILD_REPLY_PACKET (ZcSkillReadyPacket, replyPacket, replyMsg)
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_SKILL_READY;
         replyPacket.pcId = targetPcId; // session->game.currentCommander.pcId;
@@ -95,21 +95,21 @@ ZoneBuilder_playAni (
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         ServerPacketHeader header;
         uint32_t unkId1;
         uint32_t unkId2;
         uint16_t unk3;
         float timeDelay;
         float unk5;
-    } ZcPlayAniPacket;
+    } replyPacket;
     #pragma pack(pop)
 
     /*
         4B010000 25182700 0101 00000000 0000803F
     */
 
-    BUILD_REPLY_PACKET (ZcPlayAniPacket, replyPacket, replyMsg)
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_PLAY_ANI;
         replyPacket.unkId1 = SWAP_UINT32 (0x4B010000);
@@ -130,17 +130,17 @@ ZoneBuilder_skillCast (
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         ServerPacketHeader header;
         uint32_t pcId;
         uint16_t unk2;
         uint16_t unk3;
         Position3D position1;
         Position3D position2;
-    } ZcSkillCastPacket;
+    } replyPacket;
     #pragma pack(pop)
 
-    BUILD_REPLY_PACKET (ZcSkillCastPacket, replyPacket, replyMsg)
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_SKILL_CAST;
         replyPacket.pcId = targetPcId;
@@ -158,17 +158,17 @@ ZoneBuilder_playSkillCastAni (
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         ServerPacketHeader header;
         uint32_t pcId;
         Position3D position;
         uint16_t unk1;
         uint16_t unk2;
         uint32_t unk3;
-    } ZcPlaySkillCastAniPacket;
+    } replyPacket;
     #pragma pack(pop)
 
-    BUILD_REPLY_PACKET (ZcPlaySkillCastAniPacket, replyPacket, replyMsg)
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_PLAY_SKILL_CAST_ANI;
         replyPacket.pcId = targetPcId;
