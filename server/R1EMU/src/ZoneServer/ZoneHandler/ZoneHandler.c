@@ -73,6 +73,8 @@ static void ZoneHandler_normalUnk7                    (Worker *self, Session *se
 /** @unknown */
 static void ZoneHandler_normalUnk8                    (Worker *self, Session *session, zmsg_t *reply);
 /** @unknown */
+static void ZoneHandler_normalUnk9                    (Worker *self, Session *session, zmsg_t *reply);
+/** @unknown */
 static void ZoneHandler_startGame                     (Worker *self, Session *session, zmsg_t *reply);
 /** @unknown */
 // static void ZoneHandler_partyInfo                     (Worker *self, Session *session, zmsg_t *reply);
@@ -213,6 +215,7 @@ ZoneHandler_restSit (
     ZcRestSitPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
+    replyPacket.header.type = ZC_REST_SIT;
     replyPacket.pcId = session->game.currentCommander.pcId;
     replyPacket.isSit = 0;
 
@@ -335,6 +338,39 @@ ZoneHandler_playAni (
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
 }
+
+static void
+ZoneHandler_normalUnk9 (
+    Worker *self,
+    Session *session,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    typedef struct {
+        PacketNormalHeader normalHeader;
+        uint32_t pcId;
+        uint8_t unk1;
+        uint32_t unk2;
+        uint32_t unk3;
+        uint32_t unk4;
+    } ZcNormalUnknown9Packet;
+    #pragma pack(pop)
+
+    ZcNormalUnknown9Packet replyPacket;
+    memset (&replyPacket, 0, sizeof (replyPacket));
+
+    size_t memSize = sizeof (ZcNormalUnknown9Packet);
+    dumpToMem (
+        "[11:10:23][           ToSClient:                     dbgBuffer]  30 0D 2E D3 5E 00 1D 00 24 01 00 00 5A 73 01 00 | 0...^...$...Zs..\n"
+        "[11:10:23][           ToSClient:                     dbgBuffer]  00 6E 00 00 00 FF FF FF FF 57 04 00 00          | .n.......W...\n"
+      , &replyPacket, &memSize
+    );
+
+    replyPacket.pcId = session->game.currentCommander.pcId;
+
+    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+}
+
 
 static void
 ZoneHandler_normalUnk8 (
@@ -596,7 +632,7 @@ ZoneHandler_gameReady (
     ZoneHandler_enterPc (self, session, reply);
     ZoneHandler_buffList (self, session, reply);
 
-    // Add NPC at the start
+    // Add NPC at the start screen
     ZoneHandler_enterMonster (self, session, reply);
     ZoneHandler_faction (self, session, reply);
 
@@ -604,6 +640,7 @@ ZoneHandler_gameReady (
     ZoneHandler_normalUnk7 (self, session, reply);
     ZoneHandler_jobPts (self, session, reply);
     ZoneHandler_moveSpeed (self, session, reply);
+    ZoneHandler_normalUnk9 (self, session, reply);
     ZoneHandler_addonMsg (self, session, reply);
 
     return PACKET_HANDLER_UPDATE_SESSION;
@@ -1255,7 +1292,8 @@ ZoneHandler_abilityList (
     typedef struct {
         VariableSizePacketHeader variableSizeHeader;
         uint32_t pcId;
-        uint8_t unk [50];
+        uint16_t numberEntries;
+        uint8_t unk [48];
     } ZcAbilityListPacket;
     #pragma pack(pop)
 
@@ -1271,6 +1309,9 @@ ZoneHandler_abilityList (
       , &replyPacket, &memSize
     );
 
+    // Build the reply packet
+    replyPacket.variableSizeHeader.serverHeader.type = ZC_ABILITY_LIST;
+    replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
     replyPacket.pcId = session->game.currentCommander.pcId;
 
     zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
@@ -1908,7 +1949,7 @@ ZoneHandler_connect (
         uint64_t accountId;
         uint32_t spriteId;
         uint32_t spriteIdRelated;
-        unsigned char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        unsigned char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint8_t unk4;
         uint32_t zoneServerId;
         uint16_t unk3;
