@@ -13,6 +13,7 @@
 
 // ---------- Includes ------------
 #include "ZoneHandler.h"
+#include "ZoneBuilder.h"
 #include "Common/Packet/Packet.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Packet/PacketStream.h"
@@ -202,24 +203,10 @@ ZoneHandler_restSit (
     }
 
     CzRestSitPacket *clientPacket = (CzRestSitPacket *) packet;
-    (void) clientPacket; // Do nothing
+    (void) clientPacket; // Nothing to read, do nothing
 
-    #pragma pack(push, 1)
-    typedef struct {
-        ServerPacketHeader header;
-        uint32_t pcId;
-        uint8_t isSit;
-    } ZcRestSitPacket;
-    #pragma pack(pop)
-
-    ZcRestSitPacket replyPacket;
-    memset (&replyPacket, 0, sizeof (replyPacket));
-
-    replyPacket.header.type = ZC_REST_SIT;
-    replyPacket.pcId = session->game.currentCommander.pcId;
-    replyPacket.isSit = 0;
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
+    // Make sit the current commander
+    ZoneBuilder_restSit (session->game.currentCommander.pcId, reply);
 
     return PACKET_HANDLER_OK;
 }
@@ -247,14 +234,6 @@ ZoneHandler_skillGround (
     } CzSkillGroundPacket;
     #pragma pack(pop)
 
-    /*   u1 skillId  unk2     x        y        z        x2       y2       z2       u3       u4       u5       u6 u7
-         00 419C0000 00000000 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3 FFFF7FBF 0020B539 00000000 00 01
-         00 419C0000 00000000 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3 F30435BF F40435BF 00000000 00 01
-         00 419C0000 00000000 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4 FFFF7F3F 0020B5B9 00000000 00 00
-         00 429C0000 00000000 5A00FAC3 1F7CA143 B1D3E843 5A00FAC3 1F7CA143 B1D3E843 EE04353F F60435BF 00000000 00 00
-         00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
-    */
-
     if (sizeof (CzSkillGroundPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CzSkillGroundPacket));
@@ -263,6 +242,14 @@ ZoneHandler_skillGround (
     }
 
     CzSkillGroundPacket *clientPacket = (CzSkillGroundPacket *) packet;
+
+    /*   u1 skillId  unk2     x        y        z        x2       y2       z2       u3       u4       u5       u6 u7
+         00 419C0000 00000000 DAFD24C4 74768243 1B77F1C3 DAFD24C4 74768243 1B77F1C3 FFFF7FBF 0020B539 00000000 00 01
+         00 419C0000 00000000 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3 F30435BF F40435BF 00000000 00 01
+         00 419C0000 00000000 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4 FFFF7F3F 0020B5B9 00000000 00 00
+         00 429C0000 00000000 5A00FAC3 1F7CA143 B1D3E843 5A00FAC3 1F7CA143 B1D3E843 EE04353F F60435BF 00000000 00 00
+         00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
+    */
 
     #pragma pack(push, 1)
     typedef struct {

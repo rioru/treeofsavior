@@ -38,8 +38,8 @@ typedef struct _Worker Worker;
 typedef enum _PacketHandlerState PacketHandlerState;
 
 /**
- * @brief PacketHandlerState is the generic function call that a Worker is going to process.
- * It takes the packet and reply to it using the @reply argument.
+ * @brief PacketHandlerFunction is the generic function prototype that a Worker is going to call when it receives a packet.
+ * It takes the packet, calls packet builders based on the packet type, and reply to it using the \reply argument.
  */
 typedef PacketHandlerState (*PacketHandlerFunction) (
     /** A pointer to the current Worker */
@@ -130,7 +130,6 @@ enum _PacketHandlerState {
     PACKET_HANDLER_UPDATE_SESSION = 1,
     PACKET_HANDLER_DELETE_SESSION = 2
 };
-
 
 
 // ----------- Functions ------------
