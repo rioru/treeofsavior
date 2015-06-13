@@ -188,20 +188,17 @@ ZoneHandler_restSit (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         // This packet is actually empty
-    } CzRestSitPacket;
+    } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
-    if (sizeof (CzRestSitPacket) != packetSize) {
+    if (sizeof (*clientPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (CzRestSitPacket));
+            packetSize, sizeof (*clientPacket));
 
         return PACKET_HANDLER_ERROR;
     }
-
-    CzRestSitPacket *clientPacket = (CzRestSitPacket *) packet;
-    (void) clientPacket; // Nothing to read, do nothing
 
     // Make sit the current commander
     ZoneBuilder_restSit (session->game.currentCommander.pcId, reply);
@@ -218,7 +215,7 @@ ZoneHandler_skillGround (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         uint8_t unk1;
         uint32_t skillId;
         uint32_t unk2;
@@ -229,8 +226,15 @@ ZoneHandler_skillGround (
         uint32_t unk5;
         uint8_t unk6;
         uint8_t unk7;
-    } CzSkillGroundPacket;
+    } *clientPacket = (void *) packet;
     #pragma pack(pop)
+
+    if (sizeof (*clientPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (*clientPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
 
     /*   CzSkillGroundPacket :
          u1 skillId  unk2     x        y        z        x2       y2       z2       u3       u4       u5       u6 u7
@@ -240,15 +244,6 @@ ZoneHandler_skillGround (
          00 429C0000 00000000 5A00FAC3 1F7CA143 B1D3E843 5A00FAC3 1F7CA143 B1D3E843 EE04353F F60435BF 00000000 00 00
          00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
     */
-
-    if (sizeof (CzSkillGroundPacket) != packetSize) {
-        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (CzSkillGroundPacket));
-
-        return PACKET_HANDLER_ERROR;
-    }
-
-    CzSkillGroundPacket *clientPacket = (CzSkillGroundPacket *) packet;
 
     // Not sure of the actual order
     ZoneBuilder_skillCast (
@@ -1885,7 +1880,7 @@ ZoneHandler_connect (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         uint32_t unk1;
         uint64_t accountId;
         uint32_t spriteId;
@@ -1895,8 +1890,15 @@ ZoneHandler_connect (
         uint32_t zoneServerId;
         uint16_t unk3;
         uint8_t channelListId;
-    } CzConnectPacket;
+    } *clientPacket = (void *) packet;
     #pragma pack(pop)
+
+    if (sizeof (*clientPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (*clientPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
 
     #pragma pack(push, 1)
     typedef struct {
@@ -1912,13 +1914,6 @@ ZoneHandler_connect (
     } ZcConnectPacket;
     #pragma pack(pop)
 
-    if (sizeof (CzConnectPacket) != packetSize) {
-        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (CzConnectPacket));
-        return PACKET_HANDLER_ERROR;
-    }
-
-    CzConnectPacket *clientPacket = (CzConnectPacket *) packet;
     ZcConnectPacket replyPacket;
     memset (&replyPacket, 0, sizeof (replyPacket));
 
@@ -2079,19 +2074,17 @@ ZoneHandler_jump (
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
-    typedef struct {
+    struct {
         uint8_t unk1;
-    } CzJumpPacket;
+    } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
-    if (sizeof (CzJumpPacket) != packetSize) {
+    if (sizeof (*clientPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (CzJumpPacket));
+            packetSize, sizeof (*clientPacket));
 
         return PACKET_HANDLER_ERROR;
     }
-
-    // CzJumpPacket *clientPacket = (CzJumpPacket *) packet;
 
     #pragma pack(push, 1)
     typedef struct {
