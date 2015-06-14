@@ -193,7 +193,7 @@ RouterMonitor_monitor (
 
         // Get the socket file descriptor
         zframe_t *fdFrame = zmsg_next (msg);
-        uint64_t fdClient = strtoll (zframe_data (fdFrame), NULL, 10);
+        uint64_t fdClient = strtoull (zframe_data (fdFrame), NULL, 10);
 
         // Check if this file descriptor is still used
         unsigned char fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
@@ -217,7 +217,7 @@ RouterMonitor_monitor (
 
         // Get the socket file descriptor
         zframe_t *fdFrame = zmsg_next (msg);
-        uint64_t fdClient = strtoll (zframe_data (fdFrame), NULL, 10);
+        uint64_t fdClient = strtoull (zframe_data (fdFrame), NULL, 10);
 
         // Check if this file descriptor is already used
         unsigned char fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];

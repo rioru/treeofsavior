@@ -167,7 +167,7 @@ GlobalServerStartupInfo_init (
     // Fill the server ports array
     self->zoneServersPorts = calloc (self->zoneServersCount, sizeof (int));
     for (int portIndex = 0; portIndex < self->zoneServersCount; portIndex++) {
-        self->zoneServersPorts[portIndex] = strtol (portsArray, &portsArray, 10);
+        self->zoneServersPorts[portIndex] = strtoul (portsArray, &portsArray, 10);
         portsArray++;
     }
 
@@ -233,7 +233,7 @@ GlobalServerStartupInfo_init (
     // Fill the server ports array
     self->socialServersPorts = calloc (self->socialServersCount, sizeof (int));
     for (int portIndex = 0; portIndex < self->socialServersCount; portIndex++) {
-        self->socialServersPorts[portIndex] = strtol (portsArray, &portsArray, 10);
+        self->socialServersPorts[portIndex] = strtoul (portsArray, &portsArray, 10);
         portsArray++;
     }
 
@@ -293,7 +293,7 @@ GlobalServerStartupInfo_init (
     // Fill the server ports array
     self->barrackServerPort = calloc (self->barrackServerPortCount, sizeof (int));
     for (int portIndex = 0; portIndex < self->barrackServerPortCount; portIndex++) {
-        self->barrackServerPort[portIndex] = strtol (portsArray, &portsArray, 10);
+        self->barrackServerPort[portIndex] = strtoul (portsArray, &portsArray, 10);
         portsArray++;
     }
 

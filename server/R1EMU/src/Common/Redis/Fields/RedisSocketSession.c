@@ -92,10 +92,10 @@ Redis_getSocketSession (
             }
             else {
                 // Read the socket Session from the Redis server
-                socketSession->accountId = strtoll (reply->element[REDIS_SOCKET_SESSION_accountId]->str, NULL, 16);
-                socketSession->routerId = strtol (reply->element[REDIS_SOCKET_SESSION_routerId]->str, NULL, 16);
-                socketSession->mapId = strtol (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
-                socketSession->authenticated = strtol (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
+                socketSession->accountId = strtoull (reply->element[REDIS_SOCKET_SESSION_accountId]->str, NULL, 16);
+                socketSession->routerId = strtoul (reply->element[REDIS_SOCKET_SESSION_routerId]->str, NULL, 16);
+                socketSession->mapId = strtoul (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
+                socketSession->authenticated = strtoul (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
                 memcpy (socketSession->socketId, key->socketId, sizeof (socketSession->socketId));
             }
         break;

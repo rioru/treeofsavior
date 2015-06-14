@@ -81,7 +81,7 @@ SocketSession_genId (
     unsigned char *sessionKey,
     unsigned char sessionId[5]
 ) {
-    uint64_t identity = strtoll (sessionKey, NULL, 16);
+    uint64_t identity = strtoull (sessionKey, NULL, 16);
     // Format the sessionId from the session key
     // Swap the bytes
     sessionId[0] = (identity >> 32) & 0xFF;
