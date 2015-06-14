@@ -468,7 +468,7 @@ zlist_t *
 Redis_getClientsWithinDistance (
     Redis *self,
     uint16_t routerId, uint16_t mapId,
-    Position2D *center,
+    PositionXZ *center,
     float range
 ) {
     bool result = true;
@@ -551,7 +551,7 @@ Redis_getClientsWithinDistance (
                             }
 
                             // [0] = X, [1] = Z, [2] = socketId
-                            Position2D curPcPos = {
+                            PositionXZ curPcPos = {
                                 .x = strtof (posReply->element[0]->str, NULL),
                                 .z = strtof (posReply->element[1]->str, NULL)
                             };

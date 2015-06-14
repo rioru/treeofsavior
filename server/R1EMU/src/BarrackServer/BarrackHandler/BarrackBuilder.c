@@ -97,7 +97,7 @@ void
 BarrackBuilder_commanderMoveOk (
     uint64_t accountId,
     uint16_t commanderListId,
-    Position2D *position,
+    PositionXZ *position,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
@@ -106,7 +106,7 @@ BarrackBuilder_commanderMoveOk (
         uint64_t accountId;
         uint16_t commanderListId;
         uint16_t unk1;
-        Position2D position;
+        PositionXZ position;
         uint8_t unk2;
     } replyPacket;
     #pragma pack(pop)
@@ -117,7 +117,7 @@ BarrackBuilder_commanderMoveOk (
 
         replyPacket.accountId = accountId;
         replyPacket.commanderListId = commanderListId;
-        memcpy (&replyPacket.position, position, sizeof (Position2D));
+        memcpy (&replyPacket.position, position, sizeof (PositionXZ));
     }
 }
 

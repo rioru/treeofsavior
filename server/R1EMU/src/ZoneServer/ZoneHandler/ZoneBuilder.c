@@ -50,8 +50,8 @@ void
 ZoneBuilder_skillReady (
     uint32_t targetPcId,
     uint32_t skillId,
-    Position3D *pos1,
-    Position3D *pos2,
+    PositionXYZ *pos1,
+    PositionXYZ *pos2,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
@@ -62,8 +62,8 @@ ZoneBuilder_skillReady (
         float unk3;
         uint16_t unk4;
         uint16_t unk5;
-        Position3D pos1;
-        Position3D pos2;
+        PositionXYZ pos1;
+        PositionXYZ pos2;
     } replyPacket;
     #pragma pack(pop)
 
@@ -119,8 +119,8 @@ void
 ZoneBuilder_skillCast (
     uint32_t targetPcId,
     uint32_t skillId,
-    Position3D *position1,
-    Position3D *position2,
+    PositionXYZ *position1,
+    PositionXYZ *position2,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
@@ -129,8 +129,8 @@ ZoneBuilder_skillCast (
         uint32_t pcId;
         uint16_t unk2;
         uint16_t unk3;
-        Position3D position1;
-        Position3D position2;
+        PositionXYZ position1;
+        PositionXYZ position2;
     } replyPacket;
     #pragma pack(pop)
 
@@ -140,22 +140,22 @@ ZoneBuilder_skillCast (
         replyPacket.pcId = targetPcId;
         replyPacket.unk2 = 0xECC7;
         replyPacket.unk3 = 0;
-        memcpy (&replyPacket.position1, position1, sizeof (Position3D));
-        memcpy (&replyPacket.position2, position2, sizeof (Position3D));
+        memcpy (&replyPacket.position1, position1, sizeof (PositionXYZ));
+        memcpy (&replyPacket.position2, position2, sizeof (PositionXYZ));
     }
 }
 
 void
 ZoneBuilder_playSkillCastAni (
     uint32_t targetPcId,
-    Position3D *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
         uint32_t pcId;
-        Position3D position;
+        PositionXYZ position;
         uint16_t unk1;
         uint16_t unk2;
         uint32_t unk3;
@@ -166,7 +166,7 @@ ZoneBuilder_playSkillCastAni (
     {
         replyPacket.header.type = ZC_PLAY_SKILL_CAST_ANI;
         replyPacket.pcId = targetPcId;
-        memcpy (&replyPacket.position, position, sizeof (Position3D));
+        memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
         replyPacket.unk1 = 0xECC7;
         replyPacket.unk2 = 0;
         replyPacket.unk3 = 0;
@@ -621,7 +621,7 @@ ZoneBuilder_enterPc (
     struct {
         ServerPacketHeader header;
         uint32_t pcId; // 5A730100
-        Position3D position; // 00001DC4, 00008243, 002080C4
+        PositionXYZ position; // 00001DC4, 00008243, 002080C4
         float unk7; // 0000803F
         uint32_t unk8; // 00000000
         uint32_t unk9; // 00270406
@@ -687,8 +687,8 @@ ZoneBuilder_enterPc (
         strncpy (replyPacket.commanderName, commander->commanderName, sizeof (replyPacket.commanderName));
         replyPacket.pcId = commander->pcId;
         replyPacket.position.x = commander->cPosX;
+        replyPacket.position.y = 260.0f;
         replyPacket.position.z = commander->cPosZ;
-        replyPacket.position.y = -1025.0f;
         replyPacket.unk7 = 1.0;
         replyPacket.accountId = commander->accountId;
         replyPacket.classId = commander->classId;
@@ -1186,14 +1186,14 @@ ZoneBuilder_startInfo (
 void
 ZoneBuilder_setPos (
     uint32_t targetPcId,
-    Position3D *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
         uint32_t pcId;
-        Position3D position;
+        PositionXYZ position;
     } replyPacket;
     #pragma pack(pop)
 
@@ -1201,7 +1201,7 @@ ZoneBuilder_setPos (
     {
         replyPacket.header.type = ZC_SET_POS;
         replyPacket.pcId = targetPcId;
-        memcpy (&replyPacket.position, position, sizeof (Position3D));
+        memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
     }
 }
 
@@ -1412,20 +1412,20 @@ ZoneBuilder_optionList (
 
 void
 ZoneBuilder_MyPCEnter (
-    Position3D *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
-        Position3D position;
+        PositionXYZ position;
     } replyPacket;
     #pragma pack(pop)
 
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_MYPC_ENTER;
-        memcpy (&replyPacket.position, position, sizeof (Position3D));
+        memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
     }
 }
 

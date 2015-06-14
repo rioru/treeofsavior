@@ -73,7 +73,7 @@ void
 BarrackBuilder_commanderMoveOk (
     uint64_t accountId,
     uint16_t commanderListId,
-    Position2D *position,
+    PositionXZ *position,
     zmsg_t *replyMsg
 );
 

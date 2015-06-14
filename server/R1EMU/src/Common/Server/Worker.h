@@ -219,7 +219,7 @@ zlist_t *
 Worker_getClientsWithinDistance (
     Worker *self,
     Session *session,
-    Position2D *center,
+    PositionXZ *center,
     float range
 );
 

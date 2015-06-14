@@ -327,7 +327,7 @@ zlist_t *
 Worker_getClientsWithinDistance (
     Worker *self,
     Session *session,
-    Position2D *center,
+    PositionXZ *center,
     float range
 ) {
     return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range);

@@ -246,7 +246,7 @@ BarrackHandler_commanderMove (
     #pragma pack(push, 1)
     struct {
         uint8_t commanderListId;
-        Position3D position;
+        PositionXYZ position;
         float angleDestX, angleDestY;
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
@@ -265,7 +265,7 @@ BarrackHandler_commanderMove (
     session->game.currentCommander.cPosZ = clientPacket->position.z;
 
     // Build packet
-    Position2D okPosition = {
+    PositionXZ okPosition = {
         .x = session->game.currentCommander.cPosX,
         .z = session->game.currentCommander.cPosZ
     };

@@ -204,6 +204,6 @@ zlist_t *
 Redis_getClientsWithinDistance (
     Redis *self,
     uint16_t serverId, uint16_t mapId,
-    Position2D *position,
+    PositionXZ *position,
     float range
 );

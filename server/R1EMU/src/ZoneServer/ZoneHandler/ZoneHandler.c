@@ -121,8 +121,8 @@ ZoneHandler_skillGround (
         uint8_t unk1;
         uint32_t skillId;
         uint32_t unk2;
-        Position3D pos1;
-        Position3D pos2;
+        PositionXYZ pos1;
+        PositionXYZ pos2;
         float unk3;
         uint32_t unk4;
         uint32_t unk5;
@@ -288,8 +288,32 @@ ZoneHandler_keyboardMove (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    buffer_print (packet, packetSize, "Move : ");
-    warning ("CZ_KEYBOARD_MOVE not implemented yet.");
+    #pragma pack(push, 1)
+    struct {
+        uint8_t unk1;
+        PositionXYZ position;
+        float dirX, dirZ;
+        uint8_t unk2;
+        float movementSpeed;
+        uint8_t unk3;
+        float timestamp;
+    } *clientPacket = (void *) packet;
+    #pragma pack(pop)
+
+    /*  u1 posX     posY     posZ     u5       u6       u7 mspeed   u8 u9
+        00 18190DC4 B663A143 17520644 00000000 FFFF7FBF 01 0000F841 01 7B2C5C44
+        00 D4CE1AC4 74768243 4CEF7EC4 F30435BF F204353F 01 00000000 00 5E16FA42
+        00 103F1BC4 74768243 107F7EC4 F204353F F304353F 01 00000000 00 3141FA42
+        00 5CEE19C4 74768243 5C2E7DC4 1D566733 FFFF7F3F 01 00000000 00 8174FA42
+        00 8C5112C4 74768243 78A374C4 FFFF7F3F 00000000 01 00000000 00 727CC244
+    */
+    if (sizeof (*clientPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (*clientPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
     return PACKET_HANDLER_OK;
 }
 
@@ -341,9 +365,9 @@ ZoneHandler_gameReady (
     ZoneBuilder_stamina (reply);
     ZoneBuilder_loginTime (reply);
 
-    Position3D enterPosition = {
+    PositionXYZ enterPosition = {
         .x = session->game.currentCommander.cPosX,
-        .y = -1025.0f,
+        .y = 260.0f,
         .z = session->game.currentCommander.cPosZ
     };
     ZoneBuilder_MyPCEnter (&enterPosition, reply);
@@ -452,7 +476,7 @@ ZoneHandler_connect (
 
     // Position : Official starting point position (tutorial)
     session->game.currentCommander.cPosX = -628.0f;
-    session->game.currentCommander.cPosZ = 260.0f;
+    session->game.currentCommander.cPosZ = -1025.0f;
 
     ZoneBuilder_connect (
         0, // GameMode

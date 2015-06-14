@@ -61,8 +61,8 @@ void
 ZoneBuilder_skillReady (
     uint32_t targetPcId,
     uint32_t skillId,
-    Position3D *pos1,
-    Position3D *pos2,
+    PositionXYZ *pos1,
+    PositionXYZ *pos2,
     zmsg_t *replyMsg
 );
 
@@ -83,8 +83,8 @@ void
 ZoneBuilder_skillCast (
     uint32_t targetPcId,
     uint32_t skillId,
-    Position3D *position1,
-    Position3D *position2,
+    PositionXYZ *position1,
+    PositionXYZ *position2,
     zmsg_t *replyMsg
 );
 
@@ -95,7 +95,7 @@ ZoneBuilder_skillCast (
 void
 ZoneBuilder_playSkillCastAni (
     uint32_t targetPcId,
-    Position3D *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 );
 
@@ -386,7 +386,7 @@ ZoneBuilder_npcStateList (
  */
 void
 ZoneBuilder_MyPCEnter (
-    Position3D *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 );
 
@@ -504,7 +504,7 @@ ZoneBuilder_cooldownList (
 void
 ZoneBuilder_setPos (
     uint32_t targetPcId,
-    Position3D *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 );
 
