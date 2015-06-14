@@ -12,7 +12,7 @@
 
 
 // ---------- Includes ------------
-#include "Position.h"
+#include "position.h"
 
 
 // ------ Structure declaration -------
