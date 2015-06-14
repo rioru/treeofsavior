@@ -22,6 +22,11 @@
 #include "PacketType.h"
 
 // ---------- Defines -------------
+#define BUILD_REPLY_PACKET(packetName, msgName) \
+    for (bool __sent = false; \
+         !__sent && memset (&packetName, 0, sizeof (packetName)); \
+         zmsg_add (msgName, zframe_new (&packetName, sizeof (packetName))), __sent = true \
+    )
 
 
 // ------ Structure declaration -------
@@ -113,6 +118,32 @@ void
 CryptPacket_getHeader (
     unsigned char *packet,
     CryptPacketHeader *header
+);
+
+/**
+ * @brief Creates a server header
+ * @param[out] variableSizeHeader An allocated server header
+ * @param[in] packetSize The type of the packet
+ * @return
+ */
+void
+PacketServer_header (
+    ServerPacketHeader *serverHeader,
+    uint16_t packetType
+);
+
+/**
+ * @brief Creates a variable size header
+ * @param[out] variableSizeHeader An allocated variable size header
+ * @param[in] packetSize The type of the packet
+ * @param[in] packetSize The total size of the packet
+ * @return
+ */
+void
+PacketVariableSize_header (
+    VariableSizePacketHeader *variableSizeHeader,
+    uint16_t packetType,
+    uint32_t packetSize
 );
 
 /**

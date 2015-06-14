@@ -443,6 +443,7 @@ ZoneHandler_connect (
         .mapId = session->socket.mapId,
         .accountId = session->socket.accountId
     };
+
     if (!(Redis_moveGameSession (self->redis, &fromKey, &toKey))) {
         error ("Cannot move the game session to the current mapId.");
         return PACKET_HANDLER_ERROR;

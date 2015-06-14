@@ -23,7 +23,19 @@
 #include "Common/Commander/Commander.h"
 
 // ---------- Defines -------------
+typedef enum PacketTypeZoneNormal {
 
+    ZC_NORMAL_UNKNOWN_1 = 0x92,
+    ZC_NORMAL_UNKNOWN_2 = 0xC4,
+    ZC_NORMAL_UNKNOWN_3 = 0xD2,
+    ZC_NORMAL_UNKNOWN_4 = 0xDF,
+    ZC_NORMAL_UNKNOWN_5 = 0x151,
+    ZC_NORMAL_UNKNOWN_6 = 0xC9,
+    ZC_NORMAL_UNKNOWN_7 = 0xE1,
+    ZC_NORMAL_UNKNOWN_8 = 0x54,
+    ZC_NORMAL_UNKNOWN_9 = 0x124
+
+}   PacketTypeZoneNormal;
 
 // ------ Structure declaration -------
 

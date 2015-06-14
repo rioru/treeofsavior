@@ -33,7 +33,7 @@ void *dumpToMem (
     char localMem[1000000];
     size_t dumpPos = 0;
     size_t memPos = 0;
-    unsigned char *memoryBytes = (unsigned char *) memory;
+    uint8_t *memoryBytes = (uint8_t *) memory;
     bool isLocal;
 
     if (memory == NULL) {

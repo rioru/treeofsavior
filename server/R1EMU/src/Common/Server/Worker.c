@@ -303,7 +303,7 @@ Worker_sendToClients (
     char *identityKey;
     for (identityKey = zlist_first (clients); identityKey != NULL; identityKey = zlist_next (clients)) {
         // Add all the clients to the packet
-        unsigned char identityBytes[5];
+        uint8_t identityBytes[5];
         SocketSession_genId (identityKey, identityBytes);
         if (zmsg_addmem (msg, identityBytes, sizeof (identityBytes)) != 0) {
             error ("Cannot add the identity in the message.");

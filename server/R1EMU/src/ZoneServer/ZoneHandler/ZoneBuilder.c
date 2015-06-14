@@ -18,11 +18,6 @@
 #include "Common/Packet/PacketType.h"
 
 // ---------- Defines -------------
-#define BUILD_REPLY_PACKET(packetName, msgName) \
-    for (bool __sent = false; \
-         !__sent && memset (&packetName, 0, sizeof (packetName)); \
-         zmsg_add (msgName, zframe_new (&packetName, sizeof (packetName))), __sent = true \
-    )
 
 // ------ Static declaration -------
 

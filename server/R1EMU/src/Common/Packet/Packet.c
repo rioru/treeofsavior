@@ -67,8 +67,25 @@ PacketNormal_header (
     uint32_t subtype,
     uint32_t packetSize
 ) {
-    normalHeader->variableSizeHeader.serverHeader.type = BC_NORMAL;
-    normalHeader->variableSizeHeader.serverHeader.reserved = 0;
-    normalHeader->variableSizeHeader.packetSize = packetSize;
+    PacketVariableSize_header (&normalHeader->variableSizeHeader, BC_NORMAL, packetSize);
     normalHeader->subtype = subtype;
+}
+
+void
+PacketVariableSize_header (
+    VariableSizePacketHeader *variableSizeHeader,
+    uint16_t packetType,
+    uint32_t packetSize
+) {
+    PacketServer_header (&variableSizeHeader->serverHeader, packetType);
+    variableSizeHeader->packetSize = packetSize;
+}
+
+void
+PacketServer_header (
+    ServerPacketHeader *serverHeader,
+    uint16_t packetType
+) {
+    serverHeader->type = packetType;
+    serverHeader->reserved = -1;
 }
