@@ -14,14 +14,7 @@
 // ---------- Includes ------------
 #include "ZoneHandler.h"
 #include "ZoneBuilder.h"
-#include "Common/Packet/Packet.h"
-#include "Common/Commander/Commander.h"
-#include "Common/Packet/PacketStream.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
-#include "Common/Server/Worker.h"
-#include "Common/utils/zlib.h"
-#include "BarrackServer/BarrackServer.h"
-
 
 // ------ Static declaration -------
 /** Connect to the zone server */
