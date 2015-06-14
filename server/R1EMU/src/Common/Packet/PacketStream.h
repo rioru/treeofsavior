@@ -30,7 +30,7 @@
  */
 struct PacketStream
 {
-    unsigned char *buffer;
+    uint8_t *buffer;
     unsigned int position;
 };
 
@@ -45,7 +45,7 @@ typedef struct PacketStream PacketStream;
  */
 PacketStream *
 PacketStream_new (
-    unsigned char *buffer
+    uint8_t *buffer
 );
 
 
@@ -58,7 +58,7 @@ PacketStream_new (
 bool
 PacketStream_init (
     PacketStream *self,
-    unsigned char *buffer
+    uint8_t *buffer
 );
 
 /**

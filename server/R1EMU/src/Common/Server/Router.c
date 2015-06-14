@@ -510,7 +510,7 @@ Router_frontend (
 
     // Retrieve the FD of the client
     zframe_t *identityClientDup = zframe_dup (identityClient);
-    unsigned char *identity = zframe_data (identityClientDup);
+    uint8_t *identity = zframe_data (identityClientDup);
     zmq_getsockopt (zsock_resolve (frontend), ZMQ_IDENTITY_FD, identity, (size_t[]) {5});
     uint64_t fdClient = *((uint64_t *) identity);
     zframe_destroy (&identityClientDup);

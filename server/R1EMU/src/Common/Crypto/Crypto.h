@@ -34,6 +34,6 @@
  */
 bool
 Crypto_decryptPacket (
-    unsigned char **packet,
+    uint8_t **packet,
     size_t *packetSize
 );

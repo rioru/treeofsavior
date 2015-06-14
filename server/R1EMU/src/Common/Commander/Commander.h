@@ -29,9 +29,9 @@
  */
 typedef struct CommanderInfo
 {
-    unsigned char commanderName[COMMANDER_NAME_SIZE+1];
-    unsigned char familyName[COMMANDER_FAMILY_NAME_SIZE+1];
-    unsigned char unk1[6];
+    uint8_t commanderName[COMMANDER_NAME_SIZE+1];
+    uint8_t familyName[COMMANDER_FAMILY_NAME_SIZE+1];
+    uint8_t unk1[6];
     uint64_t accountId;
     uint16_t classId;
     uint16_t unk2;
@@ -60,12 +60,12 @@ typedef struct CommanderInfo
     uint32_t ring_right;
     uint32_t necklace;
     uint8_t hairType;
-    unsigned char unk4;
+    uint8_t unk4;
     uint16_t unk5;
     uint32_t pcId;
     uint32_t unk13;
     uint8_t charPosition;
-    unsigned char unk6;
+    uint8_t unk6;
     uint16_t mapId;
     uint32_t currentXP;
     uint32_t maxXP;

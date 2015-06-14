@@ -25,7 +25,7 @@
 
 PacketStream *
 PacketStream_new (
-    unsigned char *buffer
+    uint8_t *buffer
 ) {
     PacketStream *self;
 
@@ -46,7 +46,7 @@ PacketStream_new (
 bool
 PacketStream_init (
     PacketStream *self,
-    unsigned char *buffer
+    uint8_t *buffer
 ) {
     self->buffer = buffer;
     self->position = 0;

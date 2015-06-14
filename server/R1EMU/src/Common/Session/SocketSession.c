@@ -28,7 +28,7 @@ SocketSession_new (
     uint64_t accountId,
     uint16_t routerId,
     uint16_t mapId,
-    unsigned char *socketId,
+    uint8_t *socketId,
     bool authenticated
 ) {
     SocketSession *self;
@@ -53,7 +53,7 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t routerId,
     uint16_t mapId,
-    unsigned char *socketId,
+    uint8_t *socketId,
     bool authenticated
 ) {
     self->accountId = accountId;
@@ -68,8 +68,8 @@ SocketSession_init (
 
 void
 SocketSession_genSocketId (
-    unsigned char *sessionId,
-    unsigned char sessionKey[SOCKET_SESSION_ID_SIZE]
+    uint8_t *sessionId,
+    uint8_t sessionKey[SOCKET_SESSION_ID_SIZE]
 ) {
     // Format the session key from the sessionId
     snprintf (sessionKey, SOCKET_SESSION_ID_SIZE,
@@ -78,8 +78,8 @@ SocketSession_genSocketId (
 
 void
 SocketSession_genId (
-    unsigned char *sessionKey,
-    unsigned char sessionId[5]
+    uint8_t *sessionKey,
+    uint8_t sessionId[5]
 ) {
     uint64_t identity = strtoull (sessionKey, NULL, 16);
     // Format the sessionId from the session key

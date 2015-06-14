@@ -221,13 +221,13 @@ BarrackBuilder_zoneTraffics (
     }
 
     // Allocate on the stack the memory for the packet
-    unsigned char *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
+    uint8_t *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
     ZoneTrafficsPacket *replyPacket = (ZoneTrafficsPacket *) stackBuffer;
     memset (replyPacket, 0, outPacketSize);
 
     // Construct the packet
     PacketStream stream;
-    PacketStream_init (&stream, (unsigned char *) replyPacket);
+    PacketStream_init (&stream, (uint8_t *) replyPacket);
 
     PacketNormal_header (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
     PacketStream_addOffset (&stream, sizeof (replyPacket->normalHeader));

@@ -24,7 +24,7 @@
 #include "Common/Session/GameSession.h"
 
 // ---------- Defines -------------
-#define REDIS_EMPTY_STRING (unsigned char *) "__EMPTY_STRING__"
+#define REDIS_EMPTY_STRING (uint8_t *) "__EMPTY_STRING__"
 
 #define REDIS_HOSTNAME_DEFAULT   (char []) {"localhost"}
 #define REDIS_PORT_DEFAULT       6379

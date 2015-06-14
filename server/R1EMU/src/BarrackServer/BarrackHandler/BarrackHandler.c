@@ -24,23 +24,23 @@
 
 // ------ Static declaration -------
 /** Read the passport and accepts or refuse the authentification */
-static PacketHandlerState BarrackHandler_loginByPassport   (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_loginByPassport   (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Read the login / password and accepts or refuse the authentification */
-static PacketHandlerState BarrackHandler_login             (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_login             (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Start the barrack : call other handlers that initializes the barrack */
-static PacketHandlerState BarrackHandler_startBarrack      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_startBarrack      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Once the commander list has been received, request to start the barrack */
-static PacketHandlerState BarrackHandler_currentBarrack    (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_currentBarrack    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Change a barrack name */
-static PacketHandlerState BarrackHandler_barracknameChange (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_barracknameChange (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Create a commander */
-static PacketHandlerState BarrackHandler_commanderCreate   (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderCreate   (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Send a list of zone servers */
-static PacketHandlerState BarrackHandler_commanderDestroy  (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderDestroy  (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Change the commander position in the barrack */
-static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_commanderMove     (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Request for the player to enter in game */
-static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState BarrackHandler_startGame         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -68,14 +68,14 @@ static PacketHandlerState
 BarrackHandler_login (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
     struct {
-        unsigned char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
-        unsigned char md5Password[17];
+        uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        uint8_t md5Password[17];
         uint8_t unk1[5];
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
@@ -94,16 +94,17 @@ BarrackHandler_login (
     session->socket.authenticated = true;
 
     // Update the session
-    // ===== Gives a fake account =====
+    // ===== Gives a fake admin account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
     strncpy (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin));
+    session->game.accountPrivilege = GAME_SESSION_PRIVILEGES_ADMIN;
     // ==================================
     info ("AccountID %llx generated !", session->socket.accountId);
 
     BarrackBuilder_loginOk (
         session->socket.accountId,
         session->game.accountLogin,
-        CLIENT_SESSION_PRIVILEGES_ADMIN,
+        session->game.accountPrivilege,
         reply
     );
 
@@ -114,7 +115,7 @@ static PacketHandlerState
 BarrackHandler_loginByPassport (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -123,7 +124,7 @@ BarrackHandler_loginByPassport (
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        unsigned char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        uint8_t accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
@@ -151,7 +152,7 @@ BarrackHandler_loginByPassport (
     BarrackBuilder_loginOk (
         session->socket.accountId,
         session->game.accountLogin,
-        CLIENT_SESSION_PRIVILEGES_ADMIN,
+        GAME_SESSION_PRIVILEGES_ADMIN,
         reply
     );
 
@@ -162,7 +163,7 @@ static PacketHandlerState
 BarrackHandler_startGame (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -239,7 +240,7 @@ static PacketHandlerState
 BarrackHandler_commanderMove (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -283,7 +284,7 @@ static PacketHandlerState
 BarrackHandler_startBarrack (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -309,7 +310,7 @@ static PacketHandlerState
 BarrackHandler_currentBarrack (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -327,13 +328,13 @@ static PacketHandlerState
 BarrackHandler_barracknameChange (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        unsigned char barrackName [64];
+        uint8_t barrackName [64];
     }  CbBarrackNameChangePacket;
     #pragma pack(pop)
     CbBarrackNameChangePacket *clientPacket = (CbBarrackNameChangePacket *) packet;
@@ -374,7 +375,7 @@ static PacketHandlerState
 BarrackHandler_commanderDestroy (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -394,14 +395,14 @@ static PacketHandlerState
 BarrackHandler_commanderCreate (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
     #pragma pack(push, 1)
     struct {
         uint8_t charPosition;
-        unsigned char commanderName[64];
+        uint8_t commanderName[64];
         uint8_t unk3;
         uint8_t jobId;
         uint8_t gender;

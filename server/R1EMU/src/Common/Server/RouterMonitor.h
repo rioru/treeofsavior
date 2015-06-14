@@ -127,7 +127,7 @@ RouterMonitor_start (
 void
 RouterMonitor_genKey (
     uint64_t fd,
-    unsigned char fdKey[ROUTER_MONITOR_FDKEY_SIZE]
+    uint8_t fdKey[ROUTER_MONITOR_FDKEY_SIZE]
 );
 
 

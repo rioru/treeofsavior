@@ -28,6 +28,17 @@
 
 // ------ Structure declaration -------
 /**
+ * @brief GameSessionPrivileges enumerates the different levels of privileges
+ *  for an account.
+ */
+typedef enum GameSessionPrivileges {
+    GAME_SESSION_PRIVILEGES_ADMIN   = 0,
+    GAME_SESSION_PRIVILEGES_UNKNOWN = 1,
+    GAME_SESSION_PRIVILEGES_GM      = 2,
+    GAME_SESSION_PRIVILEGES_PLAYER  = 3
+}   GameSessionPrivileges;
+
+/**
  * @brief GameSession is a session created when a client authenticates
  *
  * GameSession is created during the Barrack phase.
@@ -42,6 +53,9 @@ struct GameSession
     /** Number of characters registered in the barrack */
     uint8_t charactersBarrackCount;
 
+    /** Account privilege level */
+    GameSessionPrivileges accountPrivilege;
+
     /** The account login */
     char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
 
@@ -51,90 +65,29 @@ struct GameSession
 
 typedef struct GameSession GameSession;
 
-/**
- * @brief GameSessionPrivileges enumerates the different levels of privileges
- *  for an account.
- */
-typedef enum {
-    CLIENT_SESSION_PRIVILEGES_ADMIN   = 0,
-    CLIENT_SESSION_PRIVILEGES_UNKNOWN = 1,
-    CLIENT_SESSION_PRIVILEGES_GM      = 2,
-    CLIENT_SESSION_PRIVILEGES_PLAYER  = 3
-} GameSessionPrivileges;
-
 // ----------- Functions ------------
 
 /**
  * @brief Allocate a new GameSession structure.
+ * @param commanderInfo An initialized commander information
  * @return A pointer to an allocated GameSession.
  */
 GameSession *
 GameSession_new (
+    CommanderInfo *commanderInfo
 );
 
 
 /**
  * @brief Initialize an allocated GameSession structure.
  * @param self An allocated GameSession to initialize.
+ * @param commanderInfo An initialized commander information
  * @return true on success, false otherwise.
  */
 bool
 GameSession_init (
-    GameSession *self
-);
-
-/**
- * @brief Look up a session in the session hashtable
- * @param sessions The session hashtable
- * @param sessionKey The session key to lookup
- * @return A client session or NULL if it doesn't exists
- */
-GameSession *
-GameSession_lookupSession (
-    zhash_t *sessions,
-    unsigned char *sessionKey
-);
-
-
-/**
- * @brief Request a game session from the session of the barrack server
- * @param sessionServer An opened socket to the session server
- * @param clientIdentity A frame containing the identity of the client
- * @param accountIdFrame A frame containing the accountId of the client.
- * @return a zframe_t containing a GameSession on success, NULL otherwise
- */
-zframe_t *
-GameSession_getBarrackSession (
-    zsock_t *sessionServer,
-    zframe_t *clientIdentity,
-    zframe_t *accountIdFrame
-);
-
-/**
- * @brief Update a session for the session server
- * @param sessionServer An opened socket to the session server
- * @param clientIdentity A frame containing the identity of the client
- * @param session An allocated session to update
- * @return true on success, false otherwise
- */
-bool
-GameSession_updateSession (
-    zsock_t *sessionServer,
-    zframe_t *clientIdentity,
-    GameSession *session
-);
-
-
-/**
- * @brief Delete a session from the session server
- * @param sessionServer An opened socket to the session server
- * @param clientIdentity A frame containing the identity of the client
- * @return true on success, false otherwise
- */
-bool
-GameSession_deleteSession (
-    zsock_t *sessionServer,
-    zframe_t *clientIdentity
+    GameSession *self,
+    CommanderInfo *commanderInfo
 );
 
 /**

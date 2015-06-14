@@ -118,7 +118,7 @@ _buffer_print (
         int offset;
         printf ("%s", prefix);
         for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            printf (" %02X", ((unsigned char *) buffer)[curPos]);
+            printf (" %02X", ((uint8_t *) buffer)[curPos]);
         }
         if (offset != 16) {
             for (int j = 0; j < 16 - offset; j++) {
@@ -130,7 +130,7 @@ _buffer_print (
         curPos -= offset;
 
         for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            unsigned char c = ((unsigned char *) buffer)[curPos];
+            uint8_t c = ((uint8_t *) buffer)[curPos];
             printf ("%c", isprint(c) ? c : '.');
         }
 

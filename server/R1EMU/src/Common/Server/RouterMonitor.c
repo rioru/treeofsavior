@@ -196,13 +196,13 @@ RouterMonitor_monitor (
         uint64_t fdClient = strtoull (zframe_data (fdFrame), NULL, 10);
 
         // Check if this file descriptor is still used
-        unsigned char fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
+        uint8_t fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
         RouterMonitor_genKey (fdClient, fdClientKey);
 
         zframe_t *clientFrame;
         // Check if it already exists in the table
         if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) != NULL) {
-            unsigned char sessionKey [ROUTER_MONITOR_FDKEY_SIZE];
+            uint8_t sessionKey [ROUTER_MONITOR_FDKEY_SIZE];
             SocketSession_genSocketId (zframe_data (clientFrame), sessionKey);
             error ("The client FD=%d just connected, but another client has still this FD (previously : %s)",
                    fdClient, sessionKey);
@@ -220,7 +220,7 @@ RouterMonitor_monitor (
         uint64_t fdClient = strtoull (zframe_data (fdFrame), NULL, 10);
 
         // Check if this file descriptor is already used
-        unsigned char fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
+        uint8_t fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
         RouterMonitor_genKey (fdClient, fdClientKey);
 
         zframe_t *clientFrame;
@@ -233,7 +233,7 @@ RouterMonitor_monitor (
         }
         else {
             // Everything is okay here, disconnect gracefully the client
-            unsigned char socketId [SOCKET_SESSION_ID_SIZE];
+            uint8_t socketId [SOCKET_SESSION_ID_SIZE];
             SocketSession_genSocketId (zframe_data (clientFrame), socketId);
 
             // Flush the session here
@@ -298,7 +298,7 @@ RouterMonitor_subscribe (
             uint64_t fdClient = *((uint64_t *) (zframe_data (fdFrame)));
 
             // Check if this file descriptor is still used
-            unsigned char fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
+            uint8_t fdClientKey [ROUTER_MONITOR_FDKEY_SIZE];
             RouterMonitor_genKey (fdClient, fdClientKey);
 
             zframe_t *clientFrame;
@@ -416,7 +416,7 @@ cleanup:
 void
 RouterMonitor_genKey (
     uint64_t fd,
-    unsigned char fdKey[ROUTER_MONITOR_FDKEY_SIZE]
+    uint8_t fdKey[ROUTER_MONITOR_FDKEY_SIZE]
 ) {
     // Format the fdKey from the fd
     snprintf (fdKey, ROUTER_MONITOR_FDKEY_SIZE, "%I64d", fd);

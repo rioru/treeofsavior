@@ -510,6 +510,18 @@ ZoneBuilder_setPos (
 
 
 /**
+ * @brief Move a given commander to a given position
+ */
+void
+ZoneBuilder_moveDir (
+    PositionXYZ *position,
+    float dirX, float dirZ,
+    uint32_t targetPcId,
+    float timestamp,
+    zmsg_t *replyMsg
+);
+
+/**
  * @brief After the loading screen, start the game for the client
  */
 void

@@ -101,7 +101,7 @@ static bool
 Worker_buildReply (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *msg,
     zframe_t *headerAnswer
@@ -125,7 +125,7 @@ Worker_handlePacket (
     const PacketHandler *packetHandlers,
     size_t handlersCount,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     bool isCrypted,
     zmsg_t *reply
@@ -147,7 +147,7 @@ static bool
 Worker_processOneRequest (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *msg,
     zframe_t *headerAnswer,
@@ -166,7 +166,7 @@ static int
 Worker_getCryptedPacketInfo (
     Worker *self,
     size_t packetSize,
-    unsigned char *packet,
+    uint8_t *packet,
     CryptPacketHeader *cryptHeader
 );
 
@@ -284,7 +284,7 @@ bool
 Worker_sendToClients (
     Worker *self,
     zlist_t *clients,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetLen
 ) {
     bool result = true;
@@ -328,9 +328,15 @@ Worker_getClientsWithinDistance (
     Worker *self,
     Session *session,
     PositionXZ *center,
-    float range
+    float range,
+    bool selfInclude
 ) {
-    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range);
+    char *ignoredSocketId = NULL;
+    if (!selfInclude) {
+        ignoredSocketId = session->socket.socketId;
+    }
+
+    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range, ignoredSocketId);
 }
 
 static zframe_t *
@@ -356,7 +362,7 @@ Worker_processClientPacket (
     zmsg_remove (msg, packetFrame);
 
     // Convert the frame to socketId
-    unsigned char socketId [SOCKET_SESSION_ID_SIZE];
+    uint8_t socketId [SOCKET_SESSION_ID_SIZE];
 
     // Generate the socketId key
     SocketSession_genSocketId (zframe_data (socketIdFrame), socketId);
@@ -379,7 +385,7 @@ Worker_processClientPacket (
     zmsg_push (msg, headerAnswer);
 
     // === Build the message reply ===
-    unsigned char *packet = zframe_data (packetFrame);
+    uint8_t *packet = zframe_data (packetFrame);
     size_t packetSize = zframe_size (packetFrame);
 
     if (!(Worker_buildReply (self, &session, packet, packetSize, msg, headerAnswer))) {
@@ -399,7 +405,7 @@ static bool
 Worker_buildReply (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *msg,
     zframe_t *headerAnswer
@@ -443,7 +449,7 @@ static bool
 Worker_processOneRequest (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *msg,
     zframe_t *headerAnswer,
@@ -500,7 +506,7 @@ Worker_handlePacket (
     const PacketHandler *packetHandlers,
     size_t handlersCount,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     bool isCrypted,
     zmsg_t *reply
@@ -536,7 +542,7 @@ static int
 Worker_getCryptedPacketInfo (
     Worker *self,
     size_t packetSize,
-    unsigned char *packet,
+    uint8_t *packet,
     CryptPacketHeader *cryptHeader
 ) {
     memset (cryptHeader, 0, sizeof (CryptPacketHeader));

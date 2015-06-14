@@ -23,7 +23,7 @@
 
 // ------ Static declaration -------
 /** On log in */
-static PacketHandlerState SocialHandler_login        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState SocialHandler_login        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 
 
 // ------ Structure declaration -------
@@ -43,7 +43,7 @@ static PacketHandlerState
 SocialHandler_login (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {

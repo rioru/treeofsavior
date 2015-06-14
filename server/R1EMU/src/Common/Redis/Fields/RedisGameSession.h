@@ -161,7 +161,7 @@ bool
 Redis_updateGameSession (
     Redis *self,
     RedisGameSessionKey *key,
-    unsigned char *socketId,
+    uint8_t *socketId,
     GameSession *gameSession
 );
 
@@ -198,6 +198,7 @@ Redis_moveGameSession (
  * @param mapId The mapId of the position
  * @param The 2D position of the center of the circle
  * @param range Radius of the circle
+ * @param socketIdNoInclude if not NULL, don't include this socketId to the result
  * @return a zlist_t of identity keys
  */
 zlist_t *
@@ -205,5 +206,6 @@ Redis_getClientsWithinDistance (
     Redis *self,
     uint16_t serverId, uint16_t mapId,
     PositionXZ *position,
-    float range
+    float range,
+    char *socketIdNoInclude
 );

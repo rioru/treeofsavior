@@ -88,7 +88,7 @@ typedef struct PacketNormalHeader
  */
 void
 ClientPacket_unwrapHeader (
-    unsigned char **packet,
+    uint8_t **packet,
     size_t *packetSize,
     ClientPacketHeader *header,
     bool isCrypted
@@ -103,7 +103,7 @@ ClientPacket_unwrapHeader (
  */
 void
 CryptPacket_unwrapHeader (
-    unsigned char **packet,
+    uint8_t **packet,
     size_t *packetSize,
     CryptPacketHeader *header
 );
@@ -116,7 +116,7 @@ CryptPacket_unwrapHeader (
  */
 void
 CryptPacket_getHeader (
-    unsigned char *packet,
+    uint8_t *packet,
     CryptPacketHeader *header
 );
 

@@ -47,7 +47,7 @@ typedef PacketHandlerState (*PacketHandlerFunction) (
     /** Session of the current player */
     Session *session,
     /** Packet sent by the client */
-    unsigned char *packet,
+    uint8_t *packet,
     /** Size of the packet sent by the client */
     size_t packetSize,
     /** Reply buffer. If you need to send multiple replies, add multiple frames to this zmsg_t */
@@ -213,6 +213,7 @@ Worker_mainLoop (
  * @param session The session of the client
  * @param center The position of the center of the circle
  * @param range Radius of the circle
+ * @param selfInclude if false, don't include current client in the results. Do it otherwise.
  * @return a zlist_t of identity keys
  */
 zlist_t *
@@ -220,7 +221,8 @@ Worker_getClientsWithinDistance (
     Worker *self,
     Session *session,
     PositionXZ *center,
-    float range
+    float range,
+    bool selfInclude
 );
 
 /**
@@ -235,7 +237,7 @@ bool
 Worker_sendToClients (
     Worker *self,
     zlist_t *clients,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetLen
 );
 

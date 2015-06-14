@@ -57,7 +57,7 @@ void *dumpToMem (
 
         while (strPos < end) {
             char *newPos;
-            unsigned char octet = strtoul (strPos, &newPos, 16);
+            uint8_t octet = strtoul (strPos, &newPos, 16);
             if (strPos == newPos)
                 break;
             memoryBytes[memPos++] = octet;

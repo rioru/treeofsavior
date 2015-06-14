@@ -20,7 +20,7 @@
 
 GameSession *
 GameSession_new (
-    void
+    CommanderInfo *commanderInfo
 ) {
     GameSession *self;
 
@@ -28,7 +28,7 @@ GameSession_new (
         return NULL;
     }
 
-    if (!GameSession_init (self)) {
+    if (!GameSession_init (self, commanderInfo)) {
         GameSession_destroy (&self);
         error ("GameSession failed to initialize.");
         return NULL;
@@ -39,10 +39,11 @@ GameSession_new (
 
 bool
 GameSession_init (
-    GameSession *self
+    GameSession *self,
+    CommanderInfo *commanderInfo
 ) {
     memset (self, 0, sizeof (GameSession));
-    CommanderInfo_createBasicCommander (&self->currentCommander);
+    memcpy (&self->currentCommander, commanderInfo, sizeof (CommanderInfo));
     return true;
 }
 

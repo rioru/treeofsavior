@@ -40,7 +40,7 @@ struct SocketSession
     /** The map Id of the commander currently played */
     uint16_t mapId;
     /** Socket Redis key */
-    unsigned char socketId [SOCKET_SESSION_ID_SIZE];
+    uint8_t socketId [SOCKET_SESSION_ID_SIZE];
 
     /** States */
     bool authenticated;
@@ -61,7 +61,7 @@ SocketSession_new (
     uint64_t accountId,
     uint16_t serverId,
     uint16_t mapId,
-    unsigned char *socketId,
+    uint8_t *socketId,
     bool authenticated
 );
 
@@ -77,7 +77,7 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t serverId,
     uint16_t mapId,
-    unsigned char *socketId,
+    uint8_t *socketId,
     bool authenticated
 );
 
@@ -89,8 +89,8 @@ SocketSession_init (
  */
 void
 SocketSession_genSocketId (
-    unsigned char *sessionId,
-    unsigned char sessionKey[SOCKET_SESSION_ID_SIZE]
+    uint8_t *sessionId,
+    uint8_t sessionKey[SOCKET_SESSION_ID_SIZE]
 );
 
 
@@ -102,8 +102,8 @@ SocketSession_genSocketId (
  */
 void
 SocketSession_genId (
-    unsigned char *sessionKey,
-    unsigned char sessionId[5]
+    uint8_t *sessionKey,
+    uint8_t sessionId[5]
 );
 
 /**

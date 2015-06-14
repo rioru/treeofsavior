@@ -1597,7 +1597,7 @@ ZoneBuilder_itemInventoryList (
     */
 
     /*
-    unsigned char *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
+    uint8_t *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
     ZcItemInventoryList *replyPacket = (ZoneTrafficsPacket *) stackBuffer;
 
     // Build the static part of the packet
@@ -1605,7 +1605,7 @@ ZoneBuilder_itemInventoryList (
 
     // Construct the packet stream
     PacketStream stream;
-    PacketStream_init (&stream, (unsigned char *) replyPacket);
+    PacketStream_init (&stream, (uint8_t *) replyPacket);
     // Go to the end of the static size
     PacketStream_addOffset (&stream, sizeof (ZcItemInventoryList));
     */
@@ -1647,5 +1647,45 @@ ZoneBuilder_itemInventoryList (
         );
 
         zmsg_add (replyMsg, zframe_new (memory, memSize));
+    }
+}
+
+void
+ZoneBuilder_moveDir (
+    PositionXYZ *position,
+    float dirX, float dirZ,
+    uint32_t targetPcId,
+    float timestamp,
+    zmsg_t *replyMsg
+) {
+    /*  posX     posY     posZ     dirX     dirZ     u1 u2 pcId     time
+        4E1D36C4 E656A143 9DD40444 F304353F F304353F 01 00 00F84101 5341B543
+        402434C4 E656A143 ABCD0644 F304353F F304353F 01 00 00F84101 8D54B543
+        7AE81AC4 4108A543 92AB5C44 1D566733 FFFF7FBF 01 00 00F84101 8EED5A44
+        7AE81AC4 89C9A343 FA915944 1D566733 FFFF7FBF 01 00 00F84101 38F85A44
+    */
+
+    #pragma pack(push, 1)
+    struct {
+        ServerPacketHeader header;
+        PositionXYZ position;
+        float dirX, dirZ;
+        uint8_t unk1;
+        uint8_t unk2;
+        uint32_t pcId;
+        float timestamp;
+    } replyPacket;
+    #pragma pack(pop)
+
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    {
+        PacketServer_header (&replyPacket.header, ZC_MOVE_DIR);
+        memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
+        replyPacket.dirX = dirX;
+        replyPacket.dirZ = dirZ;
+        replyPacket.unk1 = 1;
+        replyPacket.unk2 = 0;
+        replyPacket.pcId = targetPcId;
+        replyPacket.timestamp = timestamp;
     }
 }

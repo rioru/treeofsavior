@@ -258,7 +258,7 @@ bool
 Redis_updateGameSession (
     Redis *self,
     RedisGameSessionKey *key,
-    unsigned char *socketId,
+    uint8_t *socketId,
     GameSession *gameSession
 ) {
     bool result = true;
@@ -469,7 +469,8 @@ Redis_getClientsWithinDistance (
     Redis *self,
     uint16_t routerId, uint16_t mapId,
     PositionXZ *center,
-    float range
+    float range,
+    char *ignoredSocketId
 ) {
     bool result = true;
     zlist_t *clients = NULL;
@@ -558,9 +559,12 @@ Redis_getClientsWithinDistance (
                             char *socketId = posReply->element[2]->str;
 
                             // Check range here
-                            if (Math_isWithin2DManhattanDistance (&curPcPos, center, 300.0)) {
+                            if (Math_isWithin2DManhattanDistance (&curPcPos, center, range)) {
                                 // The current client is within the area, add it to the list
-                                zlist_append (clients, strdup (socketId));
+                                // Don't include the ignored socketId
+                                if (!(ignoredSocketId && strcmp (socketId, ignoredSocketId) == 0)) {
+                                    zlist_append (clients, strdup (socketId));
+                                }
                             }
                         } break;
 

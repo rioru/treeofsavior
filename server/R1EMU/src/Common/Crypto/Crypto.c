@@ -21,7 +21,7 @@
 
 bool
 Crypto_decryptPacket (
-    unsigned char **packet,
+    uint8_t **packet,
     size_t *packetSize
 ) {
     // Unwrap the crypt packet header, and check the cryptHeader size

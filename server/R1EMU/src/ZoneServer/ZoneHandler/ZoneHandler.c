@@ -15,42 +15,45 @@
 #include "ZoneHandler.h"
 #include "ZoneBuilder.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
+#include "Common/Redis/Fields/RedisSocketSession.h"
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static PacketHandlerState ZoneHandler_connect         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_connect         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Client is ready to enter the zone */
-static PacketHandlerState ZoneHandler_gameReady       (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_gameReady       (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** Jump handler */
-static PacketHandlerState ZoneHandler_jump            (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_jump            (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On air handler */
-static PacketHandlerState ZoneHandler_onAir           (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_onAir           (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On ground handler */
-static PacketHandlerState ZoneHandler_onGround        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_onGround        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On move with keyboard handler */
-static PacketHandlerState ZoneHandler_keyboardMove    (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_keyboardMove    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On stop commander movement */
-static PacketHandlerState ZoneHandler_moveStop        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_moveStop        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On movement information */
-static PacketHandlerState ZoneHandler_movementInfo    (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_movementInfo    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On commander rotation */
-static PacketHandlerState ZoneHandler_rotate          (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_rotate          (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On commander head rotation */
-static PacketHandlerState ZoneHandler_headRotate      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_headRotate      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** @unknown */
-static PacketHandlerState ZoneHandler_campInfo        (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_campInfo        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
-static PacketHandlerState ZoneHandler_czQuickSlotList (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_czQuickSlotList (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
-static PacketHandlerState ZoneHandler_itemUse         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_itemUse         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
-static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On log out */
-static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On cast a spell on the ground */
-static PacketHandlerState ZoneHandler_skillGround     (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_skillGround     (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 /** On commander sit */
-static PacketHandlerState ZoneHandler_restSit         (Worker *self, Session *session, unsigned char *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_restSit         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+/** On commander chat */
+static PacketHandlerState ZoneHandler_chat            (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
 
 // ------ Structure declaration -------
 /**
@@ -77,15 +80,89 @@ const PacketHandler zoneHandlers [PACKET_TYPE_COUNT] = {
     REGISTER_PACKET_HANDLER (CZ_I_NEED_PARTY, ZoneHandler_iNeedParty),
     REGISTER_PACKET_HANDLER (CZ_SKILL_GROUND, ZoneHandler_skillGround),
     REGISTER_PACKET_HANDLER (CZ_REST_SIT, ZoneHandler_restSit),
+    REGISTER_PACKET_HANDLER (CZ_CHAT, ZoneHandler_chat),
 
     #undef REGISTER_PACKET_HANDLER
 };
 
 static PacketHandlerState
+ZoneHandler_chat (
+    Worker *self,
+    Session *session,
+    uint8_t *packet,
+    size_t packetSize,
+    zmsg_t *reply
+) {
+    #pragma pack(push, 1)
+    struct {
+        uint16_t msgSize;
+        uint8_t msgText [1];
+    } *clientPacket = (void *) packet;
+    #pragma pack(pop)
+
+    if (clientPacket->msgSize - 10 != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (clientPacket->msgSize - 10));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Custom admin commands
+    if (session->game.accountPrivilege <= GAME_SESSION_PRIVILEGES_ADMIN)
+    {
+        if (strncmp (clientPacket->msgText, "/cmd ", strlen ("/cmd ")) == 0)
+        {
+            char *command = clientPacket->msgText + strlen ("/cmd ");
+
+            if (strncmp (command, "spawn", strlen ("spawn")) == 0)
+            {
+                // Add a fake commander with a fake account
+                CommanderInfo fakePc;
+                CommanderInfo_createBasicCommander (&fakePc);
+                fakePc.cPosX = session->game.currentCommander.cPosX;
+                fakePc.cPosZ = session->game.currentCommander.cPosZ;
+                fakePc.accountId = R1EMU_generate_random64 (&self->seed);
+                fakePc.pcId = R1EMU_generate_random (&self->seed);
+                strncpy (fakePc.familyName, "Dummy", sizeof (fakePc.familyName));
+                strncpy (fakePc.commanderName, "Fake", sizeof (fakePc.commanderName));
+                ZoneBuilder_enterPc (&fakePc, reply);
+                uint64_t socketId = R1EMU_generate_random64 (&self->seed);
+                uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE];
+                sprintf (socketIdStr, "%I64x", socketId);
+                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", socketIdStr, fakePc.accountId, fakePc.pcId);
+
+                // Register the fake socket session
+                SocketSession fakeSocketSession;
+                SocketSession_init (&fakeSocketSession, fakePc.accountId, self->info.routerId, session->socket.mapId, socketIdStr, true);
+                RedisSocketSessionKey socketKey = {
+                    .routerId = self->info.routerId,
+                    .socketId = socketIdStr
+                };
+                Redis_updateSocketSession (self->redis, &socketKey, &fakeSocketSession);
+
+                // Register the fake game session
+                GameSession fakeGameSession;
+                GameSession_init (&fakeGameSession, &fakePc);
+                strncpy (fakeGameSession.accountLogin, "DummyPC", sizeof (fakeGameSession.accountLogin));
+                fakeGameSession.accountPrivilege = GAME_SESSION_PRIVILEGES_PLAYER;
+                RedisGameSessionKey gameKey = {
+                    .routerId  = fakeSocketSession.routerId,
+                    .mapId     = fakeSocketSession.mapId,
+                    .accountId = fakeSocketSession.accountId
+                };
+                Redis_updateGameSession (self->redis, &gameKey, socketIdStr, &fakeGameSession);
+            }
+        }
+    }
+
+    return PACKET_HANDLER_OK;
+}
+
+static PacketHandlerState
 ZoneHandler_restSit (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -112,7 +189,7 @@ static PacketHandlerState
 ZoneHandler_skillGround (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -185,7 +262,7 @@ static PacketHandlerState
 ZoneHandler_campInfo (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -197,7 +274,7 @@ static PacketHandlerState
 ZoneHandler_itemUse (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -209,7 +286,7 @@ static PacketHandlerState
 ZoneHandler_iNeedParty (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -224,7 +301,7 @@ static PacketHandlerState
 ZoneHandler_logout (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -236,7 +313,7 @@ static PacketHandlerState
 ZoneHandler_headRotate (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -248,7 +325,7 @@ static PacketHandlerState
 ZoneHandler_rotate (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -260,7 +337,7 @@ static PacketHandlerState
 ZoneHandler_movementInfo (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -272,7 +349,7 @@ static PacketHandlerState
 ZoneHandler_moveStop (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -284,7 +361,7 @@ static PacketHandlerState
 ZoneHandler_keyboardMove (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -293,14 +370,14 @@ ZoneHandler_keyboardMove (
         uint8_t unk1;
         PositionXYZ position;
         float dirX, dirZ;
-        uint8_t unk2;
+        uint8_t unk7;
         float movementSpeed;
-        uint8_t unk3;
+        uint8_t unk8;
         float timestamp;
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
-    /*  u1 posX     posY     posZ     u5       u6       u7 mspeed   u8 u9
+    /*  u1 posX     posY     posZ     dirX     dirZ     u7 mspeed   u8 time
         00 18190DC4 B663A143 17520644 00000000 FFFF7FBF 01 0000F841 01 7B2C5C44
         00 D4CE1AC4 74768243 4CEF7EC4 F30435BF F204353F 01 00000000 00 5E16FA42
         00 103F1BC4 74768243 107F7EC4 F204353F F304353F 01 00000000 00 3141FA42
@@ -314,14 +391,44 @@ ZoneHandler_keyboardMove (
         return PACKET_HANDLER_ERROR;
     }
 
-    return PACKET_HANDLER_OK;
+    // TODO : Check coordinates
+
+    // Update session
+    session->game.currentCommander.cPosX = clientPacket->position.x;
+    session->game.currentCommander.cPosZ = clientPacket->position.z;
+
+    // Build the reply packet
+    PositionXZ around = PositionXYZToXZ (&clientPacket->position);
+    zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    info ("Clients around detected : %d", zlist_size (clientsAround));
+
+    // Send the new position to the clients around
+    if (zlist_size (clientsAround) != 0)
+    {
+        zmsg_t *moveDirMsg = zmsg_new ();
+        ZoneBuilder_moveDir (
+            &clientPacket->position,
+            clientPacket->dirX, clientPacket->dirZ,
+            session->game.currentCommander.pcId,
+            clientPacket->timestamp,
+            moveDirMsg
+        );
+
+        zframe_t *moveDirFrame = zmsg_first (moveDirMsg);
+        uint8_t *moveDirPacket = zframe_data (moveDirFrame);
+        size_t moveDirPacketSize = zframe_size (moveDirFrame);
+        Worker_sendToClients (self, clientsAround, moveDirPacket, moveDirPacketSize);
+        zmsg_destroy (&moveDirMsg);
+    }
+
+    return PACKET_HANDLER_UPDATE_SESSION;
 }
 
 static PacketHandlerState
 ZoneHandler_czQuickSlotList (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -334,7 +441,7 @@ static PacketHandlerState
 ZoneHandler_gameReady (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -404,7 +511,7 @@ static PacketHandlerState
 ZoneHandler_connect (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -414,7 +521,7 @@ ZoneHandler_connect (
         uint64_t accountId;
         uint32_t spriteId;
         uint32_t spriteIdRelated;
-        unsigned char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint8_t unk4;
         uint32_t zoneServerId;
         uint16_t unk3;
@@ -493,7 +600,7 @@ static PacketHandlerState
 ZoneHandler_jump (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -523,7 +630,7 @@ static PacketHandlerState
 ZoneHandler_onAir (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {
@@ -535,7 +642,7 @@ static PacketHandlerState
 ZoneHandler_onGround (
     Worker *self,
     Session *session,
-    unsigned char *packet,
+    uint8_t *packet,
     size_t packetSize,
     zmsg_t *reply
 ) {

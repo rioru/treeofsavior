@@ -21,6 +21,9 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
+// Transform a XYZ position to a XZ position
+#define PositionXYZToXZ(xyz) \
+    (PositionXZ) {.x = (xyz)->x, .z = (xyz)->z}
 
 
 // ------ Structure declaration -------
