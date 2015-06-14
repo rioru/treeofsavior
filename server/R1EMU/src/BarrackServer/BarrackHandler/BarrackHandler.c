@@ -674,7 +674,7 @@ BarrackHandler_commanderCreate (
     #pragma pack(push, 1)
     typedef struct {
         uint8_t charPosition;
-        unsigned char charName[64];
+        unsigned char commanderName[64];
         uint8_t unk3;
         uint8_t jobId;
         uint8_t gender;
@@ -704,7 +704,7 @@ BarrackHandler_commanderCreate (
     memset (&replyPacket, 0, sizeof (replyPacket));
 
     // CharName
-    strncpy (session->game.currentCommander.charName, clientPacket->charName, sizeof (session->game.currentCommander.charName));
+    strncpy (session->game.currentCommander.commanderName, clientPacket->commanderName, sizeof (session->game.currentCommander.commanderName));
 
     // AccountID
     session->game.currentCommander.accountId = session->socket.accountId;

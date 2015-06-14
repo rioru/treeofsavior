@@ -29,7 +29,7 @@ const char *redisGameSessionsStr [] = {
 	[REDIS_GAME_SESSION_routerId]                  = REDIS_GAME_SESSION_routerId_str,
 	[REDIS_GAME_SESSION_charactersBarrackCount]    = REDIS_GAME_SESSION_charactersBarrackCount_str,
 	[REDIS_GAME_SESSION_accountLogin]              = REDIS_GAME_SESSION_accountLogin_str,
-	[REDIS_GAME_SESSION_commander_charName]        = REDIS_GAME_SESSION_commander_charName_str,
+	[REDIS_GAME_SESSION_commander_commanderName]   = REDIS_GAME_SESSION_commander_commanderName_str,
 	[REDIS_GAME_SESSION_commander_familyName]      = REDIS_GAME_SESSION_commander_familyName_str,
 	[REDIS_GAME_SESSION_commander_accountId]       = REDIS_GAME_SESSION_commander_accountId_str,
 	[REDIS_GAME_SESSION_commander_classId]         = REDIS_GAME_SESSION_commander_classId_str,
@@ -90,7 +90,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_routerId_str
         " " REDIS_GAME_SESSION_charactersBarrackCount_str
         " " REDIS_GAME_SESSION_accountLogin_str
-        " " REDIS_GAME_SESSION_commander_charName_str
+        " " REDIS_GAME_SESSION_commander_commanderName_str
         " " REDIS_GAME_SESSION_commander_familyName_str
         // [UNKNOWN] " commander.unk1 "
         " " REDIS_GAME_SESSION_commander_accountId_str
@@ -185,7 +185,7 @@ Redis_getGameSession (
             gameSession->charactersBarrackCount           = strtol (reply->element[REDIS_GAME_SESSION_charactersBarrackCount]->str, NULL, 16);
             strncpy (gameSession->accountLogin, reply->element[REDIS_GAME_SESSION_accountLogin]->str, sizeof (gameSession->accountLogin));
             strncpy (gameSession->currentCommander.familyName, reply->element[REDIS_GAME_SESSION_commander_familyName]->str, sizeof (gameSession->currentCommander.familyName));
-            strncpy (gameSession->currentCommander.charName, reply->element[REDIS_GAME_SESSION_commander_charName]->str, sizeof (gameSession->currentCommander.charName));
+            strncpy (gameSession->currentCommander.commanderName, reply->element[REDIS_GAME_SESSION_commander_commanderName]->str, sizeof (gameSession->currentCommander.commanderName));
             // [UNKNOWN] gameSession->currentCommander.unk1,
             gameSession->currentCommander.accountId       = strtoll (reply->element[REDIS_GAME_SESSION_commander_accountId]->str, NULL, 16);
             gameSession->currentCommander.classId         = strtol (reply->element[REDIS_GAME_SESSION_commander_classId]->str, NULL, 16);
@@ -270,7 +270,7 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_routerId_str " %x"
         " " REDIS_GAME_SESSION_charactersBarrackCount_str " %x"
         " " REDIS_GAME_SESSION_accountLogin_str " %s"
-        " " REDIS_GAME_SESSION_commander_charName_str " %s"
+        " " REDIS_GAME_SESSION_commander_commanderName_str " %s"
         " " REDIS_GAME_SESSION_commander_familyName_str " %s"
         // [UNKNOWN] " " commander.unk1 " "%s"
         " " REDIS_GAME_SESSION_commander_accountId_str " %llx"
@@ -324,7 +324,7 @@ Redis_updateGameSession (
         key->routerId,
         gameSession->charactersBarrackCount,
         gameSession->accountLogin,
-        (gameSession->currentCommander.charName[0] != '\0') ? gameSession->currentCommander.charName : REDIS_EMPTY_STRING,
+        (gameSession->currentCommander.commanderName[0] != '\0') ? gameSession->currentCommander.commanderName : REDIS_EMPTY_STRING,
         (gameSession->currentCommander.familyName[0] != '\0') ? gameSession->currentCommander.familyName : REDIS_EMPTY_STRING,
         // [UNKNOWN] gameSession->currentCommander.unk1,
         key->accountId,

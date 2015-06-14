@@ -86,7 +86,7 @@ void
 CommanderInfo_print (
     CommanderInfo *commander
 ) {
-    dbg ("charName = %s", commander->charName);
+    dbg ("commanderName = %s", commander->commanderName);
     dbg ("familyName = %s", commander->familyName);
     // dbg ("unk1 = %d (%x)", commander->unk1, commander->unk1);
     dbg ("accountId = %llu (%llx)", commander->accountId, commander->accountId);

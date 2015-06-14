@@ -19,7 +19,7 @@
 #include "R1EMU.h"
 
 // ---------- Defines -------------
-#define COMMANDER_CHAR_NAME_SIZE 64
+#define COMMANDER_NAME_SIZE 64
 #define COMMANDER_FAMILY_NAME_SIZE 64
 
 // ------ Structure declaration -------
@@ -29,7 +29,7 @@
  */
 typedef struct CommanderInfo
 {
-    unsigned char charName[COMMANDER_CHAR_NAME_SIZE+1];
+    unsigned char commanderName[COMMANDER_NAME_SIZE+1];
     unsigned char familyName[COMMANDER_FAMILY_NAME_SIZE+1];
     unsigned char unk1[6];
     uint64_t accountId;

@@ -27,7 +27,7 @@
 #define REDIS_GAME_SESSION_routerId_str                  "routerId"
 #define REDIS_GAME_SESSION_charactersBarrackCount_str    "charactersBarrackCount"
 #define REDIS_GAME_SESSION_accountLogin_str              "accountLogin"
-#define REDIS_GAME_SESSION_commander_charName_str        "charName"
+#define REDIS_GAME_SESSION_commander_commanderName_str   "commanderName"
 #define REDIS_GAME_SESSION_commander_familyName_str      "familyName"
 #define REDIS_GAME_SESSION_commander_accountId_str       "accountId"
 #define REDIS_GAME_SESSION_commander_classId_str         "classId"
@@ -75,7 +75,7 @@ enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_routerId,
 	REDIS_GAME_SESSION_charactersBarrackCount,
 	REDIS_GAME_SESSION_accountLogin,
-	REDIS_GAME_SESSION_commander_charName,
+	REDIS_GAME_SESSION_commander_commanderName,
 	REDIS_GAME_SESSION_commander_familyName,
 	REDIS_GAME_SESSION_commander_accountId,
 	REDIS_GAME_SESSION_commander_classId,

@@ -45,7 +45,7 @@ MySQL_flushSession (
                 session->game.currentCommander.commanderId,
                 session->game.currentCommander.accountId,
                 session->game.currentCommander.charPosition,
-                session->game.currentCommander.charName,
+                session->game.currentCommander.commanderName,
                 session->game.currentCommander.familyName,
                 session->game.currentCommander.classId,
                 session->game.currentCommander.gender,
