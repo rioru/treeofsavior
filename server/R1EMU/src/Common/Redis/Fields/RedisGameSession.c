@@ -69,7 +69,7 @@ const char *redisGameSessionsStr [] = {
 	[REDIS_GAME_SESSION_commander_currentSP]       = REDIS_GAME_SESSION_commander_currentSP_str,
 	[REDIS_GAME_SESSION_commander_maxSP]           = REDIS_GAME_SESSION_commander_maxSP_str,
 	[REDIS_GAME_SESSION_commander_cPosX]           = REDIS_GAME_SESSION_commander_cPosX_str,
-	[REDIS_GAME_SESSION_commander_cPosY]           = REDIS_GAME_SESSION_commander_cPosY_str
+	[REDIS_GAME_SESSION_commander_cPosZ]           = REDIS_GAME_SESSION_commander_cPosZ_str
 };
 
 
@@ -138,7 +138,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_commander_currentSP_str
         " " REDIS_GAME_SESSION_commander_maxSP_str
         " " REDIS_GAME_SESSION_commander_cPosX_str
-        " " REDIS_GAME_SESSION_commander_cPosY_str
+        " " REDIS_GAME_SESSION_commander_cPosZ_str
         // [UNKNOWN] "commander.unk10 "
         // [UNKNOWN] "commander.unk11 "
         // [UNKNOWN] "commander.unk12 "
@@ -232,7 +232,7 @@ Redis_getGameSession (
             gameSession->currentCommander.currentSP       = strtol (reply->element[REDIS_GAME_SESSION_commander_currentSP]->str, NULL, 16);
             gameSession->currentCommander.maxSP           = strtol (reply->element[REDIS_GAME_SESSION_commander_maxSP]->str, NULL, 16);
             gameSession->currentCommander.cPosX           = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosX]->str, NULL);
-            gameSession->currentCommander.cPosY           = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosY]->str, NULL);
+            gameSession->currentCommander.cPosZ           = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosZ]->str, NULL);
             // [UNKNOWN] gameSession->currentCommander.unk10,
             // [UNKNOWN] gameSession->currentCommander.unk11,
             // [UNKNOWN] gameSession->currentCommander.unk12,
@@ -318,7 +318,7 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_currentSP_str " %x"
         " " REDIS_GAME_SESSION_commander_maxSP_str " %x"
         " " REDIS_GAME_SESSION_commander_cPosX_str " %f"
-        " " REDIS_GAME_SESSION_commander_cPosY_str " %f"
+        " " REDIS_GAME_SESSION_commander_cPosZ_str " %f"
         , key->routerId, key->mapId, key->accountId,
         socketId,
         key->routerId,
@@ -372,7 +372,7 @@ Redis_updateGameSession (
         gameSession->currentCommander.currentSP,
         gameSession->currentCommander.maxSP,
         gameSession->currentCommander.cPosX,
-        gameSession->currentCommander.cPosY
+        gameSession->currentCommander.cPosZ
         // [UNKNOWN] gameSession->currentCommander.unk8,
         // [UNKNOWN] gameSession->currentCommander.unk9,
         // [UNKNOWN] gameSession->currentCommander.unk10,
@@ -520,7 +520,7 @@ Redis_getClientsWithinDistance (
                     // Get the position of all accounts in the map
                     posReply = Redis_commandDbg (self,
                         "HMGET %s " REDIS_GAME_SESSION_commander_cPosX_str
-                                " " REDIS_GAME_SESSION_commander_cPosY_str // Get position
+                                " " REDIS_GAME_SESSION_commander_cPosZ_str // Get position
                                 " " REDIS_GAME_SESSION_socketId_str, // SocketKey
                         reply->element[1]->element[i]->str // account key
                     );

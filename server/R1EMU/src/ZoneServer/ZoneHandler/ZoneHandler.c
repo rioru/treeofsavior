@@ -288,6 +288,7 @@ ZoneHandler_keyboardMove (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    buffer_print (packet, packetSize, "Move : ");
     warning ("CZ_KEYBOARD_MOVE not implemented yet.");
     return PACKET_HANDLER_OK;
 }
@@ -342,8 +343,8 @@ ZoneHandler_gameReady (
 
     Position3D enterPosition = {
         .x = session->game.currentCommander.cPosX,
-        .y = session->game.currentCommander.cPosY,
-        .z = -1025.0f
+        .y = -1025.0f,
+        .z = session->game.currentCommander.cPosZ
     };
     ZoneBuilder_MyPCEnter (&enterPosition, reply);
     ZoneBuilder_skillAdd (reply);
@@ -451,7 +452,7 @@ ZoneHandler_connect (
 
     // Position : Official starting point position (tutorial)
     session->game.currentCommander.cPosX = -628.0f;
-    session->game.currentCommander.cPosY = 260.0f;
+    session->game.currentCommander.cPosZ = 260.0f;
 
     ZoneBuilder_connect (
         0, // GameMode

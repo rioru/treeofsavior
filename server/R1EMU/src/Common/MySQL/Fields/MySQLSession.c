@@ -66,7 +66,7 @@ MySQL_flushSession (
                 session->game.currentCommander.hairType,
                 session->game.currentCommander.mapId,
                 session->game.currentCommander.cPosX,
-                session->game.currentCommander.cPosY,
+                session->game.currentCommander.cPosZ,
                 session->game.currentCommander.currentXP,
                 session->game.currentCommander.spriteId,
                 session->game.currentCommander.currentHP,

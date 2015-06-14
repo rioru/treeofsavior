@@ -687,7 +687,7 @@ ZoneBuilder_enterPc (
         strncpy (replyPacket.commanderName, commander->commanderName, sizeof (replyPacket.commanderName));
         replyPacket.pcId = commander->pcId;
         replyPacket.x = commander->cPosX;
-        replyPacket.y = commander->cPosY;
+        replyPacket.y = commander->cPosZ;
         replyPacket.z = -1025.0f;
         replyPacket.unk7 = 1.0;
         replyPacket.accountId = commander->accountId;
