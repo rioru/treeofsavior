@@ -25,27 +25,24 @@
 
 bool
 Math_isWithin2DManhattanDistance (
-    float x1, float y1,
-    float x2, float y2,
+    Position2D *pos1,
+    Position2D *pos2,
     float distance
 ) {
-    float dx = abs(x2 - x1);
-    float dy = abs(y2 - y1);
+    float dx = abs (pos2->x - pos1->x);
+    float dz = abs (pos2->z - pos1->z);
 
-    if (dx > distance) return false;
-    if (dy > distance) return false;
-
-    return true;
+    return (dx < distance && dz < distance);
 }
 
 bool
 Math_isWithin2DCircleDistance (
-    float x1, float y1,
-    float x2, float y2,
+    Position2D *pos1,
+    Position2D *pos2,
     float distance
 ) {
-    float dx = abs (x2 - x1);
-    float dy = abs (y2 - y1);
+    float dx = abs (pos2->x - pos1->x);
+    float dz = abs (pos2->z - pos1->z);
 
-    return (dx*dx + dy*dy) < (distance*distance);
+    return (square(dx) + square(dz)) < (square(distance));
 }

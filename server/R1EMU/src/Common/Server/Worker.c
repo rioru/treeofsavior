@@ -327,10 +327,10 @@ zlist_t *
 Worker_getClientsWithinDistance (
     Worker *self,
     Session *session,
-    float x, float y, float z,
+    Position2D *center,
     float range
 ) {
-    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, x, y, z, range);
+    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range);
 }
 
 static zframe_t *

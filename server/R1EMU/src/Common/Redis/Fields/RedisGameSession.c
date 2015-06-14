@@ -468,7 +468,7 @@ zlist_t *
 Redis_getClientsWithinDistance (
     Redis *self,
     uint16_t routerId, uint16_t mapId,
-    float posX, float posY, float posZ,
+    Position2D *center,
     float range
 ) {
     bool result = true;
@@ -551,12 +551,14 @@ Redis_getClientsWithinDistance (
                             }
 
                             // [0] = X, [1] = Z, [2] = socketId
-                            float x = strtof (posReply->element[0]->str, NULL),
-                                  z = strtof (posReply->element[1]->str, NULL);
+                            Position2D curPcPos = {
+                                .x = strtof (posReply->element[0]->str, NULL),
+                                .z = strtof (posReply->element[1]->str, NULL)
+                            };
                             char *socketId = posReply->element[2]->str;
 
                             // Check range here
-                            if (Math_isWithin2DManhattanDistance (x, z, posX, posZ, 300.0)) {
+                            if (Math_isWithin2DManhattanDistance (&curPcPos, center, 300.0)) {
                                 // The current client is within the area, add it to the list
                                 zlist_append (clients, strdup (socketId));
                             }

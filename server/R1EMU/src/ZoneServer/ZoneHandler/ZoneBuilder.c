@@ -621,7 +621,7 @@ ZoneBuilder_enterPc (
     struct {
         ServerPacketHeader header;
         uint32_t pcId; // 5A730100
-        float x, y, z; // 00001DC4, 00008243, 002080C4
+        Position3D position; // 00001DC4, 00008243, 002080C4
         float unk7; // 0000803F
         uint32_t unk8; // 00000000
         uint32_t unk9; // 00270406
@@ -686,9 +686,9 @@ ZoneBuilder_enterPc (
         strncpy (replyPacket.familyName, commander->familyName, sizeof (replyPacket.familyName));
         strncpy (replyPacket.commanderName, commander->commanderName, sizeof (replyPacket.commanderName));
         replyPacket.pcId = commander->pcId;
-        replyPacket.x = commander->cPosX;
-        replyPacket.y = commander->cPosZ;
-        replyPacket.z = -1025.0f;
+        replyPacket.position.x = commander->cPosX;
+        replyPacket.position.z = commander->cPosZ;
+        replyPacket.position.y = -1025.0f;
         replyPacket.unk7 = 1.0;
         replyPacket.accountId = commander->accountId;
         replyPacket.classId = commander->classId;

@@ -211,7 +211,7 @@ Worker_mainLoop (
  * @brief Return a list of clients into an area
  * @param self An allocated Worker
  * @param session The session of the client
- * @param x, y, z The position of the middle of the circle
+ * @param center The position of the center of the circle
  * @param range Radius of the circle
  * @return a zlist_t of identity keys
  */
@@ -219,7 +219,7 @@ zlist_t *
 Worker_getClientsWithinDistance (
     Worker *self,
     Session *session,
-    float x, float y, float z,
+    Position2D *center,
     float range
 );
 

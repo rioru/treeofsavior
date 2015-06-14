@@ -196,7 +196,7 @@ Redis_moveGameSession (
  * @param self An allocated Worker
  * @param serverId The serverId concerned
  * @param mapId The mapId of the position
- * @param posX, posY, posZ The position
+ * @param The 2D position of the center of the circle
  * @param range Radius of the circle
  * @return a zlist_t of identity keys
  */
@@ -204,6 +204,6 @@ zlist_t *
 Redis_getClientsWithinDistance (
     Redis *self,
     uint16_t serverId, uint16_t mapId,
-    float posX, float posY, float posZ,
+    Position2D *position,
     float range
 );
