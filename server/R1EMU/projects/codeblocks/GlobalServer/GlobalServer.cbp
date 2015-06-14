@@ -52,6 +52,10 @@
 			<Add directory="../../../lib/x64" />
 			<Add directory="/usr/local/mysql/lib/" />
 		</Linker>
+		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackBuilder.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackBuilder.h" />
 		<Unit filename="../../../src/BarrackServer/BarrackHandler/BarrackHandler.c">
 			<Option compilerVar="CC" />
 		</Unit>
