@@ -514,9 +514,9 @@ ZoneBuilder_setPos (
  */
 void
 ZoneBuilder_moveDir (
+    uint32_t targetPcId,
     PositionXYZ *position,
     float dirX, float dirZ,
-    uint32_t targetPcId,
     float timestamp,
     zmsg_t *replyMsg
 );

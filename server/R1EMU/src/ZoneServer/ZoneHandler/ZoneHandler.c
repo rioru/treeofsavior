@@ -182,6 +182,12 @@ ZoneHandler_restSit (
     // Make sit the current commander
     ZoneBuilder_restSit (session->game.currentCommander.pcId, reply);
 
+    // Broadcast it
+    zframe_t *sitFrame = zmsg_last (reply);
+    PositionXZ around = {.x = session->game.currentCommander.cPosX, .z = session->game.currentCommander.cPosZ};
+    zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    Worker_sendToClients (self, clientsAround, zframe_data (sitFrame), zframe_size (sitFrame));
+
     return PACKET_HANDLER_OK;
 }
 
@@ -407,9 +413,9 @@ ZoneHandler_keyboardMove (
     {
         zmsg_t *moveDirMsg = zmsg_new ();
         ZoneBuilder_moveDir (
+            session->game.currentCommander.pcId,
             &clientPacket->position,
             clientPacket->dirX, clientPacket->dirZ,
-            session->game.currentCommander.pcId,
             clientPacket->timestamp,
             moveDirMsg
         );
@@ -479,7 +485,14 @@ ZoneHandler_gameReady (
     };
     ZoneBuilder_MyPCEnter (&enterPosition, reply);
     ZoneBuilder_skillAdd (reply);
+
+    // Warn everybody around that a new PC entered the game
     ZoneBuilder_enterPc (&session->game.currentCommander, reply);
+    zframe_t *newPcEnter = zmsg_last (reply);
+    PositionXZ around = PositionXYZToXZ (&enterPosition);
+    zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    Worker_sendToClients (self, clientsAround, zframe_data (newPcEnter), zframe_size (newPcEnter));
+
     ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 
     // Add NPC at the start screen
