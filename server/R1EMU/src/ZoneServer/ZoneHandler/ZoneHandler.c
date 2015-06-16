@@ -360,7 +360,51 @@ ZoneHandler_moveStop (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    warning ("CZ_MOVEMENT_INFO not implemented yet.");
+    #pragma pack(push, 1)
+    struct {
+        uint8_t unk1;
+        PositionXYZ position;
+        float dirX, dirZ;
+        float timestamp;
+    } *clientPacket = (void *) packet;
+    #pragma pack(pop)
+
+    /*  u1 posX     posY     posZ     dirX     dirZ     time
+        00 36E203C4 74768243 826F39C4 FFFFFF3F 00000000 D0651543
+        00 22F402C4 74768243 826F39C4 FFFFFF3F 00000000 60941543
+        00 22F402C4 74768243 4EFC3AC4 00000000 FFFF7FBF 7EF21543
+        00 22F402C4 74768243 BE393CC4 00000000 FFFF7FBF B4321643
+        00 22F402C4 74768243 8AC63DC4 00000000 FFFF7FBF 526A1643
+        00 22F402C4 74768243 62EA3BC4 00000000 FFFF7F3F 51B71643
+        00 22F402C4 74768243 F2AC3AC4 00000000 FFFF7F3F 5DE61643
+        00 22F402C4 74768243 826F39C4 00000000 FFFF7F3F 74151743
+        00 22F402C4 74768243 123238C4 00000000 FFFF7F3F 42401743
+        00 22F402C4 74768243 FE4337C4 00000000 FFFF7F3F 0A6B1743
+        00 22F402C4 74768243 8E0636C4 00000000 FFFF7F3F D3951743
+    */
+    if (sizeof (*clientPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (*clientPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
+    // Inform clients around
+    PositionXZ around = PositionXYZToXZ (&clientPacket->position);
+    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    if (zlist_size (clientsAround) != 0) {
+        // Stop the current PC
+        ZoneBuilder_pcMoveStop (
+            session->game.currentCommander.pcId,
+            &clientPacket->position,
+            clientPacket->dirX, clientPacket->dirZ,
+            clientPacket->timestamp,
+            reply
+        );
+        zframe_t *pcMoveStop = zmsg_last (reply);
+        Worker_sendToClients (self, clientsAround, zframe_data (pcMoveStop), zframe_size (pcMoveStop));
+    }
+
     return PACKET_HANDLER_OK;
 }
 
@@ -407,7 +451,6 @@ ZoneHandler_keyboardMove (
     // Build the reply packet
     PositionXZ around = PositionXYZToXZ (&clientPacket->position);
     zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
-    info ("Clients around detected : %d", zlist_size (clientsAround));
 
     // Send the new position to the clients around
     if (zlist_size (clientsAround) != 0)

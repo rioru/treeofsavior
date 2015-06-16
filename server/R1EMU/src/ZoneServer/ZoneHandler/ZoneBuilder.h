@@ -532,3 +532,16 @@ ZoneBuilder_startGame (
     double serverDateTime,
     zmsg_t *replyMsg
 );
+
+
+/**
+ * @brief Request a PC to stop moving
+ */
+void
+ZoneBuilder_pcMoveStop (
+    uint32_t targetPcId,
+    PositionXYZ *position,
+    float dirX, float dirZ,
+    float timestamp,
+    zmsg_t *replyMsg
+);

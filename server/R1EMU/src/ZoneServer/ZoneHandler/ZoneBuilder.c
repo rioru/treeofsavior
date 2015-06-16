@@ -1696,7 +1696,48 @@ ZoneBuilder_moveDir (
         replyPacket.dirZ = dirZ;
         replyPacket.unk1 = 1;
         replyPacket.unk2 = 0;
-        replyPacket.unk3 = SWAP_UINT32 (0x00F84101);
+        replyPacket.unk3 = SWAP_UINT32 (0x00F04101);
         replyPacket.timestamp = timestamp;
     }
+}
+
+void
+ZoneBuilder_pcMoveStop (
+    uint32_t targetPcId,
+    PositionXYZ *position,
+    float dirX, float dirZ,
+    float timestamp,
+    zmsg_t *replyMsg
+) {
+    /*
+        header        pcId     posX     posY     posZ     u1 dirX     dirZ     time
+        590D 3C395F00 32750100 00001DC4 A7698243 002080C4 01 0000803F 00000000 498AC742
+        590D 6B3A5F00 5A730100 5FBA8BC4 74768243 9B4C03C4 01 F30435BF F304353F 91698943
+        590D 3F435F00 5A730100 67408EC4 74768243 3FE20BC4 01 FEFF7FBF 1C56E7B3 F8439043
+        590D E4435F00 5A730100 67408EC4 74768243 17060AC4 01 00000000 FEFF7F3F 56B59043
+        590D 66445F00 5A730100 0BF18DC4 74768243 17060AC4 01 FEFF7F3F 1C56E733 BD179143
+    */
+
+    #pragma pack(push, 1)
+    struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        PositionXYZ position;
+        uint8_t unk1;
+        float dirX, dirZ;
+        float timestamp;
+    } replyPacket;
+    #pragma pack(pop)
+
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    {
+        PacketServer_header (&replyPacket.header, ZC_PC_MOVE_STOP);
+        replyPacket.pcId = targetPcId;
+        memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
+        replyPacket.dirX = dirX;
+        replyPacket.dirZ = dirZ;
+        replyPacket.unk1 = 1;
+        replyPacket.timestamp = timestamp;
+    }
+
 }
