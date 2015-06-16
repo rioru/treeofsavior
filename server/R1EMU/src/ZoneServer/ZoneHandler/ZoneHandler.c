@@ -126,13 +126,12 @@ ZoneHandler_chat (
                 strncpy (fakePc.familyName, "Dummy", sizeof (fakePc.familyName));
                 strncpy (fakePc.commanderName, "Fake", sizeof (fakePc.commanderName));
                 ZoneBuilder_enterPc (&fakePc, reply);
-                uint64_t socketId = R1EMU_generate_random64 (&self->seed);
-                uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE];
-                sprintf (socketIdStr, "%I64x", socketId);
-                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", socketIdStr, fakePc.accountId, fakePc.pcId);
 
                 // Register the fake socket session
                 SocketSession fakeSocketSession;
+                uint64_t socketId = R1EMU_generate_random64 (&self->seed);
+                uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE];
+                sprintf (socketIdStr, "%I64x", socketId);
                 SocketSession_init (&fakeSocketSession, fakePc.accountId, self->info.routerId, session->socket.mapId, socketIdStr, true);
                 RedisSocketSessionKey socketKey = {
                     .routerId = self->info.routerId,
@@ -151,6 +150,8 @@ ZoneHandler_chat (
                     .accountId = fakeSocketSession.accountId
                 };
                 Redis_updateGameSession (self->redis, &gameKey, socketIdStr, &fakeGameSession);
+
+                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", socketIdStr, fakePc.accountId, fakePc.pcId);
             }
         }
     }
@@ -487,11 +488,38 @@ ZoneHandler_gameReady (
     ZoneBuilder_skillAdd (reply);
 
     // Warn everybody around that a new PC entered the game
-    ZoneBuilder_enterPc (&session->game.currentCommander, reply);
-    zframe_t *newPcEnter = zmsg_last (reply);
     PositionXZ around = PositionXYZToXZ (&enterPosition);
     zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    ZoneBuilder_enterPc (&session->game.currentCommander, reply);
+    zframe_t *newPcEnter = zmsg_last (reply);
     Worker_sendToClients (self, clientsAround, zframe_data (newPcEnter), zframe_size (newPcEnter));
+
+    // Also get information about the people around
+    char *socketId;
+    for (socketId = zlist_first (clientsAround); socketId != NULL; socketId = zlist_next (clientsAround)) {
+        SocketSession socketClientAround;
+        RedisSocketSessionKey socketKey = {
+            .routerId = self->info.routerId,
+            .socketId = socketId
+        };
+        if (!(Redis_getSocketSession (self->redis, &socketKey, &socketClientAround))) {
+            warning ("Cannot get the socket of the client around.");
+            continue;
+        }
+
+        RedisGameSessionKey gameKey = {
+            .routerId = socketClientAround.routerId,
+            .mapId = socketClientAround.mapId,
+            .accountId = socketClientAround.accountId
+        };
+        GameSession gameSessionClientAround;
+        if (!(Redis_getGameSession (self->redis, &gameKey, &gameSessionClientAround))) {
+            warning ("Cannot get the socket of the client around.");
+            continue;
+        }
+
+        ZoneBuilder_enterPc (&gameSessionClientAround.currentCommander, reply);
+    }
 
     ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 
