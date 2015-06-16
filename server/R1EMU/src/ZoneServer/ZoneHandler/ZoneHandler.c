@@ -186,7 +186,7 @@ ZoneHandler_restSit (
     // Broadcast it
     zframe_t *sitFrame = zmsg_last (reply);
     PositionXZ around = {.x = session->game.currentCommander.cPosX, .z = session->game.currentCommander.cPosZ};
-    zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
     Worker_sendToClients (self, clientsAround, zframe_data (sitFrame), zframe_size (sitFrame));
 
     return PACKET_HANDLER_OK;
@@ -406,7 +406,7 @@ ZoneHandler_keyboardMove (
 
     // Build the reply packet
     PositionXZ around = PositionXYZToXZ (&clientPacket->position);
-    zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
     info ("Clients around detected : %d", zlist_size (clientsAround));
 
     // Send the new position to the clients around
@@ -489,7 +489,7 @@ ZoneHandler_gameReady (
 
     // Warn everybody around that a new PC entered the game
     PositionXZ around = PositionXYZToXZ (&enterPosition);
-    zlist_t *clientsAround = Worker_getClientsWithinDistance (self, session, &around, COMMANDER_RANGE_AROUND, false);
+    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
     ZoneBuilder_enterPc (&session->game.currentCommander, reply);
     zframe_t *newPcEnter = zmsg_last (reply);
     Worker_sendToClients (self, clientsAround, zframe_data (newPcEnter), zframe_size (newPcEnter));
