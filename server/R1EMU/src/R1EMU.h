@@ -48,8 +48,5 @@ typedef enum {
 #define __DBG_ACTIVATED__ TRUE
 #include "Common/dbg/dbg.h"
 
-// Configuration environment
-#define DEFAULT_SERVER_CONF_PATH "../cfg/server.cfg"
-
 // Utils
 #include "Common/utils/utils.h"

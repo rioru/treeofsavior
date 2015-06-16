@@ -324,7 +324,7 @@ cleanup:
 }
 
 zlist_t *
-Worker_getClientsWithinDistance (
+Worker_getClientsWithinRange (
     Worker *self,
     Session *session,
     PositionXZ *center,

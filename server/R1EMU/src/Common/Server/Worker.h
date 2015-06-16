@@ -217,7 +217,7 @@ Worker_mainLoop (
  * @return a zlist_t of identity keys
  */
 zlist_t *
-Worker_getClientsWithinDistance (
+Worker_getClientsWithinRange (
     Worker *self,
     Session *session,
     PositionXZ *center,

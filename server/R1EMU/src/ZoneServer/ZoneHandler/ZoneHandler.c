@@ -424,7 +424,10 @@ ZoneHandler_keyboardMove (
         zframe_t *moveDirFrame = zmsg_first (moveDirMsg);
         uint8_t *moveDirPacket = zframe_data (moveDirFrame);
         size_t moveDirPacketSize = zframe_size (moveDirFrame);
-        Worker_sendToClients (self, clientsAround, moveDirPacket, moveDirPacketSize);
+        if (!(Worker_sendToClients (self, clientsAround, moveDirPacket, moveDirPacketSize))) {
+            error ("Cannot send new position to clients around.");
+            return PACKET_HANDLER_ERROR;
+        }
         zmsg_destroy (&moveDirMsg);
     }
 
