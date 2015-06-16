@@ -130,8 +130,8 @@ ZoneHandler_chat (
                 // Register the fake socket session
                 SocketSession fakeSocketSession;
                 uint64_t socketId = R1EMU_generate_random64 (&self->seed);
-                uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE];
-                sprintf (socketIdStr, "%I64x", socketId);
+                uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE] = {0};
+                sprintf (socketIdStr, "%.10I64x", socketId);
                 SocketSession_init (&fakeSocketSession, fakePc.accountId, self->info.routerId, session->socket.mapId, socketIdStr, true);
                 RedisSocketSessionKey socketKey = {
                     .routerId = self->info.routerId,

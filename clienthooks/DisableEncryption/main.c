@@ -117,7 +117,7 @@ int main (int argc, char ** argv)
             8B45 10         mov eax, [dword ss:ebp+10]                    ; &encryptedpacket->size
             8D58 02         lea ebx, [eax+2]                              ; &encryptedpacket->data
             8B7D 08         mov edi, [dword ss:ebp+8]                     ; plaintextSize
-            66:8908         mov [word ds:eax], cx                         ; encryptedpacket->size = plaintextSizeCPU Disasm
+            66:8908         mov [word ds:eax], cx                         ; encryptedpacket->size = plaintextSize
             83C7 02         add edi, 2
             57              push edi                                      ; size
             FF75 0C         push [dword ss:ebp+0C]                        ; src
