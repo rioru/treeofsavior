@@ -139,12 +139,28 @@ extern const char *redisGameSessionsStr [];
  * @param self An allocated Redis
  * @param key The GameSession key
  * @param[out] gameSession The output gameSession
- * @return
+ * @return true on success, false otherwise
  */
 bool
 Redis_getGameSession (
     Redis *self,
     RedisGameSessionKey *key,
+    GameSession *gameSession
+);
+
+/**
+ * @brief Get the GameSession by socket Id
+ * @param self An allocated Redis
+ * @param routerId The router ID containing the target session
+ * @param socketId The socket ID of the target session
+ * @param[out] gameSession The output gameSession
+ * @return true on success, false otherwise
+ */
+bool
+Redis_getGameSessionBySocketId (
+    Redis *self,
+    uint16_t routerId,
+    uint8_t *socketId,
     GameSession *gameSession
 );
 

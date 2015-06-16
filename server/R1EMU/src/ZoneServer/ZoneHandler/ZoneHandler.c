@@ -495,26 +495,11 @@ ZoneHandler_gameReady (
     Worker_sendToClients (self, clientsAround, zframe_data (newPcEnter), zframe_size (newPcEnter));
 
     // Also get information about the people around
-    char *socketId;
-    for (socketId = zlist_first (clientsAround); socketId != NULL; socketId = zlist_next (clientsAround)) {
-        SocketSession socketClientAround;
-        RedisSocketSessionKey socketKey = {
-            .routerId = self->info.routerId,
-            .socketId = socketId
-        };
-        if (!(Redis_getSocketSession (self->redis, &socketKey, &socketClientAround))) {
-            warning ("Cannot get the socket of the client around.");
-            continue;
-        }
-
-        RedisGameSessionKey gameKey = {
-            .routerId = socketClientAround.routerId,
-            .mapId = socketClientAround.mapId,
-            .accountId = socketClientAround.accountId
-        };
+    for (char *socketId = zlist_first (clientsAround); socketId != NULL; socketId = zlist_next (clientsAround))
+    {
         GameSession gameSessionClientAround;
-        if (!(Redis_getGameSession (self->redis, &gameKey, &gameSessionClientAround))) {
-            warning ("Cannot get the socket of the client around.");
+        if (!(Redis_getGameSessionBySocketId (self->redis, self->info.routerId, socketId, &gameSessionClientAround))) {
+            warning ("Cannot get the game session of the client around.");
             continue;
         }
 

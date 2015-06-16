@@ -255,6 +255,37 @@ cleanup:
 }
 
 bool
+Redis_getGameSessionBySocketId (
+    Redis *self,
+    uint16_t routerId,
+    uint8_t *socketId,
+    GameSession *gameSession
+) {
+    SocketSession socketSession;
+    RedisSocketSessionKey socketKey = {
+        .routerId = routerId,
+        .socketId = socketId
+    };
+    if (!(Redis_getSocketSession (self, &socketKey, &socketSession))) {
+        error ("Cannot get the socket session of the client.");
+        return false;
+    }
+
+    RedisGameSessionKey gameKey = {
+        .routerId = socketSession.routerId,
+        .mapId = socketSession.mapId,
+        .accountId = socketSession.accountId
+    };
+
+    if (!(Redis_getGameSession (self, &gameKey, gameSession))) {
+        error ("Cannot get the game session of the client.");
+        return false;
+    }
+
+    return true;
+}
+
+bool
 Redis_updateGameSession (
     Redis *self,
     RedisGameSessionKey *key,
