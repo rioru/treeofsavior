@@ -19,6 +19,7 @@
 #include "ZoneServer/ZoneServer.h"
 #include "BarrackServer/BarrackServer.h"
 #include "SocialServer/SocialServer.h"
+#include "Common/Server/EventServer.h"
 #include "Common/Server/ServerFactory.h"
 
 int main (int argc, char **argv)
@@ -42,7 +43,7 @@ int main (int argc, char **argv)
     for (int i = 0; i < portsCount; i++) {
         ports[i] = atoi (argv[curArg++]);
     }
-    int workersCount = atoi (argv[curArg++]);
+    uint16_t workersCount = atoi (argv[curArg++]);
     char *globalServerIp = argv[curArg++];
     int globalServerPort = atoi (argv[curArg++]);
     char *sqlHostname = argv[curArg++];
@@ -78,7 +79,23 @@ int main (int argc, char **argv)
     }
     #endif
 
-    // === Build the Server ===
+    // === Build the Event Server ===
+    EventServer *eventServer;
+    EventServerStartupInfo eventServerInfo;
+    if (!(EventServerStartupInfo_init (&eventServerInfo, routerId, workersCount))) {
+        error ("Cannot initialize the event server.");
+        return -1;
+    }
+    if (!(eventServer = EventServer_new (&eventServerInfo))) {
+        error ("Cannot create the event server.");
+        return -1;
+    }
+    if ((zthread_new ((zthread_detached_fn *) EventServer_start, eventServer)) != 0) {
+        error ("Cannot start the event server.");
+        return -1;
+    }
+
+    // === Build the Zone Server ===
     Server *server;
     if (!(server = ServerFactory_createServer (
         serverType,

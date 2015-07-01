@@ -69,7 +69,7 @@ ZoneServer_destroy (
 /**
  * @brief Start the Zone Server main loop.
  * @param self An allocated ZoneServer
- * @return always NULL
+ * @return true on success, false otherwise
  */
 bool
 ZoneServer_start (

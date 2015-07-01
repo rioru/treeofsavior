@@ -18,6 +18,7 @@
 // ---------- Includes ------------
 #include "Worker.h"
 #include "Router.h"
+#include "EventServer.h"
 #include "Common/utils/random.h"
 #include "Common/Redis/Fields/RedisSession.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
@@ -632,16 +633,15 @@ Worker_mainLoop (
     info ("[routerId=%d][WorkerId=%d] connected to the global server %s.",
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort));
 
-
-    // Create and bind a publisher to send asynchronous messages to the Router
+    // Create and bind a publisher to send messages to the Event Server
     if (!(self->publisher = zsock_new (ZMQ_PUB))
-    ||  zsock_bind (self->publisher, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
+    ||  zsock_bind (self->publisher, EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
     ) {
-        error ("[routerId=%d][WorkerId=%d] cannot bind to the subscriber endpoint.", self->info.routerId);
+        error ("[routerId=%d][WorkerId=%d] cannot bind to the subscriber endpoint.", self->info.routerId, self->info.workerId);
         goto cleanup;
     }
     info ("[routerId=%d][WorkerId=%d] bind to the subscriber endpoint %s",
-          self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId));
+          self->info.routerId, self->info.workerId, zsys_sprintf (EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId));
 
     // Tell to the broker we're ready for work
     zmsg_t *readyMsg = zmsg_new ();

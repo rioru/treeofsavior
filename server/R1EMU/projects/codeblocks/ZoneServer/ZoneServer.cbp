@@ -110,6 +110,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Redis/Redis.h" />
+		<Unit filename="../../../src/Common/Server/EventServer.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/EventServer.h" />
 		<Unit filename="../../../src/Common/Server/Router.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -170,6 +174,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/utils/zlib.h" />
+		<Unit filename="../../../src/EventServer/EventServer.h" />
 		<Unit filename="../../../src/GlobalServer/GlobalServer.h" />
 		<Unit filename="../../../src/R1EMU.h" />
 		<Unit filename="../../../src/SocialServer/SocialHandler/SocialHandler.c">
