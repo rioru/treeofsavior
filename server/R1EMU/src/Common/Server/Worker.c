@@ -194,6 +194,32 @@ Worker_new (
 }
 
 bool
+Worker_sendEvent (
+    Worker *self
+) {
+    bool result = true;
+    zmsg_t *msg = NULL;
+
+    if ((!(msg = zmsg_new ()))
+    ||  zmsg_addmem (msg, PACKET_HEADER (EVENT_SERVER_EVENT), sizeof (EVENT_SERVER_EVENT)) != 0
+    ) {
+        error ("Cannot build the game event packet.");
+        result = false;
+        goto cleanup;
+    }
+
+    if (zmsg_send (&msg, self->eventServer) != 0) {
+        error ("Cannot send the game event packet to the Event Server.");
+        result = false;
+        goto cleanup;
+    }
+
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
+}
+
+bool
 Worker_init (
     Worker *self,
     WorkerStartupInfo *info
@@ -575,8 +601,8 @@ Worker_mainLoop (
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort));
 
     // Create and bind a publisher to send messages to the Event Server
-    if (!(self->eventServerPublisher = zsock_new (ZMQ_PUB))
-    ||  zsock_bind (self->eventServerPublisher, EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
+    if (!(self->eventServer = zsock_new (ZMQ_PUB))
+    ||  zsock_bind (self->eventServer, EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot bind to the subscriber endpoint.", self->info.routerId, self->info.workerId);
         goto cleanup;

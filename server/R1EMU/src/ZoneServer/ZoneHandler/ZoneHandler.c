@@ -498,6 +498,7 @@ ZoneHandler_gameReady (
 
     // Also get information about the people around
     // TODO
+    Worker_sendEvent (self);
 
     ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 

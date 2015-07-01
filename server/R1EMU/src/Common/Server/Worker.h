@@ -98,7 +98,7 @@ struct _Worker
     WorkerStartupInfo info;
 
     /** The publisher socket to send asynchronous messages to the Event Server */
-    zsock_t *eventServerPublisher;
+    zsock_t *eventServer;
 
     /** Seed for the random generator */
     uint32_t seed;
@@ -206,6 +206,16 @@ Worker_mainLoop (
     void *arg
 );
 
+
+/**
+ * @brief Worker routine for the zone server.
+ * @param self A pointer to an allocated Worker.
+ * @return true on success, false otherwise
+ */
+bool
+Worker_sendEvent (
+    Worker *self
+);
 
 /**
  * @brief Free an allocated Worker structure.

@@ -126,6 +126,8 @@ EventServer_subscribe (
         return false;
     }
 
+    zmsg_print (msg);
+
     // Get the header frame of the message
     if (!(header = zmsg_pop (msg))) {
         error ("Frame header cannot be retrieved.");

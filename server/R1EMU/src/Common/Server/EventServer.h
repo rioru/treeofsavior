@@ -30,6 +30,7 @@
 typedef enum EventServerHeader {
     _EVENT_SERVER_PING,                    // Ping message
     _EVENT_SERVER_PONG,                    // Pong message
+    _EVENT_SERVER_EVENT,                    // Pong message
 }   EventServerHeader;
 
 // Macro helper for the distribution
@@ -39,6 +40,7 @@ typedef enum EventServerHeader {
 /** Enumeration of all the packets header that the EventServer accepts */
 typedef enum EventServerRecvHeader {
     DECL_EVENT_SERVER_HEADER (EVENT_SERVER_PING),
+    DECL_EVENT_SERVER_HEADER (EVENT_SERVER_EVENT),
 }   EventServerRecvHeader;
 
 /** Enumeration of all the packets header that the EventServer sends */
