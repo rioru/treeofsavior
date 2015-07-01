@@ -82,7 +82,7 @@ int main (int argc, char **argv)
     // === Build the Event Server ===
     EventServer *eventServer;
     EventServerStartupInfo eventServerInfo;
-    if (!(EventServerStartupInfo_init (&eventServerInfo, routerId, workersCount))) {
+    if (!(EventServerStartupInfo_init (&eventServerInfo, routerId, workersCount, redisHostname, redisPort))) {
         error ("Cannot initialize the event server.");
         return -1;
     }

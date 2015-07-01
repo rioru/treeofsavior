@@ -12,6 +12,8 @@
 
 // ---------- Includes ------------
 #include "EventServer.h"
+#include "Common/Redis/Redis.h"
+#include "Common/Redis/Fields/RedisGameSession.h"
 
 // ------ Structure declaration -------
 /**
@@ -24,6 +26,9 @@ struct EventServer
 
     /** Frontend connected to the router */
     zsock_t *router;
+
+    /** Redis connection **/
+    Redis *redis;
 
     /** EventServer information */
     EventServerStartupInfo info;
@@ -72,8 +77,15 @@ EventServer_init (
         return false;
     }
 
+    // Create a connection to the router
     if (!(self->router = zsock_new (ZMQ_PUB))) {
         error ("Cannot create zsock to the router.");
+        return false;
+    }
+
+    // Initialize Redis connection
+    if (!(self->redis = Redis_new (&info->redisInfo))) {
+        error ("Cannot initialize a new Redis connection.");
         return false;
     }
 
@@ -84,12 +96,19 @@ bool
 EventServerStartupInfo_init (
     EventServerStartupInfo *self,
     uint16_t routerId,
-    uint16_t workersCount
+    uint16_t workersCount,
+    char *redisHostname,
+    int redisPort
 ) {
     memset (self, 0, sizeof (EventServerStartupInfo));
 
     self->routerId = routerId;
     self->workersCount = workersCount;
+
+    if (!(RedisStartupInfo_init (&self->redisInfo, redisHostname, redisPort))) {
+        error ("Cannot initialize Redis startup.");
+        return false;
+    }
 
     return true;
 }
@@ -131,10 +150,75 @@ EventServer_subscribe (
 }
 
 bool
+EventServer_sendToClients (
+    EventServer *self,
+    zlist_t *clients,
+    uint8_t *packet,
+    size_t packetLen
+) {
+    bool result = true;
+    zmsg_t *msg = NULL;
+
+    if ((!(msg = zmsg_new ()))
+    ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_WORKER_MULTICAST), sizeof (ROUTER_WORKER_MULTICAST)) != 0
+    ||  zmsg_addmem (msg, packet, packetLen) != 0
+    ) {
+        error ("Cannot build the multicast packet.");
+        result = false;
+        goto cleanup;
+    }
+
+    // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
+    char *identityKey;
+    for (identityKey = zlist_first (clients); identityKey != NULL; identityKey = zlist_next (clients)) {
+        // Add all the clients to the packet
+        uint8_t identityBytes[5];
+        SocketSession_genId (identityKey, identityBytes);
+        if (zmsg_addmem (msg, identityBytes, sizeof (identityBytes)) != 0) {
+            error ("Cannot add the identity in the message.");
+            result = false;
+            goto cleanup;
+        }
+    }
+
+    if (zmsg_send (&msg, self->router) != 0) {
+        error ("Cannot send the multicast packet to the Router.");
+        result = false;
+        goto cleanup;
+    }
+
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
+}
+
+zlist_t *
+EventServer_getClientsWithinRange (
+    EventServer *self,
+    Session *session,
+    PositionXZ *center,
+    float range,
+    bool selfInclude
+) {
+    char *ignoredSocketId = NULL;
+    if (!selfInclude) {
+        ignoredSocketId = session->socket.socketId;
+    }
+
+    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range, ignoredSocketId);
+}
+
+bool
 EventServer_start (
     EventServer *self
 ) {
-    //  Initialize subscribers
+    // Bind the connection to the router
+    if (zsock_bind (self->router, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId) != 0) {
+        error ("Failed to bind to the subscriber endpoint.");
+        return false;
+    }
+
+    // Initialize subscribers
     for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
         if (zsock_connect (self->workers, EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId) != 0) {
             error ("Failed to connect to the subscriber endpoint %d:%d.", self->info.routerId, workerId);

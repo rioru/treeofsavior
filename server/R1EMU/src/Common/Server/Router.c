@@ -31,8 +31,6 @@ typedef struct {
 } WorkerIdentity;
 
 typedef struct {
-    /** Subscriber connection to the worker. */
-    zsock_t *zsock;
     /** Worker identity */
     WorkerIdentity identity;
     /** Client identity current treated */
@@ -57,6 +55,9 @@ struct Router
 
     /** Publisher to the Router Monitor */
     zsock_t *monitor;
+
+    /** Subscriber to the Event Server */
+    zsock_t *eventServer;
 
     /** List of workers entities. */
     zlist_t *readyWorkers;
@@ -220,6 +221,12 @@ Router_init (
         return false;
     }
 
+    // EventServer publish messages to the Router for asynchronous messages.
+    if (!(self->eventServer = zsock_new (ZMQ_SUB))) {
+        error ("Cannot allocate ROUTER backend");
+        return false;
+    }
+
     // Allocate the workers entity list
     if (!(self->readyWorkers = zlist_new ())) {
         error ("Cannot allocate ready workers list.");
@@ -230,14 +237,6 @@ Router_init (
     if ((self->workers = calloc (self->info.workersCount, sizeof (WorkerState))) == NULL) {
         error ("Cannot allocate the workers array.");
         return false;
-    }
-
-    // The Router can communicate asynchronously with the workers with a pub/sub socket.
-    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        if (!(self->workers[workerId].zsock = zsock_new (ZMQ_SUB))) {
-            error ("Cannot allocate a new Server SUBSCRIBER");
-            return false;
-        }
     }
 
     return true;
@@ -657,23 +656,20 @@ Router_initBackend (
     return true;
 }
 
-
 bool
-Router_initSubscribers (
+Router_initEventServerSubscriber (
     Router *self
 ) {
     // ===================================
-    //       Initialize subscribers
+    //       Initialize subscriber
     // ===================================
-    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        if (zsock_connect (self->workers[workerId].zsock, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId) != 0) {
-            error ("Failed to connect to the subscriber endpoint %d:%d.", self->info.routerId, workerId);
-            return false;
-        }
-        info ("Subscriber connected to %s", zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId, workerId));
-        // Subscribe to all messages, without any filter
-        zsock_set_subscribe (self->workers[workerId].zsock, "");
+    if (zsock_connect (self->eventServer, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId) != 0) {
+        error ("Failed to connect to the eventServer subscriber endpoint %s.", zsys_sprintf (ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId));
+        return false;
     }
+
+    // Subscribe for all messages
+    zsock_set_subscribe (self->eventServer, "");
 
     return true;
 }
@@ -690,9 +686,9 @@ Router_start (
         return false;
     }
 
-    // Initialize the subscribers
-    if (!(Router_initSubscribers (self))) {
-        error ("Cannot initialize the subscribers.");
+    // Initialize the subscriber
+    if (!(Router_initEventServerSubscriber (self))) {
+        error ("Cannot initialize the subscriber.");
         return false;
     }
 
@@ -713,11 +709,9 @@ Router_start (
     }
 
     // Attach a callback to subscribers sockets
-    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        if (zloop_reader (reactor, self->workers[workerId].zsock, Router_subscribe, self) == -1) {
-            error ("Cannot register the subscribers with the reactor.");
-            return false;
-        }
+    if (zloop_reader (reactor, self->eventServer, Router_subscribe, self) == -1) {
+        error ("Cannot register the subscriber to the reactor.");
+        return false;
     }
 
     info ("Router is ready and running.");
@@ -760,9 +754,7 @@ Router_destroy (
         zsock_destroy (&self->backend);
     }
 
-    for (int workerId = 0; workerId < self->info.workersCount; workerId++) {
-        zsock_destroy (&self->workers[workerId].zsock);
-    }
+    zsock_destroy (&self->eventServer);
 
     if (self->workers) {
         free (self->workers);

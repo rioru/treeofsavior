@@ -183,11 +183,8 @@ ZoneHandler_restSit (
     // Make sit the current commander
     ZoneBuilder_restSit (session->game.currentCommander.pcId, reply);
 
-    // Broadcast it
-    zframe_t *sitFrame = zmsg_last (reply);
-    PositionXZ around = {.x = session->game.currentCommander.cPosX, .z = session->game.currentCommander.cPosZ};
-    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
-    Worker_sendToClients (self, clientsAround, zframe_data (sitFrame), zframe_size (sitFrame));
+    // Notify the other clients
+    // TODO
 
     return PACKET_HANDLER_OK;
 }
@@ -389,21 +386,8 @@ ZoneHandler_moveStop (
         return PACKET_HANDLER_ERROR;
     }
 
-    // Inform clients around
-    PositionXZ around = PositionXYZToXZ (&clientPacket->position);
-    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
-    if (zlist_size (clientsAround) != 0) {
-        // Stop the current PC
-        ZoneBuilder_pcMoveStop (
-            session->game.currentCommander.pcId,
-            &clientPacket->position,
-            clientPacket->dirX, clientPacket->dirZ,
-            clientPacket->timestamp,
-            reply
-        );
-        zframe_t *pcMoveStop = zmsg_last (reply);
-        Worker_sendToClients (self, clientsAround, zframe_data (pcMoveStop), zframe_size (pcMoveStop));
-    }
+    // Notify clients around
+    // TODO
 
     return PACKET_HANDLER_OK;
 }
@@ -448,31 +432,7 @@ ZoneHandler_keyboardMove (
     session->game.currentCommander.cPosX = clientPacket->position.x;
     session->game.currentCommander.cPosZ = clientPacket->position.z;
 
-    // Build the reply packet
-    PositionXZ around = PositionXYZToXZ (&clientPacket->position);
-    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
-
-    // Send the new position to the clients around
-    if (zlist_size (clientsAround) != 0)
-    {
-        zmsg_t *moveDirMsg = zmsg_new ();
-        ZoneBuilder_moveDir (
-            session->game.currentCommander.pcId,
-            &clientPacket->position,
-            clientPacket->dirX, clientPacket->dirZ,
-            clientPacket->timestamp,
-            moveDirMsg
-        );
-
-        zframe_t *moveDirFrame = zmsg_first (moveDirMsg);
-        uint8_t *moveDirPacket = zframe_data (moveDirFrame);
-        size_t moveDirPacketSize = zframe_size (moveDirFrame);
-        if (!(Worker_sendToClients (self, clientsAround, moveDirPacket, moveDirPacketSize))) {
-            error ("Cannot send new position to clients around.");
-            return PACKET_HANDLER_ERROR;
-        }
-        zmsg_destroy (&moveDirMsg);
-    }
+    // Notify the other players
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
@@ -534,23 +494,10 @@ ZoneHandler_gameReady (
     ZoneBuilder_skillAdd (reply);
 
     // Warn everybody around that a new PC entered the game
-    PositionXZ around = PositionXYZToXZ (&enterPosition);
-    zlist_t *clientsAround = Worker_getClientsWithinRange (self, session, &around, COMMANDER_RANGE_AROUND, false);
-    ZoneBuilder_enterPc (&session->game.currentCommander, reply);
-    zframe_t *newPcEnter = zmsg_last (reply);
-    Worker_sendToClients (self, clientsAround, zframe_data (newPcEnter), zframe_size (newPcEnter));
+    // TODO
 
     // Also get information about the people around
-    for (char *socketId = zlist_first (clientsAround); socketId != NULL; socketId = zlist_next (clientsAround))
-    {
-        GameSession gameSessionClientAround;
-        if (!(Redis_getGameSessionBySocketId (self->redis, self->info.routerId, socketId, &gameSessionClientAround))) {
-            warning ("Cannot get the game session of the client around.");
-            continue;
-        }
-
-        ZoneBuilder_enterPc (&gameSessionClientAround.currentCommander, reply);
-    }
+    // TODO
 
     ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 

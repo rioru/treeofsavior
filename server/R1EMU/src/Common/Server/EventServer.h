@@ -17,6 +17,8 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Session/Session.h"
+#include "Common/Server/Router.h"
 
 // ---------- Defines -------------
 #define EVENT_SERVER_EXECUTABLE_NAME             "EventServer"
@@ -50,6 +52,8 @@ typedef enum EventServerSendHeader {
 typedef struct {
     uint16_t routerId;
     uint16_t workersCount;
+
+    RedisStartupInfo redisInfo;
 
 } EventServerStartupInfo;
 
@@ -103,7 +107,45 @@ bool
 EventServerStartupInfo_init (
     EventServerStartupInfo *self,
     uint16_t routerId,
-    uint16_t workersCount
+    uint16_t workersCount,
+    char *redisHostname,
+    int redisPort
+);
+
+
+/**
+ * @brief Return a list of clients into an area
+ * @param self An allocated EventServer
+ * @param session The session of the client
+ * @param center The position of the center of the circle
+ * @param range Radius of the circle
+ * @param selfInclude if false, don't include current client in the results. Do it otherwise.
+ * @return a zlist_t of identity keys
+ */
+zlist_t *
+EventServer_getClientsWithinRange (
+    EventServer *self,
+    Session *session,
+    PositionXZ *center,
+    float range,
+    bool selfInclude
+);
+
+
+/**
+ * @brief Send the same packet to multiple clients
+ * @param self An allocated EventServer
+ * @param clients A list of clients socket identity
+ * @param packet The packet to send
+ * @param packetLen the length of the packet
+ * @return true on success, false otherwise
+ */
+bool
+EventServer_sendToClients (
+    EventServer *self,
+    zlist_t *clients,
+    uint8_t *packet,
+    size_t packetLen
 );
 
 

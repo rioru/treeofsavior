@@ -281,65 +281,6 @@ WorkerStartupInfo_init (
     return true;
 }
 
-bool
-Worker_sendToClients (
-    Worker *self,
-    zlist_t *clients,
-    uint8_t *packet,
-    size_t packetLen
-) {
-    bool result = true;
-    zmsg_t *msg = NULL;
-
-    if ((!(msg = zmsg_new ()))
-    ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_WORKER_MULTICAST), sizeof (ROUTER_WORKER_MULTICAST)) != 0
-    ||  zmsg_addmem (msg, packet, packetLen) != 0
-    ) {
-        error ("Cannot build the multicast packet.");
-        result = false;
-        goto cleanup;
-    }
-
-    // [1 frame data] + [1 frame identity] + [1 frame identity] + ...
-    char *identityKey;
-    for (identityKey = zlist_first (clients); identityKey != NULL; identityKey = zlist_next (clients)) {
-        // Add all the clients to the packet
-        uint8_t identityBytes[5];
-        SocketSession_genId (identityKey, identityBytes);
-        if (zmsg_addmem (msg, identityBytes, sizeof (identityBytes)) != 0) {
-            error ("Cannot add the identity in the message.");
-            result = false;
-            goto cleanup;
-        }
-    }
-
-    if (zmsg_send (&msg, self->publisher) != 0) {
-        error ("Cannot send the multicast packet.");
-        result = false;
-        goto cleanup;
-    }
-
-cleanup:
-    zmsg_destroy (&msg);
-    return result;
-}
-
-zlist_t *
-Worker_getClientsWithinRange (
-    Worker *self,
-    Session *session,
-    PositionXZ *center,
-    float range,
-    bool selfInclude
-) {
-    char *ignoredSocketId = NULL;
-    if (!selfInclude) {
-        ignoredSocketId = session->socket.socketId;
-    }
-
-    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range, ignoredSocketId);
-}
-
 static zframe_t *
 Worker_handlePingPacket (
     void
@@ -634,8 +575,8 @@ Worker_mainLoop (
           self->info.routerId, self->info.workerId, zsys_sprintf (ROUTER_GLOBAL_ENDPOINT, self->info.globalServerIp, self->info.globalServerPort));
 
     // Create and bind a publisher to send messages to the Event Server
-    if (!(self->publisher = zsock_new (ZMQ_PUB))
-    ||  zsock_bind (self->publisher, EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
+    if (!(self->eventServerPublisher = zsock_new (ZMQ_PUB))
+    ||  zsock_bind (self->eventServerPublisher, EVENT_SERVER_SUBSCRIBER_ENDPOINT, self->info.routerId, self->info.workerId) == -1
     ) {
         error ("[routerId=%d][WorkerId=%d] cannot bind to the subscriber endpoint.", self->info.routerId, self->info.workerId);
         goto cleanup;

@@ -97,8 +97,8 @@ struct _Worker
     /** Start up information */
     WorkerStartupInfo info;
 
-    /** The publisher socket to send asynchronous messages to the Router */
-    zsock_t *publisher;
+    /** The publisher socket to send asynchronous messages to the Event Server */
+    zsock_t *eventServerPublisher;
 
     /** Seed for the random generator */
     uint32_t seed;
@@ -206,40 +206,6 @@ Worker_mainLoop (
     void *arg
 );
 
-
-/**
- * @brief Return a list of clients into an area
- * @param self An allocated Worker
- * @param session The session of the client
- * @param center The position of the center of the circle
- * @param range Radius of the circle
- * @param selfInclude if false, don't include current client in the results. Do it otherwise.
- * @return a zlist_t of identity keys
- */
-zlist_t *
-Worker_getClientsWithinRange (
-    Worker *self,
-    Session *session,
-    PositionXZ *center,
-    float range,
-    bool selfInclude
-);
-
-/**
- * @brief Send the same packet to multiple clients
- * @param self An allocated Worker
- * @param clients A list of clients socket identity
- * @param packet The packet to send
- * @param packetLen the length of the packet
- * @return true on success, false otherwise
- */
-bool
-Worker_sendToClients (
-    Worker *self,
-    zlist_t *clients,
-    uint8_t *packet,
-    size_t packetLen
-);
 
 /**
  * @brief Free an allocated Worker structure.

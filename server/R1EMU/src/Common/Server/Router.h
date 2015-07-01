@@ -25,7 +25,7 @@
 // ---------- Defines -------------
 #define ROUTER_FRONTEND_ENDPOINT           "tcp://%s:%d"
 #define ROUTER_BACKEND_ENDPOINT            "inproc://routerWorkersBackend-%d"
-#define ROUTER_SUBSCRIBER_ENDPOINT         "inproc://routerWorkersSubscriber-%d-%d"
+#define ROUTER_SUBSCRIBER_ENDPOINT         "inproc://routerWorkersSubscriber-%d"
 
 #define ROUTER_GLOBAL_ENDPOINT             "tcp://%s:%d"
 
