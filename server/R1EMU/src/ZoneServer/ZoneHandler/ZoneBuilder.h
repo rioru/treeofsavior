@@ -516,7 +516,7 @@ void
 ZoneBuilder_moveDir (
     uint32_t targetPcId,
     PositionXYZ *position,
-    float dirX, float dirZ,
+    PositionXZ *direction,
     float timestamp,
     zmsg_t *replyMsg
 );
@@ -541,7 +541,7 @@ void
 ZoneBuilder_pcMoveStop (
     uint32_t targetPcId,
     PositionXYZ *position,
-    float dirX, float dirZ,
+    PositionXZ *direction,
     float timestamp,
     zmsg_t *replyMsg
 );

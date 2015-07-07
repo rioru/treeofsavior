@@ -141,7 +141,7 @@ int __thiscall sub_##name(DtbTable *this, DtbItem ** _out_, DWORD * seed)       
         (typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) sub_##name);                          \
     BbQueue seeds = bb_queue_local_decl();                                                                   \
                                                                                                              \
-    if (!bb_queue_exists(&alreadyCalled, this)) {                                                            \
+    /* if (!bb_queue_exists(&alreadyCalled, this)) {                                                       */\
         bb_queue_add (&alreadyCalled, this);                                                                 \
         int end = this->tableSizeMax * 2;                                                                    \
         int start = 0;                                                                                       \
@@ -154,7 +154,7 @@ int __thiscall sub_##name(DtbTable *this, DtbItem ** _out_, DWORD * seed)       
             dbg ("CurItem = %p | Seed = 0x%x", curItem, curItem->schrageId);                                 \
         }                                                                                                    \
         dbg("==============================");                                                               \
-    }                                                                                                        \
+    /*}*/                                                                                                    \
     bb_queue_clear (&seeds);                                                                                 \
                                                                                                              \
     return hooked (this, _out_, seed);                                                                       \
@@ -316,11 +316,12 @@ void startInjection (void)
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,      (ULONG_PTR) ClientNet__GetPacket);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaGetObject,  (ULONG_PTR) Lua__LuaGetObject);
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
+	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
 
     #define HookEngine_hook_Shrage(name) \
         HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##name, (ULONG_PTR) sub_##name);
 
+    /*
     HookEngine_hook_Shrage(DtbTable__getObject_1);
     HookEngine_hook_Shrage(DtbTable__getObject_2);
     HookEngine_hook_Shrage(DtbTable__getObject_3);
@@ -341,7 +342,6 @@ void startInjection (void)
     HookEngine_hook_Shrage(DtbTable__getObject_18);
     HookEngine_hook_Shrage(DtbTable__getObject_19);
     HookEngine_hook_Shrage(DtbTable__getObject_20);
-    HookEngine_hook_Shrage(DtbTable__getObject_21);
     HookEngine_hook_Shrage(DtbTable__getObject_22);
     HookEngine_hook_Shrage(DtbTable__getObject_23);
     HookEngine_hook_Shrage(DtbTable__getObject_24);
@@ -358,6 +358,8 @@ void startInjection (void)
     HookEngine_hook_Shrage(DtbTable__getObject_35);
     HookEngine_hook_Shrage(DtbTable__getObject_36);
     HookEngine_hook_Shrage(DtbTable__getObject_37);
+    */
+    // HookEngine_hook_Shrage(DtbTable__getObject_21);
 }
 
 void endInjection (void)

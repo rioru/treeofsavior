@@ -231,8 +231,8 @@ Redis_getGameSession (
             gameSession->currentCommander.maxHP           = strtoul (reply->element[REDIS_GAME_SESSION_commander_maxHP]->str, NULL, 16);
             gameSession->currentCommander.currentSP       = strtoul (reply->element[REDIS_GAME_SESSION_commander_currentSP]->str, NULL, 16);
             gameSession->currentCommander.maxSP           = strtoul (reply->element[REDIS_GAME_SESSION_commander_maxSP]->str, NULL, 16);
-            gameSession->currentCommander.cPosX           = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosX]->str, NULL);
-            gameSession->currentCommander.cPosZ           = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosZ]->str, NULL);
+            gameSession->currentCommander.cPos.x          = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosX]->str, NULL);
+            gameSession->currentCommander.cPos.z          = strtof (reply->element[REDIS_GAME_SESSION_commander_cPosZ]->str, NULL);
             // [UNKNOWN] gameSession->currentCommander.unk10,
             // [UNKNOWN] gameSession->currentCommander.unk11,
             // [UNKNOWN] gameSession->currentCommander.unk12,
@@ -402,8 +402,8 @@ Redis_updateGameSession (
         gameSession->currentCommander.maxHP,
         gameSession->currentCommander.currentSP,
         gameSession->currentCommander.maxSP,
-        gameSession->currentCommander.cPosX,
-        gameSession->currentCommander.cPosZ
+        gameSession->currentCommander.cPos.x,
+        gameSession->currentCommander.cPos.z
         // [UNKNOWN] gameSession->currentCommander.unk8,
         // [UNKNOWN] gameSession->currentCommander.unk9,
         // [UNKNOWN] gameSession->currentCommander.unk10,

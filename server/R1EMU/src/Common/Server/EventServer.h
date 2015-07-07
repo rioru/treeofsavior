@@ -30,7 +30,7 @@
 typedef enum EventServerHeader {
     _EVENT_SERVER_PING,                    // Ping message
     _EVENT_SERVER_PONG,                    // Pong message
-    _EVENT_SERVER_EVENT,                    // Pong message
+    _EVENT_SERVER_EVENT,                   // Event message
 }   EventServerHeader;
 
 // Macro helper for the distribution
@@ -49,6 +49,13 @@ typedef enum EventServerSendHeader {
 }   EventServerSendHeader;
 
 #undef DECL_EVENT_SERVER_HEADER
+
+typedef enum EventServerType {
+    EVENT_SERVER_TYPE_COMMANDER_MOVE,
+    EVENT_SERVER_TYPE_REST_SIT,
+    EVENT_SERVER_TYPE_MOVE_STOP,
+    EVENT_SERVER_TYPE_ENTER_PC
+} EventServerType;
 
 // ------ Structure declaration -------
 typedef struct {
@@ -118,19 +125,20 @@ EventServerStartupInfo_init (
 /**
  * @brief Return a list of clients into an area
  * @param self An allocated EventServer
- * @param session The session of the client
+ * @param routerId, mapId : The authenticators of the target zone
+ * @param ignoredSocketId A socketID to ignore. NULL don't ignore anybody.
  * @param center The position of the center of the circle
  * @param range Radius of the circle
- * @param selfInclude if false, don't include current client in the results. Do it otherwise.
  * @return a zlist_t of identity keys
  */
 zlist_t *
 EventServer_getClientsWithinRange (
     EventServer *self,
-    Session *session,
+    uint16_t routerId,
+    uint32_t mapId,
+    uint8_t *ignoredSocketId,
     PositionXZ *center,
-    float range,
-    bool selfInclude
+    float range
 );
 
 
@@ -150,6 +158,25 @@ EventServer_sendToClients (
     size_t packetLen
 );
 
+
+/**
+ * @brief : Router ID Accessor
+ */
+uint16_t
+EventServer_getRouterId (
+    EventServer *self
+);
+
+/**
+ * @brief : GameSessionBySocketId by Redis module Accessor
+ */
+bool
+EventServer_getGameSessionBySocketId (
+    EventServer *self,
+    uint16_t routerId,
+    uint8_t *socketId,
+    GameSession *gameSession
+);
 
 /**
  * @brief Start the Zone Server main loop.

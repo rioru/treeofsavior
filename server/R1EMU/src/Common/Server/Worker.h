@@ -24,6 +24,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "EventServer.h"
 #include "Common/MySQL/MySQL.h"
 #include "Common/Redis/Redis.h"
 #include "Common/Session/Session.h"
@@ -207,14 +208,12 @@ Worker_mainLoop (
 );
 
 
-/**
- * @brief Worker routine for the zone server.
- * @param self A pointer to an allocated Worker.
- * @return true on success, false otherwise
- */
 bool
-Worker_sendEvent (
-    Worker *self
+Worker_dispatchEvent (
+    Worker *self,
+    EventServerType eventType,
+    void *event,
+    size_t eventSize
 );
 
 /**

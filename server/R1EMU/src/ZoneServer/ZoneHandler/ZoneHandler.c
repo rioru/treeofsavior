@@ -16,6 +16,7 @@
 #include "ZoneBuilder.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
+#include "Common/Server/EventHandler.h"
 
 // ------ Static declaration -------
 /** Connect to the zone server */
@@ -119,8 +120,7 @@ ZoneHandler_chat (
                 // Add a fake commander with a fake account
                 CommanderInfo fakePc;
                 CommanderInfo_createBasicCommander (&fakePc);
-                fakePc.cPosX = session->game.currentCommander.cPosX;
-                fakePc.cPosZ = session->game.currentCommander.cPosZ;
+                fakePc.cPos = session->game.currentCommander.cPos;
                 fakePc.accountId = R1EMU_generate_random64 (&self->seed);
                 fakePc.pcId = R1EMU_generate_random (&self->seed);
                 strncpy (fakePc.familyName, "Dummy", sizeof (fakePc.familyName));
@@ -183,8 +183,14 @@ ZoneHandler_restSit (
     // Make sit the current commander
     ZoneBuilder_restSit (session->game.currentCommander.pcId, reply);
 
-    // Notify the other clients
-    // TODO
+    // Notify the players around
+    GameEventRestSit event = {
+        .mapId = session->socket.mapId,
+        .targetPcId = session->game.currentCommander.pcId,
+        .position = session->game.currentCommander.cPos,
+    };
+    strncpy (event.socketId, session->socket.socketId, sizeof (event.socketId));
+    Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
 
     return PACKET_HANDLER_OK;
 }
@@ -361,7 +367,7 @@ ZoneHandler_moveStop (
     struct {
         uint8_t unk1;
         PositionXYZ position;
-        float dirX, dirZ;
+        PositionXZ direction;
         float timestamp;
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
@@ -386,8 +392,16 @@ ZoneHandler_moveStop (
         return PACKET_HANDLER_ERROR;
     }
 
-    // Notify clients around
-    // TODO
+    // Notify the players around
+    GameEventMoveStop event = {
+        .mapId = session->socket.mapId,
+        .targetPcId = session->game.currentCommander.pcId,
+        .position = clientPacket->position,
+        .direction = clientPacket->direction,
+        .timestamp = clientPacket->timestamp
+    };
+    strncpy (event.socketId, session->socket.socketId, sizeof (event.socketId));
+    Worker_dispatchEvent (self, EVENT_SERVER_TYPE_MOVE_STOP, &event, sizeof (event));
 
     return PACKET_HANDLER_OK;
 }
@@ -404,7 +418,7 @@ ZoneHandler_keyboardMove (
     struct {
         uint8_t unk1;
         PositionXYZ position;
-        float dirX, dirZ;
+        PositionXZ direction;
         uint8_t unk7;
         float movementSpeed;
         uint8_t unk8;
@@ -429,10 +443,18 @@ ZoneHandler_keyboardMove (
     // TODO : Check coordinates
 
     // Update session
-    session->game.currentCommander.cPosX = clientPacket->position.x;
-    session->game.currentCommander.cPosZ = clientPacket->position.z;
+    session->game.currentCommander.cPos = PositionXYZToXZ (&clientPacket->position);
 
-    // Notify the other players
+    // Notify the players around
+    GameEventCommanderMove event = {
+        .mapId = session->socket.mapId,
+        .targetPcId = session->game.currentCommander.pcId,
+        .position = clientPacket->position,
+        .direction = clientPacket->direction,
+        .timestamp = clientPacket->timestamp
+    };
+    strncpy (event.socketId, session->socket.socketId, sizeof (event.socketId));
+    Worker_dispatchEvent (self, EVENT_SERVER_TYPE_COMMANDER_MOVE, &event, sizeof (event));
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
@@ -486,19 +508,23 @@ ZoneHandler_gameReady (
     ZoneBuilder_loginTime (reply);
 
     PositionXYZ enterPosition = {
-        .x = session->game.currentCommander.cPosX,
+        .x = session->game.currentCommander.cPos.x,
         .y = 260.0f,
-        .z = session->game.currentCommander.cPosZ
+        .z = session->game.currentCommander.cPos.z
     };
     ZoneBuilder_MyPCEnter (&enterPosition, reply);
     ZoneBuilder_skillAdd (reply);
 
-    // Warn everybody around that a new PC entered the game
-    // TODO
+    // Notify players around that a new PC has entered
+    GameEventPcEnter pcEnterEvent = {
+        .mapId = session->socket.mapId
+    };
+    strncpy (pcEnterEvent.socketId, session->socket.socketId, sizeof (pcEnterEvent.socketId));
+    memcpy (&pcEnterEvent.commander, &session->game.currentCommander, sizeof (CommanderInfo));
+    Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
 
     // Also get information about the people around
-    // TODO
-    Worker_sendEvent (self);
+    // Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &event, sizeof (event));
 
     ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 
@@ -602,8 +628,8 @@ ZoneHandler_connect (
     }
 
     // Position : Official starting point position (tutorial)
-    session->game.currentCommander.cPosX = -628.0f;
-    session->game.currentCommander.cPosZ = -1025.0f;
+    session->game.currentCommander.cPos.x = -628.0f;
+    session->game.currentCommander.cPos.z = -1025.0f;
 
     ZoneBuilder_connect (
         0, // GameMode

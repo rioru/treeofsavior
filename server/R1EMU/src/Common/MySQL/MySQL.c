@@ -145,7 +145,7 @@ MySQL_destroy (
 
     MySQLStartupInfo_free (&self->info);
     MySQL_freeResult (self);
-    // TODO : free handler
+    mysql_close (self->handle);
 
     free (self);
     *_self = NULL;

@@ -12,6 +12,7 @@
 
 // ---------- Includes ------------
 #include "EventServer.h"
+#include "EventHandler.h"
 #include "Common/Redis/Redis.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 
@@ -114,6 +115,78 @@ EventServerStartupInfo_init (
 }
 
 static bool
+EventServer_handleEvent (
+    EventServer *self,
+    zmsg_t *msg
+) {
+    zframe_t *eventTypeFrame;
+
+    // Get the event type frame
+    if (!(eventTypeFrame = zmsg_first (msg))) {
+        error ("Event type cannot be retrieved.");
+        return false;
+    }
+
+    // Convert the event type frame to a EventServerType
+    EventServerType eventType = *((EventServerType *) zframe_data (eventTypeFrame));
+    zframe_destroy (&eventTypeFrame);
+
+    // Get the event data
+    void *eventData = zframe_data (zmsg_next (msg));
+
+    switch (eventType)
+    {
+        case EVENT_SERVER_TYPE_COMMANDER_MOVE : {
+            GameEventCommanderMove *event = (GameEventCommanderMove *) eventData;
+            if (!(EventHandler_commanderMove (self, event))) {
+                error ("Event failed.");
+                return false;
+            }
+        } break;
+
+        case EVENT_SERVER_TYPE_MOVE_STOP : {
+            GameEventMoveStop *event = (GameEventMoveStop *) eventData;
+            if (!(EventHandler_moveStop (self, event))) {
+                error ("Event failed.");
+                return false;
+            }
+        } break;
+
+        case EVENT_SERVER_TYPE_REST_SIT : {
+            GameEventRestSit *event = (GameEventRestSit *) eventData;
+            if (!(EventHandler_restSit (self, event))) {
+                error ("Event failed.");
+                return false;
+            }
+        } break;
+
+        case EVENT_SERVER_TYPE_ENTER_PC : {
+            GameEventPcEnter *event = (GameEventPcEnter *) eventData;
+            if (!(EventHandler_enterPc (self, event))) {
+                error ("Event failed.");
+                return false;
+            }
+        } break;
+
+        default :
+            error ("Unknown event type received : %d", eventType);
+        break;
+    }
+
+    return true;
+}
+
+bool
+EventServer_getGameSessionBySocketId (
+    EventServer *self,
+    uint16_t routerId,
+    uint8_t *socketId,
+    GameSession *gameSession
+) {
+    return Redis_getGameSessionBySocketId (self->redis, routerId, socketId, gameSession);
+}
+
+static bool
 EventServer_subscribe (
     EventServer *self
 ) {
@@ -125,8 +198,6 @@ EventServer_subscribe (
         // Interrupt
         return false;
     }
-
-    zmsg_print (msg);
 
     // Get the header frame of the message
     if (!(header = zmsg_pop (msg))) {
@@ -140,6 +211,13 @@ EventServer_subscribe (
 
     switch (packetHeader)
     {
+        case EVENT_SERVER_EVENT :
+            if (!(EventServer_handleEvent (self, msg))) {
+                error ("Cannot handle the event properly.");
+                return false;
+            }
+        break;
+
         default:
             warning ("Server subscriber received an unknown header : %x", packetHeader);
         break;
@@ -194,26 +272,36 @@ cleanup:
     return result;
 }
 
+
+uint16_t
+EventServer_getRouterId (
+    EventServer *self
+) {
+    return self->info.routerId;
+}
+
 zlist_t *
 EventServer_getClientsWithinRange (
     EventServer *self,
-    Session *session,
+    uint16_t routerId,
+    uint32_t mapId,
+    uint8_t *ignoredSocketId,
     PositionXZ *center,
-    float range,
-    bool selfInclude
+    float range
 ) {
-    char *ignoredSocketId = NULL;
-    if (!selfInclude) {
-        ignoredSocketId = session->socket.socketId;
-    }
-
-    return Redis_getClientsWithinDistance (self->redis, session->socket.routerId, session->socket.mapId, center, range, ignoredSocketId);
+    return Redis_getClientsWithinDistance (self->redis, routerId, mapId, center, range, ignoredSocketId);
 }
 
 bool
 EventServer_start (
     EventServer *self
 ) {
+    // Start Redis
+    if (!(Redis_connect (self->redis))) {
+        error ("Cannot connect to the Redis Server.");
+        return false;
+    }
+
     // Bind the connection to the router
     if (zsock_bind (self->router, ROUTER_SUBSCRIBER_ENDPOINT, self->info.routerId) != 0) {
         error ("Failed to bind to the subscriber endpoint.");

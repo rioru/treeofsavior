@@ -194,32 +194,6 @@ Worker_new (
 }
 
 bool
-Worker_sendEvent (
-    Worker *self
-) {
-    bool result = true;
-    zmsg_t *msg = NULL;
-
-    if ((!(msg = zmsg_new ()))
-    ||  zmsg_addmem (msg, PACKET_HEADER (EVENT_SERVER_EVENT), sizeof (EVENT_SERVER_EVENT)) != 0
-    ) {
-        error ("Cannot build the game event packet.");
-        result = false;
-        goto cleanup;
-    }
-
-    if (zmsg_send (&msg, self->eventServer) != 0) {
-        error ("Cannot send the game event packet to the Event Server.");
-        result = false;
-        goto cleanup;
-    }
-
-cleanup:
-    zmsg_destroy (&msg);
-    return result;
-}
-
-bool
 Worker_init (
     Worker *self,
     WorkerStartupInfo *info
@@ -772,6 +746,37 @@ Worker_handlePublicRequest (
     if (zmsg_send (&msg, worker) != 0) {
         warning ("[routerId=%d][WorkerId=%d] failed to send a message to the backend.", self->info.routerId, self->info.workerId);
         result = -1;
+        goto cleanup;
+    }
+
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
+}
+
+bool
+Worker_dispatchEvent (
+    Worker *self,
+    EventServerType eventType,
+    void *event,
+    size_t eventSize
+) {
+    bool result = true;
+    zmsg_t *msg = zmsg_new ();
+
+    if ((!(msg = zmsg_new ()))
+    ||  zmsg_addmem (msg, PACKET_HEADER (EVENT_SERVER_EVENT), sizeof (EVENT_SERVER_EVENT)) != 0
+    ||  zmsg_addmem (msg, PACKET_HEADER (eventType), sizeof (eventType)) != 0
+    ||  zmsg_addmem (msg, event, eventSize) != 0
+    ) {
+        error ("Cannot build the event message.");
+        result = false;
+        goto cleanup;
+    }
+
+    if (zmsg_send (&msg, self->eventServer) != 0) {
+        error ("Cannot send the event packet.");
+        result = false;
         goto cleanup;
     }
 

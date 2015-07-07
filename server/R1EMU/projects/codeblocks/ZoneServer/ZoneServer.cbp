@@ -110,6 +110,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Redis/Redis.h" />
+		<Unit filename="../../../src/Common/Server/EventHandler.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Server/EventHandler.h" />
 		<Unit filename="../../../src/Common/Server/EventServer.c">
 			<Option compilerVar="CC" />
 		</Unit>

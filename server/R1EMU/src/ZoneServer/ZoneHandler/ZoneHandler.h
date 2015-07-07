@@ -21,8 +21,6 @@
 #include "Common/Server/Worker.h"
 
 // ---------- Defines -------------
-#define COMMANDER_RANGE_AROUND 200.0
-
 
 // ------ Structure declaration -------
 
