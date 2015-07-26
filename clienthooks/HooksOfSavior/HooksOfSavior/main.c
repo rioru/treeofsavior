@@ -316,16 +316,18 @@ void startInjection (void)
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,      (ULONG_PTR) ClientNet__GetPacket);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaGetObject,  (ULONG_PTR) Lua__LuaGetObject);
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
+	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
 
     #define HookEngine_hook_Shrage(name) \
         HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##name, (ULONG_PTR) sub_##name);
+
+    // HookEngine_hook_Shrage(DtbTable__getObject_4);
+    HookEngine_hook_Shrage(DtbTable__getObject_23);
 
     /*
     HookEngine_hook_Shrage(DtbTable__getObject_1);
     HookEngine_hook_Shrage(DtbTable__getObject_2);
     HookEngine_hook_Shrage(DtbTable__getObject_3);
-    HookEngine_hook_Shrage(DtbTable__getObject_4);
     HookEngine_hook_Shrage(DtbTable__getObject_5);
     HookEngine_hook_Shrage(DtbTable__getObject_6);
     HookEngine_hook_Shrage(DtbTable__getObject_7);
@@ -342,8 +344,8 @@ void startInjection (void)
     HookEngine_hook_Shrage(DtbTable__getObject_18);
     HookEngine_hook_Shrage(DtbTable__getObject_19);
     HookEngine_hook_Shrage(DtbTable__getObject_20);
+    HookEngine_hook_Shrage(DtbTable__getObject_21);
     HookEngine_hook_Shrage(DtbTable__getObject_22);
-    HookEngine_hook_Shrage(DtbTable__getObject_23);
     HookEngine_hook_Shrage(DtbTable__getObject_24);
     HookEngine_hook_Shrage(DtbTable__getObject_25);
     HookEngine_hook_Shrage(DtbTable__getObject_26);
@@ -359,7 +361,6 @@ void startInjection (void)
     HookEngine_hook_Shrage(DtbTable__getObject_36);
     HookEngine_hook_Shrage(DtbTable__getObject_37);
     */
-    // HookEngine_hook_Shrage(DtbTable__getObject_21);
 }
 
 void endInjection (void)

@@ -26,7 +26,6 @@ HookEngine_new (
         return NULL;
     }
 
-    engine = this;
     dbg ("HookEngine initialized correctly.");
 
     return this;
@@ -43,6 +42,8 @@ HookEngine_init (
     HookEngine *this,
     char *enginePath
 ) {
+    dbg ("Loading HookEngine in %s ...", enginePath);
+
     HMODULE hEngine = LoadLibrary (enginePath);
     if (!hEngine) {
         dbg ("Cannot load HookEngine <%s>", enginePath);
@@ -65,6 +66,7 @@ HookEngine_init (
     }
 
     bb_queue_init (&this->hookedFunctions);
+    engine = this;
 
     return true;
 }
@@ -74,6 +76,11 @@ HookEngine_hook (
     ULONG_PTR function,
     ULONG_PTR hookFunction
 ) {
+    if (!engine) {
+        MessageBox (NULL, "Initialize HookEngine first.", "HookEngine error", 0);
+        exit (0);
+    }
+
     bb_queue_add (&engine->hookedFunctions, (void *) function);
     if (!engine->hook (function, hookFunction)) {
         dbg ("Error when hooking function %p", function);

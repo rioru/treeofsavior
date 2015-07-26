@@ -234,30 +234,6 @@ ZoneHandler_skillGround (
          00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
     */
 
-    // Not sure of the actual order
-    ZoneBuilder_skillCast (
-        session->game.currentCommander.pcId,
-        clientPacket->skillId,
-        &clientPacket->pos1,
-        &clientPacket->pos2,
-        reply
-    );
-
-    ZoneBuilder_playSkillCastAni (
-        session->game.currentCommander.pcId,
-        &clientPacket->pos1,
-        reply
-    );
-
-    // This should be elsewhere
-    ZoneBuilder_skillReady (
-        session->game.currentCommander.pcId,
-        clientPacket->skillId,
-        &clientPacket->pos1,
-        &clientPacket->pos2,
-        reply
-    );
-
     ZoneBuilder_playAni (reply);
 
     ZoneBuilder_normalUnk8 (

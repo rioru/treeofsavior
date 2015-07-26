@@ -92,9 +92,10 @@ ZoneBuilder_playAni (
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
-        uint32_t unkId1;
-        uint32_t unkId2;
-        uint16_t unk3;
+        uint32_t unkSchrageId1;
+        uint32_t unkSchrageId2;
+        uint8_t isUnk1;
+        uint8_t isUnk2;
         float timeDelay;
         float unk5;
     } replyPacket;
@@ -107,9 +108,10 @@ ZoneBuilder_playAni (
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_PLAY_ANI;
-        replyPacket.unkId1 = SWAP_UINT32 (0x4B010000);
-        replyPacket.unkId2 = SWAP_UINT32 (0x25182700);
-        replyPacket.unk3 = SWAP_UINT16 (0x0101);
+        replyPacket.unkSchrageId1 = SWAP_UINT32 (0x48010000);
+        replyPacket.unkSchrageId2 = SWAP_UINT32 (0x271826);
+        replyPacket.isUnk1 = 1;
+        replyPacket.isUnk2 = 1;
         replyPacket.timeDelay = 0;
         replyPacket.unk5 = SWAP_UINT32 (0x0000803F);
     }

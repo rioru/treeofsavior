@@ -488,5 +488,6 @@ BarrackHandler_commanderCreate (
     // Build the reply packet
     BarrackBuilder_commanderCreate (&session->game.currentCommander, reply);
 
+
     return PACKET_HANDLER_UPDATE_SESSION;
 }
