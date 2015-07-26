@@ -34,6 +34,8 @@
 			<Add option="-Wall" />
 			<Add option="-std=gnu99" />
 			<Add option="-Wno-pointer-sign" />
+			<Add option="-D__USE_GNU" />
+			<Add option="-D_GNU_SOURCE" />
 			<Add directory="/usr/include/" />
 			<Add directory="../../../src" />
 			<Add directory="../../../include" />

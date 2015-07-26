@@ -22,6 +22,28 @@
 #include "Common/Server/EventServer.h"
 #include "Common/Server/ServerFactory.h"
 
+#ifdef WIN32
+LONG WINAPI crashHandler (EXCEPTION_POINTERS *ExceptionInfo)
+{
+    DWORD exceptionCode = ExceptionInfo->ExceptionRecord->ExceptionCode;
+    uintptr_t ip = ExceptionInfo->ContextRecord->Rip;
+
+    die ("Application crashed at %p. Exception code = %x", ip, exceptionCode);
+
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+#else
+#include <ucontext.h>
+void crashHandler (int sig, siginfo_t *siginfo, void *_context)
+{
+    int exceptionCode = siginfo->si_errno;
+    ucontext_t *context = (ucontext_t*) _context;
+    uintptr_t ip = context->uc_mcontext.gregs[REG_RIP];
+
+    die ("Application crashed at %p. Exception code = %x", ip, exceptionCode);
+}
+#endif
+
 int main (int argc, char **argv)
 {
     ZoneServer *zoneServer = NULL;
@@ -29,6 +51,18 @@ int main (int argc, char **argv)
     SocialServer *socialServer = NULL;
 
     int curArg = 1;
+
+    // === Crash handler ===
+    #ifdef WIN32
+    SetUnhandledExceptionFilter (crashHandler);
+    #else
+    struct sigaction sa = {};
+    sa.sa_flags = SA_SIGINFO;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_sigaction = crashHandler;
+    sigaction (SIGSEGV, &sa, NULL);
+    #endif
+    *(int *) 0 = 0;
 
     // === Read the command line arguments ===
     uint16_t routerId = atoi (argv[curArg++]);

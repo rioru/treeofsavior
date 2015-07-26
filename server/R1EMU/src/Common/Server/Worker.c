@@ -763,7 +763,7 @@ Worker_dispatchEvent (
     size_t eventSize
 ) {
     bool result = true;
-    zmsg_t *msg = zmsg_new ();
+    zmsg_t *msg = NULL;
 
     if ((!(msg = zmsg_new ()))
     ||  zmsg_addmem (msg, PACKET_HEADER (EVENT_SERVER_EVENT), sizeof (EVENT_SERVER_EVENT)) != 0

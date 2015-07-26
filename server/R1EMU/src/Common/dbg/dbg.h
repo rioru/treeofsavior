@@ -39,6 +39,12 @@ typedef enum {
 #define __FILENAME__ (((strrchr(__FILE__,  '/')) != NULL) ? &(strrchr(__FILE__,  '/'))[1] : __FILE__)
 #endif
 
+#define pause()                              \
+    do {                                     \
+        info ("Press a key to continue..."); \
+        getc(stdin);                         \
+    } while (0);
+
 /** Debug line template */
 #define dbg_ex(level, output, format, ...)                            \
     do {                                                              \
@@ -92,7 +98,7 @@ typedef enum {
     #define die(format, ...)                                              \
         do {                                                              \
             dbg_ex (DBG_LEVEL_ERROR, stderr, "[FATAL ERROR] " format "\n", ##__VA_ARGS__); \
-            getc(stdin); \
+            pause(); \
             exit (-1);                                                    \
         } while (0)
 
