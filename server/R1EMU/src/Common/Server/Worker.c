@@ -343,6 +343,7 @@ cleanup:
     return result;
 }
 
+
 static bool
 Worker_buildReply (
     Worker *self,

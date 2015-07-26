@@ -163,6 +163,44 @@ EventHandler_moveStop (
 
 
 bool
+EventHandler_jump (
+    EventServer *self,
+    GameEventJump *event
+) {
+    PositionXZ around = PositionXYZToXZ (&event->position);
+
+    // Get the clients around
+    zlist_t *clientsAround = EventServer_getClientsWithinRange (
+        self,
+        EventServer_getRouterId (self),
+        event->mapId,
+        event->socketId,
+        &around,
+        COMMANDER_RANGE_AROUND
+    );
+
+    if (zlist_size (clientsAround) > 0)
+    {
+        // Build the packet for the clients around
+        zmsg_t *msg = zmsg_new ();
+        ZoneBuilder_jump (
+            event->targetPcId,
+            event->height,
+            msg
+        );
+
+        // Send the packet
+        zframe_t *frame = zmsg_first (msg);
+        if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
+            error ("Failed to send the packet to the clients.");
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool
 EventHandler_restSit (
     EventServer *self,
     GameEventRestSit *event

@@ -53,6 +53,7 @@ typedef enum EventServerSendHeader {
 typedef enum EventServerType {
     EVENT_SERVER_TYPE_COMMANDER_MOVE,
     EVENT_SERVER_TYPE_REST_SIT,
+    EVENT_SERVER_TYPE_JUMP,
     EVENT_SERVER_TYPE_MOVE_STOP,
     EVENT_SERVER_TYPE_ENTER_PC
 } EventServerType;

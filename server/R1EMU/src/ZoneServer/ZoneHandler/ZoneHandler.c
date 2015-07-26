@@ -188,8 +188,8 @@ ZoneHandler_restSit (
         .mapId = session->socket.mapId,
         .targetPcId = session->game.currentCommander.pcId,
         .position = session->game.currentCommander.cPos,
+        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
-    strncpy (event.socketId, session->socket.socketId, sizeof (event.socketId));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
 
     return PACKET_HANDLER_OK;
@@ -374,9 +374,9 @@ ZoneHandler_moveStop (
         .targetPcId = session->game.currentCommander.pcId,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
-        .timestamp = clientPacket->timestamp
+        .timestamp = clientPacket->timestamp,
+        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
-    strncpy (event.socketId, session->socket.socketId, sizeof (event.socketId));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_MOVE_STOP, &event, sizeof (event));
 
     return PACKET_HANDLER_OK;
@@ -427,9 +427,9 @@ ZoneHandler_keyboardMove (
         .targetPcId = session->game.currentCommander.pcId,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
-        .timestamp = clientPacket->timestamp
+        .timestamp = clientPacket->timestamp,
+        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
-    strncpy (event.socketId, session->socket.socketId, sizeof (event.socketId));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_COMMANDER_MOVE, &event, sizeof (event));
 
     return PACKET_HANDLER_UPDATE_SESSION;
@@ -493,14 +493,11 @@ ZoneHandler_gameReady (
 
     // Notify players around that a new PC has entered
     GameEventPcEnter pcEnterEvent = {
-        .mapId = session->socket.mapId
+        .mapId = session->socket.mapId,
+        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
-    strncpy (pcEnterEvent.socketId, session->socket.socketId, sizeof (pcEnterEvent.socketId));
     memcpy (&pcEnterEvent.commander, &session->game.currentCommander, sizeof (CommanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
-
-    // Also get information about the people around
-    // Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &event, sizeof (event));
 
     ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 
@@ -644,6 +641,16 @@ ZoneHandler_jump (
         300.0,
         reply
     );
+
+    // Notify the players around
+    GameEventJump event = {
+        .mapId = session->socket.mapId,
+        .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
+        .targetPcId = session->game.currentCommander.pcId,
+        .position = session->game.currentCommander.cPos,
+        .height = 300.0
+    };
+    Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));
 
     return PACKET_HANDLER_OK;
 }

@@ -133,44 +133,39 @@ EventServer_handleEvent (
 
     // Get the event data
     void *eventData = zframe_data (zmsg_next (msg));
+    bool result = false;
 
     switch (eventType)
     {
         case EVENT_SERVER_TYPE_COMMANDER_MOVE : {
-            GameEventCommanderMove *event = (GameEventCommanderMove *) eventData;
-            if (!(EventHandler_commanderMove (self, event))) {
-                error ("Event failed.");
-                return false;
-            }
+            result = EventHandler_commanderMove (self, eventData);
         } break;
 
         case EVENT_SERVER_TYPE_MOVE_STOP : {
-            GameEventMoveStop *event = (GameEventMoveStop *) eventData;
-            if (!(EventHandler_moveStop (self, event))) {
-                error ("Event failed.");
-                return false;
-            }
+            result = EventHandler_moveStop (self, eventData);
         } break;
 
         case EVENT_SERVER_TYPE_REST_SIT : {
-            GameEventRestSit *event = (GameEventRestSit *) eventData;
-            if (!(EventHandler_restSit (self, event))) {
-                error ("Event failed.");
-                return false;
-            }
+            result = EventHandler_restSit (self, eventData);
         } break;
 
         case EVENT_SERVER_TYPE_ENTER_PC : {
-            GameEventPcEnter *event = (GameEventPcEnter *) eventData;
-            if (!(EventHandler_enterPc (self, event))) {
-                error ("Event failed.");
-                return false;
-            }
+            result = EventHandler_enterPc (self, eventData);
+        } break;
+
+        case EVENT_SERVER_TYPE_JUMP : {
+            result = EventHandler_jump (self, eventData);
         } break;
 
         default :
             error ("Unknown event type received : %d", eventType);
+            result = false;
         break;
+    }
+
+    if (!result) {
+        error ("Event type = %d failed.");
+        return false;
     }
 
     return true;

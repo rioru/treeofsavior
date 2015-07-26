@@ -3,5 +3,6 @@
 	<Workspace title="Workspace">
 		<Project filename="GlobalServer/GlobalServer.cbp" />
 		<Project filename="ZoneServer/ZoneServer.cbp" />
+		<Project filename="../../../../clienthooks/HooksOfSavior/PacketLogger/PacketLogger.cbp" />
 	</Workspace>
 </CodeBlocks_workspace_file>

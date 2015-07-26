@@ -54,6 +54,14 @@ typedef struct {
 typedef struct {
     uint32_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
+    uint32_t targetPcId;
+    float height;
+    PositionXZ position;
+} GameEventJump;
+
+typedef struct {
+    uint32_t mapId;
+    char socketId[SOCKET_SESSION_ID_SIZE];
     CommanderInfo commander;
 } GameEventPcEnter;
 
@@ -82,4 +90,10 @@ bool
 EventHandler_enterPc (
     EventServer *self,
     GameEventPcEnter *event
+);
+
+bool
+EventHandler_jump (
+    EventServer *self,
+    GameEventJump *event
 );
