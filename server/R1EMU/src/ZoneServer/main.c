@@ -208,8 +208,7 @@ int main (int argc, char **argv)
     // Close the custom debug file if necessary
     dbg_close ();
 
-    info ("Press any key to exit...");
-    fgetc (stdin);
+    pause ();
 
     return 0;
 }

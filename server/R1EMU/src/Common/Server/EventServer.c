@@ -129,7 +129,6 @@ EventServer_handleEvent (
 
     // Convert the event type frame to a EventServerType
     EventServerType eventType = *((EventServerType *) zframe_data (eventTypeFrame));
-    zframe_destroy (&eventTypeFrame);
 
     // Get the event data
     void *eventData = zframe_data (zmsg_next (msg));

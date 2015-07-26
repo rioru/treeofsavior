@@ -113,30 +113,31 @@ _buffer_print (
 
     int curPos = 0;
 
-    printf ("%s ===== buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
+    fprintf (_output, "%s ===== buffer size = %d (0x%x) ================\n", prefix, bufferSize, bufferSize);
     while (curPos < bufferSize) {
         int offset;
-        printf ("%s", prefix);
+        fprintf (_output, "%s", prefix);
         for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            printf (" %02X", ((uint8_t *) buffer)[curPos]);
+            fprintf (_output, " %02X", ((uint8_t *) buffer)[curPos]);
         }
         if (offset != 16) {
             for (int j = 0; j < 16 - offset; j++) {
-                printf("   ");
+                fprintf(_output, "   ");
             }
         }
 
-        printf (" | ");
+        fprintf (_output, " | ");
         curPos -= offset;
 
         for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
             uint8_t c = ((uint8_t *) buffer)[curPos];
-            printf ("%c", isprint(c) ? c : '.');
+            fprintf (_output, "%c", isprint(c) ? c : '.');
         }
 
-        printf("\n");
+        fprintf(_output, "\n");
     }
-    printf ("%s=================================================\n", prefix);
+    fprintf (_output, "%s=================================================\n", prefix);
+    fflush (_output);
 
     zmutex_unlock (mutex);
 }
