@@ -62,7 +62,6 @@ int main (int argc, char **argv)
     sa.sa_sigaction = crashHandler;
     sigaction (SIGSEGV, &sa, NULL);
     #endif
-    *(int *) 0 = 0;
 
     // === Read the command line arguments ===
     uint16_t routerId = atoi (argv[curArg++]);
