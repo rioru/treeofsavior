@@ -142,7 +142,6 @@ EventServer_getClientsWithinRange (
     float range
 );
 
-
 /**
  * @brief Send the same packet to multiple clients
  * @param self An allocated EventServer

@@ -30,28 +30,36 @@ EventHandler_enterPc (
 ) {
     PositionXZ around = event->commander.cPos;
     uint16_t routerId = EventServer_getRouterId (self);
+    bool status = true;
+    zmsg_t *msg = NULL;
+    zlist_t *clientsAround = NULL;
 
     // Get the clients around
-    zlist_t *clientsAround = EventServer_getClientsWithinRange (
+    if (!(clientsAround = EventServer_getClientsWithinRange (
         self,
         routerId,
         event->mapId,
         event->socketId,
         &around,
         COMMANDER_RANGE_AROUND
-    );
+    ))) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
 
     if (zlist_size (clientsAround) > 0)
     {
         // Build the packet for the clients around
-        zmsg_t *msg = zmsg_new ();
+        msg = zmsg_new ();
         ZoneBuilder_enterPc (&event->commander, msg);
 
         // Send the packet
         zframe_t *frame = zmsg_first (msg);
         if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
             error ("Failed to send the packet to the clients.");
-            return false;
+            status = false;
+            goto cleanup;
         }
 
         // Also get information about the people around and them back to the pcId source client
@@ -63,7 +71,8 @@ EventHandler_enterPc (
             GameSession gameSessionClientAround;
             if (!(EventServer_getGameSessionBySocketId (self, routerId, socketId, &gameSessionClientAround))) {
                 warning ("Cannot get the game session of the client around.");
-                continue;
+                status = false;
+                goto cleanup;
             }
 
             ZoneBuilder_enterPc (&gameSessionClientAround.currentCommander, reply);
@@ -72,11 +81,14 @@ EventHandler_enterPc (
         frame = zmsg_first (reply);
         if (!(EventServer_sendToClients (self, newPcClient, zframe_data (frame), zframe_size (frame)))) {
             error ("Failed to send the packet to the clients.");
-            return false;
+            status = false;
+            goto cleanup;
         }
     }
 
-    return true;
+cleanup:
+    zmsg_destroy (&msg);
+    return status;
 }
 
 
@@ -86,21 +98,28 @@ EventHandler_commanderMove (
     GameEventCommanderMove *event
 ) {
     PositionXZ around = PositionXYZToXZ (&event->position);
+    bool status = true;
+    zmsg_t *msg = NULL;
+    zlist_t *clientsAround = NULL;
 
     // Get the clients around
-    zlist_t *clientsAround = EventServer_getClientsWithinRange (
+    if (!(clientsAround = EventServer_getClientsWithinRange (
         self,
         EventServer_getRouterId (self),
         event->mapId,
         event->socketId,
         &around,
         COMMANDER_RANGE_AROUND
-    );
+    ))) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
 
     if (zlist_size (clientsAround) > 0)
     {
         // Build the packet for the clients around
-        zmsg_t *msg = zmsg_new ();
+        msg = zmsg_new ();
         ZoneBuilder_moveDir (
             event->targetPcId,
             &event->position,
@@ -113,11 +132,16 @@ EventHandler_commanderMove (
         zframe_t *frame = zmsg_first (msg);
         if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
             error ("Failed to send the packet to the clients.");
-            return false;
+            status = false;
+            goto cleanup;
         }
+
+        zmsg_destroy (&msg);
     }
 
-    return true;
+cleanup:
+    zmsg_destroy (&msg);
+    return status;
 }
 
 
@@ -127,21 +151,28 @@ EventHandler_moveStop (
     GameEventMoveStop *event
 ) {
     PositionXZ around = PositionXYZToXZ (&event->position);
+    bool status = true;
+    zmsg_t *msg = NULL;
+    zlist_t *clientsAround = NULL;
 
     // Get the clients around
-    zlist_t *clientsAround = EventServer_getClientsWithinRange (
+    if (!(clientsAround = EventServer_getClientsWithinRange (
         self,
         EventServer_getRouterId (self),
         event->mapId,
         event->socketId,
         &around,
         COMMANDER_RANGE_AROUND
-    );
+    ))) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
 
     if (zlist_size (clientsAround) > 0)
     {
         // Build the packet for the clients around
-        zmsg_t *msg = zmsg_new ();
+        msg = zmsg_new ();
         ZoneBuilder_pcMoveStop (
             event->targetPcId,
             &event->position,
@@ -154,11 +185,14 @@ EventHandler_moveStop (
         zframe_t *frame = zmsg_first (msg);
         if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
             error ("Failed to send the packet to the clients.");
-            return false;
+            status = false;
+            goto cleanup;
         }
     }
 
-    return true;
+cleanup:
+    zmsg_destroy (&msg);
+    return status;
 }
 
 
@@ -168,21 +202,28 @@ EventHandler_jump (
     GameEventJump *event
 ) {
     PositionXZ around = PositionXYZToXZ (&event->position);
+    bool status = true;
+    zmsg_t *msg = NULL;
+    zlist_t *clientsAround = NULL;
 
     // Get the clients around
-    zlist_t *clientsAround = EventServer_getClientsWithinRange (
+    if (!(clientsAround = EventServer_getClientsWithinRange (
         self,
         EventServer_getRouterId (self),
         event->mapId,
         event->socketId,
         &around,
         COMMANDER_RANGE_AROUND
-    );
+    ))) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
 
     if (zlist_size (clientsAround) > 0)
     {
         // Build the packet for the clients around
-        zmsg_t *msg = zmsg_new ();
+        msg = zmsg_new ();
         ZoneBuilder_jump (
             event->targetPcId,
             event->height,
@@ -193,11 +234,14 @@ EventHandler_jump (
         zframe_t *frame = zmsg_first (msg);
         if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
             error ("Failed to send the packet to the clients.");
-            return false;
+            status = false;
+            goto cleanup;
         }
     }
 
-    return true;
+cleanup:
+    zmsg_destroy (&msg);
+    return status;
 }
 
 bool
@@ -206,21 +250,28 @@ EventHandler_restSit (
     GameEventRestSit *event
 ) {
     PositionXZ around = PositionXYZToXZ (&event->position);
+    bool status = true;
+    zmsg_t *msg = NULL;
+    zlist_t *clientsAround = NULL;
 
     // Get the clients around
-    zlist_t *clientsAround = EventServer_getClientsWithinRange (
+    if (!(clientsAround = EventServer_getClientsWithinRange (
         self,
         EventServer_getRouterId (self),
         event->mapId,
         event->socketId,
         &around,
         COMMANDER_RANGE_AROUND
-    );
+    ))) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
 
     if (zlist_size (clientsAround) > 0)
     {
         // Build the packet for the clients around
-        zmsg_t *msg = zmsg_new ();
+        msg = zmsg_new ();
         ZoneBuilder_restSit (
             event->targetPcId,
             msg
@@ -230,9 +281,12 @@ EventHandler_restSit (
         zframe_t *frame = zmsg_first (msg);
         if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
             error ("Failed to send the packet to the clients.");
-            return false;
+            status = false;
+            goto cleanup;
         }
     }
 
-    return true;
+cleanup:
+    zmsg_destroy (&msg);
+    return status;
 }

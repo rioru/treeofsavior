@@ -31,6 +31,9 @@ struct EventServer
     /** Redis connection **/
     Redis *redis;
 
+    /** Clients proximity with eachothers **/
+    zhash_t *clientsAround;
+
     /** EventServer information */
     EventServerStartupInfo info;
 };
@@ -87,6 +90,12 @@ EventServer_init (
     // Initialize Redis connection
     if (!(self->redis = Redis_new (&info->redisInfo))) {
         error ("Cannot initialize a new Redis connection.");
+        return false;
+    }
+
+    // Initialize hashtable of clients around
+    if (!(self->clientsAround = zhash_new ())) {
+        error ("Cannot allocate a new clientsAround zhash.");
         return false;
     }
 
