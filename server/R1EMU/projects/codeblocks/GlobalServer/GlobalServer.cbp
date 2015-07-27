@@ -74,6 +74,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/Crypto/Crypto.h" />
+		<Unit filename="../../../src/Common/Graph/Graph.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/Graph/Graph.h" />
 		<Unit filename="../../../src/Common/MySQL/Fields/MySQLSession.c">
 			<Option compilerVar="CC" />
 		</Unit>
