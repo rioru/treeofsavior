@@ -24,9 +24,7 @@ int (* _luaL_loadfile) ();
 #define _lua_pop(L,n) _lua_settop(L, -(n)-1)
 #define _lua_getglobal(L,s) _lua_getfield(L, LUA_GLOBALSINDEX, (s))
 
-
 int __cdecl lua_gettop_hook (lua_State *self) {
-    #define OFFSET_lua_gettop (0xCD93C0  - 0x400000)
 
 	int (__cdecl *hooked) (lua_State *) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) lua_gettop_hook);

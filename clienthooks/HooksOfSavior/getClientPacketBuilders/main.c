@@ -9,9 +9,7 @@
 #include "dbg/dbg.h"
 #include "Scanner/Scanner.h"
 
-void dbgBuffer (BYTE *buffer, int bufferSize);
-
-#define OFFSET_SendPacket (0x6459C0 - 0x400000)
+#include "FunctionOffset.h"
 
 /** =================== HOOKS ================= */
 char __thiscall CClientNet__SendPacket (int this, int a2, size_t a3)

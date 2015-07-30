@@ -4,8 +4,7 @@
 #include "PacketType.h"
 #include "dbg/dbg.h"
 
-// Offsets
-#define OFFSET_SetViewTM      (0xAB4100 - 0x400000)
+#include "FunctionOffset.h"
 
 typedef struct D3DXMATRIX {
     FLOAT _11; FLOAT _12; FLOAT _13; FLOAT _14;

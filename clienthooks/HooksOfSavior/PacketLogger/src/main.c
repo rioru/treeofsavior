@@ -4,10 +4,7 @@
 #include "PacketType.h"
 #include "dbg/dbg.h"
 
-// Offsets
-#define OFFSET_GetPacket      (0x645DC0 - 0x400000)
-#define OFFSET_CNetUsr__Recv  (0x645350 - 0x400000)
-#define OFFSET_NetEncrypt     (0xCBE530 - 0x400000)
+#include "FunctionOffset.h"
 
 // Globals
 char *loggerPath = NULL;

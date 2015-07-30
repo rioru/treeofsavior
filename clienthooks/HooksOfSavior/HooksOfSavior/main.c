@@ -2,13 +2,10 @@
 #include "Utils/Utils.h"
 #include "Win32Tools/Win32Tools.h"
 #include "PacketType.h"
-
+#include "dbg/dbg.h"
 #include "TableNameItemsEnglish.h"
 
-#define __DEBUG_OBJECT__ "ToSClient"
-#include "dbg/dbg.h"
-
-void dbgBuffer (BYTE *buffer, int bufferSize);
+#include "FunctionOffset.h"
 
 
 // === StringID ==========================================
@@ -21,12 +18,6 @@ typedef struct _StringID
     char stringOrPtr[16];
 
 }   StringID;
-
-#define OFFSET_logDebug_1 (0x0CB0C40 - 0x400000)
-// #define OFFSET_LuaGetObject (0x103B6D0 - 0x400000)
-// #define OFFSET_logDebug_2 (0xCA8E80 - 0x400000)
-#define OFFSET_GetPacket (0x645DC0 - 0x400000)
-#define OFFSET_NetEncrypt (0xCBE530 - 0x400000)
 
 char * (__thiscall *StringID__c_str) (StringID **this) = (void *) 0xD394E0;
 
@@ -72,34 +63,6 @@ void logDebug_2 (const char *Format, ...)
 	vsprintf(OutputString, Format, va);
 
 	dbg ("%s", OutputString);
-}
-
-bool __thiscall ClientNet__GetPacket (void *clientNet, BYTE *outPacket, DWORD *outSize, DWORD *outType)
-{
-    bool (__thiscall *hooked) (void *clientNet, BYTE *outPacket, DWORD *outSize, DWORD *outType) =
-		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) ClientNet__GetPacket);
-
-    bool res = hooked (clientNet, outPacket, outSize, outType);
-
-    if (res & 0xFF) {
-        WORD type = *outType;
-        dbg ("[CLIENT RECEIVE] Packet type : <%s>", PacketType_to_string (type));
-        dbgBuffer (outPacket, *outSize);
-    }
-
-    return res;
-}
-
-int __cdecl imcCrypt__NetEncrypt (signed int plaintextSize, BYTE *plaintextIn, void *ciphertextOut)
-{
-	int (__cdecl *hooked) (signed int plaintextSize, BYTE *plaintextIn, void *ciphertextOut) =
-		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) imcCrypt__NetEncrypt);
-
-    WORD type = *(WORD *) (plaintextIn);
-    dbg ("[CLIENT SEND] Packet type : <%s>", PacketType_to_string (type));
-    dbgBuffer (plaintextIn, plaintextSize);
-
-    return hooked (plaintextSize, plaintextIn, ciphertextOut);
 }
 
 // ==== [ DTB TABLES ] ====================================================
@@ -199,11 +162,7 @@ HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_35, 0x730F70);
 HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_36, 0xD0F830);
 HOOK_SCHRAGE_FUNCTION(DtbTable__getObject_37, 0xD0F8F0);
 
-
-
-
 // ====================================================
-
 
 typedef struct _ItemTable {
     char data[0x230];
@@ -232,7 +191,6 @@ typedef struct _IRItem {
 
 int __thiscall ItemTable__convertIESToIR (ItemTable *this, imcIESObject *object, IRItem *irItem)
 {
-	#define OFFSET_convertIESToIR (0x08DDF40 - 0x400000)
 	int (__thiscall *hooked) (ItemTable *, imcIESObject *, IRItem *) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) ItemTable__convertIESToIR);
 
@@ -262,42 +220,6 @@ int __thiscall ItemTable__convertIESToIR (ItemTable *this, imcIESObject *object,
     return res;
 }
 
-
-/** ============== UTILS =================== */
-
-void dbgBuffer (BYTE *buffer, int bufferSize)
-{
-    int curPos = 0;
-    char tmpbuf[1024] = {0};
-    char hexBuf[4] = {0};
-
-    dbg ("=================================================");
-    while (curPos < bufferSize) {
-        int offset;
-        for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            sprintf (hexBuf, " %02X", buffer[curPos]);
-            strcat (tmpbuf, hexBuf);
-        }
-        if (offset != 16) {
-            for (int j = 0; j < 16 - offset; j++) {
-                strcat(tmpbuf, "   ");
-            }
-        }
-        strcat (tmpbuf, " | ");
-        curPos -= offset;
-
-        for (offset = 0; offset < 16 && curPos < bufferSize; offset++, curPos++) {
-            unsigned char c = buffer[curPos];
-            sprintf (hexBuf, "%c", isprint(c) ? c : '.');
-            strcat (tmpbuf, hexBuf);
-        }
-
-        dbg ("%s", tmpbuf);
-        tmpbuf[0] = 0;
-    }
-    dbg ("=================================================");
-}
-
 /** ============== MAIN ==================== */
 
 void startInjection (void)
@@ -313,8 +235,6 @@ void startInjection (void)
 	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_1,     (ULONG_PTR) logDebug_1);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2,     (ULONG_PTR) logDebug_2);
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_GetPacket,      (ULONG_PTR) ClientNet__GetPacket);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaGetObject,  (ULONG_PTR) Lua__LuaGetObject);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
 
@@ -322,7 +242,7 @@ void startInjection (void)
         HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##name, (ULONG_PTR) sub_##name);
 
     // HookEngine_hook_Shrage(DtbTable__getObject_4);
-    HookEngine_hook_Shrage(DtbTable__getObject_23);
+    // HookEngine_hook_Shrage(DtbTable__getObject_23);
 
     /*
     HookEngine_hook_Shrage(DtbTable__getObject_1);
