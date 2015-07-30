@@ -17,63 +17,38 @@
 
 // ------ Structure declaration -------
 /**
- * @brief GraphVertex contains a list of arcs pointing to neighbors
- */
-struct GraphVertex {
-    /** Each GraphVertex can be linked to [0..*] GraphArcs **/
-    zlist_t *arcs;
-
-    /** HashTable key */
-    char *key;
-
-    /** user_data is a user pointer to any data */
-    void *user_data;
-};
-
-/**
- * @brief GraphArc is a simple connection between 2 GraphVertex
- */
-struct GraphArc {
-    /** An GraphArc is located between two vertices */
-    GraphVertex *from, *to;
-
-    /** user_data is a user pointer to any data */
-    void *user_data;
-};
-
-/**
- * @brief Graph is a list of unsorted vertices
+ * @brief Graph is a list of unsorted nodes
  */
 struct Graph {
-    /** A graph is a hashtable of GraphVertex */
-    zhash_t *vertices;
+    /** A graph is a hashtable of GraphNode */
+    zhash_t *nodes;
 };
 
 // ------ Static declaration -------
 /**
  * @brief Allocate a new GraphArc structure.
- * @param from A source vertex
- * @param to A destination vertex
+ * @param from A source node
+ * @param to A destination node
  * @return A pointer to an allocated GraphArc, or NULL if an error occured.
  */
 static GraphArc *
 GraphArc_new (
-    GraphVertex *from,
-    GraphVertex *to
+    GraphNode *from,
+    GraphNode *to
 );
 
 /**
  * @brief Initialize an allocated GraphArc structure.
  * @param self An allocated GraphArc to initialize.
- * @param from A source vertex
- * @param to A destination vertex
+ * @param from A source node
+ * @param to A destination node
  * @return true on success, false otherwise.
  */
 static bool
 GraphArc_init (
     GraphArc *self,
-    GraphVertex *from,
-    GraphVertex *to
+    GraphNode *from,
+    GraphNode *to
 );
 
 // ------ Extern function implementation -------
@@ -101,8 +76,8 @@ bool
 Graph_init (
     Graph *self
 ) {
-    if (!(self->vertices = zhash_new ())) {
-        error ("Cannot allocate a new hashtable for vertices.");
+    if (!(self->nodes = zhash_new ())) {
+        error ("Cannot allocate a new hashtable for nodes.");
         return false;
     }
 
@@ -111,8 +86,8 @@ Graph_init (
 
 static GraphArc *
 GraphArc_new (
-    GraphVertex *from,
-    GraphVertex *to
+    GraphNode *from,
+    GraphNode *to
 ) {
     GraphArc *self;
 
@@ -132,8 +107,8 @@ GraphArc_new (
 static bool
 GraphArc_init (
     GraphArc *self,
-    GraphVertex *from,
-    GraphVertex *to
+    GraphNode *from,
+    GraphNode *to
 ) {
     self->from = from;
     self->to = to;
@@ -145,19 +120,20 @@ GraphArc_init (
     return true;
 }
 
-GraphVertex *
-GraphVertex_new (
+GraphNode *
+GraphNode_new (
+    char *hashKey,
     void *user_data
 ) {
-    GraphVertex *self;
+    GraphNode *self;
 
-    if ((self = calloc (1, sizeof (GraphVertex))) == NULL) {
+    if ((self = calloc (1, sizeof (GraphNode))) == NULL) {
         return NULL;
     }
 
-    if (!GraphVertex_init (self, user_data)) {
-        GraphVertex_destroy (&self);
-        error ("GraphVertex failed to initialize.");
+    if (!GraphNode_init (self, hashKey, user_data)) {
+        GraphNode_destroy (&self);
+        error ("GraphNode failed to initialize.");
         return NULL;
     }
 
@@ -165,8 +141,9 @@ GraphVertex_new (
 }
 
 bool
-GraphVertex_init (
-    GraphVertex *self,
+GraphNode_init (
+    GraphNode *self,
+    char *hashKey,
     void *user_data
 ) {
     self->user_data = user_data;
@@ -176,20 +153,48 @@ GraphVertex_init (
         return false;
     }
 
-    if (!(self->key = GraphVertex_genKey (self))) {
-        error ("Cannot generated a vertex key.");
-        return false;
-    }
-    info ("key = %s", self->key);
+    self->key = hashKey;
 
     return true;
+}
+
+bool
+Graph_link (
+    Graph *self,
+    GraphNode *node1,
+    GraphNode *node2
+) {
+    if (!(Graph_addArc (self, node1, node2))) {
+        error ("Cannot link node 1 to node 2.");
+        return false;
+    }
+    if (!(Graph_addArc (self, node2, node1))) {
+        error ("Cannot link node 2 to node 1.");
+        return false;
+    }
+
+    return true;
+}
+
+bool
+GraphNode_isLinked (
+    GraphNode *from,
+    GraphNode *to
+) {
+    for (GraphArc *link = zlist_first (from->arcs); link != NULL; link = zlist_next (from->arcs)) {
+        if (link->to == to) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 GraphArc *
 Graph_addArc (
     Graph *self,
-    GraphVertex *from,
-    GraphVertex *to
+    GraphNode *from,
+    GraphNode *to
 ) {
     GraphArc *arc = NULL;
 
@@ -198,26 +203,34 @@ Graph_addArc (
         return NULL;
     }
 
-    if (!zhash_lookup (self->vertices, from->key)) {
-        zhash_insert (self->vertices, from->key, from);
+    if (!zhash_lookup (self->nodes, from->key)) {
+        zhash_insert (self->nodes, from->key, from);
     }
 
-    if (!zhash_lookup (self->vertices, to->key)) {
-        zhash_insert (self->vertices, to->key, to);
+    if (!zhash_lookup (self->nodes, to->key)) {
+        zhash_insert (self->nodes, to->key, to);
     }
 
     return arc;
 }
 
+GraphNode *
+Graph_getNode (
+    Graph *self,
+    char *key
+) {
+    return zhash_lookup (self->nodes, key);
+}
+
 char *
-GraphVertex_genKey (
-    GraphVertex *self
+GraphNode_genKey (
+    GraphNode *self
 ) {
     char *key = NULL;
-    size_t keySize = (sizeof (GraphVertex *) * 2) + 1;
+    size_t keySize = (sizeof (GraphNode *) * 2) + 1;
 
     if (!(key = calloc (1, keySize))) {
-        error ("Cannot allocate a vertex key.");
+        error ("Cannot allocate a node key.");
         return NULL;
     }
 
@@ -233,29 +246,29 @@ Graph_dump (
 ) {
     int loop_counter = 0;
 
-    for (GraphVertex *vertex = zhash_first (self->vertices); vertex != NULL; vertex = zhash_next (self->vertices)) {
-        dbg ("- Arcs of vertex %c :", 'A' + loop_counter++);
-        for (GraphArc *arc = zlist_first (vertex->arcs); arc != NULL; arc = zlist_next (vertex->arcs)) {
+    for (GraphNode *node = zhash_first (self->nodes); node != NULL; node = zhash_next (self->nodes)) {
+        dbg ("- Arcs of nodes %c :", 'A' + loop_counter++);
+        for (GraphArc *arc = zlist_first (node->arcs); arc != NULL; arc = zlist_next (node->arcs)) {
             dbg ("   %s -> %s", arc->from->key, arc->to->key);
         }
     }
 }
 
 void
-GraphVertex_free (
-    GraphVertex *self
+GraphNode_free (
+    GraphNode *self
 ) {
     // TODO
 }
 
 void
-GraphVertex_destroy (
-    GraphVertex **_self
+GraphNode_destroy (
+    GraphNode **_self
 ) {
-    GraphVertex *self = *_self;
+    GraphNode *self = *_self;
 
     if (self) {
-        GraphVertex_free (self);
+        GraphNode_free (self);
         free (self);
     }
 

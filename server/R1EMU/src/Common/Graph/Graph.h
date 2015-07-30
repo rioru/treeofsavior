@@ -24,9 +24,34 @@
 
 
 // ------ Structure declaration -------
+// Graph is an opaque structure
 typedef struct Graph Graph;
-typedef struct GraphArc GraphArc;
-typedef struct GraphVertex GraphVertex;
+
+/**
+ * @brief GraphNode contains a list of arcs pointing to neighbors
+ */
+typedef struct GraphNode {
+    /** Each GraphNode can be linked to [0..*] GraphArcs **/
+    zlist_t *arcs;
+
+    /** HashTable key */
+    char *key;
+
+    /** user_data is a user pointer to any data */
+    void *user_data;
+}   GraphNode;
+
+/**
+ * @brief GraphArc is a simple connection between 2 GraphNode
+ */
+typedef struct GraphArc {
+    /** An GraphArc is located between two nodes */
+    GraphNode *from, *to;
+
+    /** user_data is a user pointer to any data */
+    void *user_data;
+}   GraphArc;
+
 
 // ----------- Functions ------------
 
@@ -50,49 +75,64 @@ Graph_init (
 );
 
 /**
- * @brief Allocate a new GraphVertex structure.
+ * @brief Allocate a new GraphNode structure.
+ * @param hashKey A string to the hashtable key. Must be unique.
  * @param user_data A custom user data
- * @return A pointer to an allocated GraphVertex, or NULL if an error occured.
+ * @return A pointer to an allocated GraphNode, or NULL if an error occured.
  */
-GraphVertex *
-GraphVertex_new (
+GraphNode *
+GraphNode_new (
+    char *hashKey,
     void *user_data
 );
 
 /**
- * @brief Initialize an allocated GraphVertex structure.
- * @param self An allocated GraphVertex to initialize.
+ * @brief Initialize an allocated GraphNode structure.
+ * @param self An allocated GraphNode to initialize.
+ * @param hashKey A string to the hashtable key. Must be unique.
  * @param user_data A custom user data
  * @return true on success, false otherwise.
  */
 bool
-GraphVertex_init (
-    GraphVertex *self,
+GraphNode_init (
+    GraphNode *self,
+    char *hashKey,
     void *user_data
 );
 
 /**
- * @brief Add an arc between to vertices
+ * @brief Add an arc between to nodes
  * @param self A pointer to an allocated graph.
- * @param from A source vertex
- * @param to A destination vertex
+ * @param from A source node
+ * @param to A destination node
  * @return A new GraphArc
  */
 GraphArc *
 Graph_addArc (
     Graph *self,
-    GraphVertex *from,
-    GraphVertex *to
+    GraphNode *from,
+    GraphNode *to
 );
 
 /**
- * @brief Generate a vertex hash key
- * @param self A pointer to an allocated GraphVertex.
- * @return the hashtable key to the given GraphVertex
+ * @brief Generate a node hash key
+ * @param self A pointer to an allocated GraphNode.
+ * @return the hashtable key to the given GraphNode
  */
 char *
-GraphVertex_genKey (
-    GraphVertex *self
+GraphNode_genKey (
+    GraphNode *self
+);
+
+/**
+ * @brief Get a given node in the graph given its key
+ * @param self A pointer to an allocated Graph.
+ * @param key the node key
+ */
+GraphNode *
+Graph_getNode (
+    Graph *self,
+    char *key
 );
 
 /**
@@ -105,21 +145,21 @@ Graph_dump (
 );
 
 /**
- * @brief Free an allocated GraphVertex structure.
- * @param self A pointer to an allocated GraphVertex.
+ * @brief Free an allocated GraphNode structure.
+ * @param self A pointer to an allocated GraphNode.
  */
 void
-GraphVertex_free (
-    GraphVertex *self
+GraphNode_free (
+    GraphNode *self
 );
 
 /**
- * @brief Free an allocated GraphVertex structure and nullify the content of the pointer.
- * @param self A pointer to an allocated GraphVertex.
+ * @brief Free an allocated GraphNode structure and nullify the content of the pointer.
+ * @param self A pointer to an allocated GraphNode.
  */
 void
-GraphVertex_destroy (
-    GraphVertex **self
+GraphNode_destroy (
+    GraphNode **self
 );
 
 /**
@@ -138,6 +178,30 @@ GraphArc_free (
 void
 GraphArc_destroy (
     GraphArc **self
+);
+
+/**
+ * @brief Connect 2 nodes together
+ * @param self A pointer to an allocated GraphArc.
+ * @param from The first node
+ * @param to The second node
+ */
+bool
+Graph_link (
+    Graph *self,
+    GraphNode *node1,
+    GraphNode *node2
+);
+
+/**
+ * @brief Indicates if 2 nodes are linked together
+ * @param from The source node
+ * @param to The destination node
+ */
+bool
+GraphNode_isLinked (
+    GraphNode *from,
+    GraphNode *to
 );
 
 /**
