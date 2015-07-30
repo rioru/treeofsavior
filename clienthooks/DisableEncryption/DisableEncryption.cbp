@@ -37,6 +37,7 @@
 			<Add option="-D__DBG_ACTIVATED__" />
 			<Add directory="../" />
 		</Compiler>
+		<Unit filename="../HooksOfSavior/FunctionOffset.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
