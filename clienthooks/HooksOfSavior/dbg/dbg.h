@@ -2,6 +2,7 @@
 
 // ---------- Includes ------------
 #include <stdio.h>
+#include "../Ztring/Ztring.h"
 
 typedef enum {
     DBG_LEVEL_INFO,
