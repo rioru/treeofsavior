@@ -72,6 +72,8 @@ typedef enum PacketType {
     CB_DELETE_PET = 89, // Size = 18
     CB_REQ_CHANGE_POSTBOX_STATE = 90, // Size = 22
     CB_REQ_GET_POSTBOX_ITEM = 91, // Size = 30
+    BC_WAIT_QUEUE_ORDER = 92, // Size = 10
+    CB_CANCEL_SERVER_WAIT_QUEUE = 93, // Size = 10
     CS_LOGIN = 2901, // Size = 64
     SC_NORMAL = 2902, // Size = 0
     SC_FROM_INTEGRATE = 2903, // Size = 0
@@ -540,7 +542,7 @@ typedef enum PacketType {
     CZ_REWARD_CMD = 3436, // Size = 14
     CZ_PROPERTY_COMPARE = 3437, // Size = 15
     ZC_PROPERTY_COMPARE = 3438, // Size = 0
-    ZC_RECOMMEND_PARTYMEMBER_INFO = 3497, // Size = 0
+    ZC_RECOMMEND_PARTYMEMBER_INFO = 3498, // Size = 0
     ZC_FACTION = 3439, // Size = 14
     ZC_BEGIN_KILL_LOG = 3440, // Size = 6
     ZC_END_KILL_LOG = 3441, // Size = 6
@@ -555,54 +557,55 @@ typedef enum PacketType {
     CZ_VEHICLE_RIDE = 3450, // Size = 15
     CZ_REQ_WIKI_CATEGORY_RANK_PAGE_INFO = 3451, // Size = 78
     CZ_REQ_ACHIEVE_RANK_PAGE_INFO = 3452, // Size = 78
-    ZC_SPC_TRIGGER_EXEC = 3453, // Size = 30
-    CZ_REQ_MGAME_VIEW = 3454, // Size = 18
-    CZ_REQ_MGAME_CHAT = 3455, // Size = 0
-    CZ_TOURNAMENT_GIFT = 3456, // Size = 18
-    CZ_PARTY_INVITE_ACCEPT = 3457, // Size = 79
-    CZ_PARTY_INVITE_CANCEL = 3458, // Size = 83
-    CZ_PARTY_PROP_CHANGE = 3459, // Size = 145
-    CZ_REQ_MARKET_REGISTER = 3460, // Size = 27
-    CZ_REQ_MARKET_BUY = 3461, // Size = 0
-    CZ_REQ_CABINET_LIST = 3462, // Size = 10
-    CZ_REQ_GET_CABINET_ITEM = 3463, // Size = 26
-    CZ_REQ_CANCEL_MARKET_ITEM = 3464, // Size = 18
-    CZ_OBJ_RECORD_POS = 3465, // Size = 0
-    CZ_FORMATION_CMD = 3466, // Size = 32
-    CZ_REGISTER_AUTOSELLER = 3467, // Size = 0
-    CZ_OPEN_AUTOSELLER = 3468, // Size = 34
-    CZ_BUY_AUTOSELLER_ITEMS = 3469, // Size = 0
-    CZ_SELL_MY_AUTOSELLER_ITEMS = 3470, // Size = 0
-    CZ_PUZZLE_CRAFT = 3471, // Size = 0
+    CZ_REQ_MONSTER_RANK_INFO = 3453, // Size = 74
+    ZC_SPC_TRIGGER_EXEC = 3454, // Size = 30
+    CZ_REQ_MGAME_VIEW = 3455, // Size = 18
+    CZ_REQ_MGAME_CHAT = 3456, // Size = 0
+    CZ_TOURNAMENT_GIFT = 3457, // Size = 18
+    CZ_PARTY_INVITE_ACCEPT = 3458, // Size = 79
+    CZ_PARTY_INVITE_CANCEL = 3459, // Size = 83
+    CZ_PARTY_PROP_CHANGE = 3460, // Size = 145
+    CZ_REQ_MARKET_REGISTER = 3461, // Size = 27
+    CZ_REQ_MARKET_BUY = 3462, // Size = 0
+    CZ_REQ_CABINET_LIST = 3463, // Size = 10
+    CZ_REQ_GET_CABINET_ITEM = 3464, // Size = 26
+    CZ_REQ_CANCEL_MARKET_ITEM = 3465, // Size = 18
+    CZ_OBJ_RECORD_POS = 3466, // Size = 0
+    CZ_FORMATION_CMD = 3467, // Size = 32
+    CZ_REGISTER_AUTOSELLER = 3468, // Size = 0
+    CZ_OPEN_AUTOSELLER = 3469, // Size = 34
+    CZ_BUY_AUTOSELLER_ITEMS = 3470, // Size = 0
+    CZ_SELL_MY_AUTOSELLER_ITEMS = 3471, // Size = 0
+    CZ_PUZZLE_CRAFT = 3472, // Size = 0
     CZ_GET_WIKI_REWARD = 3322, // Size = 11
-    CZ_PET_EQUIP = 3472, // Size = 30
-    ZC_FOUND_PARTY_LIST = 3473, // Size = 0
-    ZC_RECOMMEND_PARTY_INFO = 3474, // Size = 0
-    CZ_REQUEST_SOME_PARTY = 3475, // Size = 90
-    CZ_REFRESH_MEMBERRECOMMEND_LIST = 3476, // Size = 10
-    ZC_TO_SOMEWHERE_CLIENT = 3477, // Size = 0
-    CZ_REVEAL_NPC_STATE = 3478, // Size = 14
-    CZ_CHANGE_CHANNEL = 3479, // Size = 12
-    CZ_REQ_CHANNEL_TRAFFICS = 3480, // Size = 12
-    CZ_BUY_PROPERTYSHOP_ITEM = 3481, // Size = 0
-    CZ_SKILL_USE_HEIGHT = 3482, // Size = 14
-    CZ_ACCEPT_PARTY_QUEST = 3483, // Size = 20
-    CZ_ACCEPT_PARTY_EVENT = 3484, // Size = 20
-    CZ_DELETE_PARTY_EVENT = 3485, // Size = 20
-    CZ_PING = 3486, // Size = 10
-    ZC_PING = 3487, // Size = 10
-    ZC_XIGNCODE_BUFFER = 3488, // Size = 524
-    CZ_XIGNCODE_BUFFER = 3489, // Size = 524
-    CZ_CHANGE_TITLE = 3490, // Size = 74
-    CZ_PC_COMMENT_CHANGE = 3491, // Size = 0
-    CZ_AUTTOSELLER_BUYER_CLOSE = 3492, // Size = 18
-    CZ_REQ_ITEM_LIST = 3493, // Size = 11
-    CZ_HIT_MISSILE = 3494, // Size = 14
-    CZ_I_NEED_PARTY = 3495, // Size = 23
-    CZ_PARTY_JOIN_BY_LINK = 3496, // Size = 19
-    CZ_PVP_ZONE_CMD = 3498, // Size = 22
-    CZ_PVP_CHAT = 3499, // Size = 0
-    CZ_CARDBATTLE_CMD = 3500, // Size = 26
+    CZ_PET_EQUIP = 3473, // Size = 30
+    ZC_FOUND_PARTY_LIST = 3474, // Size = 0
+    ZC_RECOMMEND_PARTY_INFO = 3475, // Size = 0
+    CZ_REQUEST_SOME_PARTY = 3476, // Size = 90
+    CZ_REFRESH_MEMBERRECOMMEND_LIST = 3477, // Size = 10
+    ZC_TO_SOMEWHERE_CLIENT = 3478, // Size = 0
+    CZ_REVEAL_NPC_STATE = 3479, // Size = 14
+    CZ_CHANGE_CHANNEL = 3480, // Size = 12
+    CZ_REQ_CHANNEL_TRAFFICS = 3481, // Size = 12
+    CZ_BUY_PROPERTYSHOP_ITEM = 3482, // Size = 0
+    CZ_SKILL_USE_HEIGHT = 3483, // Size = 14
+    CZ_ACCEPT_PARTY_QUEST = 3484, // Size = 20
+    CZ_ACCEPT_PARTY_EVENT = 3485, // Size = 20
+    CZ_DELETE_PARTY_EVENT = 3486, // Size = 20
+    CZ_PING = 3487, // Size = 10
+    ZC_PING = 3488, // Size = 10
+    ZC_XIGNCODE_BUFFER = 3489, // Size = 524
+    CZ_XIGNCODE_BUFFER = 3490, // Size = 524
+    CZ_CHANGE_TITLE = 3491, // Size = 74
+    CZ_PC_COMMENT_CHANGE = 3492, // Size = 0
+    CZ_AUTTOSELLER_BUYER_CLOSE = 3493, // Size = 18
+    CZ_REQ_ITEM_LIST = 3494, // Size = 11
+    CZ_HIT_MISSILE = 3495, // Size = 14
+    CZ_I_NEED_PARTY = 3496, // Size = 23
+    CZ_PARTY_JOIN_BY_LINK = 3497, // Size = 19
+    CZ_PVP_ZONE_CMD = 3499, // Size = 22
+    CZ_PVP_CHAT = 3500, // Size = 0
+    CZ_CARDBATTLE_CMD = 3501, // Size = 26
 
     PACKET_TYPE_COUNT
 
