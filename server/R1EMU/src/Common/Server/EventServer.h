@@ -17,6 +17,7 @@
 
 // ---------- Includes ------------
 #include "R1EMU.h"
+#include "Common/Graph/Graph.h"
 #include "Common/Session/Session.h"
 #include "Common/Server/Router.h"
 
@@ -67,6 +68,10 @@ typedef struct {
 
 } EventServerStartupInfo;
 
+typedef struct {
+    bool around;
+} GraphNodeClient;
+
 // EventServer is opaque
 typedef struct EventServer EventServer;
 
@@ -95,6 +100,51 @@ EventServer_init (
     EventServerStartupInfo *info
 );
 
+/**
+ * @brief Allocate a new GraphNodeClient structure.
+ * @return A pointer to an allocated GraphNodeClient.
+ */
+GraphNodeClient *
+GraphNodeClient_new (
+    void
+);
+
+/**
+ * @brief Initialize an allocated GraphNodeClient structure.
+ * @param self An allocated GraphNodeClient to initialize.
+ * @return true on success, false otherwise.
+ */
+bool
+GraphNodeClient_init (
+    GraphNodeClient *self
+);
+
+/**
+ * @brief Free an allocated GraphNodeClient structure.
+ * @param self A pointer to an allocated GraphNodeClient.
+ */
+void
+GraphNodeClient_free (
+    GraphNodeClient *self
+);
+
+/**
+ * @brief Free an allocated GraphNodeClient structure and nullify the content of the pointer.
+ * @param self A pointer to an allocated GraphNodeClient.
+ */
+void
+GraphNodeClient_destroy (
+    GraphNodeClient **self
+);
+
+/**
+ * @brief Free an allocated EventServer structure.
+ * @param self A pointer to an allocated EventServer.
+ */
+void
+EventServer_free (
+    EventServer *self
+);
 
 /**
  * @brief Free an allocated EventServer structure and nullify the content of the pointer.
@@ -105,6 +155,18 @@ EventServer_destroy (
     EventServer **self
 );
 
+/**
+ * @brief Link 2 clients together.
+ * @param self A pointer to an allocated EventServer.
+ * @param node1 A first client node
+ * @param node2 A second client node
+ */
+bool
+EventServer_linkClients (
+    EventServer *self,
+    GraphNode *node1,
+    GraphNode *node2
+);
 
 /**
  * @brief Initialize an allocated EventServerStartupInfo structure.
@@ -186,4 +248,14 @@ EventServer_getGameSessionBySocketId (
 bool
 EventServer_start (
     EventServer *self
+);
+
+
+/**
+ * Get a client node based on its key
+ */
+GraphNode *
+EventServer_getClientNode (
+    EventServer *self,
+    uint8_t *socketId
 );

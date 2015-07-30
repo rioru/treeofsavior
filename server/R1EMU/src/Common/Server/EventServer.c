@@ -13,6 +13,7 @@
 // ---------- Includes ------------
 #include "EventServer.h"
 #include "EventHandler.h"
+#include "Common/Graph/Graph.h"
 #include "Common/Redis/Redis.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 
@@ -31,8 +32,8 @@ struct EventServer
     /** Redis connection **/
     Redis *redis;
 
-    /** Clients proximity with eachothers **/
-    zhash_t *clientsAround;
+    /** Graph of interconnected clients **/
+    Graph *clientsGraph;
 
     /** EventServer information */
     EventServerStartupInfo info;
@@ -44,7 +45,6 @@ static bool
 EventServer_subscribe (
     EventServer *self
 );
-
 
 // ------ Extern function implementation ------
 
@@ -94,11 +94,38 @@ EventServer_init (
     }
 
     // Initialize hashtable of clients around
-    if (!(self->clientsAround = zhash_new ())) {
-        error ("Cannot allocate a new clientsAround zhash.");
+    if (!(self->clientsGraph = Graph_new ())) {
+        error ("Cannot allocate a new clients Graph.");
         return false;
     }
 
+    return true;
+}
+
+GraphNodeClient *
+GraphNodeClient_new (
+    void
+) {
+    GraphNodeClient *self;
+
+    if ((self = calloc (1, sizeof (GraphNodeClient))) == NULL) {
+        return NULL;
+    }
+
+    if (!GraphNodeClient_init (self)) {
+        GraphNodeClient_destroy (&self);
+        error ("GraphNodeClient failed to initialize.");
+        return NULL;
+    }
+
+    return self;
+}
+
+
+bool
+GraphNodeClient_init (
+    GraphNodeClient *self
+) {
     return true;
 }
 
@@ -324,13 +351,48 @@ EventServer_start (
 
     // Listen to the subscriber socket
     while (EventServer_subscribe (self)) {
-
+        // Things to do between two messages ?
     }
 
     info ("EventServer exits...");
     return true;
 }
 
+bool
+EventServer_linkClients (
+    EventServer *self,
+    GraphNode *node1,
+    GraphNode *node2
+) {
+    return Graph_link (self->clientsGraph, node1, node2);
+}
+
+GraphNode *
+EventServer_getClientNode (
+    EventServer *self,
+    uint8_t *socketId
+) {
+    GraphNode *clientNode;
+
+    if (!(clientNode = Graph_getNode (self->clientsGraph, socketId))) {
+        // Client node doesn't exist, create it
+        info ("Add client %s in the graph", socketId);
+        if (!(clientNode = GraphNode_new (socketId, NULL))) {
+            error ("Cannot allocate a new client node.");
+            return NULL;
+        }
+        clientNode->user_data = GraphNodeClient_new ();
+    }
+
+    return clientNode;
+}
+
+void
+EventServer_free (
+    EventServer *self
+) {
+    // TODO
+}
 
 void
 EventServer_destroy (
@@ -338,6 +400,31 @@ EventServer_destroy (
 ) {
     EventServer *self = *_self;
 
-    free (self);
+    if (self) {
+        EventServer_free (self);
+        free (self);
+    }
+
+    *_self = NULL;
+}
+
+void
+GraphNodeClient_free (
+    GraphNodeClient *self
+) {
+    // TODO
+}
+
+void
+GraphNodeClient_destroy (
+    GraphNodeClient **_self
+) {
+    GraphNodeClient *self = *_self;
+
+    if (self) {
+        GraphNodeClient_free (self);
+        free (self);
+    }
+
     *_self = NULL;
 }

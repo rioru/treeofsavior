@@ -106,9 +106,7 @@ EventHandler_commanderMove (
     if (!(clientsAround = EventServer_getClientsWithinRange (
         self,
         EventServer_getRouterId (self),
-        event->mapId,
-        event->socketId,
-        &around,
+        event->mapId, event->socketId, &around,
         COMMANDER_RANGE_AROUND
     ))) {
         error ("Cannot get clients within range");
@@ -116,12 +114,50 @@ EventHandler_commanderMove (
         goto cleanup;
     }
 
+    // Get the registred clients around
+    GraphNode *currentClientNode = EventServer_getClientNode (self, event->socketId);
+
+    // Mark the nodes as unvisited
+    for (GraphArc *neighbourArc = zlist_first (currentClientNode->arcs);
+        neighbourArc != NULL;
+        neighbourArc = zlist_next (currentClientNode->arcs)
+    ) {
+        GraphNode *neighbourNode = neighbourArc->to;
+        GraphNodeClient *neighbourClient = neighbourNode->user_data;
+        neighbourClient->around = false;
+    }
+
     if (zlist_size (clientsAround) > 0)
     {
+        // Check in the list of current clients around if the current player entered in their zone
+        for (uint8_t *socketIdClientAround = zlist_first (clientsAround);
+             socketIdClientAround != NULL;
+             socketIdClientAround = zlist_next (clientsAround)
+        ) {
+            GraphNode *clientAroundNode;
+
+            if (!(clientAroundNode = EventServer_getClientNode (self, socketIdClientAround))) {
+                error ("Cannot get the neighbour node %s.", socketIdClientAround);
+                status = false;
+                goto cleanup;
+            }
+
+            GraphNodeClient *neighbourClient = clientAroundNode->user_data;
+            if (!(GraphNode_isLinked (currentClientNode, clientAroundNode))) {
+                // currentClientNode isn't linked yet with its neighbour
+                // It means that the current client has just entered in the neighbour client zone !
+                // Connect them together, and warn neighbour client of the arrival of a new client
+                zmsg_t *pcEnterMsg = zmsg_new ();
+                ZoneBuilder_enterPc (&event->commander, pcEnterMsg);
+                EventServer_linkClients (self, currentClientNode, clientAroundNode);
+            }
+            neighbourClient->around = true;
+        }
+
         // Build the packet for the clients around
         msg = zmsg_new ();
         ZoneBuilder_moveDir (
-            event->targetPcId,
+            event->commander.pcId,
             &event->position,
             &event->direction,
             event->timestamp,

@@ -29,7 +29,7 @@
 typedef struct {
     uint32_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    uint32_t targetPcId;
+    CommanderInfo commander;
     PositionXYZ position;
     PositionXZ direction;
     float timestamp;
