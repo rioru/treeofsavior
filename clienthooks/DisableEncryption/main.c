@@ -7,7 +7,7 @@
 #include <ntdef.h>
 #include <stdio.h>
 
-#define NetEncrypt_OFFSET (0xCE3340 - 0x400000)
+#include "HooksOfSavior/FunctionOffset.h"
 
 DWORD
 get_pid_by_name (char *proc_name)
@@ -142,25 +142,25 @@ int main (int argc, char ** argv)
         0xC9,
         0xC3
     };
-    
+
     static unsigned char originalCode[36] = {
-        0x55, 0x8B, 0xEC, 0x83, 0x3D, 0x5C, 0x16, 0xCB, 0x02, 0x00, 0x75, 0x20, 0x68, 0x28, 0x19, 0x14, 
-        0x01, 0x6A, 0x49, 0x68, 0xB0, 0x2E, 0x10, 0x01, 0x68, 0x9C, 0x2E, 0x10, 0x01, 0x68, 0x34, 0x19, 
+        0x55, 0x8B, 0xEC, 0x83, 0x3D, 0x5C, 0x16, 0xCB, 0x02, 0x00, 0x75, 0x20, 0x68, 0x28, 0x19, 0x14,
+        0x01, 0x6A, 0x49, 0x68, 0xB0, 0x2E, 0x10, 0x01, 0x68, 0x9C, 0x2E, 0x10, 0x01, 0x68, 0x34, 0x19,
         0x14, 0x01, 0x6A, 0x00
     };
 
     unsigned char opcode;
-    ReadProcessMemory (process, (LPVOID) baseAddress + NetEncrypt_OFFSET + 3, &opcode, sizeof(opcode), NULL);
-    printf ("baseAddress + NetEncrypt_OFFSET = %x => opcode found : %x\n", baseAddress + NetEncrypt_OFFSET, opcode);
+    ReadProcessMemory (process, (LPVOID) baseAddress + OFFSET_NetEncrypt + 3, &opcode, sizeof(opcode), NULL);
+    printf ("baseAddress + OFFSET_NetEncrypt = %x => opcode found : %x\n", baseAddress + OFFSET_NetEncrypt, opcode);
 
     switch (opcode) {
         case 0x83: // Already patched : unpatch
-            WriteProcessMemory (process, (LPVOID) baseAddress + NetEncrypt_OFFSET, patchCode, sizeof(patchCode), NULL);
+            WriteProcessMemory (process, (LPVOID) baseAddress + OFFSET_NetEncrypt, patchCode, sizeof(patchCode), NULL);
             printf ("Process patched !\n");
         break;
 
         case 0x8B: // Unpatched : patch
-            WriteProcessMemory (process, (LPVOID) baseAddress + NetEncrypt_OFFSET, originalCode, sizeof(originalCode), NULL);
+            WriteProcessMemory (process, (LPVOID) baseAddress + OFFSET_NetEncrypt, originalCode, sizeof(originalCode), NULL);
             printf ("Process unpatched !\n");
         break;
 

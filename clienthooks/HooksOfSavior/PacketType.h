@@ -635,7 +635,6 @@ typedef struct PacketTypeInfo
 // Global packet types
 extern const PacketTypeInfo packetTypeInfo;
 
+// ----------- Functions ------------
 char *
 PacketType_to_string (PacketType type);
-
-// ----------- Functions ------------
