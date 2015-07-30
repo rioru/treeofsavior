@@ -15,9 +15,15 @@ typedef struct _HookEngine
     VOID (__cdecl *unhook)(ULONG_PTR Function);
     ULONG_PTR (__cdecl *get_original_function)(ULONG_PTR Hook);
 
-    BbQueue hookedFunctions;
+    BbQueue patches;
 
 }   HookEngine;
+
+
+typedef struct Patch {
+    byte backup[10];
+    ULONG_PTR function;
+}   Patch;
 
 
 
@@ -47,7 +53,7 @@ HookEngine_init (
     char *enginePath
 );
 
-bool
+Patch *
 HookEngine_hook (
     ULONG_PTR function,
     ULONG_PTR hookFunction
@@ -55,7 +61,7 @@ HookEngine_hook (
 
 void
 HookEngine_unhook (
-    ULONG_PTR originalFunction
+    Patch *patch
 );
 
 ULONG_PTR

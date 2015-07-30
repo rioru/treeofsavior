@@ -65,13 +65,13 @@ HookEngine_init (
         return false;
     }
 
-    bb_queue_init (&this->hookedFunctions);
+    bb_queue_init (&this->patches);
     engine = this;
 
     return true;
 }
 
-bool
+Patch *
 HookEngine_hook (
     ULONG_PTR function,
     ULONG_PTR hookFunction
@@ -81,20 +81,42 @@ HookEngine_hook (
         exit (0);
     }
 
-    bb_queue_add (&engine->hookedFunctions, (void *) function);
+    // Save the patched bytes
+    Patch *patch = calloc (1, sizeof (Patch));
+    memcpy (patch->backup, (void *) function, sizeof (patch->backup));
+    buffer_print (patch->backup, sizeof (patch->backup), "backup : ");
+    patch->function = function;
+
+    bb_queue_add (&engine->patches, patch);
     if (!engine->hook (function, hookFunction)) {
         dbg ("Error when hooking function %p", function);
-        return false;
+        return NULL;
     }
 
-    return true;
+    return patch;
 }
 
 void
 HookEngine_unhook (
-    ULONG_PTR originalFunction
+    Patch *unhookPatch
 ) {
-    engine->unhook (originalFunction);
+    bb_queue_remv (&engine->patches, unhookPatch);
+
+    engine->unhook (unhookPatch->function);
+
+    // Restore the patched bytes
+    memcpy ((void *) unhookPatch->function, unhookPatch->backup, sizeof (unhookPatch->backup));
+}
+
+void
+HookEngine_unhook_all (
+    void
+) {
+    while (bb_queue_get_length (&engine->patches)) {
+        Patch *patch = bb_queue_pop (&engine->patches);
+        HookEngine_unhook (patch);
+        free (patch);
+    }
 }
 
 ULONG_PTR
@@ -109,16 +131,6 @@ HookEngine_get_original_function (
     }
 
     return pFunc;
-}
-
-void
-HookEngine_unhook_all (
-    void
-) {
-    while (bb_queue_get_length (&engine->hookedFunctions)) {
-        ULONG_PTR originalFunction = (int) bb_queue_pop (&engine->hookedFunctions);
-        HookEngine_unhook (originalFunction);
-    }
 }
 
 /*
