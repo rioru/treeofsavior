@@ -22,12 +22,20 @@
 #include "PacketType.h"
 
 // ---------- Defines -------------
-#define BUILD_REPLY_PACKET(packetName, msgName) \
-    for (bool __sent = false; \
-         !__sent && memset (&packetName, 0, sizeof (packetName)); \
-         zmsg_add (msgName, zframe_new (&packetName, sizeof (packetName))), __sent = true \
+#define BUILD_REPLY_PACKET(packetName, msgName)                                             \
+    for (bool __sent = false;                                                               \
+         !__sent && memset (&packetName, 0, sizeof (packetName));                           \
+         zmsg_add (msgName, zframe_new (&packetName, sizeof (packetName))), __sent = true   \
     )
 
+#define CHECK_PACKET_SIZE(packet, packetType)                                               \
+    do {                                                                                    \
+        if (sizeof (packet) != packetTypeInfo.packets[packetType].size) {                   \
+            error ("The packet size sent isn't the equal to the one in PacketType.h");      \
+            error ("The packet size is %d bytes. The waited size is %d bytes.",             \
+                sizeof(packet), packetTypeInfo.packets[packetType].size);                   \
+        }                                                                                   \
+    } while (0);
 
 // ------ Structure declaration -------
 /**

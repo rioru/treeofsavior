@@ -119,6 +119,8 @@ BarrackHandler_loginByPassport (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    // The following CB_LOGIN_BY_PASSPORT structure is actually wrong
+    /*
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
@@ -128,13 +130,17 @@ BarrackHandler_loginByPassport (
         uint32_t accountPrivileges;
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
+    */
 
+    // Don't check the size.
+    /*
     if (sizeof (*clientPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (*clientPacket));
 
         return PACKET_HANDLER_ERROR;
     }
+    */
 
     // Authenticate here
     // TODO
@@ -145,7 +151,7 @@ BarrackHandler_loginByPassport (
     // Update the session
     // ===== Gives a fake account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
-    strncpy (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin));
+    strncpy (session->game.accountLogin, "R1EMU", sizeof (session->game.accountLogin));
     // ==================================
     info ("AccountID %llx generated !", session->socket.accountId);
 

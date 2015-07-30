@@ -44,9 +44,12 @@ BarrackBuilder_loginOk (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_LOGINOK;
+
+    CHECK_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = BC_LOGINOK;
+        replyPacket.header.type = packetType;
         replyPacket.accountId = accountId;
         replyPacket.accountPrivileges = accountPrivileges;
         strncpy (replyPacket.accountLogin, accountLogin, sizeof (replyPacket.accountLogin));

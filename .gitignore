@@ -25,8 +25,12 @@ clienthooks/HooksOfSavior/LuaSavior/log.txt
 # CameraOfSavior ignored files
 clienthooks/HooksOfSavior/CameraOfSavior/log.txt
 
-# isableEncryption ignored files
+# DisableEncryption ignored files
 clienthooks/HooksOfSavior/DisableEncryption/log.txt
+
+# PacketLogger ignored files
+clienthooks/HooksOfSavior/PacketLogger/log.txt
+clienthooks/HooksOfSavior/PacketLogger/packets/*
 
 # R1EMU doxygen documentation
 server/R1EMU/projects/codeblocks/R1EMU/doxygen
