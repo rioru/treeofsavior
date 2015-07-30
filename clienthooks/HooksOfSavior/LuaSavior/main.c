@@ -1,8 +1,7 @@
 #include "HookEngine/HookEngine.h"
 #include "Utils/Utils.h"
 #include "Win32Tools/Win32Tools.h"
-
-#define __DEBUG_OBJECT__ "LuaSavior"
+#include "FunctionOffset.h"
 #include "dbg/dbg.h"
 
 #include "luajit.h"
@@ -10,7 +9,7 @@
 
 // Global Lua handler
 lua_State * hLua = NULL;
-int (__cdecl *originalHook) (lua_State *) = NULL;
+Patch *originalHook;
 
 // Lua loaded functions prototypes
 int (* _lua_gettop) ();
@@ -29,7 +28,6 @@ int __cdecl lua_gettop_hook (lua_State *self) {
 	int (__cdecl *hooked) (lua_State *) =
 		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) lua_gettop_hook);
 
-    originalHook = hooked;
     hLua = self;
 
     return hooked (self);
@@ -69,7 +67,7 @@ bool loadLua (char *tosDllPath)
         Sleep (1);
     }
 
-	HookEngine_unhook ((ULONG_PTR) originalHook);
+	HookEngine_unhook (originalHook);
 
     return 1;
 }
@@ -130,7 +128,7 @@ void startInjection (void)
 	}
 
 	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_lua_gettop, (ULONG_PTR) lua_gettop_hook);
+	originalHook = HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_lua_gettop, (ULONG_PTR) lua_gettop_hook);
 
     // Load our own luaJIT and retrieve addresses to the functions needed
     if (!loadLua (tosDllPath)) {
