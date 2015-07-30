@@ -424,7 +424,7 @@ ZoneHandler_keyboardMove (
     // Notify the players around
     GameEventCommanderMove event = {
         .mapId = session->socket.mapId,
-        .targetPcId = session->game.currentCommander.pcId,
+        .commander = session->game.currentCommander,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
