@@ -22,6 +22,9 @@ clienthooks/HooksOfSavior/HooksOfSavior/log.txt
 # LuaSavior project ignored files
 clienthooks/HooksOfSavior/LuaSavior/log.txt
 
+# CameraOfSavior ignored files
+clienthooks/HooksOfSavior/CameraOfSavior/log.txt
+
 # R1EMU doxygen documentation
 server/R1EMU/projects/codeblocks/R1EMU/doxygen
 
