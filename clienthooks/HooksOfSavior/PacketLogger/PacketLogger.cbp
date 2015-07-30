@@ -47,6 +47,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../HookEngine/HookEngine.h" />
+		<Unit filename="../PacketType.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../PacketType.h" />
 		<Unit filename="../Utils/Utils.c">
 			<Option compilerVar="CC" />
 		</Unit>
