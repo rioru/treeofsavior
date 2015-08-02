@@ -185,6 +185,7 @@ GraphArc_destroy (
  * @param self A pointer to an allocated GraphArc.
  * @param from The first node
  * @param to The second node
+ * @return true on success, false otherwise
  */
 bool
 Graph_link (
@@ -194,12 +195,51 @@ Graph_link (
 );
 
 /**
- * @brief Indicates if 2 nodes are linked together
- * @param from The source node
- * @param to The destination node
+ * @brief Disconnect 2 nodes connected
+ * @param self A pointer to an allocated GraphArc.
+ * @param from The first node
+ * @param to The second node
+ * @return true on success, false otherwise
  */
 bool
-GraphNode_isLinked (
+Graph_unlink (
+    Graph *self,
+    GraphNode *node1,
+    GraphNode *node2
+);
+
+/** @brief Insert a node into the graph hashtable
+ * @param self A pointer to an allocated GraphArc.
+ * @param node The given node
+ * @return true on success, false otherwise
+ */
+bool
+Graph_insertNode (
+    Graph *self,
+    GraphNode *node
+);
+
+/**
+ * @brief Get the arc between 2 nodes
+ * @param from The source node
+ * @param to The destination node
+ * @param Return the Arc between the two nodes, or NULL if it doesn't exist
+ */
+GraphArc *
+GraphNode_getArc (
+    GraphNode *from,
+    GraphNode *to
+);
+
+/**
+ * @brief Remove the arc between 2 nodes
+ * @param from The source node
+ * @param to The destination node
+ * @param true on success, false otherwise
+ */
+bool
+Graph_destroyArc (
+    Graph *self,
     GraphNode *from,
     GraphNode *to
 );

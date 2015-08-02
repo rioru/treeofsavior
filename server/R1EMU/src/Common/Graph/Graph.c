@@ -153,7 +153,7 @@ GraphNode_init (
         return false;
     }
 
-    self->key = hashKey;
+    self->key = strdup (hashKey);
 
     return true;
 }
@@ -177,17 +177,44 @@ Graph_link (
 }
 
 bool
-GraphNode_isLinked (
+Graph_unlink (
+    Graph *self,
+    GraphNode *node1,
+    GraphNode *node2
+) {
+    GraphArc *arc1 = NULL;
+    GraphArc *arc2 = NULL;
+
+    if (!(arc1 = GraphNode_getArc (node1, node2))) {
+        error ("Cannot find link between %s and %s.", node1->key, node2->key);
+        return false;
+    }
+    zlist_remove (node1->arcs, arc1);
+
+    if (!(arc2 = GraphNode_getArc (node2, node1))) {
+        error ("Cannot find link between %s and %s.", node2->key, node1->key);
+        return false;
+    }
+    zlist_remove (node2->arcs, arc2);
+
+    GraphArc_destroy (&arc1);
+    GraphArc_destroy (&arc2);
+
+    return true;
+}
+
+GraphArc *
+GraphNode_getArc (
     GraphNode *from,
     GraphNode *to
 ) {
     for (GraphArc *link = zlist_first (from->arcs); link != NULL; link = zlist_next (from->arcs)) {
         if (link->to == to) {
-            return true;
+            return link;
         }
     }
 
-    return false;
+    return NULL;
 }
 
 GraphArc *
@@ -220,6 +247,14 @@ Graph_getNode (
     char *key
 ) {
     return zhash_lookup (self->nodes, key);
+}
+
+bool
+Graph_insertNode (
+    Graph *self,
+    GraphNode *node
+) {
+    return zhash_insert (self->nodes, node->key, node) == 0;
 }
 
 char *
