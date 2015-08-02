@@ -22,12 +22,12 @@
 #include "EventServer.h"
 
 // ---------- Defines -------------
-#define COMMANDER_RANGE_AROUND 200.0
+#define COMMANDER_RANGE_AROUND 250.0
 
 
 // ------ Structure declaration -------
 typedef struct {
-    uint32_t mapId;
+    uint16_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
     CommanderInfo commander;
     PositionXYZ position;
@@ -36,31 +36,29 @@ typedef struct {
 } GameEventCommanderMove;
 
 typedef struct {
-    uint32_t mapId;
+    uint16_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    uint32_t targetPcId;
+    CommanderInfo commander;
     PositionXYZ position;
     PositionXZ direction;
     float timestamp;
 } GameEventMoveStop;
 
 typedef struct {
-    uint32_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
     uint32_t targetPcId;
-    PositionXZ position;
 } GameEventRestSit;
 
 typedef struct {
-    uint32_t mapId;
+    uint16_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    uint32_t targetPcId;
+    CommanderInfo commander;
     float height;
     PositionXZ position;
 } GameEventJump;
 
 typedef struct {
-    uint32_t mapId;
+    uint16_t mapId;
     char socketId[SOCKET_SESSION_ID_SIZE];
     CommanderInfo commander;
 } GameEventPcEnter;

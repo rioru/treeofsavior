@@ -155,14 +155,50 @@ EventServer_destroy (
     EventServer **self
 );
 
+
+/**
+ * @brief Update the position of a client within the event server structures
+ * @param self A pointer to an allocated EventServer.
+ * @param targetSocketId The target socket ID of the client
+ * @param commander The commander information of the client
+ * @param newPosition The new position of the client
+ * @param mapId The mapId of the client
+ * @param[out] redisClientsAround The list of other clients around the client at its new position
+ * @return true on success, false otherwise
+ */
+bool
+EventServer_updateClientPosition (
+    EventServer *self,
+    uint8_t *targetSocketId,
+    CommanderInfo *commander,
+    PositionXZ *newPosition,
+    uint16_t mapId,
+    zlist_t **redisClientsAround
+);
+
 /**
  * @brief Link 2 clients together.
  * @param self A pointer to an allocated EventServer.
  * @param node1 A first client node
  * @param node2 A second client node
+ * @return true on success, false otherwise
  */
 bool
 EventServer_linkClients (
+    EventServer *self,
+    GraphNode *node1,
+    GraphNode *node2
+);
+
+/**
+ * @brief Unlink 2 clients connected.
+ * @param self A pointer to an allocated EventServer.
+ * @param node1 A first client node
+ * @param node2 A second client node
+ * @return true on success, false otherwise
+ */
+bool
+EventServer_unlinkClients (
     EventServer *self,
     GraphNode *node1,
     GraphNode *node2
@@ -186,22 +222,17 @@ EventServerStartupInfo_init (
 
 
 /**
- * @brief Return a list of clients into an area
+ * @brief Return a list of clients around a given player
  * @param self An allocated EventServer
- * @param routerId, mapId : The authenticators of the target zone
- * @param ignoredSocketId A socketID to ignore. NULL don't ignore anybody.
- * @param center The position of the center of the circle
- * @param range Radius of the circle
- * @return a zlist_t of identity keys
+ * @param socketId The player socketId
+ * @param[out] _clients The result list of clients socketIds
+ * @return true on success, false otherwise
  */
-zlist_t *
-EventServer_getClientsWithinRange (
+bool
+EventServer_getClientsAround (
     EventServer *self,
-    uint16_t routerId,
-    uint32_t mapId,
-    uint8_t *ignoredSocketId,
-    PositionXZ *center,
-    float range
+    uint8_t *socketId,
+    zlist_t **_clients
 );
 
 /**
@@ -220,6 +251,37 @@ EventServer_sendToClients (
     size_t packetLen
 );
 
+
+/**
+ * @brief Send a packet to one client
+ * @param self An allocated EventServer
+ * @param identityKey A socket identity
+ * @param packet The packet to send
+ * @param packetLen the length of the packet
+ * @return true on success, false otherwise
+ */
+bool
+EventServer_sendToClient (
+    EventServer *self,
+    uint8_t *identityKey,
+    uint8_t *packet,
+    size_t packetLen
+);
+
+
+/**
+ * @brief Get the commander info of a target socketId
+ * @param self An allocated EventServer
+ * @param socketId The socket ID of the target commander
+ * @param[out] The commander
+ * @return true on success, false otherwise
+ */
+bool
+EventServer_getCommander (
+    EventServer *self,
+    uint8_t *socketId,
+    CommanderInfo *commander
+);
 
 /**
  * @brief : Router ID Accessor

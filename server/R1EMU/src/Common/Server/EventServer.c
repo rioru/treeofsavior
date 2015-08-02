@@ -16,6 +16,7 @@
 #include "Common/Graph/Graph.h"
 #include "Common/Redis/Redis.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
+#include "ZoneServer/ZoneHandler/ZoneBuilder.h"
 
 // ------ Structure declaration -------
 /**
@@ -44,6 +45,25 @@ struct EventServer
 static bool
 EventServer_subscribe (
     EventServer *self
+);
+
+
+/**
+ * @brief Return a list of clients into an area according to the Redis database
+ * @param self An allocated EventServer
+ * @param mapId : The mapId of the target zone
+ * @param ignoredSocketId A socketID to ignore. NULL don't ignore anybody.
+ * @param center The position of the center of the circle
+ * @param range Radius of the circle
+ * @return a zlist_t of identity keys
+ */
+static zlist_t *
+EventServer_redisGetClientsWithinRange (
+    EventServer *self,
+    uint16_t mapId,
+    uint8_t *ignoredSocketId,
+    PositionXZ *center,
+    float range
 );
 
 // ------ Extern function implementation ------
@@ -302,6 +322,233 @@ cleanup:
     return result;
 }
 
+bool
+EventServer_updateClientPosition (
+    EventServer *self,
+    uint8_t *targetSocketId,
+    CommanderInfo *commander,
+    PositionXZ *newPosition,
+    uint16_t mapId,
+
+    zlist_t **_redisClientsAround
+) {
+    bool status = true;
+
+    zmsg_t *pcEnterMsg = NULL;
+    zmsg_t *curPcEnterMsg = NULL;
+    zmsg_t *pcLeaveMsg = NULL;
+    zmsg_t *curPcLeaveMsg = NULL;
+    zlist_t *pcEnterList = NULL;
+    zlist_t *pcLeaveList = NULL;
+    zlist_t *redisClientsAround = NULL;
+
+    // Get the clients around
+    if (!(redisClientsAround = EventServer_redisGetClientsWithinRange (
+        self, mapId, targetSocketId, newPosition,
+        COMMANDER_RANGE_AROUND
+    ))) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
+    *_redisClientsAround = redisClientsAround;
+
+    // Get the node of the current client
+    GraphNode *nodeCurrentClient = EventServer_getClientNode (self, targetSocketId);
+
+    // Mark the neighbours nodes as unvisited
+    for (GraphArc *neighbourArc = zlist_first (nodeCurrentClient->arcs);
+        neighbourArc != NULL;
+        neighbourArc = zlist_next (nodeCurrentClient->arcs)
+    ) {
+        GraphNode *neighbourNode = neighbourArc->to;
+        GraphNodeClient *neighbourClient = neighbourNode->user_data;
+        neighbourClient->around = false;
+    }
+
+    if (zlist_size (redisClientsAround) > 0)
+    {
+        pcEnterList = zlist_new ();
+
+        // Compare the list from Redis to the list of neighbors from the proximity graph
+        for (uint8_t *redisSocketIdClientAround = zlist_first (redisClientsAround);
+             redisSocketIdClientAround != NULL;
+             redisSocketIdClientAround = zlist_next (redisClientsAround)
+        ) {
+            GraphNode *graphClientAroundNode;
+            if (!(graphClientAroundNode = EventServer_getClientNode (self, redisSocketIdClientAround))) {
+                error ("Cannot get the neighbour node %s.", redisSocketIdClientAround);
+                status = false;
+                goto cleanup;
+            }
+
+            if (!(GraphNode_getArc (nodeCurrentClient, graphClientAroundNode))) {
+                // nodeCurrentClient isn't linked yet with its neighbour
+                // It means that the current client has just entered in the neighbour client zone !
+                // Mutually link them together in the graph, and warn the game clients of the arrival of a new client
+                EventServer_linkClients (self, nodeCurrentClient, graphClientAroundNode);
+                zlist_append (pcEnterList, redisSocketIdClientAround);
+            }
+
+            GraphNodeClient *graphNeighbourClient = graphClientAroundNode->user_data;
+            graphNeighbourClient->around = true;
+        }
+
+        // Send the ZC_PC_ENTER to clients who now sees the current client
+        if (zlist_size (pcEnterList) > 0) {
+            pcEnterMsg = zmsg_new ();
+            ZoneBuilder_enterPc (commander, pcEnterMsg);
+            zframe_t *pcEnterFrame = zmsg_first (pcEnterMsg);
+            if (!(EventServer_sendToClients (self, redisClientsAround, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
+                error ("Failed to send the packet to the clients.");
+                status = false;
+                goto cleanup;
+            }
+        }
+
+        // Also, send to the current player the list of entered players
+        for (uint8_t *enterPcSocketId = zlist_first (pcEnterList);
+             enterPcSocketId != NULL;
+             enterPcSocketId = zlist_next (pcEnterList)
+        ) {
+            CommanderInfo enterPc;
+            curPcEnterMsg = zmsg_new ();
+            if (!(EventServer_getCommander (self, enterPcSocketId, &enterPc))) {
+                error ("Cannot get commanderInfo from %s.", enterPcSocketId);
+                status = false;
+                goto cleanup;
+            }
+
+            ZoneBuilder_enterPc (&enterPc, curPcEnterMsg);
+            zframe_t *pcEnterFrame = zmsg_first (curPcEnterMsg);
+            if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
+                error ("Failed to send the packet to the clients.");
+                status = false;
+                goto cleanup;
+            }
+
+            zmsg_destroy (&curPcEnterMsg);
+        }
+    }
+
+    // Check for ZC_LEAVE and build a list of clients involved
+    pcLeaveList = zlist_new ();
+    for (GraphArc *neighbourArc = zlist_first (nodeCurrentClient->arcs);
+        neighbourArc != NULL;
+        neighbourArc = zlist_next (nodeCurrentClient->arcs)
+    ) {
+        GraphNode *neighbourNode = neighbourArc->to;
+        GraphNodeClient *neighbourClient = neighbourNode->user_data;
+        if (neighbourClient->around == false) {
+            // The neighbour is still marked as "not around" : The current commander left its screen zone
+            EventServer_unlinkClients (self, nodeCurrentClient, neighbourNode);
+            zlist_append (pcLeaveList, neighbourNode->key);
+        }
+    }
+
+    // Send the ZC_LEAVE to the players in the list
+    if (zlist_size (pcLeaveList) > 0)
+    {
+        pcLeaveMsg = zmsg_new ();
+        ZoneBuilder_leave (commander->pcId, pcLeaveMsg);
+        zframe_t *pcLeaveFrame = zmsg_first (pcLeaveMsg);
+
+        // Also, send to the current player the list of left players
+        if (!(EventServer_sendToClients (self, pcLeaveList, zframe_data (pcLeaveFrame), zframe_size (pcLeaveFrame)))) {
+            error ("Failed to send the packet to the clients.");
+            status = false;
+            goto cleanup;
+        }
+
+        // Also, send to the current player the list of left players
+        for (uint8_t *leftPcSocketId = zlist_first (pcLeaveList);
+             leftPcSocketId != NULL;
+             leftPcSocketId = zlist_next (pcLeaveList)
+        ) {
+            CommanderInfo leftPc;
+            curPcLeaveMsg = zmsg_new ();
+            if (!(EventServer_getCommander (self, leftPcSocketId, &leftPc))) {
+                error ("Cannot get commanderInfo from %s.", leftPcSocketId);
+                status = false;
+                goto cleanup;
+            }
+
+            ZoneBuilder_leave (leftPc.pcId, curPcLeaveMsg);
+            zframe_t *pcLeaveFrame = zmsg_first (curPcLeaveMsg);
+            if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcLeaveFrame), zframe_size (pcLeaveFrame)))) {
+                error ("Failed to send the packet to the clients.");
+                status = false;
+                goto cleanup;
+            }
+
+            zmsg_destroy (&curPcLeaveMsg);
+        }
+    }
+
+cleanup:
+    zlist_destroy (&pcLeaveList);
+    zlist_destroy (&pcEnterList);
+    zmsg_destroy (&pcLeaveMsg);
+    zmsg_destroy (&curPcLeaveMsg);
+    zmsg_destroy (&pcEnterMsg);
+    zmsg_destroy (&curPcEnterMsg);
+    return status;
+}
+
+bool
+EventServer_getCommander (
+    EventServer *self,
+    uint8_t *socketId,
+    CommanderInfo *commander
+) {
+    GameSession gameSession;
+    if (!(Redis_getGameSessionBySocketId (self->redis, self->info.routerId, socketId, &gameSession))) {
+        error ("Cannot get commander info about %s", socketId);
+        return false;
+    }
+
+    memcpy (commander, &gameSession.currentCommander, sizeof (CommanderInfo));
+    return true;
+}
+
+bool
+EventServer_sendToClient (
+    EventServer *self,
+    uint8_t *identityKey,
+    uint8_t *packet,
+    size_t packetLen
+) {
+    bool result = true;
+    zmsg_t *msg = NULL;
+
+    if ((!(msg = zmsg_new ()))
+    ||  zmsg_addmem (msg, PACKET_HEADER (ROUTER_WORKER_MULTICAST), sizeof (ROUTER_WORKER_MULTICAST)) != 0
+    ||  zmsg_addmem (msg, packet, packetLen) != 0
+    ) {
+        error ("Cannot build the multicast packet.");
+        result = false;
+        goto cleanup;
+    }
+
+    // Add the client identity to the packet
+    uint8_t identityBytes[5];
+    SocketSession_genId (identityKey, identityBytes);
+    if (zmsg_addmem (msg, identityBytes, sizeof (identityBytes)) != 0) {
+        error ("Cannot add the identity in the message.");
+        result = false;
+        goto cleanup;
+    }
+
+    if (zmsg_send (&msg, self->router) != 0) {
+        error ("Cannot send the multicast packet to the Router.");
+        result = false;
+        goto cleanup;
+    }
+
+cleanup:
+    zmsg_destroy (&msg);
+    return result;
+}
 
 uint16_t
 EventServer_getRouterId (
@@ -310,16 +557,48 @@ EventServer_getRouterId (
     return self->info.routerId;
 }
 
-zlist_t *
-EventServer_getClientsWithinRange (
+static zlist_t *
+EventServer_redisGetClientsWithinRange (
     EventServer *self,
-    uint16_t routerId,
-    uint32_t mapId,
+    uint16_t mapId,
     uint8_t *ignoredSocketId,
-    PositionXZ *center,
+    PositionXZ *position,
     float range
 ) {
-    return Redis_getClientsWithinDistance (self->redis, routerId, mapId, center, range, ignoredSocketId);
+    return Redis_getClientsWithinDistance (self->redis, self->info.routerId, mapId, position, range, ignoredSocketId);
+}
+
+bool
+EventServer_getClientsAround (
+    EventServer *self,
+    uint8_t *socketId,
+    zlist_t **_clients
+) {
+    bool status = true;
+    GraphNode *node;
+    zlist_t *clients = NULL;
+
+    if (!(clients = zlist_new ())) {
+        error ("Cannot allocate a new clients list.");
+        status = false;
+        goto cleanup;
+    }
+    *_clients = clients;
+
+    // Get the node associated with the socketId
+    if (!(node = EventServer_getClientNode (self, socketId))) {
+        error ("Cannot get the node %s.", socketId);
+        return NULL;
+    }
+
+    // Add the neighbors keys to the clients list
+    for (GraphArc *arc = zlist_first (node->arcs); arc != NULL; arc = zlist_next (node->arcs)) {
+        GraphNode *nodeAround = arc->to;
+        zlist_append (clients, nodeAround->key);
+    }
+
+cleanup:
+    return status;
 }
 
 bool
@@ -367,6 +646,15 @@ EventServer_linkClients (
     return Graph_link (self->clientsGraph, node1, node2);
 }
 
+bool
+EventServer_unlinkClients (
+    EventServer *self,
+    GraphNode *node1,
+    GraphNode *node2
+) {
+    return Graph_unlink (self->clientsGraph, node1, node2);
+}
+
 GraphNode *
 EventServer_getClientNode (
     EventServer *self,
@@ -381,7 +669,13 @@ EventServer_getClientNode (
             error ("Cannot allocate a new client node.");
             return NULL;
         }
+
         clientNode->user_data = GraphNodeClient_new ();
+        // Add it to the hashtable
+        if (!(Graph_insertNode (self->clientsGraph, clientNode))) {
+            error ("Cannot insert a new client node.");
+            return NULL;
+        }
     }
 
     return clientNode;
