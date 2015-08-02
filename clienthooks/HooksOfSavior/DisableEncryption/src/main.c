@@ -35,7 +35,7 @@ void startInjection (void)
 	}
 
 	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
+    HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
 }
 
 void endInjection (void)
