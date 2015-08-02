@@ -22,6 +22,11 @@ struct lua_TValue
   LuaValue value;
   int tt;
 };
+
+typedef struct lua_TValue LuaTValue;
+
+typedef LuaTValue *StkId;
+
 struct lua_State
 {
   void *next;
@@ -52,14 +57,12 @@ struct lua_State
   void *gclist;
   void *errorJmp;
 };
-typedef LuaTValue *StkId;
-typedef struct lua_TValue LuaTValue;
 '''.strip();
 
 else:
     # Tip : GetSessionObject is already defined with ToSrenameDebugFunctions.py for being discovered
     # Just look for XRef of GetSessionObject and you'll find LuaExtern__declGlobalFunction
-    LuaExtern__declGlobalFunction = 0xCFC290;
+    LuaExtern__declGlobalFunction = 0xCFFBA0; # ICBT3
 
     def MakeNameForce (address, name):
         x = 2;
