@@ -238,7 +238,5 @@ int main (int argc, char **argv)
     // Close the custom debug file if necessary
     dbg_close ();
 
-    pause ();
-
     return 0;
 }
