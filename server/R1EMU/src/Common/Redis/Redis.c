@@ -185,8 +185,10 @@ void
 Redis_replyDestroy (
     redisReply **reply
 ) {
-    freeReplyObject (*reply);
-    *reply = NULL;
+    if (*reply) {
+        freeReplyObject (*reply);
+        *reply = NULL;
+    }
 }
 
 /*
