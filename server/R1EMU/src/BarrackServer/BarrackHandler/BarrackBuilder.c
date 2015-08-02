@@ -41,6 +41,7 @@ BarrackBuilder_loginOk (
         uint64_t accountId;
         uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
+        uint8_t unk2[80];
     } replyPacket;
     #pragma pack(pop)
 

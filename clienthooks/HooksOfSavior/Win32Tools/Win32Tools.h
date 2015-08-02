@@ -391,18 +391,6 @@ void
 window_get_position (HWND hWnd, int *x, int *y);
 
 void
-_error (char *msg, ...);
-
-void
-_warning (char *msg, ...);
-
-void
-_info (char *msg, ...);
-
-void
-_debug (char *msg, ...);
-
-void
 console_stack_pos (int todo);
 
 void

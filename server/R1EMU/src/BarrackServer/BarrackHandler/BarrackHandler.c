@@ -403,8 +403,8 @@ BarrackHandler_commanderCreate (
     #pragma pack(push, 1)
     struct {
         uint8_t charPosition;
-        uint8_t commanderName[64];
-        uint8_t unk3;
+        uint8_t commanderName[COMMANDER_NAME_SIZE+1];
+        uint8_t unk7;
         uint8_t jobId;
         uint8_t gender;
         uint32_t unk4;
@@ -421,6 +421,9 @@ BarrackHandler_commanderCreate (
         return PACKET_HANDLER_ERROR;
     }
 
+    buffer_print (packet, packetSize, "> ");
+    info (">>> %s", clientPacket->commanderName);
+
     // CharName
     strncpy (session->game.currentCommander.commanderName, clientPacket->commanderName, sizeof (session->game.currentCommander.commanderName));
 
@@ -431,7 +434,7 @@ BarrackHandler_commanderCreate (
     switch (clientPacket->jobId)
     {
         default:
-            error ("Invalid commander Job ID (%d)", session->game.currentCommander.jobId);
+            error ("Invalid commander Job ID (%d)", clientPacket->jobId);
             return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:

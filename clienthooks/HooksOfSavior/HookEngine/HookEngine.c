@@ -84,7 +84,6 @@ HookEngine_hook (
     // Save the patched bytes
     Patch *patch = calloc (1, sizeof (Patch));
     memcpy (patch->backup, (void *) function, sizeof (patch->backup));
-    buffer_print (patch->backup, sizeof (patch->backup), "backup : ");
     patch->function = function;
 
     bb_queue_add (&engine->patches, patch);
