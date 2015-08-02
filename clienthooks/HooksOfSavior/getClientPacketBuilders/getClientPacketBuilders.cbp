@@ -44,6 +44,7 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../Console/Console.h" />
+		<Unit filename="../FunctionOffset.h" />
 		<Unit filename="../HookEngine/HookEngine.c">
 			<Option compilerVar="CC" />
 		</Unit>

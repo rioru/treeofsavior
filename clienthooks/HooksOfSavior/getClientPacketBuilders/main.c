@@ -19,6 +19,8 @@ char __thiscall CClientNet__SendPacket (int this, int a2, size_t a3)
 
     DWORD caller = (DWORD) __builtin_return_address (0);
 
+    dbg ("caller = %x", caller);
+
     static unsigned char pattern[] = {
         /*
             8945 F6         mov [dword ss:ebp-0A], eax
@@ -30,14 +32,15 @@ char __thiscall CClientNet__SendPacket (int this, int a2, size_t a3)
         0xB8, '?', '?', '?', '?'
     };
 
+    /*
     DWORD start = caller - 80;
     DWORD size  = caller - start;
     DWORD address = -1;
 	DWORD sendPacketBuilder = mem_scanner ("sendPacketBuilder",
 		start, size,
 		pattern,
-        "xx?"
-        "xx?"
+        "x??"
+        "x??"
         "x????",
 
         "xxx"
@@ -46,9 +49,8 @@ char __thiscall CClientNet__SendPacket (int this, int a2, size_t a3)
 		&address
 	);
 
-	if (address != 0) {
-        dbg ("sendPacketBuilder = %d (%s) is at address %#x", sendPacketBuilder, PacketType_to_string (sendPacketBuilder), address);
-	}
+    dbg ("sendPacketBuilder = %d (%s) is at address %#x", sendPacketBuilder, PacketType_to_string (sendPacketBuilder), address);
+    */
 
     return hooked (this, a2, a3);
 }
