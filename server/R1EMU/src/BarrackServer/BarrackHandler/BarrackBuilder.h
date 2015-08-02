@@ -57,7 +57,7 @@ BarrackBuilder_startGameOk (
     uint32_t zoneServerId,
     uint8_t *zoneServerIp,
     uint32_t zoneServerPort,
-    uint32_t mapId,
+    uint16_t mapId,
     uint8_t commanderListId,
     uint32_t spriteId,
     uint32_t spriteIdRelated,
