@@ -12,6 +12,7 @@ import os
 gePacketTable__PACKET_TABLE__AddPacketSize = 0x993D30; # ICBT3
 
 f = open ('PacketType.h', 'w');
+fpy = open ('PacketType.py', 'w');
 f.write ("typedef enum PacketType {\n\n");
 packetsId = [];
 packetsName = [];
@@ -33,6 +34,7 @@ while occ != BADADDR:
     
     packetLine = "\t%s = %d, // Size = %d" % (packetName, packetId, packetSize);
     f.write (packetLine + "\n");
+    fpy.write ("packetsType[%d] = \"%s\" # Size = %d\n" % (packetId, packetName, packetSize));
     occ = RnextB (gePacketTable__PACKET_TABLE__AddPacketSize, occ);
 
 f.write ('\n\tPACKET_TYPE_COUNT\n\n');
@@ -46,6 +48,10 @@ for name,id,size in zip (packetsName, packetsId, packetsSize):
     f.write ("    REGISTER_PACKET_TYPE_ENTRY (%s, %d, %d),\n" % (name, id, size));
 
 f.write ("    #undef REGISTER_PACKET_TYPE_ENTRY\n};");
-f.close ();
 
-print "The structure has been written to : %s" % (os.getcwd() + "\\PacketType.h");
+f.close ();
+fpy.close ();
+
+print "The structure has been written to : ";
+print "%s" % (os.getcwd() + "\\PacketType.h");
+print "%s" % (os.getcwd() + "\\PacketType.py");
