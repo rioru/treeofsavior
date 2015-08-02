@@ -14,6 +14,7 @@
 // ---------- Includes ------------
 #include "ZoneHandler.h"
 #include "ZoneBuilder.h"
+#include "Common/Packet/Packet.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
 #include "Common/Server/EventHandler.h"
@@ -546,6 +547,7 @@ ZoneHandler_connect (
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
+    CHECK_CLIENT_PACKET_SIZE (*clientPacket, CZ_CONNECT);
     if (sizeof (*clientPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (*clientPacket));

@@ -47,7 +47,7 @@ BarrackBuilder_loginOk (
 
     PacketType packetType = BC_LOGINOK;
 
-    CHECK_PACKET_SIZE (replyPacket, packetType);
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = packetType;
