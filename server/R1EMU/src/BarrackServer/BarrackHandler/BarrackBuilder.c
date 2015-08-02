@@ -70,17 +70,18 @@ BarrackBuilder_startGameOk (
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
-    struct {
+    struct BcStartGameOkPacket {
         ServerPacketHeader header;
         uint32_t zoneServerId;
-        uint8_t zoneServerIp[32];
+        uint32_t zoneServerIp;
         uint32_t zoneServerPort;
-        uint16_t mapId;
-        uint16_t unk;
+        uint32_t mapId;
         uint8_t commanderListId;
         uint32_t spriteId;
         uint32_t spriteIdRelated;
         uint8_t isSingleMap;
+        uint8_t unk1;
+        uint8_t reserved[27];
     } replyPacket;
     #pragma pack(pop)
 
@@ -88,7 +89,7 @@ BarrackBuilder_startGameOk (
     {
         replyPacket.header.type = BC_START_GAMEOK;
         replyPacket.zoneServerId = zoneServerId;
-        strncpy (replyPacket.zoneServerIp, zoneServerIp, sizeof (replyPacket.zoneServerIp));
+        replyPacket.zoneServerIp = *(uint32_t *) ((char []) {127, 0, 0, 1});
         replyPacket.zoneServerPort = zoneServerPort;
         replyPacket.mapId = mapId;
         replyPacket.commanderListId = commanderListId;

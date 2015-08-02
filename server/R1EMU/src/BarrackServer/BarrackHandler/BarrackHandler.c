@@ -343,7 +343,6 @@ BarrackHandler_barracknameChange (
     if (sizeof (CbBarrackNameChangePacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (CbBarrackNameChangePacket));
-
         return PACKET_HANDLER_ERROR;
     }
 
@@ -404,12 +403,11 @@ BarrackHandler_commanderCreate (
     struct {
         uint8_t charPosition;
         uint8_t commanderName[COMMANDER_NAME_SIZE+1];
-        uint8_t unk7;
-        uint8_t jobId;
+        uint16_t jobId;
         uint8_t gender;
-        uint32_t unk4;
-        uint32_t unk5;
-        uint32_t unk6;
+        float unk4;
+        float unk5;
+        float unk6;
         uint8_t hairType;
     }  *clientPacket = (void *) packet;
     #pragma pack(pop)
@@ -431,7 +429,7 @@ BarrackHandler_commanderCreate (
     switch (clientPacket->jobId)
     {
         default:
-            error ("Invalid commander Job ID (%d)", clientPacket->jobId);
+            error ("Invalid commander Job ID (%x)", clientPacket->jobId);
             return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
