@@ -10,6 +10,7 @@
 char *loggerPath = NULL;
 HANDLE mutex;
 FILE *defaultOutput = NULL;
+FILE *handlersOutput = NULL;
 bool enablePacketEncryption = false;
 char *sessionDate = NULL;
 
@@ -83,7 +84,9 @@ char __thiscall CNetUsr__Recv (void *this)
     if (!(bb_queue_exists (&packetHandlersHooked, netUsr->vtable->PacketHandler))) {
         // Not hooked yet : do it
         bb_queue_add (&packetHandlersHooked, netUsr->vtable->PacketHandler);
-        info ("New packet handler hooked at %p => CNetUsr__PacketHandler_%d", netUsr->vtable->PacketHandler, handlersHooked);
+        dbg_set_output (handlersOutput);
+        info ("New packet handler hooked at %p => CNetUsr__PacketHandler_%d", netUsr->vtable->PacketHandler, handlersHooked + 1);
+        dbg_set_output (defaultOutput);
         ULONG_PTR packetHandler = NULL;
 	    switch (handlersHooked++) {
 	        // HookEngine_get_original_function requires a unique function per hook
@@ -140,6 +143,7 @@ void startInjection (void)
     // Init path & dbg
 	loggerPath = get_module_path ("PacketLogger.dll");
 	defaultOutput = fopen (str_dup_printf("%s/log.txt", loggerPath), "w+");
+	handlersOutput = fopen (str_dup_printf("%s/handlers.txt", loggerPath), "w+");
 	dbg_set_output (defaultOutput);
 
 	// Init output path
