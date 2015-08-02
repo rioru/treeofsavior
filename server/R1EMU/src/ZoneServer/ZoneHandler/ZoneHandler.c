@@ -185,9 +185,7 @@ ZoneHandler_restSit (
 
     // Notify the players around
     GameEventRestSit event = {
-        .mapId = session->socket.mapId,
         .targetPcId = session->game.currentCommander.pcId,
-        .position = session->game.currentCommander.cPos,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
@@ -371,7 +369,7 @@ ZoneHandler_moveStop (
     // Notify the players around
     GameEventMoveStop event = {
         .mapId = session->socket.mapId,
-        .targetPcId = session->game.currentCommander.pcId,
+        .commander = session->game.currentCommander,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
@@ -646,7 +644,7 @@ ZoneHandler_jump (
     GameEventJump event = {
         .mapId = session->socket.mapId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
-        .targetPcId = session->game.currentCommander.pcId,
+        .commander = session->game.currentCommander,
         .position = session->game.currentCommander.cPos,
         .height = 300.0
     };
