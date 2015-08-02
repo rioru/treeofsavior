@@ -33,6 +33,9 @@ clienthooks/HooksOfSavior/PacketLogger/log.txt
 clienthooks/HooksOfSavior/PacketLogger/packets/*
 clienthooks/HooksOfSavior/PacketLogger/handlers.txt
 
+# GetClientPacketBuilders ignored files
+clienthooks/HooksOfSavior/getClientPacketBuilders/getClientPacketBuilders_log.txt
+
 # R1EMU doxygen documentation
 server/R1EMU/projects/codeblocks/R1EMU/doxygen
 
