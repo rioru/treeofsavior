@@ -421,9 +421,6 @@ BarrackHandler_commanderCreate (
         return PACKET_HANDLER_ERROR;
     }
 
-    buffer_print (packet, packetSize, "> ");
-    info (">>> %s", clientPacket->commanderName);
-
     // CharName
     strncpy (session->game.currentCommander.commanderName, clientPacket->commanderName, sizeof (session->game.currentCommander.commanderName));
 
