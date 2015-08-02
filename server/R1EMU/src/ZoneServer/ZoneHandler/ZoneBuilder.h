@@ -199,11 +199,21 @@ ZoneBuilder_buffList (
 
 
 /**
- * @brief @unknown
+ * @brief Makes a playable character appear in the screen.
  */
 void
 ZoneBuilder_enterPc (
     CommanderInfo *commander,
+    zmsg_t *replyMsg
+);
+
+
+/**
+ * @brief Makes a playable character disappear in the screen.
+ */
+void
+ZoneBuilder_leave (
+    uint32_t targetPcId,
     zmsg_t *replyMsg
 );
 

@@ -615,6 +615,27 @@ ZoneBuilder_buffList (
 }
 
 void
+ZoneBuilder_leave (
+    uint32_t targetPcId,
+    zmsg_t *replyMsg
+) {
+    #pragma pack(push, 1)
+    struct {
+        ServerPacketHeader header;
+        uint32_t pcId;
+        uint16_t unk1;
+    } replyPacket;
+    #pragma pack(pop)
+
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    {
+        replyPacket.header.type = ZC_LEAVE;
+        replyPacket.pcId = targetPcId;
+        replyPacket.unk1 = 1;
+    }
+}
+
+void
 ZoneBuilder_enterPc (
     CommanderInfo *commander,
     zmsg_t *replyMsg
