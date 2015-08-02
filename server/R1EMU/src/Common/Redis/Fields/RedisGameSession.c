@@ -503,7 +503,7 @@ Redis_getClientsWithinDistance (
     float range,
     char *ignoredSocketId
 ) {
-    bool result = true;
+    bool status = true;
     zlist_t *clients = NULL;
     redisReply *reply = NULL;
     redisReply *posReply = NULL;
@@ -512,6 +512,7 @@ Redis_getClientsWithinDistance (
     // Who got this list then ? The Worker?
     if (!(clients = zlist_new ())) {
         error ("Cannot allocate a new zlist.");
+        status = false;
         goto cleanup;
     }
 
@@ -533,14 +534,14 @@ Redis_getClientsWithinDistance (
 
         if (!reply) {
             error ("Redis error encountered : The request is invalid.");
-            result = false;
+            status = false;
             goto cleanup;
         }
 
         switch (reply->type) {
             case REDIS_REPLY_ERROR:
                 error ("Redis error encountered : %s", reply->str);
-                result = false;
+                status = false;
                 goto cleanup;
             break;
 
@@ -559,7 +560,7 @@ Redis_getClientsWithinDistance (
 
                     if (!posReply) {
                         error ("Redis error encountered : The request is invalid.");
-                        result = false;
+                        status = false;
                         goto cleanup;
                     }
 
@@ -567,7 +568,7 @@ Redis_getClientsWithinDistance (
 
                         case REDIS_REPLY_ERROR:
                             error ("Redis error encountered : %s", reply->str);
-                            result = false;
+                            status = false;
                             goto cleanup;
                         break;
 
@@ -578,7 +579,7 @@ Redis_getClientsWithinDistance (
                         case REDIS_REPLY_ARRAY: {
                             if (posReply->elements != 3) {
                                 error ("Abnormal number of elements (%d, should be 3).", posReply->elements);
-                                result = false;
+                                status = false;
                                 goto cleanup;
                             }
 
@@ -601,7 +602,7 @@ Redis_getClientsWithinDistance (
 
                         default :
                             error ("Unexpected Redis status. (%d)", reply->type);
-                            result = false;
+                            status = false;
                             goto cleanup;
                         break;
                     }
@@ -612,7 +613,7 @@ Redis_getClientsWithinDistance (
 
             default :
                 error ("Unexpected Redis status. (%d)", reply->type);
-                result = false;
+                status = false;
                 goto cleanup;
             break;
         }
@@ -622,15 +623,11 @@ Redis_getClientsWithinDistance (
     } while (iterator != 0);
 
 cleanup:
-    if (!result) {
+    if (!status) {
         zlist_destroy (&clients);
     }
-    if (reply) {
-        Redis_replyDestroy (&reply);
-    }
-    if (posReply) {
-        Redis_replyDestroy (&posReply);
-    }
+    Redis_replyDestroy (&reply);
+    Redis_replyDestroy (&posReply);
 
     return clients;
 }
