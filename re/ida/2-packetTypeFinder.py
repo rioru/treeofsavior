@@ -9,7 +9,7 @@ import idautils
 import idc
 import os
 
-gePacketTable__PACKET_TABLE__AddPacketSize = 0x9902E0;
+gePacketTable__PACKET_TABLE__AddPacketSize = 0x993D30; # ICBT3
 
 f = open ('PacketType.h', 'w');
 f.write ("typedef enum PacketType {\n\n");
