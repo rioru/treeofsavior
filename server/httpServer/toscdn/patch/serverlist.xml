@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- edited with XMLSpy v2008 sp1 (http://www.altova.com) by MintPC (Mi) -->
+
+<!-- edited with XMLSPY v2004 rel. 3 U (http://www.xmlspy.com) by Jung (IMCGames Co., Ltd) -->
+
+<serverlist>
+
+	<statistics Ip="192.168.0.202" Port="10001"/>
+
+	<server GROUP_ID="100" TRAFFIC="0" ENTER_LIMIT="100" NAME="Tree of Savior" Server0_IP="54.88.25.242" Server0_Port="2000" Server1_IP="None" Server1_Port="None"/>
+    <server GROUP_ID="100" TRAFFIC="0" ENTER_LIMIT="100" NAME="R1EMU" Server0_IP="127.0.0.1" Server0_Port="2000" Server1_IP="None" Server1_Port="None"/>
+
+</serverlist>

@@ -1,0 +1,7 @@
+ServiceNation=GLOBAL
+Dictionary=YES
+UseNexonSSO=NO
+UseNexonGLM=NO
+UseHackshield=NO
+UseSteamClient=YES
+UseXigncode=NO

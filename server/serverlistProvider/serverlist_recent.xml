@@ -1,4 +1,0 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<serverlist>
-	<server GROUP_ID="100" TRAFFIC="0" ENTER_LIMIT="300" NAME="LOCALHOST" Server0_IP="127.0.0.1" Server0_Port="2000" Server1_IP="127.0.0.1" Server1_Port="2001"/>
-</serverlist>
