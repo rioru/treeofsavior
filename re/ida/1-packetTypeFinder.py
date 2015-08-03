@@ -9,7 +9,7 @@ import idautils
 import idc
 import os
 
-gePacketTable__PACKET_TABLE__AddPacketSize = 0x993D30; # ICBT3
+gePacketTable__PACKET_TABLE__AddPacketSize = 0x09A7870; # ICBT3
 
 f = open ('PacketType.h', 'w');
 fpy = open ('PacketType.py', 'w');
