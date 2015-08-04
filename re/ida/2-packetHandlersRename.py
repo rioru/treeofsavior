@@ -588,6 +588,7 @@ packetsType[3499] = "CZ_PVP_CHAT" # Size = 0
 packetsType[3500] = "CZ_CARDBATTLE_CMD" # Size = 26
 
 
+
 class JumpTableHandler:
 
     def __init__ (self, jumptableOffset, jumptableSize, jumptableIndex, jumptableAddress, defaultCase, className):
@@ -623,17 +624,18 @@ class JumpTableHandler:
                     continue;
                 MakeName (callAddress, self.className + "::" + name);
 
+
 # Barrack
 jumptableOffset  = 13
 jumptableSize    = 0x4F
-jumptableIndex   = 0x44B188
-jumptableAddress = 0x44B138
-defaultCase      = 0x44B119
+jumptableIndex   = 0x44B178
+jumptableAddress = 0x44B128
+defaultCase      = 0x44B109
 barrackHandler = JumpTableHandler (jumptableOffset, jumptableSize, jumptableIndex, jumptableAddress, defaultCase, "CBarrackNet");
 barrackHandler.resolve ();
 
-# Zone 1
 """
+# Zone 1
 jumptableOffset  = 0xC2B
 jumptableSize    = 0x176
 jumptableIndex   = 0x416030
