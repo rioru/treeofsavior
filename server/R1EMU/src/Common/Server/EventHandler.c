@@ -32,7 +32,7 @@ EventHandler_enterPc (
     zlist_t *clientsAround = NULL;
 
     // Update client position
-    if (!(EventServer_updateClientPosition (self, event->socketId, &event->commander, &event->commander.cPos, event->mapId, &clientsAround))) {
+    if (!(EventServer_updateClientPosition (self, event->socketId, &event->commander, &event->commander.pos, event->mapId, &clientsAround))) {
         error ("Cannot update player %s position.", event->socketId);
         status = false;
         goto cleanup;

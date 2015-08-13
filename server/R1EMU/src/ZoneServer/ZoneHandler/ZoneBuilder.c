@@ -38,9 +38,11 @@ ZoneBuilder_restSit (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_REST_SIT;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_REST_SIT;
+        replyPacket.header.type = packetType;
         replyPacket.pcId = targetPcId;
         replyPacket.isSit = 0;
     }
@@ -72,9 +74,11 @@ ZoneBuilder_skillReady (
         5A730100 419C0000 0000803F 011C ECC7 720344C4 74768243 2178F6C3 720344C4 74768243 2178F6C3
         5A730100 419C0000 0000803F 011C ECC7 C9EC91C4 74768243 17060AC4 C9EC91C4 74768243 17060AC4
     */
+    PacketType packetType = ZC_SKILL_READY;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_SKILL_READY;
+        replyPacket.header.type = packetType;
         replyPacket.pcId = targetPcId;
         replyPacket.skillId = skillId;
         replyPacket.unk3 = 1.0;
@@ -105,9 +109,11 @@ ZoneBuilder_playAni (
         4B010000 25182700 0101 00000000 0000803F
     */
 
+    PacketType packetType = ZC_PLAY_ANI;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_PLAY_ANI;
+        replyPacket.header.type = packetType;
         replyPacket.unkSchrageId1 = SWAP_UINT32 (0x48010000);
         replyPacket.unkSchrageId2 = SWAP_UINT32 (0x271826);
         replyPacket.isUnk1 = 1;
@@ -136,9 +142,11 @@ ZoneBuilder_skillCast (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_SKILL_CAST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_SKILL_CAST;
+        replyPacket.header.type = packetType;
         replyPacket.pcId = targetPcId;
         replyPacket.unk2 = 0xECC7;
         replyPacket.unk3 = 0;
@@ -164,9 +172,11 @@ ZoneBuilder_playSkillCastAni (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_PLAY_SKILL_CAST_ANI;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_PLAY_SKILL_CAST_ANI;
+        replyPacket.header.type = packetType;
         replyPacket.pcId = targetPcId;
         memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
         replyPacket.unk1 = 0xECC7;
@@ -466,6 +476,8 @@ ZoneBuilder_faction (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_FACTION;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -489,6 +501,8 @@ ZoneBuilder_enterMonster (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_ENTER_MONSTER;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -520,6 +534,8 @@ ZoneBuilder_skillAdd (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_SKILL_ADD;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -553,6 +569,8 @@ ZoneBuilder_loginTime (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_LOGIN_TIME;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -576,6 +594,8 @@ ZoneBuilder_stamina (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_STAMINA;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -602,6 +622,8 @@ ZoneBuilder_buffList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_BUFF_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize = sizeof (replyPacket);
@@ -627,6 +649,8 @@ ZoneBuilder_leave (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_LEAVE;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         replyPacket.header.type = ZC_LEAVE;
@@ -686,6 +710,8 @@ ZoneBuilder_enterPc (
         956A0100 A0A5B9C4 74768243 4BC90FC3 AD1802BF 957A5C3F 02269905 0000A29F 01 0000 0000F841 00000000 4E00 4E00 9A00 9A00 A8610000 A8610000 00 0000 FFFFFFFF 06640000 00 EC9584EC95BC0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 EC95BCEC95BC00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0000 0000000 084C025A00000000 1627 A100 0200 0100 01 00 0000 02000000 02000000 04000000 9D1A0800 06000000 07000000 10270000 F82A0000 2D270200 7C969800 04000000 09000000 09000000 04000000 8DF30700 09000000 09000000 09000000 09000000 0A000000 24000000
     */
 
+    PacketType packetType = ZC_ENTER_PC;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize = sizeof (replyPacket);
@@ -717,9 +743,9 @@ ZoneBuilder_enterPc (
         strncpy (replyPacket.familyName, commander->familyName, sizeof (replyPacket.familyName));
         strncpy (replyPacket.commanderName, commander->commanderName, sizeof (replyPacket.commanderName));
         replyPacket.pcId = commander->pcId;
-        replyPacket.position.x = commander->cPos.x;
+        replyPacket.position.x = commander->pos.x;
         replyPacket.position.y = 260.0f;
-        replyPacket.position.z = commander->cPos.z;
+        replyPacket.position.z = commander->pos.z;
         replyPacket.unk7 = 1.0;
         replyPacket.accountId = commander->accountId;
         replyPacket.classId = commander->classId;
@@ -744,6 +770,8 @@ ZoneBuilder_objectProperty (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_OBJECT_PROPERTY;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -806,6 +834,8 @@ ZoneBuilder_addonMsg (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_ADDON_MSG;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -967,9 +997,11 @@ ZoneBuilder_startGame (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_START_GAME;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_START_GAME;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.timeMultiplier = timeMultiplier;
         replyPacket.serverAppTimeOffset = serverAppTimeOffset;
         replyPacket.globalAppTimeOffset = globalAppTimeOffset;
@@ -1006,6 +1038,8 @@ ZoneBuilder_quickSlotList (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_QUICK_SLOT_LIST;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -1037,9 +1071,11 @@ ZoneBuilder_cooldownList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_COOLDOWN_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_COOLDOWN_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0x14;
         replyPacket.unk2 = 0x604;
         replyPacket.unk3 = 0x019F74;
@@ -1061,6 +1097,8 @@ ZoneBuilder_abilityList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_ABILITY_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize = sizeof (replyPacket);
@@ -1072,8 +1110,7 @@ ZoneBuilder_abilityList (
             , &replyPacket, &memSize
         );
 
-        replyPacket.variableSizeHeader.serverHeader.type = ZC_ABILITY_LIST;
-        replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
+        VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, packetType, sizeof (replyPacket));
         replyPacket.pcId = targetPcId;
     }
 }
@@ -1202,9 +1239,11 @@ ZoneBuilder_startInfo (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_START_INFO;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_START_INFO;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0x18;
         replyPacket.unk2 = 1;
         replyPacket.unk3 = 4;
@@ -1228,9 +1267,11 @@ ZoneBuilder_setPos (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_SET_POS;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_SET_POS;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.pcId = targetPcId;
         memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
     }
@@ -1249,9 +1290,11 @@ ZoneBuilder_guestPageMap (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_GUESTPAGE_MAP;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_GUESTPAGE_MAP;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0xD;
         replyPacket.unk2 = 1;
         replyPacket.unk3 = 0;
@@ -1271,9 +1314,11 @@ ZoneBuilder_myPageMap (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_MYPAGE_MAP;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_MYPAGE_MAP;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0xD;
         replyPacket.unk2 = 1;
         replyPacket.unk3 = 0;
@@ -1302,9 +1347,11 @@ ZoneBuilder_helpList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_HELP_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_HELP_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0x1B;
         replyPacket.nbEntries = 3;
 
@@ -1331,9 +1378,11 @@ ZoneBuilder_npcStateList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_NPC_STATE_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_NPC_STATE_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0xC;
         replyPacket.unk2 = 0;
     }
@@ -1352,9 +1401,11 @@ ZoneBuilder_uiInfoList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_UI_INFO_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_UI_INFO_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0x10;
         replyPacket.unk2 = 0;
         replyPacket.unk3 = 0;
@@ -1373,9 +1424,11 @@ ZoneBuilder_chatMacroList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_CHAT_MACRO_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_CHAT_MACRO_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0xC;
         replyPacket.unk2 = 0;
     }
@@ -1393,9 +1446,11 @@ ZoneBuilder_achievePointList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_ACHIEVE_POINT_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_ACHIEVE_POINT_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0xC;
         replyPacket.unk2 = 0;
     }
@@ -1413,9 +1468,11 @@ ZoneBuilder_skillmapList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_SKILLMAP_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_SKILLMAP_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0xC;
         replyPacket.unk2 = 0;
     }
@@ -1433,9 +1490,11 @@ ZoneBuilder_optionList (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_OPTION_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_OPTION_LIST;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 9;
         replyPacket.unk2 = 0;
     }
@@ -1453,9 +1512,11 @@ ZoneBuilder_MyPCEnter (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_MYPC_ENTER;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_MYPC_ENTER;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
     }
 }
@@ -1475,9 +1536,11 @@ ZoneBuilder_moveSpeed (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_MOVE_SPEED;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_MOVE_SPEED;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
 
         replyPacket.pcId = targetPcId;
         replyPacket.movementSpeed = movementSpeed;
@@ -1501,9 +1564,11 @@ ZoneBuilder_jump (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_JUMP;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = ZC_JUMP;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.pcId = targetPcId;
         replyPacket.height = height;
         replyPacket.unk1 = 0;
@@ -1512,10 +1577,9 @@ ZoneBuilder_jump (
 }
 
 void
-ZoneBuilder_connect (
+ZoneBuilder_connectOk (
     uint8_t gameMode,
     uint8_t accountPrivileges,
-    uint32_t targetPcId,
     CommanderInfo *commander,
     zmsg_t *replyMsg
 ) {
@@ -1525,27 +1589,36 @@ ZoneBuilder_connect (
         uint8_t gameMode; // 0 = NormalMode, 1 = SingleMode
         uint32_t unk1;
         uint8_t accountPrivileges;
-        uint8_t unk2[3];
-        uint8_t unk3[7];
+        uint16_t unk2;
+        uint64_t unk3;
+        uint8_t markers[3];
+        uint8_t passport[40];
         uint32_t pcId;
-        uint32_t unk4;
+        uint8_t unk4;
+        uint32_t unk5;
         CommanderInfo commander;
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_CONNECT_OK;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.variableSizeHeader.serverHeader.type = ZC_CONNECT_OK;
-        replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
+        VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, packetType, sizeof (replyPacket));
 
         replyPacket.gameMode = gameMode;
-        replyPacket.unk1 = 1;
+        replyPacket.unk1 = SWAP_UINT32 (0xCED3B04C); // ICBT3
+        replyPacket.unk2 = 0;
+        memcpy (replyPacket.markers, "*.*", sizeof (replyPacket.markers));
+        memcpy (replyPacket.passport, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", sizeof (replyPacket.passport));
         replyPacket.accountPrivileges = accountPrivileges;
-        replyPacket.pcId = targetPcId;
+        replyPacket.pcId = commander->pcId;
 
         // Copy the current commander information
         memcpy (&replyPacket.commander, commander, sizeof (CommanderInfo));
     }
+
+    CommanderInfo_print (&replyPacket.commander);
 }
 
 void
@@ -1559,6 +1632,8 @@ ZoneBuilder_sessionObjects (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_SESSION_OBJECTS;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -1648,6 +1723,8 @@ ZoneBuilder_itemInventoryList (
     (void) replyPacket;
     #pragma pack(pop)
 
+    // PacketType packetType = ZC_ITEM_INVENTORY_LIST;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
@@ -1710,9 +1787,11 @@ ZoneBuilder_moveDir (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_MOVE_DIR;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        PacketServer_header (&replyPacket.header, ZC_MOVE_DIR);
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.pcId = targetPcId;
         memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
         memcpy (&replyPacket.direction, direction, sizeof (PositionXZ));
@@ -1751,9 +1830,11 @@ ZoneBuilder_pcMoveStop (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = ZC_PC_MOVE_STOP;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        PacketServer_header (&replyPacket.header, ZC_PC_MOVE_STOP);
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.pcId = targetPcId;
         memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
         memcpy (&replyPacket.direction, direction, sizeof (PositionXZ));

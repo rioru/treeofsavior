@@ -121,7 +121,7 @@ ZoneHandler_chat (
                 // Add a fake commander with a fake account
                 CommanderInfo fakePc;
                 CommanderInfo_createBasicCommander (&fakePc);
-                fakePc.cPos = session->game.currentCommander.cPos;
+                fakePc.pos = session->game.currentCommander.pos;
                 fakePc.accountId = R1EMU_generate_random64 (&self->seed);
                 fakePc.pcId = R1EMU_generate_random (&self->seed);
                 strncpy (fakePc.familyName, "Dummy", sizeof (fakePc.familyName));
@@ -418,7 +418,7 @@ ZoneHandler_keyboardMove (
     // TODO : Check coordinates
 
     // Update session
-    session->game.currentCommander.cPos = PositionXYZToXZ (&clientPacket->position);
+    session->game.currentCommander.pos = PositionXYZToXZ (&clientPacket->position);
 
     // Notify the players around
     GameEventCommanderMove event = {
@@ -455,6 +455,7 @@ ZoneHandler_gameReady (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    /*
     ZoneBuilder_itemInventoryList (reply);
     ZoneBuilder_sessionObjects (reply);
     ZoneBuilder_optionList (reply);
@@ -477,15 +478,18 @@ ZoneHandler_gameReady (
     ZoneBuilder_normalUnk3 (reply);
     ZoneBuilder_normalUnk4 (reply);
     ZoneBuilder_normalUnk5 (reply);
+    */
     ZoneBuilder_startGame (1.0, 0.0, 0.0, 0.0, reply);
+    /*
     ZoneBuilder_objectProperty (reply);
     ZoneBuilder_stamina (reply);
     ZoneBuilder_loginTime (reply);
+    */
 
     PositionXYZ enterPosition = {
-        .x = session->game.currentCommander.cPos.x,
+        .x = session->game.currentCommander.pos.x,
         .y = 260.0f,
-        .z = session->game.currentCommander.cPos.z
+        .z = session->game.currentCommander.pos.z
     };
     ZoneBuilder_MyPCEnter (&enterPosition, reply);
     ZoneBuilder_skillAdd (reply);
@@ -498,12 +502,13 @@ ZoneHandler_gameReady (
     memcpy (&pcEnterEvent.commander, &session->game.currentCommander, sizeof (CommanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
 
-    ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
+    // ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
 
     // Add NPC at the start screen
-    ZoneBuilder_enterMonster (reply);
-    ZoneBuilder_faction (reply);
+    // ZoneBuilder_enterMonster (reply);
+    // ZoneBuilder_faction (reply);
 
+    /*
     ZoneBuilder_normalUnk6 (
         session->game.currentCommander.commanderName,
         reply
@@ -521,6 +526,7 @@ ZoneHandler_gameReady (
     ZoneBuilder_moveSpeed (session->game.currentCommander.pcId, 31.0, reply);
     ZoneBuilder_normalUnk9 (session->game.currentCommander.pcId, reply);
     ZoneBuilder_addonMsg (reply);
+    */
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
@@ -533,6 +539,7 @@ ZoneHandler_connect (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    buffer_print (packet, packetSize, "CONNECT : ");
     #pragma pack(push, 1)
     struct {
         uint32_t unk1;
@@ -547,6 +554,7 @@ ZoneHandler_connect (
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
+    /*
     CHECK_CLIENT_PACKET_SIZE (*clientPacket, CZ_CONNECT);
     if (sizeof (*clientPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
@@ -554,6 +562,7 @@ ZoneHandler_connect (
 
         return PACKET_HANDLER_ERROR;
     }
+    */
 
     // Get the Game Session that the Barrack Server moved
     RedisGameSessionKey gameKey = {
@@ -601,13 +610,12 @@ ZoneHandler_connect (
     }
 
     // Position : Official starting point position (tutorial)
-    session->game.currentCommander.cPos.x = -628.0f;
-    session->game.currentCommander.cPos.z = -1025.0f;
+    session->game.currentCommander.pos.x = -628.0f;
+    session->game.currentCommander.pos.z = -1025.0f;
 
-    ZoneBuilder_connect (
+    ZoneBuilder_connectOk (
         0, // GameMode
         0, // accountPrivileges
-        session->game.currentCommander.pcId, // targetPcId
         &session->game.currentCommander, // Current commander
         reply
     );
@@ -647,7 +655,7 @@ ZoneHandler_jump (
         .mapId = session->socket.mapId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
         .commander = session->game.currentCommander,
-        .position = session->game.currentCommander.cPos,
+        .position = session->game.currentCommander.pos,
         .height = 300.0
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));

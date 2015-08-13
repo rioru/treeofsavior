@@ -24,21 +24,11 @@
 
 // ------ Structure declaration -------
 
+#pragma pack(push, 1)
 /**
  * @brief CommanderInfo is the struct of a commander.
  */
-typedef struct CommanderInfo
-{
-    uint8_t commanderName[COMMANDER_NAME_SIZE+1];
-    uint8_t familyName[COMMANDER_FAMILY_NAME_SIZE+1];
-    uint8_t unk1[6];
-    uint64_t accountId;
-    uint16_t classId;
-    uint16_t unk2;
-    uint16_t jobId;
-    uint8_t gender;
-    uint8_t unk3;
-    uint32_t level;
+typedef struct CommanderEquipment {
     uint32_t head_top;
     uint32_t head_middle;
     uint32_t itemUnk1;
@@ -59,7 +49,46 @@ typedef struct CommanderInfo
     uint32_t ring_left;
     uint32_t ring_right;
     uint32_t necklace;
+} CommanderEquipment;
+#pragma pack(pop)
+
+#pragma pack(push, 1)
+/**
+ * @brief CommanderInfo is the struct of a commander.
+ */
+typedef struct CommanderInfo
+{
+    uint8_t commanderName[COMMANDER_NAME_SIZE+1];
+    uint8_t familyName[COMMANDER_FAMILY_NAME_SIZE];
+    uint32_t unk1;
+    uint8_t unk2;
+    uint16_t unk3;
+    uint64_t accountId;
+    uint16_t classId;
+    uint16_t unk4;
+    uint16_t jobId;
+    uint8_t gender;
+    uint8_t unk5;
+    uint32_t level;
+    CommanderEquipment equipment;
     uint8_t hairType;
+    uint8_t unk6;
+    uint16_t unk7;
+    PositionXZ pos;
+    uint32_t currentXP;
+    uint32_t maxXP;
+    uint32_t commanderId;
+    uint64_t accId1;
+    uint64_t accId2;
+    uint32_t currentHP;
+    uint32_t maxHP;
+    uint16_t currentSP;
+    uint16_t maxSP;
+    uint32_t currentStamina;
+    uint32_t maxStamina;
+    uint32_t unk8;
+
+    /*
     uint8_t unk4;
     uint16_t unk5;
     uint32_t pcId;
@@ -77,11 +106,13 @@ typedef struct CommanderInfo
     uint32_t maxHP;
     uint16_t currentSP;
     uint16_t maxSP;
-    PositionXZ cPos;
+    PositionXZ pos;
     uint32_t unk10;
     uint32_t unk11;
     uint32_t unk12;
+    */
 }   CommanderInfo;
+#pragma pack(pop)
 
 typedef enum CommanderJobId
 {

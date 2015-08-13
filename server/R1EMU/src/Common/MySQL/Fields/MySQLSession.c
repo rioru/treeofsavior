@@ -32,43 +32,40 @@ MySQL_flushSession (
             // Insert a new Commander
             if (MySQL_query (self,
                 "INSERT INTO commander ("
-                "`commander_id`, `account_id`, `commander_num`, `name`, `family_name`, `class`, "
+                "`commander_id`, `account_id`, `name`, `family_name`, `class`, "
                 "`gender`, `level`, `head_top`, `head_middle`, `necklace`, `body_armor`, `leg_armor`, "
                 "`gloves`, `shoes`, `weapon`, `shield`, `costume`, `ring`, `bracelet_left`, "
-                "`bracelet_right`, `hair_type`, `last_map`, `last_x`, `last_y`, `current_xp`, `pose`, "
+                "`bracelet_right`, `hair_type`, `last_x`, `last_y`, `current_xp`, "
                 "`current_hp`, `current_sp`) VALUES ("
-                "%u, %lu, %d, '%s', '%s', %d, "
+                "%u, %lu, '%s', '%s', %d, "
                 "%d, %d, %d, %d, %d, %d, %d, "
                 "%d, %d, %d, %d, %d, %d, %d, "
-                "%d, %d, %d, %d, %d, %d, %d, "
+                "%d, %d, %d, %d, %d, "
                 "%d, %d)",
                 session->game.currentCommander.commanderId,
                 session->game.currentCommander.accountId,
-                session->game.currentCommander.charPosition,
                 session->game.currentCommander.commanderName,
                 session->game.currentCommander.familyName,
                 session->game.currentCommander.classId,
                 session->game.currentCommander.gender,
                 session->game.currentCommander.level,
-                session->game.currentCommander.head_top,
-                session->game.currentCommander.head_middle,
-                session->game.currentCommander.necklace,
-                session->game.currentCommander.body_armor,
-                session->game.currentCommander.leg_armor,
-                session->game.currentCommander.gloves,
-                session->game.currentCommander.boots,
-                session->game.currentCommander.weapon,
-                session->game.currentCommander.shield,
-                session->game.currentCommander.costume,
-                session->game.currentCommander.bracelet,
-                session->game.currentCommander.ring_left,
-                session->game.currentCommander.ring_right,
+                session->game.currentCommander.equipment.head_top,
+                session->game.currentCommander.equipment.head_middle,
+                session->game.currentCommander.equipment.necklace,
+                session->game.currentCommander.equipment.body_armor,
+                session->game.currentCommander.equipment.leg_armor,
+                session->game.currentCommander.equipment.gloves,
+                session->game.currentCommander.equipment.boots,
+                session->game.currentCommander.equipment.weapon,
+                session->game.currentCommander.equipment.shield,
+                session->game.currentCommander.equipment.costume,
+                session->game.currentCommander.equipment.bracelet,
+                session->game.currentCommander.equipment.ring_left,
+                session->game.currentCommander.equipment.ring_right,
                 session->game.currentCommander.hairType,
-                session->game.currentCommander.mapId,
-                session->game.currentCommander.cPos.x,
-                session->game.currentCommander.cPos.z,
+                session->game.currentCommander.pos.x,
+                session->game.currentCommander.pos.z,
                 session->game.currentCommander.currentXP,
-                session->game.currentCommander.spriteId,
                 session->game.currentCommander.currentHP,
                 session->game.currentCommander.currentSP
             )) {

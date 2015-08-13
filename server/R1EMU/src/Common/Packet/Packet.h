@@ -30,7 +30,8 @@
 
 #define CHECK_SERVER_PACKET_SIZE(packet, packetType)                                        \
     do {                                                                                    \
-        if (sizeof (packet) != packetTypeInfo.packets[packetType].size) {                   \
+        if (packetTypeInfo.packets[packetType].size != 0                                    \
+         && sizeof (packet) != packetTypeInfo.packets[packetType].size) {                   \
             error ("The packet size sent isn't the equal to the one in PacketType.h");      \
             error ("The packet size is %d bytes. The waited size is %d bytes.",             \
                 sizeof(packet), packetTypeInfo.packets[packetType].size);                   \
@@ -146,7 +147,7 @@ CryptPacket_getHeader (
  * @return
  */
 void
-PacketServer_header (
+ServerPacketHeader_init (
     ServerPacketHeader *serverHeader,
     uint16_t packetType
 );
@@ -159,7 +160,7 @@ PacketServer_header (
  * @return
  */
 void
-PacketVariableSize_header (
+VariableSizePacketHeader_init (
     VariableSizePacketHeader *variableSizeHeader,
     uint16_t packetType,
     uint32_t packetSize
@@ -173,7 +174,7 @@ PacketVariableSize_header (
  * @return
  */
 void
-PacketNormal_header (
+PacketNormalHeader_init (
     PacketNormalHeader *normalHeader,
     uint32_t subtype,
     uint32_t packetSize

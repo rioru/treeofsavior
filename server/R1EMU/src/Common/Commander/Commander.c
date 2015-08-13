@@ -22,41 +22,56 @@
 
 // ------ Extern function implementation ------
 
+void CommanderEquipment_init (
+    CommanderEquipment *equipment
+) {
+    equipment->head_top = 2;
+    equipment->head_middle = 2;
+    equipment->itemUnk1 = 4;
+    equipment->body_armor = 0x81a9d;
+    equipment->gloves = 6;
+    equipment->boots = 7;
+    equipment->itemUnk2 = 0x2710;
+    equipment->bracelet = 0x2af8;
+    equipment->weapon = 0x3118d;
+    equipment->shield = 0x98967c;
+    equipment->costume = 4;
+    equipment->itemUnk3 = 9;
+    equipment->itemUnk4 = 9;
+    equipment->itemUnk5 = 4;
+    equipment->leg_armor = 0x7f38d;
+    equipment->itemUnk6 = 9;
+    equipment->itemUnk7 = 9;
+    equipment->ring_left = 9;
+    equipment->ring_right = 9;
+    equipment->necklace = 0xa;
+}
+
 void
 CommanderInfo_createBasicCommander (
     CommanderInfo *commander
 ) {
     memset (commander, 0, sizeof (CommanderInfo));
 
-    commander->classId = 10005;
-    commander->unk2 = 0;
-    commander->jobId = 4;
+    commander->unk1 = SWAP_UINT32 (0x10000000); // ICBT3
+    commander->unk2 = 0; // ICBT3
+    commander->unk3 = SWAP_UINT16 (0x0610); // ICBT3
+    commander->accountId = -1;
+    commander->classId = 0x2715; // Cleric
+    commander->unk4 = SWAP_UINT16 (0xCB0F); // ICBT3
+    commander->jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT3
     commander->gender = 2;
-    commander->unk3 = 1;
-    commander->level = 1;
-    commander->head_top = 2;
-    commander->head_middle = 2;
-    commander->itemUnk1 = 4;
-    commander->body_armor = 0x81a9d;
-    commander->gloves = 6;
-    commander->boots = 7;
-    commander->itemUnk2 = 0x2710;
-    commander->bracelet = 0x2af8;
-    commander->weapon = 0x3118d;
-    commander->shield = 0x98967c;
-    commander->costume = 4;
-    commander->itemUnk3 = 9;
-    commander->itemUnk4 = 9;
-    commander->itemUnk5 = 4;
-    commander->leg_armor = 0x7f38d;
-    commander->itemUnk6 = 9;
-    commander->itemUnk7 = 9;
-    commander->ring_left = 9;
-    commander->ring_right = 9;
-    commander->necklace = 0xa;
-    commander->hairType = 51;
-    commander->unk4 = 0;
     commander->unk5 = 0;
+    commander->level = 1;
+    CommanderEquipment_init (&commander->equipment);
+    commander->hairType = 0x10;
+    commander->unk6 = 0;
+    commander->unk7 = 0;
+
+    commander->pos.x = 27.0;
+    commander->pos.z = 29.0;
+
+    /*
     commander->unk13 = 0;
     commander->charPosition = 0;
     commander->unk6 = 0;
@@ -64,23 +79,47 @@ CommanderInfo_createBasicCommander (
     commander->spriteId = 0;
     commander->spriteIdRelated = 0x41000000;
     commander->unk7 = 0;
-    commander->cPos.x = 27.0;
-    commander->cPos.z = 29.0;
-    commander->unk12 = 0;
+    commander->pos.x = 27.0;
+    commander->pos.z = 29.0;
 
     // Fill with dummy stats
-    commander->currentXP = 6000;
+    commander->currentXP = 12000;
     commander->maxXP = 12000;
-    commander->currentHP = 6000;
+    commander->currentHP = 12000;
     commander->maxHP = 12000;
-    commander->currentSP = 6000;
+    commander->currentSP = 12000;
     commander->maxSP = 12000;
     commander->level = 10;
 
     commander->unk10 = commander->currentHP;
-    commander->unk11 = commander->maxHP;
+    */
 }
 
+void
+CommanderEquipment_print (
+    CommanderEquipment *equipment
+) {
+    dbg ("head_top = %d (%x)", equipment->head_top, equipment->head_top);
+    dbg ("head_middle = %d (%x)", equipment->head_middle, equipment->head_middle);
+    dbg ("itemUnk1 = %d (%x)", equipment->itemUnk1, equipment->itemUnk1);
+    dbg ("body_armor = %d (%x)", equipment->body_armor, equipment->body_armor);
+    dbg ("gloves = %d (%x)", equipment->gloves, equipment->gloves);
+    dbg ("boots = %d (%x)", equipment->boots, equipment->boots);
+    dbg ("itemUnk2 = %d (%x)", equipment->itemUnk2, equipment->itemUnk2);
+    dbg ("bracelet = %d (%x)", equipment->bracelet, equipment->bracelet);
+    dbg ("weapon = %d (%x)", equipment->weapon, equipment->weapon);
+    dbg ("shield = %d (%x)", equipment->shield, equipment->shield);
+    dbg ("costume = %d (%x)", equipment->costume, equipment->costume);
+    dbg ("itemUnk3 = %d (%x)", equipment->itemUnk3, equipment->itemUnk3);
+    dbg ("itemUnk4 = %d (%x)", equipment->itemUnk4, equipment->itemUnk4);
+    dbg ("itemUnk5 = %d (%x)", equipment->itemUnk5, equipment->itemUnk5);
+    dbg ("leg_armor = %d (%x)", equipment->leg_armor, equipment->leg_armor);
+    dbg ("itemUnk6 = %d (%x)", equipment->itemUnk6, equipment->itemUnk6);
+    dbg ("itemUnk7 = %d (%x)", equipment->itemUnk7, equipment->itemUnk7);
+    dbg ("ring_left = %d (%x)", equipment->ring_left, equipment->ring_left);
+    dbg ("ring_right = %d (%x)", equipment->ring_right, equipment->ring_right);
+    dbg ("necklace = %d (%x)", equipment->necklace, equipment->necklace);
+}
 
 void
 CommanderInfo_print (
@@ -96,26 +135,7 @@ CommanderInfo_print (
     dbg ("gender = %d (%x)", commander->gender, commander->gender);
     dbg ("unk3 = %d (%x)", commander->unk3, commander->unk3);
     dbg ("level = %d (%x)", commander->level, commander->level);
-    dbg ("head_top = %d (%x)", commander->head_top, commander->head_top);
-    dbg ("head_middle = %d (%x)", commander->head_middle, commander->head_middle);
-    dbg ("itemUnk1 = %d (%x)", commander->itemUnk1, commander->itemUnk1);
-    dbg ("body_armor = %d (%x)", commander->body_armor, commander->body_armor);
-    dbg ("gloves = %d (%x)", commander->gloves, commander->gloves);
-    dbg ("boots = %d (%x)", commander->boots, commander->boots);
-    dbg ("itemUnk2 = %d (%x)", commander->itemUnk2, commander->itemUnk2);
-    dbg ("bracelet = %d (%x)", commander->bracelet, commander->bracelet);
-    dbg ("weapon = %d (%x)", commander->weapon, commander->weapon);
-    dbg ("shield = %d (%x)", commander->shield, commander->shield);
-    dbg ("costume = %d (%x)", commander->costume, commander->costume);
-    dbg ("itemUnk3 = %d (%x)", commander->itemUnk3, commander->itemUnk3);
-    dbg ("itemUnk4 = %d (%x)", commander->itemUnk4, commander->itemUnk4);
-    dbg ("itemUnk5 = %d (%x)", commander->itemUnk5, commander->itemUnk5);
-    dbg ("leg_armor = %d (%x)", commander->leg_armor, commander->leg_armor);
-    dbg ("itemUnk6 = %d (%x)", commander->itemUnk6, commander->itemUnk6);
-    dbg ("itemUnk7 = %d (%x)", commander->itemUnk7, commander->itemUnk7);
-    dbg ("ring_left = %d (%x)", commander->ring_left, commander->ring_left);
-    dbg ("ring_right = %d (%x)", commander->ring_right, commander->ring_right);
-    dbg ("necklace = %d (%x)", commander->necklace, commander->necklace);
+    CommanderEquipment_print (&commander->equipment);
     dbg ("hairType = %d (%x)", commander->hairType, commander->hairType);
     dbg ("unk4 = %d (%x)", commander->unk4, commander->unk4);
     dbg ("unk5 = %d (%x)", commander->unk5, commander->unk5);
@@ -134,8 +154,8 @@ CommanderInfo_print (
     dbg ("maxHP = %f (%x)", commander->maxHP, commander->maxHP);
     dbg ("currentSP = %f (%x)", commander->currentSP, commander->currentSP);
     dbg ("maxSP = %f (%x)", commander->maxSP, commander->maxSP);
-    dbg ("cPosX = %f (%x)", commander->cPos.x, commander->cPos.x);
-    dbg ("cPosZ = %f (%x)", commander->cPos.z, commander->cPos.z);
+    dbg ("posX = %f (%x)", commander->pos.x, commander->pos.x);
+    dbg ("posZ = %f (%x)", commander->pos.z, commander->pos.z);
     dbg ("unk10 = %d (%x)", commander->unk10, commander->unk10);
     dbg ("unk11 = %d (%x)", commander->unk11, commander->unk11);
     dbg ("unk12 = %d (%x)", commander->unk12, commander->unk12);

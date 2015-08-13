@@ -142,15 +142,16 @@ void startInjection (void)
 
     // Init path & dbg
 	loggerPath = get_module_path ("PacketLogger.dll");
-	defaultOutput = fopen (str_dup_printf("%s/log.txt", loggerPath), "w+");
-	handlersOutput = fopen (str_dup_printf("%s/handlers.txt", loggerPath), "w+");
-	dbg_set_output (defaultOutput);
 
 	// Init output path
 	time_t t = time(NULL);
     struct tm tm = *localtime(&t);
     sessionDate = str_dup_printf ("%.02d_%.02d_%d - %.02dh%.02d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min);
 	CreateDirectory (str_dup_printf ("%s/packets/%s", loggerPath, sessionDate), NULL);
+
+	defaultOutput = fopen (str_dup_printf("%s/packets/%s/capture.txt", loggerPath), "w+");
+	handlersOutput = fopen (str_dup_printf("%s/packets/%s/handlers.txt", loggerPath), "w+");
+	dbg_set_output (defaultOutput);
 
 	if (!HookEngine_new (str_dup_printf ("%s/NtHookEngine.dll", loggerPath))) {
 		MessageBox (NULL, "Error", "HookEngine loading error", 0);

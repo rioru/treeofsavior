@@ -19,22 +19,9 @@ typedef struct _StringID
 
 }   StringID;
 
-char * (__thiscall *StringID__c_str) (StringID **this) = (void *) 0xD394E0;
+char * (__thiscall *StringID__c_str) (StringID **this) = (void *) OFFSET_StringId__c_str;
 
 /** =================== HOOKS ================= */
-void __cdecl logDebug_1 (int a1, LPCSTR lpOutputString, char *message)
-{
-	void (__cdecl *hooked) (int, LPCSTR, char *) =
-		(typeof(hooked)) HookEngine_get_original_function ((ULONG_PTR) logDebug_1);
-
-	char buffer[4096];
-	sprintf (buffer, message);
-
-	dbg ("%s", buffer);
-
-	return hooked (a1, lpOutputString, message);
-}
-
 int __thiscall Lua__LuaGetObject (int this, unsigned __int8 *Src)
 {
 	int (__thiscall *hooked) (int this, unsigned __int8 *Src) =
@@ -52,17 +39,6 @@ int __thiscall Lua__LuaGetObject (int this, unsigned __int8 *Src)
     }
 
     return hooked (this, Src);
-}
-
-void logDebug_2 (const char *Format, ...)
-{
-	char OutputString[24096];
-	va_list va;
-
-	va_start(va, Format);
-	vsprintf(OutputString, Format, va);
-
-	dbg ("%s", OutputString);
 }
 
 // ==== [ DTB TABLES ] ====================================================
@@ -174,20 +150,75 @@ typedef struct _imcIESObject {
     DWORD classList;
 }   imcIESObject;
 
-typedef struct _IRItem {
-    int seed;
-    StringID *itemName;
-    StringID *className;
-    StringID *itemType;
-    StringID *GroupName;
-    StringID *classType;
-    StringID *EqpType;
-    StringID *AttackType;
-    StringID *Attribute;
-    int ItemLv;
-    StringID *HandSide;
-    char data[0x114];
-}   IRItem;
+
+/* 2803 */
+#pragma pack(push, 1)
+typedef struct _IRItem
+{
+  int seed;
+  StringID *itemName;
+  StringID * className;
+  StringID * itemType;
+  StringID * GroupName;
+  StringID *classType;
+  StringID *EqpType;
+  StringID *AttackType;
+  StringID *Attribute;
+  int ItemLv;
+  char gap_28[40];
+  StringID * ItemStar;
+  StringID * field_27;
+  StringID * Script;
+  StringID * StringArg;
+  StringID * NumberArg1;
+  StringID * NumberArg2;
+  StringID * price;
+  char gap_6C[4];
+  StringID * UseLv;
+  char gap_74[4];
+  StringID * SellPrice;
+  StringID * Icon;
+  char field_40;
+  char field_42;
+  char field_43;
+  char field_44;
+  char gap_84[1];
+  char field_45;
+  char gap_86[1];
+  char field_46;
+  char gap_88[4];
+  int field_49;
+  char field_50;
+  char gap_91[3];
+  int field_51;
+  char gap_98[4];
+  char field_52;
+  char gap_9D[7];
+  StringID * imcObject;
+  char field_54;
+  char field_57;
+  char gap_AA[10];
+  int FileName;
+  char gap_B8[8];
+  int NotExist;
+  int field_61;
+  char field_62;
+  char gap_C9[3];
+  int field_63;
+  char gap_D0[12];
+  int DropSound;
+  int DropSoundTime;
+  int field_69;
+  char gap_E8[8];
+  int field_70;
+  int field_71;
+  int field_72;
+  char gap_FC[32];
+  int field_74;
+  int Weight;
+  int field_77;
+} IRItem;
+#pragma pack(pop)
 
 int __thiscall ItemTable__convertIESToIR (ItemTable *this, imcIESObject *object, IRItem *irItem)
 {
@@ -211,11 +242,10 @@ int __thiscall ItemTable__convertIESToIR (ItemTable *this, imcIESObject *object,
     char *EqpType    = StringID__c_str (&irItem->EqpType);
     char *AttackType = StringID__c_str (&irItem->AttackType);
     char *Attribute  = StringID__c_str (&irItem->Attribute);
-    char *HandSide   = StringID__c_str (&irItem->HandSide);
 
     dbg ("Seed = 0x%08X | ItemLv = %0.3d | ClassName = <%s> | itemType = <%s> | GroupName = <%s> | classType = <%s> | "
-         "EqpType = <%s> | AttackType = <%s> | Attribute = <%s> | HandSide = <%s> | Name = <%s>",
-         seed, ItemLv, className, itemType, GroupName, classType, EqpType, AttackType, Attribute, HandSide, itemName);
+         "EqpType = <%s> | AttackType = <%s> | Attribute = <%s> | Name = <%s>",
+         seed, ItemLv, className, itemType, GroupName, classType, EqpType, AttackType, Attribute, itemName);
 
     return res;
 }
@@ -233,10 +263,8 @@ void startInjection (void)
 	}
 
 	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_1,     (ULONG_PTR) logDebug_1);
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_logDebug_2,     (ULONG_PTR) logDebug_2);
 	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_LuaGetObject,  (ULONG_PTR) Lua__LuaGetObject);
-	// HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
+	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_convertIESToIR, (ULONG_PTR) ItemTable__convertIESToIR);
 
     #define HookEngine_hook_Shrage(name) \
         HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_##name, (ULONG_PTR) sub_##name);

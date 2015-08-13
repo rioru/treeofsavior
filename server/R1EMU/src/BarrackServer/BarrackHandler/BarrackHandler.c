@@ -268,13 +268,13 @@ BarrackHandler_commanderMove (
     // TODO : Check position of the client
 
     // Update session
-    memcpy (&session->game.currentCommander.cPos, &clientPacket->position, sizeof (PositionXZ));
+    memcpy (&session->game.currentCommander.pos, &clientPacket->position, sizeof (PositionXZ));
 
     // Build packet
     BarrackBuilder_commanderMoveOk (
         session->socket.accountId,
         clientPacket->commanderListId,
-        &session->game.currentCommander.cPos,
+        &session->game.currentCommander.pos,
         reply
     );
 
@@ -480,8 +480,8 @@ BarrackHandler_commanderCreate (
     info ("CommanderId generated : %llx", session->game.currentCommander.commanderId);
 
     // Position : Center of the barrack
-    session->game.currentCommander.cPos.x = 27.0f;
-    session->game.currentCommander.cPos.z = 29.0f;
+    session->game.currentCommander.pos.x = 27.0f;
+    session->game.currentCommander.pos.z = 29.0f;
 
     // Default MapId
     session->game.currentCommander.mapId = 0x3FD;

@@ -67,8 +67,8 @@
 #define REDIS_GAME_SESSION_commander_maxHP_str           "maxHP"
 #define REDIS_GAME_SESSION_commander_currentSP_str       "currentSP"
 #define REDIS_GAME_SESSION_commander_maxSP_str           "maxSP"
-#define REDIS_GAME_SESSION_commander_cPosX_str           "cPosX"
-#define REDIS_GAME_SESSION_commander_cPosZ_str           "cPosZ"
+#define REDIS_GAME_SESSION_commander_posX_str           "posX"
+#define REDIS_GAME_SESSION_commander_posZ_str           "posZ"
 
 enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_socketId,
@@ -115,8 +115,8 @@ enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_commander_maxHP,
 	REDIS_GAME_SESSION_commander_currentSP,
 	REDIS_GAME_SESSION_commander_maxSP,
-	REDIS_GAME_SESSION_commander_cPosX,
-	REDIS_GAME_SESSION_commander_cPosZ,
+	REDIS_GAME_SESSION_commander_posX,
+	REDIS_GAME_SESSION_commander_posZ,
 	REDIS_GAME_SESSION_COUNT
 };
 

@@ -461,10 +461,9 @@ ZoneBuilder_moveSpeed (
  * @brief Connect to the zone server
  */
 void
-ZoneBuilder_connect (
+ZoneBuilder_connectOk (
     uint8_t gameMode,
     uint8_t accountPrivileges,
-    uint32_t targetPcId,
     CommanderInfo *commander,
     zmsg_t *replyMsg
 );

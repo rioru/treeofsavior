@@ -24,7 +24,8 @@
 
 // ---------- Defines -------------
 /** Max size of the Account Login */
-#define GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE 17
+#define GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE 33
+#define GAME_SESSION_KEY_MAXSIZE 64
 
 // ------ Structure declaration -------
 /**

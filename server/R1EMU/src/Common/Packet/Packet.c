@@ -62,27 +62,27 @@ CryptPacket_getHeader (
 }
 
 void
-PacketNormal_header (
+PacketNormalHeader_init (
     PacketNormalHeader *normalHeader,
     uint32_t subtype,
     uint32_t packetSize
 ) {
-    PacketVariableSize_header (&normalHeader->variableSizeHeader, BC_NORMAL, packetSize);
+    VariableSizePacketHeader_init (&normalHeader->variableSizeHeader, BC_NORMAL, packetSize);
     normalHeader->subtype = subtype;
 }
 
 void
-PacketVariableSize_header (
+VariableSizePacketHeader_init (
     VariableSizePacketHeader *variableSizeHeader,
     uint16_t packetType,
     uint32_t packetSize
 ) {
-    PacketServer_header (&variableSizeHeader->serverHeader, packetType);
+    ServerPacketHeader_init (&variableSizeHeader->serverHeader, packetType);
     variableSizeHeader->packetSize = packetSize;
 }
 
 void
-PacketServer_header (
+ServerPacketHeader_init (
     ServerPacketHeader *serverHeader,
     uint16_t packetType
 ) {

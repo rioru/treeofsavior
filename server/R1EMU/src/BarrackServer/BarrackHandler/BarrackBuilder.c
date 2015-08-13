@@ -41,16 +41,16 @@ BarrackBuilder_loginOk (
         uint64_t accountId;
         uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
-        uint8_t unk2[80];
+        uint8_t steamKey [GAME_SESSION_KEY_MAXSIZE];
     } replyPacket;
     #pragma pack(pop)
 
     PacketType packetType = BC_LOGINOK;
-
     CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = packetType;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
+        replyPacket.unk1 = 0x3E9; // From iCBT1
         replyPacket.accountId = accountId;
         replyPacket.accountPrivileges = accountPrivileges;
         strncpy (replyPacket.accountLogin, accountLogin, sizeof (replyPacket.accountLogin));
@@ -119,7 +119,7 @@ BarrackBuilder_commanderMoveOk (
 
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        PacketNormal_header (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (replyPacket));
+        PacketNormalHeader_init (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (replyPacket));
 
         replyPacket.accountId = accountId;
         replyPacket.commanderListId = commanderListId;
@@ -169,7 +169,7 @@ BarrackBuilder_commanderList (
 
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        PacketVariableSize_header (&replyPacket.variableSizeHeader, BC_COMMANDER_LIST, sizeof (replyPacket));
+        VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, BC_COMMANDER_LIST, sizeof (replyPacket));
         replyPacket.accountId = accountId;
     }
 }
@@ -235,7 +235,7 @@ BarrackBuilder_zoneTraffics (
     PacketStream stream;
     PacketStream_init (&stream, (uint8_t *) replyPacket);
 
-    PacketNormal_header (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
+    PacketNormalHeader_init (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
     PacketStream_addOffset (&stream, sizeof (replyPacket->normalHeader));
 
     PacketStream_append (&stream, &zlibHeader, sizeof_struct_member (ZoneTrafficsPacket, zlibHeader));
