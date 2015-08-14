@@ -115,7 +115,7 @@ ServerFactory_initServerInfo (
     }
 
     // Use the correct packetHandlers based on the ID
-    const PacketHandler *packetHandlers;
+    const PacketHandler *packetHandlers = NULL;
     int packetHandlersCount;
 
     switch (serverType)
