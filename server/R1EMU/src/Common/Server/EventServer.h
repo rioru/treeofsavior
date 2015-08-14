@@ -159,21 +159,23 @@ EventServer_destroy (
 /**
  * @brief Update the position of a client within the event server structures
  * @param self A pointer to an allocated EventServer.
+ * @param pcId The PCID of the commander
+ * @param mapId The mapId of the commander
  * @param targetSocketId The target socket ID of the client
  * @param commander The commander information of the client
  * @param newPosition The new position of the client
- * @param mapId The mapId of the client
  * @param[out] redisClientsAround The list of other clients around the client at its new position
  * @return true on success, false otherwise
  */
 bool
 EventServer_updateClientPosition (
     EventServer *self,
+    uint32_t pcId,
+    uint16_t mapId,
     uint8_t *targetSocketId,
     CommanderInfo *commander,
-    PositionXZ *newPosition,
-    uint16_t mapId,
-    zlist_t **redisClientsAround
+    PositionXYZ *newPosition,
+    zlist_t **_redisClientsAround
 );
 
 /**
@@ -268,20 +270,6 @@ EventServer_sendToClient (
     size_t packetLen
 );
 
-
-/**
- * @brief Get the commander info of a target socketId
- * @param self An allocated EventServer
- * @param socketId The socket ID of the target commander
- * @param[out] The commander
- * @return true on success, false otherwise
- */
-bool
-EventServer_getCommander (
-    EventServer *self,
-    uint8_t *socketId,
-    CommanderInfo *commander
-);
 
 /**
  * @brief : Router ID Accessor

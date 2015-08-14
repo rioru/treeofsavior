@@ -56,18 +56,16 @@
 #define REDIS_GAME_SESSION_commander_necklace_str        "necklace"
 #define REDIS_GAME_SESSION_commander_hairType_str        "hairType"
 #define REDIS_GAME_SESSION_commander_pcId_str            "pcId"
-#define REDIS_GAME_SESSION_commander_unk13_str           "unk13"
-#define REDIS_GAME_SESSION_commander_charPosition_str    "charPosition"
 #define REDIS_GAME_SESSION_commander_mapId_str           "mapId"
 #define REDIS_GAME_SESSION_commander_currentXP_str       "currentXP"
 #define REDIS_GAME_SESSION_commander_maxXP_str           "maxXP"
 #define REDIS_GAME_SESSION_commander_spriteId_str        "pose"
-#define REDIS_GAME_SESSION_commander_spriteIdRelated_str "spriteIdRelated"
 #define REDIS_GAME_SESSION_commander_currentHP_str       "currentHP"
 #define REDIS_GAME_SESSION_commander_maxHP_str           "maxHP"
 #define REDIS_GAME_SESSION_commander_currentSP_str       "currentSP"
 #define REDIS_GAME_SESSION_commander_maxSP_str           "maxSP"
 #define REDIS_GAME_SESSION_commander_posX_str           "posX"
+#define REDIS_GAME_SESSION_commander_posY_str           "posY"
 #define REDIS_GAME_SESSION_commander_posZ_str           "posZ"
 
 enum RedisGameSessionFields {
@@ -104,18 +102,16 @@ enum RedisGameSessionFields {
 	REDIS_GAME_SESSION_commander_necklace,
 	REDIS_GAME_SESSION_commander_hairType,
 	REDIS_GAME_SESSION_commander_pcId,
-	REDIS_GAME_SESSION_commander_unk13,
-	REDIS_GAME_SESSION_commander_charPosition,
 	REDIS_GAME_SESSION_commander_mapId,
 	REDIS_GAME_SESSION_commander_currentXP,
 	REDIS_GAME_SESSION_commander_maxXP,
 	REDIS_GAME_SESSION_commander_spriteId,
-	REDIS_GAME_SESSION_commander_spriteIdRelated,
 	REDIS_GAME_SESSION_commander_currentHP,
 	REDIS_GAME_SESSION_commander_maxHP,
 	REDIS_GAME_SESSION_commander_currentSP,
 	REDIS_GAME_SESSION_commander_maxSP,
 	REDIS_GAME_SESSION_commander_posX,
+	REDIS_GAME_SESSION_commander_posY,
 	REDIS_GAME_SESSION_commander_posZ,
 	REDIS_GAME_SESSION_COUNT
 };

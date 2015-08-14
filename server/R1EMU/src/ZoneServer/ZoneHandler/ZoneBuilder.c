@@ -661,6 +661,7 @@ ZoneBuilder_leave (
 
 void
 ZoneBuilder_enterPc (
+    uint32_t pcId,
     CommanderInfo *commander,
     zmsg_t *replyMsg
 ) {
@@ -740,17 +741,17 @@ ZoneBuilder_enterPc (
         );
 
         replyPacket.header.type = ZC_ENTER_PC;
-        strncpy (replyPacket.familyName, commander->familyName, sizeof (replyPacket.familyName));
-        strncpy (replyPacket.commanderName, commander->commanderName, sizeof (replyPacket.commanderName));
-        replyPacket.pcId = commander->pcId;
+        strncpy (replyPacket.familyName, commander->base.familyName, sizeof (replyPacket.familyName));
+        strncpy (replyPacket.commanderName, commander->base.commanderName, sizeof (replyPacket.commanderName));
+        replyPacket.pcId = pcId;
         replyPacket.position.x = commander->pos.x;
         replyPacket.position.y = 260.0f;
         replyPacket.position.z = commander->pos.z;
         replyPacket.unk7 = 1.0;
-        replyPacket.accountId = commander->accountId;
-        replyPacket.classId = commander->classId;
-        replyPacket.jobId = commander->jobId;
-        replyPacket.gender = commander->gender;
+        replyPacket.accountId = commander->base.accountId;
+        replyPacket.classId = commander->base.classId;
+        replyPacket.jobId = commander->base.jobId;
+        replyPacket.gender = commander->base.gender;
         replyPacket.moveSpeed = 31.0;
         replyPacket.currentHP = commander->currentHP;
         replyPacket.maxHP = commander->maxHP;
@@ -1578,6 +1579,7 @@ ZoneBuilder_jump (
 
 void
 ZoneBuilder_connectOk (
+    uint32_t pcId,
     uint8_t gameMode,
     uint8_t accountPrivileges,
     CommanderInfo *commander,
@@ -1612,7 +1614,7 @@ ZoneBuilder_connectOk (
         memcpy (replyPacket.markers, "*.*", sizeof (replyPacket.markers));
         memcpy (replyPacket.passport, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", sizeof (replyPacket.passport));
         replyPacket.accountPrivileges = accountPrivileges;
-        replyPacket.pcId = commander->pcId;
+        replyPacket.pcId = pcId;
 
         // Copy the current commander information
         memcpy (&replyPacket.commander, commander, sizeof (CommanderInfo));

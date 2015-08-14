@@ -59,8 +59,7 @@ BarrackBuilder_startGameOk (
     uint32_t zoneServerPort,
     uint16_t mapId,
     uint8_t commanderListId,
-    uint32_t spriteId,
-    uint32_t spriteIdRelated,
+    uint64_t spriteId,
     uint8_t isSingleMap,
     zmsg_t *replyMsg
 );
@@ -133,6 +132,6 @@ BarrackBuilder_commanderDestroy (
  */
 void
 BarrackBuilder_commanderCreate (
-    CommanderInfo *commander,
+    CommanderCreateInfo *commander,
     zmsg_t *replyMsg
 );

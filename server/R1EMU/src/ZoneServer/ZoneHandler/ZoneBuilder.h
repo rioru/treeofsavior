@@ -203,6 +203,7 @@ ZoneBuilder_buffList (
  */
 void
 ZoneBuilder_enterPc (
+    uint32_t pcId,
     CommanderInfo *commander,
     zmsg_t *replyMsg
 );
@@ -462,6 +463,7 @@ ZoneBuilder_moveSpeed (
  */
 void
 ZoneBuilder_connectOk (
+    uint32_t pcId,
     uint8_t gameMode,
     uint8_t accountPrivileges,
     CommanderInfo *commander,

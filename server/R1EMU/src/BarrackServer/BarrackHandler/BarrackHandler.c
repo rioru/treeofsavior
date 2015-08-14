@@ -230,10 +230,9 @@ BarrackHandler_startGame (
         clientPacket->routerId,
         zoneServerIp,
         zoneServerPort,
-        session->game.currentCommander.mapId,
+        session->game.mapId,
         clientPacket->commanderListId,
         session->game.currentCommander.spriteId,
-        session->game.currentCommander.spriteIdRelated,
         false,
         reply
     );
@@ -274,7 +273,7 @@ BarrackHandler_commanderMove (
     BarrackBuilder_commanderMoveOk (
         session->socket.accountId,
         clientPacket->commanderListId,
-        &session->game.currentCommander.pos,
+        &PositionXYZToXZ (&session->game.currentCommander.pos),
         reply
     );
 
@@ -360,11 +359,11 @@ BarrackHandler_barracknameChange (
     }
 
     // Update the session
-    strncpy (session->game.currentCommander.familyName, clientPacket->barrackName, sizeof (session->game.currentCommander.familyName));
+    strncpy (session->game.currentCommander.base.familyName, clientPacket->barrackName, sizeof (session->game.currentCommander.base.familyName));
 
     // Build the reply packet
     BarrackBuilder_barrackNameChange (
-        session->game.currentCommander.familyName,
+        session->game.currentCommander.base.familyName,
         reply
     );
 
@@ -420,10 +419,10 @@ BarrackHandler_commanderCreate (
     }
 
     // CharName
-    strncpy (session->game.currentCommander.commanderName, clientPacket->commanderName, sizeof (session->game.currentCommander.commanderName));
+    strncpy (session->game.currentCommander.base.commanderName, clientPacket->commanderName, sizeof (session->game.currentCommander.base.commanderName));
 
     // AccountID
-    session->game.currentCommander.accountId = session->socket.accountId;
+    session->game.currentCommander.base.accountId = session->socket.accountId;
 
     // JobID
     switch (clientPacket->jobId)
@@ -433,25 +432,25 @@ BarrackHandler_commanderCreate (
             return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
-            session->game.currentCommander.classId = COMMANDER_CLASS_WARRIOR;
+            session->game.currentCommander.base.classId = COMMANDER_CLASS_WARRIOR;
             break ;
         case COMMANDER_JOB_ARCHER:
-            session->game.currentCommander.classId = COMMANDER_CLASS_ARCHER;
+            session->game.currentCommander.base.classId = COMMANDER_CLASS_ARCHER;
             break ;
         case COMMANDER_JOB_MAGE:
-            session->game.currentCommander.classId = COMMANDER_CLASS_MAGE;
+            session->game.currentCommander.base.classId = COMMANDER_CLASS_MAGE;
             break ;
         case COMMANDER_JOB_CLERIC:
-            session->game.currentCommander.classId = COMMANDER_CLASS_CLERIC;
+            session->game.currentCommander.base.classId = COMMANDER_CLASS_CLERIC;
             break ;
     }
-    session->game.currentCommander.jobId = clientPacket->jobId;
+    session->game.currentCommander.base.jobId = clientPacket->jobId;
 
     // Gender
     switch (clientPacket->gender) {
         case COMMANDER_GENDER_MALE:
         case COMMANDER_GENDER_FEMALE:
-            session->game.currentCommander.gender = clientPacket->gender;
+            session->game.currentCommander.base.gender = clientPacket->gender;
             break;
 
         case COMMANDER_GENDER_BOTH:
@@ -466,31 +465,42 @@ BarrackHandler_commanderCreate (
         warning ("Client sent a malformed charPosition.");
     }
 
-    session->game.currentCommander.charPosition = session->game.charactersBarrackCount + 1;
-
     // Hair type
-    session->game.currentCommander.hairType = clientPacket->hairType;
+    session->game.currentCommander.base.hairType = clientPacket->hairType;
 
     // PCID
-    session->game.currentCommander.pcId = R1EMU_generate_random (&self->seed);
-    info ("pcId generated : %x", session->game.currentCommander.pcId);
+    session->game.pcId = R1EMU_generate_random (&self->seed);
+    info ("pcId generated : %x", session->game.pcId);
 
     // CommanderID
     session->game.currentCommander.commanderId = R1EMU_generate_random64 (&self->seed);
     info ("CommanderId generated : %llx", session->game.currentCommander.commanderId);
 
     // Position : Center of the barrack
-    session->game.currentCommander.pos.x = 27.0f;
-    session->game.currentCommander.pos.z = 29.0f;
+    session->game.currentCommander.pos = PositionXYZ_decl (19.0f, 27.765520f, 29.0f);
 
-    // Default MapId
-    session->game.currentCommander.mapId = 0x3FD;
+    // Default MapId : West Siauliai Woods
+    session->game.mapId = 0x3FD;
 
     // Add the character to the account
     session->game.charactersBarrackCount++;
 
     // Build the reply packet
-    BarrackBuilder_commanderCreate (&session->game.currentCommander, reply);
+    CommanderCreateInfo commanderCreate = {
+        .commander = session->game.currentCommander.base,
+        .mapId = session->game.mapId,
+        .spriteId = SWAP_UINT64 (0xEE2500003C010000), // ICBT
+        .commanderPosition = session->game.charactersBarrackCount,
+        .unk4 = SWAP_UINT32 (0x02000000),
+        .unk5 = 0,
+        .maxXP = 0xC, // ICBT
+        .unk6 = SWAP_UINT32 (0xC01C761C), // ICBT
+        .pos = session->game.currentCommander.pos,
+        .dir = PositionXZ_decl (0.707107f, -0.707107),
+        .pos2 = session->game.currentCommander.pos,
+        .dir2 = PositionXZ_decl (0.707107f, -0.707107),
+    };
+    BarrackBuilder_commanderCreate (&commanderCreate, reply);
 
 
     return PACKET_HANDLER_UPDATE_SESSION;

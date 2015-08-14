@@ -122,18 +122,18 @@ ZoneHandler_chat (
                 CommanderInfo fakePc;
                 CommanderInfo_createBasicCommander (&fakePc);
                 fakePc.pos = session->game.currentCommander.pos;
-                fakePc.accountId = R1EMU_generate_random64 (&self->seed);
-                fakePc.pcId = R1EMU_generate_random (&self->seed);
-                strncpy (fakePc.familyName, "Dummy", sizeof (fakePc.familyName));
-                strncpy (fakePc.commanderName, "Fake", sizeof (fakePc.commanderName));
-                ZoneBuilder_enterPc (&fakePc, reply);
+                fakePc.base.accountId = R1EMU_generate_random64 (&self->seed);
+                uint32_t fakePcId = R1EMU_generate_random (&self->seed);
+                strncpy (fakePc.base.familyName, "Dummy", sizeof (fakePc.base.familyName));
+                strncpy (fakePc.base.commanderName, "Fake", sizeof (fakePc.base.commanderName));
+                ZoneBuilder_enterPc (fakePcId, &fakePc, reply);
 
                 // Register the fake socket session
                 SocketSession fakeSocketSession;
                 uint64_t socketId = R1EMU_generate_random64 (&self->seed);
                 uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE] = {0};
                 sprintf (socketIdStr, "%.10I64x", socketId);
-                SocketSession_init (&fakeSocketSession, fakePc.accountId, self->info.routerId, session->socket.mapId, socketIdStr, true);
+                SocketSession_init (&fakeSocketSession, fakePc.base.accountId, self->info.routerId, session->socket.mapId, socketIdStr, true);
                 RedisSocketSessionKey socketKey = {
                     .routerId = self->info.routerId,
                     .socketId = socketIdStr
@@ -152,7 +152,7 @@ ZoneHandler_chat (
                 };
                 Redis_updateGameSession (self->redis, &gameKey, socketIdStr, &fakeGameSession);
 
-                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", socketIdStr, fakePc.accountId, fakePc.pcId);
+                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", socketIdStr, fakePc.base.accountId, fakePcId);
             }
         }
     }
@@ -182,11 +182,11 @@ ZoneHandler_restSit (
     }
 
     // Make sit the current commander
-    ZoneBuilder_restSit (session->game.currentCommander.pcId, reply);
+    ZoneBuilder_restSit (session->game.pcId, reply);
 
     // Notify the players around
     GameEventRestSit event = {
-        .targetPcId = session->game.currentCommander.pcId,
+        .pcId = session->game.pcId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
@@ -236,7 +236,7 @@ ZoneHandler_skillGround (
     ZoneBuilder_playAni (reply);
 
     ZoneBuilder_normalUnk8 (
-        session->game.currentCommander.pcId,
+        session->game.pcId,
         reply
     );
 
@@ -418,7 +418,7 @@ ZoneHandler_keyboardMove (
     // TODO : Check coordinates
 
     // Update session
-    session->game.currentCommander.pos = PositionXYZToXZ (&clientPacket->position);
+    session->game.currentCommander.pos = clientPacket->position;
 
     // Notify the players around
     GameEventCommanderMove event = {
@@ -469,8 +469,8 @@ ZoneHandler_gameReady (
     ZoneBuilder_guestPageMap (reply);
     ZoneBuilder_startInfo (reply);
     ZoneBuilder_itemEquipList (reply);
-    ZoneBuilder_skillList (session->game.currentCommander.pcId, reply);
-    ZoneBuilder_abilityList (session->game.currentCommander.pcId, reply);
+    ZoneBuilder_skillList (session->game.currentCommander.base.pcId, reply);
+    ZoneBuilder_abilityList (session->game.currentCommander.base.pcId, reply);
     ZoneBuilder_cooldownList (reply);
     ZoneBuilder_quickSlotList (reply);
     ZoneBuilder_normalUnk1 (reply);
@@ -502,7 +502,7 @@ ZoneHandler_gameReady (
     memcpy (&pcEnterEvent.commander, &session->game.currentCommander, sizeof (CommanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
 
-    // ZoneBuilder_buffList (session->game.currentCommander.pcId, reply);
+    // ZoneBuilder_buffList (session->game.currentCommander.base.pcId, reply);
 
     // Add NPC at the start screen
     // ZoneBuilder_enterMonster (reply);
@@ -510,21 +510,21 @@ ZoneHandler_gameReady (
 
     /*
     ZoneBuilder_normalUnk6 (
-        session->game.currentCommander.commanderName,
+        session->game.currentCommander.base.commanderName,
         reply
     );
 
     ZoneBuilder_normalUnk7 (
         session->socket.accountId,
-        session->game.currentCommander.pcId,
-        session->game.currentCommander.familyName,
-        session->game.currentCommander.commanderName,
+        session->game.currentCommander.base.pcId,
+        session->game.currentCommander.base.familyName,
+        session->game.currentCommander.base.commanderName,
         reply
     );
 
     ZoneBuilder_jobPts (reply);
-    ZoneBuilder_moveSpeed (session->game.currentCommander.pcId, 31.0, reply);
-    ZoneBuilder_normalUnk9 (session->game.currentCommander.pcId, reply);
+    ZoneBuilder_moveSpeed (session->game.currentCommander.base.pcId, 31.0, reply);
+    ZoneBuilder_normalUnk9 (session->game.currentCommander.base.pcId, reply);
     ZoneBuilder_addonMsg (reply);
     */
 
@@ -587,7 +587,7 @@ ZoneHandler_connect (
     SocketSession_init (&session->socket,
         clientPacket->accountId,
         self->info.routerId,
-        session->game.currentCommander.mapId,
+        session->game.mapId,
         session->socket.socketId,
         true
     );
@@ -614,6 +614,7 @@ ZoneHandler_connect (
     session->game.currentCommander.pos.z = -1025.0f;
 
     ZoneBuilder_connectOk (
+        session->game.pcId,
         0, // GameMode
         0, // accountPrivileges
         &session->game.currentCommander, // Current commander
@@ -645,7 +646,7 @@ ZoneHandler_jump (
     }
 
     ZoneBuilder_jump (
-        session->game.currentCommander.pcId,
+        session->game.pcId,
         300.0,
         reply
     );
@@ -655,7 +656,6 @@ ZoneHandler_jump (
         .mapId = session->socket.mapId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
         .commander = session->game.currentCommander,
-        .position = session->game.currentCommander.pos,
         .height = 300.0
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));

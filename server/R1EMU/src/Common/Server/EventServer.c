@@ -325,11 +325,11 @@ cleanup:
 bool
 EventServer_updateClientPosition (
     EventServer *self,
+    uint32_t pcId,
+    uint16_t mapId,
     uint8_t *targetSocketId,
     CommanderInfo *commander,
-    PositionXZ *newPosition,
-    uint16_t mapId,
-
+    PositionXYZ *newPosition,
     zlist_t **_redisClientsAround
 ) {
     bool status = true;
@@ -344,7 +344,7 @@ EventServer_updateClientPosition (
 
     // Get the clients around
     if (!(redisClientsAround = EventServer_redisGetClientsWithinRange (
-        self, mapId, targetSocketId, newPosition,
+        self, mapId, targetSocketId, &PositionXYZToXZ (newPosition),
         COMMANDER_RANGE_AROUND
     ))) {
         error ("Cannot get clients within range");
@@ -397,7 +397,7 @@ EventServer_updateClientPosition (
         // Send the ZC_PC_ENTER to clients who now sees the current client
         if (zlist_size (pcEnterList) > 0) {
             pcEnterMsg = zmsg_new ();
-            ZoneBuilder_enterPc (commander, pcEnterMsg);
+            ZoneBuilder_enterPc (pcId, commander, pcEnterMsg);
             zframe_t *pcEnterFrame = zmsg_first (pcEnterMsg);
             if (!(EventServer_sendToClients (self, redisClientsAround, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
                 error ("Failed to send the packet to the clients.");
@@ -411,15 +411,15 @@ EventServer_updateClientPosition (
              enterPcSocketId != NULL;
              enterPcSocketId = zlist_next (pcEnterList)
         ) {
-            CommanderInfo enterPc;
+            GameSession gameSession;
             curPcEnterMsg = zmsg_new ();
-            if (!(EventServer_getCommander (self, enterPcSocketId, &enterPc))) {
-                error ("Cannot get commanderInfo from %s.", enterPcSocketId);
+            if (!(EventServer_getGameSessionBySocketId (self, self->info.routerId, enterPcSocketId, &gameSession))) {
+                error ("Cannot get game session from %s.", enterPcSocketId);
                 status = false;
                 goto cleanup;
             }
 
-            ZoneBuilder_enterPc (&enterPc, curPcEnterMsg);
+            ZoneBuilder_enterPc (gameSession.pcId, &gameSession.currentCommander, curPcEnterMsg);
             zframe_t *pcEnterFrame = zmsg_first (curPcEnterMsg);
             if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
                 error ("Failed to send the packet to the clients.");
@@ -450,7 +450,7 @@ EventServer_updateClientPosition (
     if (zlist_size (pcLeaveList) > 0)
     {
         pcLeaveMsg = zmsg_new ();
-        ZoneBuilder_leave (commander->pcId, pcLeaveMsg);
+        ZoneBuilder_leave (pcId, pcLeaveMsg);
         zframe_t *pcLeaveFrame = zmsg_first (pcLeaveMsg);
 
         // Also, send to the current player the list of left players
@@ -465,15 +465,15 @@ EventServer_updateClientPosition (
              leftPcSocketId != NULL;
              leftPcSocketId = zlist_next (pcLeaveList)
         ) {
-            CommanderInfo leftPc;
+            GameSession gameSession;
             curPcLeaveMsg = zmsg_new ();
-            if (!(EventServer_getCommander (self, leftPcSocketId, &leftPc))) {
-                error ("Cannot get commanderInfo from %s.", leftPcSocketId);
+            if (!(EventServer_getGameSessionBySocketId (self, self->info.routerId, leftPcSocketId, &gameSession))) {
+                error ("Cannot get game session from %s.", leftPcSocketId);
                 status = false;
                 goto cleanup;
             }
 
-            ZoneBuilder_leave (leftPc.pcId, curPcLeaveMsg);
+            ZoneBuilder_leave (gameSession.pcId, curPcLeaveMsg);
             zframe_t *pcLeaveFrame = zmsg_first (curPcLeaveMsg);
             if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcLeaveFrame), zframe_size (pcLeaveFrame)))) {
                 error ("Failed to send the packet to the clients.");
@@ -493,22 +493,6 @@ cleanup:
     zmsg_destroy (&pcEnterMsg);
     zmsg_destroy (&curPcEnterMsg);
     return status;
-}
-
-bool
-EventServer_getCommander (
-    EventServer *self,
-    uint8_t *socketId,
-    CommanderInfo *commander
-) {
-    GameSession gameSession;
-    if (!(Redis_getGameSessionBySocketId (self->redis, self->info.routerId, socketId, &gameSession))) {
-        error ("Cannot get commander info about %s", socketId);
-        return false;
-    }
-
-    memcpy (commander, &gameSession.currentCommander, sizeof (CommanderInfo));
-    return true;
 }
 
 bool

@@ -60,6 +60,12 @@ struct GameSession
     /** The account login */
     char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
 
+    /** Current mapId **/
+    uint16_t mapId;
+
+    /** Current PcId **/
+    uint32_t pcId;
+
     /** Current commander */
     CommanderInfo currentCommander;
 };

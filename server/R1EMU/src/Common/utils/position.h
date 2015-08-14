@@ -25,6 +25,13 @@
 #define PositionXYZToXZ(xyz) \
     (PositionXZ) {.x = (xyz)->x, .z = (xyz)->z}
 
+// Declare a XYZ local variable
+#define PositionXYZ_decl(_x, _y, _z) \
+    (PositionXYZ) {.x = _x, .y = _y, .z = _z}
+
+// Declare a XZ local variable
+#define PositionXZ_decl(_x, _z) \
+    (PositionXZ) {.x = _x, .z = _z}
 
 // ------ Structure declaration -------
 typedef struct PositionXYZ PositionXYZ;

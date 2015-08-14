@@ -64,8 +64,7 @@ BarrackBuilder_startGameOk (
     uint32_t zoneServerPort,
     uint16_t mapId,
     uint8_t commanderListId,
-    uint32_t spriteId,
-    uint32_t spriteIdRelated,
+    uint64_t spriteId,
     uint8_t isSingleMap,
     zmsg_t *replyMsg
 ) {
@@ -77,25 +76,25 @@ BarrackBuilder_startGameOk (
         uint32_t zoneServerPort;
         uint32_t mapId;
         uint8_t commanderListId;
-        uint32_t spriteId;
-        uint32_t spriteIdRelated;
+        uint64_t spriteId;
         uint8_t isSingleMap;
         uint8_t unk1;
-        uint8_t reserved[27];
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_START_GAMEOK;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = BC_START_GAMEOK;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.zoneServerId = zoneServerId;
         replyPacket.zoneServerIp = *(uint32_t *) ((char []) {127, 0, 0, 1});
         replyPacket.zoneServerPort = zoneServerPort;
         replyPacket.mapId = mapId;
         replyPacket.commanderListId = commanderListId;
         replyPacket.spriteId = spriteId;
-        replyPacket.spriteIdRelated = spriteIdRelated;
         replyPacket.isSingleMap = isSingleMap;
+        replyPacket.unk1 = 1;
     }
 }
 
@@ -117,6 +116,8 @@ BarrackBuilder_commanderMoveOk (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_START_GAMEOK;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         PacketNormalHeader_init (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (replyPacket));
@@ -145,9 +146,11 @@ BarrackBuilder_serverEntry (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_SERVER_ENTRY;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type        = BC_SERVER_ENTRY;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.ipClientNet        = ipClientNet;
         replyPacket.ipVirtualClientNet = ipVirtualClientNet;
         replyPacket.channelPort1       = channelPort1;
@@ -164,13 +167,18 @@ BarrackBuilder_commanderList (
     struct {
         VariableSizePacketHeader variableSizeHeader;
         uint64_t accountId;
+        uint8_t unk1;
+        uint8_t commandersCount;
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_COMMANDER_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, BC_COMMANDER_LIST, sizeof (replyPacket));
+        VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, packetType, sizeof (replyPacket));
         replyPacket.accountId = accountId;
+        replyPacket.commandersCount = 0;
     }
 }
 
@@ -269,9 +277,11 @@ BarrackBuilder_barrackNameChange (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_BARRACKNAME_CHANGE;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = BC_BARRACKNAME_CHANGE;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         memcpy (replyPacket.unk1, "\x01\x01\x01\x01\x01", sizeof (replyPacket.unk1));
         strncpy (replyPacket.barrackName, barrackName, sizeof (replyPacket.barrackName));
     }
@@ -289,28 +299,36 @@ BarrackBuilder_commanderDestroy (
     } replyPacket;
     #pragma pack(pop)
 
+    PacketType packetType = BC_COMMANDER_DESTROY;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = BC_COMMANDER_DESTROY;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.commanderDestroyMask = commanderDestroyMask;
     }
 }
 
 void
 BarrackBuilder_commanderCreate (
-    CommanderInfo *commander,
+    CommanderCreateInfo *commanderCreate,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
-        CommanderInfo commander;
+        CommanderCreateInfo commanderCreate;
     } replyPacket;
     #pragma pack(pop)
 
+    // ICBT3 : Those values are zeroes for some reason
+    memset (commanderCreate->commander.familyName, 0, sizeof (commanderCreate->commander.familyName));
+    commanderCreate->commander.accountId = 0;
+
+    PacketType packetType = BC_COMMANDER_CREATE;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = BC_COMMANDER_CREATE;
-        memcpy (&replyPacket.commander, commander, sizeof (CommanderInfo));
+        ServerPacketHeader_init (&replyPacket.header, packetType);
+        memcpy (&replyPacket.commanderCreate, commanderCreate, sizeof (replyPacket.commanderCreate));
     }
 }
