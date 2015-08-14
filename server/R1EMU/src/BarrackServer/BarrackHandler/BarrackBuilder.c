@@ -320,7 +320,7 @@ BarrackBuilder_commanderCreate (
     } replyPacket;
     #pragma pack(pop)
 
-    // ICBT3 : Those values are zeroes for some reason
+    // ICBT : Those values are zeroes for some reason
     memset (commanderCreate->commander.familyName, 0, sizeof (commanderCreate->commander.familyName));
     commanderCreate->commander.accountId = 0;
 

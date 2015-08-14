@@ -53,13 +53,13 @@ CommanderInfo_createBasicCommander (
 ) {
     memset (commander, 0, sizeof (CommanderInfo));
 
-    commander->base.unk1 = SWAP_UINT32 (0x10000000); // ICBT3
-    commander->base.unk2 = 0; // ICBT3
-    commander->base.unk3 = SWAP_UINT16 (0x0610); // ICBT3
+    commander->base.unk1 = SWAP_UINT32 (0x10000000); // ICBT
+    commander->base.unk2 = 0; // ICBT
+    commander->base.unk3 = SWAP_UINT16 (0x0610); // ICBT
     commander->base.accountId = -1;
     commander->base.classId = 0x2715; // Cleric
-    commander->base.unk4 = SWAP_UINT16 (0xCB0F); // ICBT3
-    commander->base.jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT3
+    commander->base.unk4 = SWAP_UINT16 (0xCB0F); // ICBT
+    commander->base.jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT
     commander->base.gender = 2;
     commander->base.unk5 = 0;
     commander->base.level = 1;
