@@ -90,7 +90,8 @@ typedef struct CommanderInfo
     uint16_t maxSP;
     uint32_t currentStamina;
     uint32_t maxStamina;
-    uint32_t unk8;
+    uint16_t unk6;
+    uint16_t unk7;
 }   CommanderInfo;
 #pragma pack(pop)
 
@@ -158,7 +159,7 @@ typedef enum CommanderHair
  */
 
 void
-CommanderInfo_createBasicCommander (
+CommanderInfo_init (
     CommanderInfo *commander
 );
 

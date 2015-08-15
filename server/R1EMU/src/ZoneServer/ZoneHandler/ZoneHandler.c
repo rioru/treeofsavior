@@ -120,7 +120,7 @@ ZoneHandler_chat (
             {
                 // Add a fake commander with a fake account
                 CommanderInfo fakePc;
-                CommanderInfo_createBasicCommander (&fakePc);
+                CommanderInfo_init (&fakePc);
                 fakePc.pos = session->game.currentCommander.pos;
                 fakePc.base.accountId = R1EMU_generate_random64 (&self->seed);
                 uint32_t fakePcId = R1EMU_generate_random (&self->seed);
@@ -544,8 +544,7 @@ ZoneHandler_connect (
     struct {
         uint32_t unk1;
         uint64_t accountId;
-        uint32_t spriteId;
-        uint32_t spriteIdRelated;
+        uint64_t spriteId;
         uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint8_t unk4;
         uint32_t zoneServerId;
@@ -554,6 +553,7 @@ ZoneHandler_connect (
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
+    // TODO : Reverse CZ_CONNECT correctly
     /*
     CHECK_CLIENT_PACKET_SIZE (*clientPacket, CZ_CONNECT);
     if (sizeof (*clientPacket) != packetSize) {

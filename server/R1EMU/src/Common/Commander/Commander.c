@@ -22,7 +22,8 @@
 
 // ------ Extern function implementation ------
 
-void CommanderEquipment_init (
+void
+CommanderEquipment_init (
     CommanderEquipment *equipment
 ) {
     equipment->head_top = 2;
@@ -48,26 +49,47 @@ void CommanderEquipment_init (
 }
 
 void
-CommanderInfo_createBasicCommander (
-    CommanderInfo *commander
+Commander_init (
+    Commander *commander
 ) {
-    memset (commander, 0, sizeof (CommanderInfo));
+    memset (commander, 0, sizeof (*commander));
 
-    commander->base.unk1 = SWAP_UINT32 (0x10000000); // ICBT
-    commander->base.unk2 = 0; // ICBT
-    commander->base.unk3 = SWAP_UINT16 (0x0610); // ICBT
-    commander->base.accountId = -1;
-    commander->base.classId = 0x2715; // Cleric
-    commander->base.unk4 = SWAP_UINT16 (0xCB0F); // ICBT
-    commander->base.jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT
-    commander->base.gender = 2;
-    commander->base.unk5 = 0;
-    commander->base.level = 1;
-    CommanderEquipment_init (&commander->base.equipment);
-    commander->base.hairType = 0x10;
+    commander->unk1 = SWAP_UINT32 (0x10000000); // ICBT
+    commander->unk2 = 0; // ICBT
+    commander->unk3 = SWAP_UINT16 (0x0610); // ICBT
+    commander->accountId = -1;
+    commander->classId = 0x2715; // Cleric
+    commander->unk4 = SWAP_UINT16 (0xCB0F); // ICBT
+    commander->jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT
+    commander->gender = 2;
+    commander->unk5 = 0;
+    commander->level = 1;
+    CommanderEquipment_init (&commander->equipment);
+    commander->hairType = 0x10;
+}
 
-    commander->pos.x = 27.0;
-    commander->pos.z = 29.0;
+void
+CommanderInfo_init (
+    CommanderInfo *commanderInfo
+) {
+    memset (commanderInfo, 0, sizeof (*commanderInfo));
+
+    Commander_init (&commanderInfo->base);
+
+    commanderInfo->pos = PositionXYZ_decl (27.0, 30.0, 29.0);
+    commanderInfo->currentXP = 0;
+    commanderInfo->maxXP = 0xC; // ICBT
+    commanderInfo->spriteId = SWAP_UINT64 (0x260700007C000000);
+    commanderInfo->spriteId2 = commanderInfo->spriteId + 1;
+    commanderInfo->commanderId = -1;
+    commanderInfo->currentHP = 1200;
+    commanderInfo->maxHP = 1200;
+    commanderInfo->currentSP = 1200;
+    commanderInfo->maxSP = 1200;
+    commanderInfo->currentStamina = 25000;
+    commanderInfo->maxStamina = 25000;
+    commanderInfo->unk6 = 0;
+    commanderInfo->unk7 = SWAP_UINT16 (0x5910); // ICBT
 }
 
 void
@@ -97,30 +119,44 @@ CommanderEquipment_print (
 }
 
 void
-CommanderInfo_print (
-    CommanderInfo *commander
+Commander_print (
+    Commander *commander
 ) {
-    dbg ("commanderName = %s", commander->base.commanderName);
-    dbg ("familyName = %s", commander->base.familyName);
-    dbg ("accountId = %llu (%llx)", commander->base.accountId, commander->base.accountId);
-    dbg ("classId = %d (%x)", commander->base.classId, commander->base.classId);
-    dbg ("unk2 = %d (%x)", commander->base.unk2, commander->base.unk2);
-    dbg ("jobId = %d (%x)", commander->base.jobId, commander->base.jobId);
-    dbg ("gender = %d (%x)", commander->base.gender, commander->base.gender);
-    dbg ("unk3 = %d (%x)", commander->base.unk3, commander->base.unk3);
-    dbg ("level = %d (%x)", commander->base.level, commander->base.level);
-    CommanderEquipment_print (&commander->base.equipment);
-    dbg ("hairType = %d (%x)", commander->base.hairType, commander->base.hairType);
-    dbg ("unk4 = %d (%x)", commander->base.unk4, commander->base.unk4);
-    dbg ("unk5 = %d (%x)", commander->base.unk5, commander->base.unk5);
-    dbg ("currentXP = %d (%x)", commander->currentXP, commander->currentXP);
-    dbg ("maxXP = %d (%x)", commander->maxXP, commander->maxXP);
-    dbg ("spriteId = %lld (%llx)", commander->spriteId, commander->spriteId);
-    dbg ("commanderId = %llu (%llx)", commander->commanderId, commander->commanderId);
-    dbg ("currentHP = %f (%x)", commander->currentHP, commander->currentHP);
-    dbg ("maxHP = %f (%x)", commander->maxHP, commander->maxHP);
-    dbg ("currentSP = %f (%x)", commander->currentSP, commander->currentSP);
-    dbg ("maxSP = %f (%x)", commander->maxSP, commander->maxSP);
-    dbg ("posX = %f (%x)", commander->pos.x, commander->pos.x);
-    dbg ("posZ = %f (%x)", commander->pos.z, commander->pos.z);
+    dbg ("commanderName = %s", commander->commanderName);
+    dbg ("familyName = %s", commander->familyName);
+    dbg ("unk1 = %d (%x)", commander->unk1, commander->unk1);
+    dbg ("unk2 = %d (%x)", commander->unk2, commander->unk2);
+    dbg ("unk3 = %d (%x)", commander->unk3, commander->unk3);
+    dbg ("accountId = %llu (%llx)", commander->accountId, commander->accountId);
+    dbg ("classId = %d (%x)", commander->classId, commander->classId);
+    dbg ("unk4 = %d (%x)", commander->unk4, commander->unk4);
+    dbg ("jobId = %d (%x)", commander->jobId, commander->jobId);
+    dbg ("gender = %d (%x)", commander->gender, commander->gender);
+    dbg ("unk5 = %d (%x)", commander->unk5, commander->unk5);
+    dbg ("level = %d (%x)", commander->level, commander->level);
+    CommanderEquipment_print (&commander->equipment);
+    dbg ("hairType = %d (%x)", commander->hairType, commander->hairType);
+}
+
+void
+CommanderInfo_print (
+    CommanderInfo *commanderInfo
+) {
+    Commander_print (&commanderInfo->base);
+    dbg ("posX = %f %f %f (%x %x %x)",
+         commanderInfo->pos.x, commanderInfo->pos.y, commanderInfo->pos.z,
+         commanderInfo->pos.x, commanderInfo->pos.y, commanderInfo->pos.z);
+    dbg ("currentXP = %d (%x)", commanderInfo->currentXP, commanderInfo->currentXP);
+    dbg ("maxXP = %d (%x)", commanderInfo->maxXP, commanderInfo->maxXP);
+    dbg ("commanderId = %d (%x)", commanderInfo->commanderId, commanderInfo->commanderId);
+    dbg ("spriteId = %llu (%llx)", commanderInfo->spriteId, commanderInfo->spriteId);
+    dbg ("spriteId2 = %llu (%llx)", commanderInfo->spriteId2, commanderInfo->spriteId2);
+    dbg ("currentHP = %d (%x)", commanderInfo->currentHP, commanderInfo->currentHP);
+    dbg ("maxHP = %d (%x)", commanderInfo->maxHP, commanderInfo->maxHP);
+    dbg ("currentSP = %d (%x)", commanderInfo->currentSP, commanderInfo->currentSP);
+    dbg ("maxSP = %d (%x)", commanderInfo->maxSP, commanderInfo->maxSP);
+    dbg ("currentStamina = %d (%x)", commanderInfo->currentStamina, commanderInfo->currentStamina);
+    dbg ("maxStamina = %d (%x)", commanderInfo->maxStamina, commanderInfo->maxStamina);
+    dbg ("unk6 = %d (%x)", commanderInfo->unk6, commanderInfo->unk6);
+    dbg ("unk7 = %d (%x)", commanderInfo->unk7, commanderInfo->unk7);
 }

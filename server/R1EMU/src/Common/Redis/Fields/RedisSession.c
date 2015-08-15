@@ -45,7 +45,7 @@ Redis_getSession (
         // This is the first time the client connect.
         // Initialize an empty game session
         CommanderInfo commanderInfo;
-        CommanderInfo_createBasicCommander (&commanderInfo);
+        CommanderInfo_init (&commanderInfo);
         GameSession_init (gameSession, &commanderInfo);
         dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey->socketId);
     } else {

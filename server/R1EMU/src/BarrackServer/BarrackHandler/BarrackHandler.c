@@ -226,6 +226,7 @@ BarrackHandler_startGame (
     }
 
     // Build the answer packet
+    info ("mapId = %x", session->game.mapId);
     BarrackBuilder_startGameOk (
         clientPacket->routerId,
         zoneServerIp,
@@ -473,11 +474,11 @@ BarrackHandler_commanderCreate (
     info ("pcId generated : %x", session->game.pcId);
 
     // CommanderID
-    session->game.currentCommander.commanderId = R1EMU_generate_random64 (&self->seed);
-    info ("CommanderId generated : %llx", session->game.currentCommander.commanderId);
+    session->game.currentCommander.commanderId = R1EMU_generate_random (&self->seed);
+    info ("CommanderId generated : %x", session->game.currentCommander.commanderId);
 
     // Position : Center of the barrack
-    session->game.currentCommander.pos = PositionXYZ_decl (19.0f, 27.765520f, 29.0f);
+    session->game.currentCommander.pos = PositionXYZ_decl (27.0, 30.0, 29.0);
 
     // Default MapId : West Siauliai Woods
     session->game.mapId = 0x3FD;
@@ -501,7 +502,6 @@ BarrackHandler_commanderCreate (
         .dir2 = PositionXZ_decl (0.707107f, -0.707107),
     };
     BarrackBuilder_commanderCreate (&commanderCreate, reply);
-
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }

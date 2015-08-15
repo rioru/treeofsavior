@@ -1599,22 +1599,6 @@ ZoneBuilder_connectOk (
         uint8_t unk4;
         uint32_t unk5;
         CommanderInfo commander;
-        uint16_t unk6;
-        uint8_t unk7;
-        uint16_t unk8;
-        uint32_t unk9;
-        uint16_t unk10;
-        uint8_t unk11;
-        uint32_t unk12;
-        uint32_t unk13;
-        uint64_t spritedId;
-        uint64_t spritedId2;
-        uint32_t unk14;
-        uint32_t unk15;
-        uint32_t unk16;
-        uint32_t unk17;
-        uint32_t unk18;
-        uint32_t unk19;
     } replyPacket;
     #pragma pack(pop)
 
@@ -1634,25 +1618,8 @@ ZoneBuilder_connectOk (
         replyPacket.pcId = pcId;
         replyPacket.unk4 = 0; // ICBT
         replyPacket.unk5 = 0; // ICBT
-        replyPacket.unk6 = SWAP_UINT16 (0xE508); // ICBT
-        replyPacket.unk7 = 0; // ICBT
-        replyPacket.unk8 = SWAP_UINT16 (0x2E00); // ICBT
-        replyPacket.unk9 = SWAP_UINT32 (0x13371337);
-        replyPacket.unk10 = SWAP_UINT16 (0x3D01); // ICBT
-        replyPacket.unk11 = 0;
-        replyPacket.unk12 = SWAP_UINT32 (0x51260600);
-        replyPacket.unk13 = SWAP_UINT32 (0xC8425810);
-        replyPacket.spritedId = SWAP_UINT64 (0x260700007C000000);
-        replyPacket.spritedId2 = SWAP_UINT64 (0x270700007C000000);
-        replyPacket.unk14 = SWAP_UINT32 (0x550B0000);
-        replyPacket.unk15 = SWAP_UINT32 (0xAB0A0000);
-        replyPacket.unk16 = SWAP_UINT32 (0x2D040D07);
-        replyPacket.unk17 = SWAP_UINT32 (0xA8610000);
-        replyPacket.unk18 = SWAP_UINT32 (0xA8610000);
-        replyPacket.unk19 = SWAP_UINT32 (0x00005910);
-
         // Copy the current commander information
-        memcpy (&replyPacket.commander, commander, sizeof (CommanderInfo));
+        memcpy (&replyPacket.commander, commander, sizeof (replyPacket.commander));
     }
 
     CommanderInfo_print (&replyPacket.commander);
