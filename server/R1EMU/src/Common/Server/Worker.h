@@ -31,7 +31,6 @@
 
 // ---------- Defines -------------
 
-
 // ------ Structure declaration -------
 typedef struct _PacketHandler PacketHandler;
 typedef struct _WorkerStartupInfo WorkerStartupInfo;

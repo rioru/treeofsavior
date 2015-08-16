@@ -76,8 +76,8 @@ const char *redisGameSessionsStr [] = {
     [REDIS_GAME_SESSION_info_currentXP] = REDIS_GAME_SESSION_info_currentXP_str,
     [REDIS_GAME_SESSION_info_maxXP] = REDIS_GAME_SESSION_info_maxXP_str,
     [REDIS_GAME_SESSION_info_commanderId] = REDIS_GAME_SESSION_info_commanderId_str,
-    [REDIS_GAME_SESSION_info_spriteId] = REDIS_GAME_SESSION_info_spriteId_str,
-    [REDIS_GAME_SESSION_info_spriteId2] = REDIS_GAME_SESSION_info_spriteId2_str,
+    [REDIS_GAME_SESSION_info_zoneServerId] = REDIS_GAME_SESSION_info_zoneServerId_str,
+    [REDIS_GAME_SESSION_info_zoneServerId2] = REDIS_GAME_SESSION_info_zoneServerId2_str,
     [REDIS_GAME_SESSION_info_currentHP] = REDIS_GAME_SESSION_info_currentHP_str,
     [REDIS_GAME_SESSION_info_maxHP] = REDIS_GAME_SESSION_info_maxHP_str,
     [REDIS_GAME_SESSION_info_currentSP] = REDIS_GAME_SESSION_info_currentSP_str,
@@ -146,8 +146,8 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_info_currentXP_str
         " " REDIS_GAME_SESSION_info_maxXP_str
         " " REDIS_GAME_SESSION_info_commanderId_str
-        " " REDIS_GAME_SESSION_info_spriteId_str
-        " " REDIS_GAME_SESSION_info_spriteId2_str
+        " " REDIS_GAME_SESSION_info_zoneServerId_str
+        " " REDIS_GAME_SESSION_info_zoneServerId2_str
         " " REDIS_GAME_SESSION_info_currentHP_str
         " " REDIS_GAME_SESSION_info_maxHP_str
         " " REDIS_GAME_SESSION_info_currentSP_str
@@ -254,8 +254,8 @@ Redis_getGameSession (
             cInfo->currentXP = GET_REDIS_32 (info_currentXP);
             cInfo->maxXP = GET_REDIS_32 (info_maxXP);
             cInfo->commanderId = GET_REDIS_32 (info_commanderId);
-            cInfo->spriteId = GET_REDIS_64 (info_spriteId);
-            cInfo->spriteId2 = GET_REDIS_64 (info_spriteId2);
+            cInfo->zoneServerId = GET_REDIS_64 (info_zoneServerId);
+            cInfo->zoneServerId2 = GET_REDIS_64 (info_zoneServerId2);
             cInfo->currentHP = GET_REDIS_32 (info_currentHP);
             cInfo->maxHP = GET_REDIS_32 (info_maxHP);
             cInfo->currentSP = GET_REDIS_32 (info_currentSP);
@@ -381,8 +381,8 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_info_currentXP_str " %x"
         " " REDIS_GAME_SESSION_info_maxXP_str " %x"
         " " REDIS_GAME_SESSION_info_commanderId_str " %x"
-        " " REDIS_GAME_SESSION_info_spriteId_str " %llx"
-        " " REDIS_GAME_SESSION_info_spriteId2_str " %llx"
+        " " REDIS_GAME_SESSION_info_zoneServerId_str " %llx"
+        " " REDIS_GAME_SESSION_info_zoneServerId2_str " %llx"
         " " REDIS_GAME_SESSION_info_currentHP_str " %x"
         " " REDIS_GAME_SESSION_info_maxHP_str " %x"
         " " REDIS_GAME_SESSION_info_currentSP_str " %x"
@@ -445,8 +445,8 @@ Redis_updateGameSession (
         cInfo->currentXP,
         cInfo->maxXP,
         cInfo->commanderId,
-        cInfo->spriteId,
-        cInfo->spriteId2,
+        cInfo->zoneServerId,
+        cInfo->zoneServerId2,
         cInfo->currentHP,
         cInfo->maxHP,
         cInfo->currentSP,

@@ -96,6 +96,7 @@ BarrackHandler_login (
     // Update the session
     // ===== Gives a fake admin account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
+    snprintf (session->game.accountLogin, sizeof (session->game.accountLogin), "%0llX", session->socket.accountId);
     strncpy (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin));
     session->game.accountPrivilege = GAME_SESSION_PRIVILEGES_ADMIN;
     // ==================================
@@ -104,6 +105,7 @@ BarrackHandler_login (
     BarrackBuilder_loginOk (
         session->socket.accountId,
         session->game.accountLogin,
+        "*0FC621B82495C18DEC8D8D956C82297BEAAAA858",
         session->game.accountPrivilege,
         reply
     );
@@ -119,28 +121,26 @@ BarrackHandler_loginByPassport (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    // The following CB_LOGIN_BY_PASSPORT structure is actually wrong
-    /*
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
-        uint16_t unk1;
-        uint64_t accountId;
-        uint8_t accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
-        uint32_t accountPrivileges;
+        uint32_t unk1;
+        uint8_t unk2; // 08
+        uint16_t unk3; // 0110
+        uint8_t passport [1011];
+        uint32_t unk4;
+        uint16_t unk5;
+        uint64_t clientId;
+        uint32_t clientId2;
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
-    */
 
-    // Don't check the size.
-    /*
     if (sizeof (*clientPacket) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
             packetSize, sizeof (*clientPacket));
 
         return PACKET_HANDLER_ERROR;
     }
-    */
 
     // Authenticate here
     // TODO
@@ -149,15 +149,16 @@ BarrackHandler_loginByPassport (
     session->socket.authenticated = true;
 
     // Update the session
-    // ===== Gives a fake account =====
+    // ===== Gives a random account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
-    strncpy (session->game.accountLogin, "R1EMU", sizeof (session->game.accountLogin));
+    snprintf (session->game.accountLogin, sizeof (session->game.accountLogin), "%llx", session->socket.accountId);
     // ==================================
     info ("AccountID %llx generated !", session->socket.accountId);
 
     BarrackBuilder_loginOk (
         session->socket.accountId,
         session->game.accountLogin,
+        "*0FC621B82495C18DEC8D8D956C82297BEAAAA858",
         GAME_SESSION_PRIVILEGES_ADMIN,
         reply
     );
@@ -226,14 +227,13 @@ BarrackHandler_startGame (
     }
 
     // Build the answer packet
-    info ("mapId = %x", session->game.mapId);
     BarrackBuilder_startGameOk (
-        clientPacket->routerId,
+        self->info.routerId,
         zoneServerIp,
         zoneServerPort,
         session->game.mapId,
         clientPacket->commanderListId,
-        session->game.currentCommander.spriteId,
+        &ZoneServerId_decl (clientPacket->routerId, SWAP_UINT32 (0x3C010000)),
         false,
         reply
     );
@@ -274,7 +274,7 @@ BarrackHandler_commanderMove (
     BarrackBuilder_commanderMoveOk (
         session->socket.accountId,
         clientPacket->commanderListId,
-        &PositionXYZToXZ (&session->game.currentCommander.pos),
+        &session->game.currentCommander.pos,
         reply
     );
 
@@ -289,6 +289,21 @@ BarrackHandler_startBarrack (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    // IES Modify List
+    /*
+    BarrackBuilder_iesModifyList (
+        reply
+    );
+    */
+
+    // ??
+    /*
+    BarrackBuilder_normalUnk1 (
+        session->socket.accountId,
+        reply
+    );
+    */
+
     // Connect to S Server at localhost:1337 and localhost:1338
     BarrackBuilder_serverEntry (
         *(uint32_t *) ((char []) {127, 0, 0, 1}),
@@ -434,16 +449,16 @@ BarrackHandler_commanderCreate (
         break;
         case COMMANDER_JOB_WARRIOR:
             session->game.currentCommander.base.classId = COMMANDER_CLASS_WARRIOR;
-            break ;
+            break;
         case COMMANDER_JOB_ARCHER:
             session->game.currentCommander.base.classId = COMMANDER_CLASS_ARCHER;
-            break ;
+            break;
         case COMMANDER_JOB_MAGE:
             session->game.currentCommander.base.classId = COMMANDER_CLASS_MAGE;
-            break ;
+            break;
         case COMMANDER_JOB_CLERIC:
             session->game.currentCommander.base.classId = COMMANDER_CLASS_CLERIC;
-            break ;
+            break;
     }
     session->game.currentCommander.base.jobId = clientPacket->jobId;
 
@@ -490,16 +505,16 @@ BarrackHandler_commanderCreate (
     CommanderCreateInfo commanderCreate = {
         .commander = session->game.currentCommander.base,
         .mapId = session->game.mapId,
-        .spriteId = SWAP_UINT64 (0xEE2500003C010000), // ICBT
+        .zoneServerId = session->game.currentCommander.zoneServerId,
         .commanderPosition = session->game.charactersBarrackCount,
-        .unk4 = SWAP_UINT32 (0x02000000),
+        .unk4 = SWAP_UINT32 (0),
         .unk5 = 0,
         .maxXP = 0xC, // ICBT
-        .unk6 = SWAP_UINT32 (0xC01C761C), // ICBT
+        .unk6 = SWAP_UINT32 (0), // ICBT
         .pos = session->game.currentCommander.pos,
-        .dir = PositionXZ_decl (0.707107f, -0.707107),
+        .dir = PositionXZ_decl (0.0f, 0.0f),
         .pos2 = session->game.currentCommander.pos,
-        .dir2 = PositionXZ_decl (0.707107f, -0.707107),
+        .dir2 = PositionXZ_decl (0.0f, 0.0f),
     };
     BarrackBuilder_commanderCreate (&commanderCreate, reply);
 

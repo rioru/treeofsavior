@@ -31,6 +31,7 @@ void
 BarrackBuilder_loginOk (
     uint64_t accountId,
     uint8_t *accountLogin,
+    uint8_t *sessionKey,
     GameSessionPrivileges accountPrivileges,
     zmsg_t *replyMsg
 ) {
@@ -41,7 +42,7 @@ BarrackBuilder_loginOk (
         uint64_t accountId;
         uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
-        uint8_t steamKey [GAME_SESSION_KEY_MAXSIZE];
+        uint8_t sessionKey [GAME_SESSION_KEY_MAXSIZE];
     } replyPacket;
     #pragma pack(pop)
 
@@ -54,6 +55,7 @@ BarrackBuilder_loginOk (
         replyPacket.accountId = accountId;
         replyPacket.accountPrivileges = accountPrivileges;
         strncpy (replyPacket.accountLogin, accountLogin, sizeof (replyPacket.accountLogin));
+        strncpy (replyPacket.sessionKey, sessionKey, sizeof (replyPacket.sessionKey));
     }
 }
 
@@ -64,7 +66,7 @@ BarrackBuilder_startGameOk (
     uint32_t zoneServerPort,
     uint16_t mapId,
     uint8_t commanderListId,
-    uint64_t spriteId,
+    ZoneServerId *targetZoneZoneServerId,
     uint8_t isSingleMap,
     zmsg_t *replyMsg
 ) {
@@ -76,7 +78,7 @@ BarrackBuilder_startGameOk (
         uint32_t zoneServerPort;
         uint32_t mapId;
         uint8_t commanderListId;
-        uint64_t spriteId;
+        ZoneServerId targetZoneZoneServerId;
         uint8_t isSingleMap;
         uint8_t unk1;
     } replyPacket;
@@ -92,7 +94,7 @@ BarrackBuilder_startGameOk (
         replyPacket.zoneServerPort = zoneServerPort;
         replyPacket.mapId = mapId;
         replyPacket.commanderListId = commanderListId;
-        replyPacket.spriteId = spriteId;
+        memcpy (&replyPacket.targetZoneZoneServerId, targetZoneZoneServerId, sizeof (replyPacket.targetZoneZoneServerId));
         replyPacket.isSingleMap = isSingleMap;
         replyPacket.unk1 = 1;
     }
@@ -102,29 +104,92 @@ void
 BarrackBuilder_commanderMoveOk (
     uint64_t accountId,
     uint16_t commanderListId,
-    PositionXZ *position,
+    PositionXYZ *position,
+    zmsg_t *replyMsg
+) {
+    // Uncompressed structure
+    #pragma pack(push, 1)
+    struct {
+        PacketNormalHeader normalHeader;
+        uint64_t accountId;
+        uint8_t unk1;
+        PositionXYZ position;
+    } replyPacket;
+    #pragma pack(pop)
+
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    {
+        PacketNormalHeader_init (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (replyPacket));
+        replyPacket.accountId = accountId;
+        replyPacket.unk1 = 3; // 3, 2, 1, 3, 2, 1, ...
+        memcpy (&replyPacket.position, position, sizeof (replyPacket.position));
+    }
+}
+
+void
+BarrackBuilder_normalUnk1 (
+    uint64_t accountId,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         PacketNormalHeader normalHeader;
         uint64_t accountId;
-        uint16_t commanderListId;
-        uint16_t unk1;
-        PositionXZ position;
-        uint8_t unk2;
+        uint8_t unk1;
+        uint64_t unk2;
     } replyPacket;
     #pragma pack(pop)
 
-    PacketType packetType = BC_START_GAMEOK;
-    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        PacketNormalHeader_init (&replyPacket.normalHeader, BC_NORMAL_COMMANDER_MOVE_OK, sizeof (replyPacket));
-
+        PacketNormalHeader_init (&replyPacket.normalHeader, BC_NORMAL_UNKNOWN_1, sizeof (replyPacket));
         replyPacket.accountId = accountId;
-        replyPacket.commanderListId = commanderListId;
-        memcpy (&replyPacket.position, position, sizeof (PositionXZ));
+        replyPacket.unk1 = 0; // ICBT
+        replyPacket.unk2 = 0;
+    }
+}
+
+void
+BarrackBuilder_iesModifyList (
+    zmsg_t *replyMsg
+) {
+    #pragma pack(push, 1)
+    struct {
+        // Not yet implemented
+    } replyPacket;
+    (void) replyPacket;
+    #pragma pack(pop)
+
+    // PacketType packetType = BC_IES_MODIFY_LIST;
+    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
+    // BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    {
+        size_t memSize;
+        void *memory = dumpToMem (
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  48 00 FF FF FF FF 35 01 01 00 0C 00 53 68 61 72 | H.....5.....Shar\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  65 64 43 6F 6E 73 74 00 02 00 F5 00 00 00 01 00 | edConst.........\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  06 00 56 61 6C 75 65 00 02 00 0C 00 00 00 02 00 | ..Value.........\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  31 00 05 00 31 2E 30 30 00 03 00 51 41 00 0A 00 | 1...1.00...QA...\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  32 30 31 35 2D 30 38 2D 30 00 0F 00 43 68 61 6E | 2015-08-0...Chan\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  67 65 20 42 79 20 54 6F 6F 6C 00 0B 00 00 00 02 | ge By Tool......\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  00 31 00 05 00 31 2E 30 30 00 03 00 51 41 00 0A | .1...1.00...QA..\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  00 32 30 31 35 2D 30 38 2D 30 00 0F 00 43 68 61 | .2015-08-0...Cha\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  6E 67 65 20 42 79 20 54 6F 6F 6C 00 FB 00 00 00 | nge By Tool.....\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  01 00 06 00 56 61 6C 75 65 00 03 00 05 00 00 00 | ....Value.......\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  02 00 31 00 05 00 31 2E 30 30 00 05 00 4C 69 6C | ..1...1.00...Lil\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  79 00 0A 00 32 30 31 35 2D 30 38 2D 30 00 0F 00 | y...2015-08-0...\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  43 68 61 6E 67 65 20 42 79 20 54 6F 6F 6C 00 04 | Change By Tool..\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 02 00 31 00 05 00 31 2E 30 30 00 05 00 | .....1...1.00...\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  4C 69 6C 79 00 0A 00 32 30 31 35 2D 30 38 2D 30 | Lily...2015-08-0\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  00 0F 00 43 68 61 6E 67 65 20 42 79 20 54 6F 6F | ...Change By Too\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  6C 00 03 00 00 00 02 00 31 00 05 00 31 2E 30 30 | l.......1...1.00\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  00 05 00 4C 69 6C 79 00 0A 00 32 30 31 35 2D 30 | ...Lily...2015-0\n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  38 2D 30 00 0F 00 43 68 61 6E 67 65 20 42 79 20 | 8-0...Change By \n"
+            "[03:07:13][main.c:55 in CNetUsr__PacketHandler_0]  54 6F 6F 6C 00                                  | Tool.\n"
+            , NULL, &memSize
+        );
+
+        zmsg_add (replyMsg, zframe_new (memory, memSize));
     }
 }
 
@@ -178,6 +243,7 @@ BarrackBuilder_commanderList (
     {
         VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, packetType, sizeof (replyPacket));
         replyPacket.accountId = accountId;
+        replyPacket.unk1 = 1; // ICBT - equal to 1 or 4
         replyPacket.commandersCount = 0;
     }
 }

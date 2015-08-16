@@ -79,8 +79,8 @@ CommanderInfo_init (
     commanderInfo->pos = PositionXYZ_decl (27.0, 30.0, 29.0);
     commanderInfo->currentXP = 0;
     commanderInfo->maxXP = 0xC; // ICBT
-    commanderInfo->spriteId = SWAP_UINT64 (0x260700007C000000);
-    commanderInfo->spriteId2 = commanderInfo->spriteId + 1;
+    commanderInfo->zoneServerId = ZoneServerId_decl (0, 0);
+    commanderInfo->zoneServerId2 = commanderInfo->zoneServerId + 1;
     commanderInfo->commanderId = -1;
     commanderInfo->currentHP = 1200;
     commanderInfo->maxHP = 1200;
@@ -88,7 +88,7 @@ CommanderInfo_init (
     commanderInfo->maxSP = 1200;
     commanderInfo->currentStamina = 25000;
     commanderInfo->maxStamina = 25000;
-    commanderInfo->unk6 = 0;
+    commanderInfo->unk6 = SWAP_UINT16 (0x0020);
     commanderInfo->unk7 = SWAP_UINT16 (0x5910); // ICBT
 }
 
@@ -149,8 +149,8 @@ CommanderInfo_print (
     dbg ("currentXP = %d (%x)", commanderInfo->currentXP, commanderInfo->currentXP);
     dbg ("maxXP = %d (%x)", commanderInfo->maxXP, commanderInfo->maxXP);
     dbg ("commanderId = %d (%x)", commanderInfo->commanderId, commanderInfo->commanderId);
-    dbg ("spriteId = %llu (%llx)", commanderInfo->spriteId, commanderInfo->spriteId);
-    dbg ("spriteId2 = %llu (%llx)", commanderInfo->spriteId2, commanderInfo->spriteId2);
+    dbg ("zoneServerId = %llu (%llx)", commanderInfo->zoneServerId, commanderInfo->zoneServerId);
+    dbg ("zoneServerId2 = %llu (%llx)", commanderInfo->zoneServerId2, commanderInfo->zoneServerId2);
     dbg ("currentHP = %d (%x)", commanderInfo->currentHP, commanderInfo->currentHP);
     dbg ("maxHP = %d (%x)", commanderInfo->maxHP, commanderInfo->maxHP);
     dbg ("currentSP = %d (%x)", commanderInfo->currentSP, commanderInfo->currentSP);

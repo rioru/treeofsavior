@@ -411,6 +411,11 @@ EventServer_updateClientPosition (
              enterPcSocketId != NULL;
              enterPcSocketId = zlist_next (pcEnterList)
         ) {
+            if (strcmp (enterPcSocketId, targetSocketId) == 0) {
+                // Doesn't send again the packet if the client sees himself
+                continue;
+            }
+
             GameSession gameSession;
             curPcEnterMsg = zmsg_new ();
             if (!(EventServer_getGameSessionBySocketId (self, self->info.routerId, enterPcSocketId, &gameSession))) {

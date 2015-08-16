@@ -42,7 +42,8 @@
     do {                                                                                    \
         size_t __clientPacketSize = packetTypeInfo.packets[packetType].size                 \
                                   - sizeof (ClientPacketHeader);                            \
-        if (sizeof (packet) != __clientPacketSize) {                                        \
+        if (packetTypeInfo.packets[packetType].size != 0                                    \
+         && sizeof (packet) != __clientPacketSize) {                                        \
             error ("The packet size sent isn't the equal to the one in PacketType.h");      \
             error ("The packet size is %d bytes. The waited size is %d bytes.",             \
                 sizeof (packet), __clientPacketSize);                                       \

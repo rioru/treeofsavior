@@ -587,7 +587,8 @@ packetsType[3498] = "CZ_PVP_ZONE_CMD" # Size = 22
 packetsType[3499] = "CZ_PVP_CHAT" # Size = 0
 packetsType[3500] = "CZ_CARDBATTLE_CMD" # Size = 26
 
-
+# Search "SkillAdd" or "AbilityList"
+packetFunctionProfiler = 0x415960;
 
 class JumpTableHandler:
 
@@ -599,9 +600,10 @@ class JumpTableHandler:
         self.defaultCase = defaultCase;
         self.className = className;
 
-    def resolve (self):
+    def resolve (self, isZone):
         for n in range (self.jumptableSize):
             # Get jumptable entry
+            namePacketFunctionSeen = 0;
             index = Byte (self.jumptableIndex + n);
             address = Dword (self.jumptableAddress + index*4);
 
@@ -609,9 +611,22 @@ class JumpTableHandler:
             if address == self.defaultCase:
                 continue;
 
-            # Get the first call
-            while GetMnem (address) != "call":
-                address = NextHead (address);
+            # Get the first call or the first call after the packetFunctionProfiler
+            callOk = False;
+            newPacketFunctionCalled = False;
+
+            while callOk == False:
+                if GetMnem (address) == "call":
+                    if isZone == False:
+                        callOk = True;
+                    else:
+                        callAddress = GetOperandValue (address, 0);
+                        if callAddress == packetFunctionProfiler:
+                            newPacketFunctionCalled = True;
+                        elif newPacketFunctionCalled == True:
+                            callOk = True;
+                if callOk == False:
+                    address = NextHead (address);
 
             # Get the name in the packets list
             name = packetsType[n+self.jumptableOffset];
@@ -622,6 +637,7 @@ class JumpTableHandler:
                     continue;
                 if callAddress < 0x400000:
                     continue;
+                print "%x => %s" % (callAddress, self.className + "::" + name);
                 MakeName (callAddress, self.className + "::" + name);
 
 
@@ -632,24 +648,24 @@ jumptableIndex   = 0x44B178
 jumptableAddress = 0x44B128
 defaultCase      = 0x44B109
 barrackHandler = JumpTableHandler (jumptableOffset, jumptableSize, jumptableIndex, jumptableAddress, defaultCase, "CBarrackNet");
-barrackHandler.resolve ();
+barrackHandler.resolve (False);
 
-"""
-# Zone 1
+
+# Zone : ProcessPacket
 jumptableOffset  = 0xC2B
-jumptableSize    = 0x176
-jumptableIndex   = 0x416030
-jumptableAddress = 0x415DF8
-defaultCase      = 0x4152B1
+jumptableSize    = 0x175
+jumptableIndex   = 0x41D044
+jumptableAddress = 0x41CDF8
+defaultCase      = 0x41CCBC
 zoneHandler1 = JumpTableHandler (jumptableOffset, jumptableSize, jumptableIndex, jumptableAddress, defaultCase, "CNormalNet");
-zoneHandler1.resolve ();
+zoneHandler1.resolve (True);
 
-# Zone 2
-jumptableOffset  = 0xBBB
-jumptableSize    = 0x4C
-jumptableIndex   = 0x415DA8
-jumptableAddress = 0x415D40
-defaultCase      = 0x4152B1
+
+# Zone : ProcessCommonPackets
+jumptableOffset  = 0xBBE
+jumptableSize    = 0x1D7
+jumptableIndex   = 0x666840
+jumptableAddress = 0x666658
+defaultCase      = 0x666637
 zoneHandler2 = JumpTableHandler (jumptableOffset, jumptableSize, jumptableIndex, jumptableAddress, defaultCase, "CNormalNet");
-zoneHandler2.resolve ();
-"""
+zoneHandler2.resolve (True);

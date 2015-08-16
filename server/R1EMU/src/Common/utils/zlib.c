@@ -22,9 +22,9 @@
 
 // ------ Extern function implementation -------
 bool
-ZlibPacket_compress (
-    ZlibPacket *self,
-    char *data,
+Zlib_compress (
+    Zlib *self,
+    void *data,
     size_t dataSize
 ) {
     z_stream stream;
@@ -60,9 +60,9 @@ ZlibPacket_compress (
 }
 
 bool
-ZlibPacket_decompress (
-    ZlibPacket *self,
-    char *data,
+Zlib_decompress (
+    Zlib *self,
+    void *data,
     size_t dataSize
 ) {
     z_stream stream;

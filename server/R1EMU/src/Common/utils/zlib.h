@@ -31,26 +31,26 @@ typedef struct {
 
 typedef struct {
     ZlibHeader header;
-    char buffer [0x40000];
-} ZlibPacket;
+    uint8_t buffer [0x40000];
+} Zlib;
 
 // ----------- Functions ------------
 /**
- * @brief : Compress a given data to a ZlibPacket
+ * @brief : Compress a given data to a Zlib
  */
 bool
-ZlibPacket_compress (
-    ZlibPacket *self,
-    char *data,
+Zlib_compress (
+    Zlib *self,
+    void *data,
     size_t dataSize
 );
 
 /**
- * @brief : Decompress a given data to a ZlibPacket
+ * @brief : Decompress a given data to a Zlib
  */
 bool
-ZlibPacket_decompress (
-    ZlibPacket *self,
-    char *data,
+Zlib_decompress (
+    Zlib *self,
+    void *data,
     size_t dataSize
 );

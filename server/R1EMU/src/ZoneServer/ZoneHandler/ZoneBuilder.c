@@ -176,7 +176,7 @@ ZoneBuilder_playSkillCastAni (
     CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        replyPacket.header.type = packetType;
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.pcId = targetPcId;
         memcpy (&replyPacket.position, position, sizeof (PositionXYZ));
         replyPacket.unk1 = 0xECC7;
@@ -660,104 +660,76 @@ ZoneBuilder_leave (
 }
 
 void
+ZoneBuilder_campInfo (
+    uint64_t accountId,
+    zmsg_t *replyMsg
+) {
+
+}
+
+void
 ZoneBuilder_enterPc (
     uint32_t pcId,
-    CommanderInfo *commander,
+    CommanderInfo *commanderInfo,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
-        uint32_t pcId; // 5A730100
+        uint32_t pcId; // A65F0B00
         PositionXYZ position; // 00001DC4, 00008243, 002080C4
-        float unk7; // 0000803F
-        uint32_t unk8; // 00000000
-        uint32_t unk9; // 00270406
-        uint32_t unk10; // 0000749F
-        uint8_t unk11; // 01
-        uint16_t unk12; // 0000
+        float unk1; // 0000803F
+        uint32_t unk2; // 00000000
+        uint16_t unk3; // 0000
+        ZoneServerId serverId; // EE2500003C010000
+        uint8_t unk4; // 00
         float moveSpeed; // 0000F841
-        uint32_t unk13; // 00000000
-        uint16_t currentHP; // 7700
-        uint16_t maxHP; // 7700
+        uint32_t unk5; // 00000000
+        uint32_t currentHP; // EE00
+        uint32_t maxHP; // EE00
         uint16_t currentSP; // 6900
         uint16_t maxSP; // 6900
-        uint32_t curUnk; // A8610000
-        uint32_t maxUnk; // A8610000
-        uint8_t unk14; // 00
-        uint16_t unk15; // 0000
-        uint32_t unk16; // FFFFFFFF
-        uint32_t unk17; // FC7C0000
-        uint8_t unk18; // 00
-        char commanderName [COMMANDER_NAME_SIZE+1];
-        char familyName [COMMANDER_FAMILY_NAME_SIZE+1];
-        uint16_t unk2;
-        uint32_t unk3;
-        uint64_t accountId;
-        uint16_t classId;
-        uint16_t unk4;
-        uint16_t jobId;
-        uint8_t gender;
-        uint8_t unk5;
-        uint8_t unk6[88];
+        uint32_t currentStamina; // A8610000
+        uint32_t maxStamina; // A8610000
+        uint8_t unk6; // 00
+        uint16_t unk7; // 0000
+        uint32_t unk8; // FFFFFFFF
+        uint32_t unk9; // 24B42B1B
+        uint8_t unk10; // 00
+        Commander commander;
+        uint8_t stringId [48+1]; // "None"
     } replyPacket;
     #pragma pack(pop)
-
-    /*
-        5A730100 00001DC4 00008243 002080C4 0000803F 00000000 00270406 0000749F 01 0000 0000F841 00000000 7700 7700 6900 6900 A8610000 A8610000 00 0000 FFFFFFFF FC7C0000 00 4342543200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 EAB5ACEC9B90EC9E9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0000 9000000 D1A8014400000000 1527 0000 0400 0200 01 00 0000 02000000 02000000 04000000 9D1A0800 06000000 07000000 10270000 F82A0000 8D110300 7C969800 04000000 09000000 09000000 04000000 8DF30700 09000000 09000000 09000000 09000000 0A000000 33000000
-        046C0100 5057E4C4 74768243 DB7832C2 1D56E733 FFFF7FBF 0223E605 0000749F 01 0000 0000F841 F6285C3F 6D00 6D00 5100 5100 935E0000 A8610000 01 0000 FFFFFFFF 36690000 00 EC958CED858CEC96B4EC9794EC8B9CEC8AA40000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 5465616D53706F740000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0000 0000000 2A14076E00000000 1327 A100 0300 0200 01 00 0000 02000000 02000000 04000000 9D1A0800 06000000 07000000 10270000 F82A0000 4D750200 7C969800 04000000 09000000 09000000 04000000 8DF30700 09000000 09000000 09000000 09000000 0A000000 0B000000
-        956A0100 A0A5B9C4 74768243 4BC90FC3 AD1802BF 957A5C3F 02289905 0000A29F 01 0000 0000F841 00000000 4E00 4E00 9A00 9A00 A8610000 A8610000 00 0000 FFFFFFFF 48820000 00 EC9584EC95BC0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 EC95BCEC95BC00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0000 0000000 084C025A00000000 1627 A100 0200 0100 01 00 0000 02000000 02000000 04000000 9D1A0800 06000000 07000000 10270000 F82A0000 2D270200 7C969800 04000000 09000000 09000000 04000000 8DF30700 09000000 09000000 09000000 09000000 0A000000 24000000
-        5A730100 0000BAC4 00008C43 00001EC3 FFFF7F3F 1D56E733 00D70406 0000749F 01 0000 0000F841 00000000 8300 8300 7200 7200 685E0000 A8610000 00 0000 FFFFFFFF 00000000 00 4342543200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 EAB5ACEC9B90EC9E9000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0000 9000000 D1A8014400000000 1527 0000 0400 0200 01 00 0000 02000000 02000000 04000000 9D1A0800 06000000 07000000 10270000 F82A0000 8D110300 7C969800 04000000 09000000 09000000 04000000 8DF30700 09000000 09000000 09000000 09000000 0A000000 33000000
-        956A0100 A0A5B9C4 74768243 4BC90FC3 AD1802BF 957A5C3F 02269905 0000A29F 01 0000 0000F841 00000000 4E00 4E00 9A00 9A00 A8610000 A8610000 00 0000 FFFFFFFF 06640000 00 EC9584EC95BC0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 EC95BCEC95BC00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000 0000 0000000 084C025A00000000 1627 A100 0200 0100 01 00 0000 02000000 02000000 04000000 9D1A0800 06000000 07000000 10270000 F82A0000 2D270200 7C969800 04000000 09000000 09000000 04000000 8DF30700 09000000 09000000 09000000 09000000 0A000000 24000000
-    */
 
     PacketType packetType = ZC_ENTER_PC;
     CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        size_t memSize = sizeof (replyPacket);
-        dumpToMem (
-            "[11:10:22][           ToSClient:                     dbgBuffer]  BE 0B FF FF FF FF 5A 73 01 00 00 00 1D C4 00 00 | ......Zs........\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  82 43 00 20 80 C4 00 00 80 3F 00 00 00 00 00 27 | .C. .....?.....'\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  04 06 00 00 74 9F 01 00 00 00 00 F8 41 00 00 00 | ....t.......A...\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 77 00 77 00 69 00 69 00 A8 61 00 00 A8 61 00 | .w.w.i.i..a...a.\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 FF FF FF FF FC 7C 00 00 00 43 42 54 | .........|...CBT\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  32 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | 2...............\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 EA B5 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  AC EC 9B 90 EC 9E 90 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 09 00 00 00 D1 A8 01 44 00 00 00 00 15 27 00 | ........D.....'.\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 04 00 02 00 01 00 00 00 02 00 00 00 02 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 04 00 00 00 9D 1A 08 00 06 00 00 00 07 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 10 27 00 00 F8 2A 00 00 8D 11 03 00 7C 96 98 | ..'...*......|..\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 04 00 00 00 09 00 00 00 09 00 00 00 04 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 8D F3 07 00 09 00 00 00 09 00 00 00 09 00 00 | ................\n"
-            "[11:10:22][           ToSClient:                     dbgBuffer]  00 09 00 00 00 0A 00 00 00 33 00 00 00          | .........3...\n"
-            , &replyPacket, &memSize
-        );
-
-        replyPacket.header.type = ZC_ENTER_PC;
-        strncpy (replyPacket.familyName, commander->base.familyName, sizeof (replyPacket.familyName));
-        strncpy (replyPacket.commanderName, commander->base.commanderName, sizeof (replyPacket.commanderName));
+        ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.pcId = pcId;
-        replyPacket.position.x = commander->pos.x;
-        replyPacket.position.y = 260.0f;
-        replyPacket.position.z = commander->pos.z;
-        replyPacket.unk7 = 1.0;
-        replyPacket.accountId = commander->base.accountId;
-        replyPacket.classId = commander->base.classId;
-        replyPacket.jobId = commander->base.jobId;
-        replyPacket.gender = commander->base.gender;
-        replyPacket.moveSpeed = 31.0;
-        replyPacket.currentHP = commander->currentHP;
-        replyPacket.maxHP = commander->maxHP;
-        replyPacket.currentSP = commander->currentSP;
-        replyPacket.maxSP = commander->maxSP;
+        replyPacket.position = commanderInfo->pos;
+        replyPacket.unk1 = 1.0f;
+        replyPacket.unk2 = 0;
+        replyPacket.unk3 = 0;
+        replyPacket.serverId = commanderInfo->zoneServerId;
+        replyPacket.unk4 = 0;
+        replyPacket.moveSpeed = 31.0f;
+        replyPacket.currentHP = commanderInfo->currentHP;
+        replyPacket.maxHP = commanderInfo->maxHP;
+        replyPacket.currentSP = commanderInfo->currentSP;
+        replyPacket.maxSP = commanderInfo->maxSP;
+        replyPacket.currentStamina = commanderInfo->currentStamina;
+        replyPacket.maxStamina = commanderInfo->maxStamina;
+        replyPacket.unk6 = 0;
+        replyPacket.unk7 = 0;
+        replyPacket.unk8 = -1;
+        replyPacket.unk9 = SWAP_UINT32 (0x24B42B1B);
+        replyPacket.unk10 = 0;
+        memcpy (&replyPacket.commander, &commanderInfo->base, sizeof (replyPacket.commander));
+        strncpy (replyPacket.stringId, "None", sizeof (replyPacket.stringId));
     }
+
+    buffer_print (&replyPacket, sizeof (replyPacket), "replyPacket ");
 }
 
 void
@@ -1045,12 +1017,15 @@ ZoneBuilder_quickSlotList (
     {
         size_t memSize;
         void *memory = dumpToMem (
+                                  /*
             "[11:36:22][           ToSClient:                     dbgBuffer]  30 0C FF FF FF FF 59 00 4D 00 00 00 63 60 72 9C | 0.....Y.M...c`r.\n"
             "[11:36:22][           ToSClient:                     dbgBuffer]  C3 C0 E0 72 85 81 61 F1 7C 46 06 26 27 20 27 FF | ...r..a.|F.&' '.\n"
             "[11:36:22][           ToSClient:                     dbgBuffer]  26 94 E3 0C E4 14 C0 38 2E 40 4E 21 94 C3 40 55 | &......8.@N!..@U\n"
             "[11:36:22][           ToSClient:                     dbgBuffer]  C0 1C 7D 84 93 E1 D3 65 88 A5 CC 71 40 CE 67 18 | ..}....e...q@.g.\n"
             "[11:36:22][           ToSClient:                     dbgBuffer]  27 11 C8 F9 02 E5 50 D5 CE 51 C3 06 7B 08 30 22 | '.....P..Q..{.0.\n"
             "[11:36:22][           ToSClient:                     dbgBuffer]  3B 90 09 99 C3 8C CC 01 00                      | ;........\n"
+            */
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  32 0C FF FF FF FF 0C 00 00 00 00 00             | 2...........\n"
             , NULL, &memSize
         );
 
@@ -1611,9 +1586,9 @@ ZoneBuilder_connectOk (
         replyPacket.gameMode = gameMode;
         replyPacket.unk1 = SWAP_UINT32 (0xCED3B04C); // ICBT
         replyPacket.accountPrivileges = accountPrivileges;
-        replyPacket.unk2 = 0; // ICBT
+        replyPacket.unk2 = 0xC2; // ICBT
         replyPacket.unk3 = 0; // ICBT
-        memcpy (replyPacket.markers, "*.*", sizeof (replyPacket.markers));
+        memcpy (replyPacket.markers, "*\x00*", sizeof (replyPacket.markers));
         memcpy (replyPacket.passport, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", sizeof (replyPacket.passport));
         replyPacket.pcId = pcId;
         replyPacket.unk4 = 0; // ICBT
@@ -1621,8 +1596,6 @@ ZoneBuilder_connectOk (
         // Copy the current commander information
         memcpy (&replyPacket.commander, commander, sizeof (replyPacket.commander));
     }
-
-    CommanderInfo_print (&replyPacket.commander);
 }
 
 void

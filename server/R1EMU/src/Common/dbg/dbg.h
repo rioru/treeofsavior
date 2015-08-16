@@ -9,13 +9,10 @@
  *
  * @file dbg.h
  * @brief Provides debug and dump functions
- * @date 2015-03-05-20.13
  *
  * Provides debug functions with multiple levels and dump utilities.
  *
  */
-
-
 #pragma once
 
 // ---------- Includes ------------
@@ -42,7 +39,7 @@ typedef enum {
 #define pause()                              \
     do {                                     \
         info ("Press a key to continue..."); \
-        getc(stdin);                         \
+        getc (stdin);                        \
     } while (0);
 
 /** Debug line template */

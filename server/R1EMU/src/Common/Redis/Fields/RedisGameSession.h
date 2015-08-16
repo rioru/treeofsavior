@@ -74,8 +74,8 @@
 #define REDIS_GAME_SESSION_info_currentXP_str       "currentXP"
 #define REDIS_GAME_SESSION_info_maxXP_str           "maxXP"
 #define REDIS_GAME_SESSION_info_commanderId_str     "commanderId"
-#define REDIS_GAME_SESSION_info_spriteId_str        "spriteId"
-#define REDIS_GAME_SESSION_info_spriteId2_str       "spriteId2"
+#define REDIS_GAME_SESSION_info_zoneServerId_str        "zoneServerId"
+#define REDIS_GAME_SESSION_info_zoneServerId2_str       "zoneServerId2"
 #define REDIS_GAME_SESSION_info_currentHP_str       "currentHP"
 #define REDIS_GAME_SESSION_info_maxHP_str           "maxHP"
 #define REDIS_GAME_SESSION_info_currentSP_str       "currentSP"
@@ -133,8 +133,8 @@ enum RedisGameSessionFields {
     REDIS_GAME_SESSION_info_currentXP,
     REDIS_GAME_SESSION_info_maxXP,
     REDIS_GAME_SESSION_info_commanderId,
-    REDIS_GAME_SESSION_info_spriteId,
-    REDIS_GAME_SESSION_info_spriteId2,
+    REDIS_GAME_SESSION_info_zoneServerId,
+    REDIS_GAME_SESSION_info_zoneServerId2,
     REDIS_GAME_SESSION_info_currentHP,
     REDIS_GAME_SESSION_info_maxHP,
     REDIS_GAME_SESSION_info_currentSP,

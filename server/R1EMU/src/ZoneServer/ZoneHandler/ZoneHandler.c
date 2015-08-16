@@ -251,7 +251,22 @@ ZoneHandler_campInfo (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    warning ("CZ_CAMPINFO not implemented yet.");
+    #pragma pack(push, 1)
+    struct {
+        uint64_t accountId;
+    } *clientPacket = (void *) packet;
+    #pragma pack(pop)
+
+    // Check packet size
+    CHECK_CLIENT_PACKET_SIZE (*clientPacket, CZ_CAMPINFO);
+    if (sizeof (*clientPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (*clientPacket));
+        return PACKET_HANDLER_ERROR;
+    }
+
+    ZoneBuilder_campInfo (session->socket.accountId, reply);
+
     return PACKET_HANDLER_OK;
 }
 
@@ -370,7 +385,7 @@ ZoneHandler_moveStop (
     // Notify the players around
     GameEventMoveStop event = {
         .mapId = session->socket.mapId,
-        .commander = session->game.currentCommander,
+        .commanderInfo = session->game.currentCommander,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
@@ -423,7 +438,7 @@ ZoneHandler_keyboardMove (
     // Notify the players around
     GameEventCommanderMove event = {
         .mapId = session->socket.mapId,
-        .commander = session->game.currentCommander,
+        .commanderInfo = session->game.currentCommander,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
@@ -455,6 +470,8 @@ ZoneHandler_gameReady (
     size_t packetSize,
     zmsg_t *reply
 ) {
+    CommanderInfo *commanderInfo = &session->game.currentCommander;
+
     /*
     ZoneBuilder_itemInventoryList (reply);
     ZoneBuilder_sessionObjects (reply);
@@ -472,7 +489,10 @@ ZoneHandler_gameReady (
     ZoneBuilder_skillList (session->game.currentCommander.base.pcId, reply);
     ZoneBuilder_abilityList (session->game.currentCommander.base.pcId, reply);
     ZoneBuilder_cooldownList (reply);
+    */
     ZoneBuilder_quickSlotList (reply);
+
+    /*
     ZoneBuilder_normalUnk1 (reply);
     ZoneBuilder_normalUnk2 (reply);
     ZoneBuilder_normalUnk3 (reply);
@@ -486,23 +506,19 @@ ZoneHandler_gameReady (
     ZoneBuilder_loginTime (reply);
     */
 
-    PositionXYZ enterPosition = {
-        .x = session->game.currentCommander.pos.x,
-        .y = 260.0f,
-        .z = session->game.currentCommander.pos.z
-    };
-    ZoneBuilder_MyPCEnter (&enterPosition, reply);
-    ZoneBuilder_skillAdd (reply);
+    ZoneBuilder_MyPCEnter (&commanderInfo->pos, reply);
+    // ZoneBuilder_skillAdd (reply);
 
     // Notify players around that a new PC has entered
     GameEventPcEnter pcEnterEvent = {
         .mapId = session->socket.mapId,
+        .pcId = session->game.pcId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
-    memcpy (&pcEnterEvent.commander, &session->game.currentCommander, sizeof (CommanderInfo));
+    memcpy (&pcEnterEvent.commanderInfo, commanderInfo, sizeof (pcEnterEvent.commanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
 
-    // ZoneBuilder_buffList (session->game.currentCommander.base.pcId, reply);
+    // ZoneBuilder_buffList (commanderInfo->base.pcId, reply);
 
     // Add NPC at the start screen
     // ZoneBuilder_enterMonster (reply);
@@ -510,7 +526,7 @@ ZoneHandler_gameReady (
 
     /*
     ZoneBuilder_normalUnk6 (
-        session->game.currentCommander.base.commanderName,
+        commanderInfo->base.commanderName,
         reply
     );
 
@@ -523,10 +539,11 @@ ZoneHandler_gameReady (
     );
 
     ZoneBuilder_jobPts (reply);
-    ZoneBuilder_moveSpeed (session->game.currentCommander.base.pcId, 31.0, reply);
     ZoneBuilder_normalUnk9 (session->game.currentCommander.base.pcId, reply);
     ZoneBuilder_addonMsg (reply);
     */
+
+    ZoneBuilder_moveSpeed (session->game.pcId, 31.0, reply);
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
@@ -539,15 +556,14 @@ ZoneHandler_connect (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    buffer_print (packet, packetSize, "CONNECT : ");
     #pragma pack(push, 1)
     struct {
         uint32_t unk1;
         uint64_t accountId;
-        uint64_t spriteId;
+        ZoneServerId zoneServerId;
         uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
         uint8_t unk4;
-        uint32_t zoneServerId;
+        uint32_t zoneServerIndex;
         uint16_t unk3;
         uint8_t channelListId;
     } *clientPacket = (void *) packet;
@@ -609,9 +625,8 @@ ZoneHandler_connect (
         return PACKET_HANDLER_ERROR;
     }
 
-    // Position : Official starting point position (tutorial)
-    session->game.currentCommander.pos.x = -628.0f;
-    session->game.currentCommander.pos.z = -1025.0f;
+    // Position : Official starting point position (tutorial map)
+    session->game.currentCommander.pos = PositionXYZ_decl (-628.0f, 260.0f, -1025.0f);
 
     ZoneBuilder_connectOk (
         session->game.pcId,
@@ -655,7 +670,7 @@ ZoneHandler_jump (
     GameEventJump event = {
         .mapId = session->socket.mapId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
-        .commander = session->game.currentCommander,
+        .commanderInfo = session->game.currentCommander,
         .height = 300.0
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));

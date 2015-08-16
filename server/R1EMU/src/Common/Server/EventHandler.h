@@ -30,7 +30,7 @@ typedef struct {
     uint16_t mapId;
     uint32_t pcId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commander;
+    CommanderInfo commanderInfo;
     PositionXYZ position;
     PositionXZ direction;
     float timestamp;
@@ -40,7 +40,7 @@ typedef struct {
     uint16_t mapId;
     uint32_t pcId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commander;
+    CommanderInfo commanderInfo;
     PositionXYZ position;
     PositionXZ direction;
     float timestamp;
@@ -55,15 +55,16 @@ typedef struct {
     uint16_t mapId;
     uint32_t pcId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commander;
+    CommanderInfo commanderInfo;
     float height;
 } GameEventJump;
 
 typedef struct {
+    ZoneServerId serverId;
     uint16_t mapId;
     uint32_t pcId;
     char socketId[SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commander;
+    CommanderInfo commanderInfo;
 } GameEventPcEnter;
 
 

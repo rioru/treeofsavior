@@ -21,6 +21,7 @@
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Session/GameSession.h"
+#include "Common/Server/Worker.h"
 
 
 // ---------- Defines -------------
@@ -45,6 +46,7 @@ void
 BarrackBuilder_loginOk (
     uint64_t accountId,
     uint8_t *accountLogin,
+    uint8_t *sessionKey,
     GameSessionPrivileges accountPrivileges,
     zmsg_t *replyMsg
 );
@@ -59,7 +61,7 @@ BarrackBuilder_startGameOk (
     uint32_t zoneServerPort,
     uint16_t mapId,
     uint8_t commanderListId,
-    uint64_t spriteId,
+    ZoneServerId *targetZoneZoneServerId,
     uint8_t isSingleMap,
     zmsg_t *replyMsg
 );
@@ -72,7 +74,7 @@ void
 BarrackBuilder_commanderMoveOk (
     uint64_t accountId,
     uint16_t commanderListId,
-    PositionXZ *position,
+    PositionXYZ *position,
     zmsg_t *replyMsg
 );
 
@@ -133,5 +135,22 @@ BarrackBuilder_commanderDestroy (
 void
 BarrackBuilder_commanderCreate (
     CommanderCreateInfo *commander,
+    zmsg_t *replyMsg
+);
+
+/**
+ * @brief @unknown
+ */
+void
+BarrackBuilder_iesModifyList (
+    zmsg_t *replyMsg
+);
+
+/**
+ * @brief @unknown ; Makes the character selection appear directly without asking for the family name
+ */
+void
+BarrackBuilder_normalUnk1 (
+    uint64_t accountId,
     zmsg_t *replyMsg
 );

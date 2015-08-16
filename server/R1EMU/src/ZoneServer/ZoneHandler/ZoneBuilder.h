@@ -21,6 +21,7 @@
 // ---------- Includes ------------
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
+#include "Common/Server/Worker.h"
 
 // ---------- Defines -------------
 typedef enum PacketTypeZoneNormal {
@@ -204,7 +205,7 @@ ZoneBuilder_buffList (
 void
 ZoneBuilder_enterPc (
     uint32_t pcId,
-    CommanderInfo *commander,
+    CommanderInfo *commanderInfo,
     zmsg_t *replyMsg
 );
 
@@ -260,6 +261,16 @@ ZoneBuilder_objectProperty (
  */
 void
 ZoneBuilder_addonMsg (
+    zmsg_t *replyMsg
+);
+
+
+/**
+ * @brief @unknown
+ */
+void
+ZoneBuilder_campInfo (
+    uint64_t accountId,
     zmsg_t *replyMsg
 );
 

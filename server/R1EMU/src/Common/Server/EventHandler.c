@@ -32,7 +32,10 @@ EventHandler_enterPc (
     zlist_t *clientsAround = NULL;
 
     // Update client position
-    if (!(EventServer_updateClientPosition (self, event->pcId, event->mapId, event->socketId, &event->commander, &event->commander.pos, &clientsAround))) {
+    if (!(EventServer_updateClientPosition (
+        self, event->pcId, event->mapId, event->socketId,
+        &event->commanderInfo, &event->commanderInfo.pos, &clientsAround))
+    ) {
         error ("Cannot update player %s position.", event->socketId);
         status = false;
         goto cleanup;
@@ -53,7 +56,10 @@ EventHandler_commanderMove (
     zmsg_t *msg = NULL;
 
     // Update client position and get the clients around
-    if (!(EventServer_updateClientPosition (self, event->pcId, event->mapId, event->socketId, &event->commander, &event->position, &clientsAround))) {
+    if (!(EventServer_updateClientPosition (
+        self, event->pcId, event->mapId, event->socketId,
+        &event->commanderInfo, &event->position, &clientsAround))
+    ) {
         error ("Cannot update player %s position.", event->socketId);
         status = false;
         goto cleanup;
@@ -96,7 +102,10 @@ EventHandler_moveStop (
     zlist_t *clientsAround = NULL;
 
     // Update client position and get the clients around
-    if (!(EventServer_updateClientPosition (self, event->pcId, event->mapId, event->socketId, &event->commander, &event->position, &clientsAround))) {
+    if (!(EventServer_updateClientPosition (
+        self, event->pcId, event->mapId, event->socketId,
+        &event->commanderInfo, &event->position, &clientsAround))
+    ) {
         error ("Cannot update player %s position.", event->socketId);
         status = false;
         goto cleanup;
@@ -139,7 +148,10 @@ EventHandler_jump (
     zlist_t *clientsAround = NULL;
 
     // Update client position and get the clients around
-    if (!(EventServer_updateClientPosition (self, event->pcId, event->mapId, event->socketId, &event->commander, &event->commander.pos, &clientsAround))) {
+    if (!(EventServer_updateClientPosition (
+        self, event->pcId, event->mapId, event->socketId,
+        &event->commanderInfo, &event->commanderInfo.pos, &clientsAround))
+    ) {
         error ("Cannot update player %s position.", event->socketId);
         status = false;
         goto cleanup;

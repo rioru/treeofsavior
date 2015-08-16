@@ -45,7 +45,7 @@ SocialServer_new (
 /**
  * @brief Initialize an allocated SocialServer structure.
  * @param self An allocated SocialServer to initialize.
- * @param socialServerId The social server ID
+ * @param socialZoneServerId The social server ID
  * @param serverIp The IP of the social server
  * @param frontendPort The social server port opened to the internet
  * @param workersCount Count of worker per social server
