@@ -104,7 +104,7 @@ HookEngine_unhook (
     engine->unhook (unhookPatch->function);
 
     // Restore the patched bytes
-    memcpy ((void *) unhookPatch->function, unhookPatch->backup, sizeof (unhookPatch->backup));
+    // memcpy ((void *) unhookPatch->function, unhookPatch->backup, sizeof (unhookPatch->backup));
 }
 
 void

@@ -176,6 +176,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/Common/utils/string.h" />
+		<Unit filename="../../../src/Common/utils/time.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/Common/utils/time.h" />
 		<Unit filename="../../../src/Common/utils/utils.c">
 			<Option compilerVar="CC" />
 		</Unit>

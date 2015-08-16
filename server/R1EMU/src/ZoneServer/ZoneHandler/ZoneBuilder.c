@@ -13,6 +13,7 @@
 
 // ---------- Includes ------------
 #include "ZoneBuilder.h"
+#include "Common/Utils/time.h"
 #include "Common/Server/Worker.h"
 #include "Common/Packet/Packet.h"
 #include "Common/Packet/PacketType.h"
@@ -564,22 +565,17 @@ ZoneBuilder_loginTime (
 ) {
     #pragma pack(push, 1)
     struct {
-        // Not yet implemented
+        ServerPacketHeader header;
+        uint64_t now;
     } replyPacket;
-    (void) replyPacket;
     #pragma pack(pop)
 
-    // PacketType packetType = ZC_LOGIN_TIME;
-    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
-    // BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    PacketType packetType = ZC_LOGIN_TIME;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        size_t memSize;
-        void *memory = dumpToMem (
-            "[11:10:22][           ToSClient:                     dbgBuffer]  C0 0C FF FF FF FF 30 39 FF 17 83 7F D0 01       | ......09......\n"
-            , NULL, &memSize
-        );
-
-        zmsg_add (replyMsg, zframe_new (memory, memSize));
+        ServerPacketHeader_init (&replyPacket.header, packetType);
+        replyPacket.now = getfiletime ();
     }
 }
 
@@ -728,8 +724,6 @@ ZoneBuilder_enterPc (
         memcpy (&replyPacket.commander, &commanderInfo->base, sizeof (replyPacket.commander));
         strncpy (replyPacket.stringId, "None", sizeof (replyPacket.stringId));
     }
-
-    buffer_print (&replyPacket, sizeof (replyPacket), "replyPacket ");
 }
 
 void
@@ -986,24 +980,6 @@ void
 ZoneBuilder_quickSlotList (
     zmsg_t *replyMsg
 ) {
-    /*
-    #pragma pack(push, 1)
-    typedef struct {
-        VariableSizePacketHeader variableSizeHeader;
-        uint32_t zlibData; // 0 or zlib deflated data
-    } ZcQuickSlotListPacket;
-    #pragma pack(pop)
-
-    ZcQuickSlotListPacket replyPacket;
-    memset (&replyPacket, 0, sizeof (replyPacket));
-
-    replyPacket.variableSizeHeader.serverHeader.type = ZC_QUICK_SLOT_LIST;
-    replyPacket.variableSizeHeader.packetSize = sizeof (replyPacket);
-    replyPacket.zlibData = 0;
-
-    zmsg_add (reply, zframe_new (&replyPacket, sizeof (replyPacket)));
-    */
-
     #pragma pack(push, 1)
     struct {
         // Not yet implemented
@@ -1017,14 +993,6 @@ ZoneBuilder_quickSlotList (
     {
         size_t memSize;
         void *memory = dumpToMem (
-                                  /*
-            "[11:36:22][           ToSClient:                     dbgBuffer]  30 0C FF FF FF FF 59 00 4D 00 00 00 63 60 72 9C | 0.....Y.M...c`r.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  C3 C0 E0 72 85 81 61 F1 7C 46 06 26 27 20 27 FF | ...r..a.|F.&' '.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  26 94 E3 0C E4 14 C0 38 2E 40 4E 21 94 C3 40 55 | &......8.@N!..@U\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  C0 1C 7D 84 93 E1 D3 65 88 A5 CC 71 40 CE 67 18 | ..}....e...q@.g.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  27 11 C8 F9 02 E5 50 D5 CE 51 C3 06 7B 08 30 22 | '.....P..Q..{.0.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  3B 90 09 99 C3 8C CC 01 00                      | ;........\n"
-            */
             "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  32 0C FF FF FF FF 0C 00 00 00 00 00             | 2...........\n"
             , NULL, &memSize
         );
@@ -1158,40 +1126,40 @@ ZoneBuilder_itemEquipList (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:10:20][           ToSClient:                     dbgBuffer]  2B 0C FF FF FF FF 12 02 02 00 00 00 00 00 00 00 | +...............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 01 00 00 03 00 00 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  02 00 00 00 00 00 00 86 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  01 4C 60 33 C1 52 0C 0C 04 00 00 00 00 00 69 0C | .L`3.R........i.\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 02 0F 18 12 D2 DC 99 19 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  9D 1A 08 00 0C 00 C5 4E 06 06 00 00 74 9F 01 00 | .......N....t...\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  03 9B E2 12 A0 50 03 00 81 10 00 00 00 40 A1 17 | .....P.......@..\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 06 00 00 00 00 00 54 00 00 00 00 00 | ..........T.....\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 04 D5 18 00 E8 1E 56 00 07 00 00 00 | ..........V.....\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 00 00 00 00 05 26 1E 09 | .............&..\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  04 F3 3B 05 10 27 00 00 00 00 D2 09 00 00 00 00 | ..;..'..........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 06 D4 56 00 3C 78 06 23 F8 2A 00 00 | ......V.<x.#.*..\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 06 23 00 00 00 00 00 00 00 00 07 00 00 00 | ...#............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  58 D5 18 00 8D 11 03 00 12 00 3B 05 07 06 00 00 | X.........;.....\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  74 9F 01 00 08 F3 3B 05 20 88 A2 1C 8C 10 00 00 | t.....;. .......\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  A0 40 8D 10 00 00 80 40 A1 17 00 00 00 00 7C 96 | .@.....@......|.\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  98 00 00 00 98 D5 00 00 00 00 00 00 00 00 09 05 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  90 88 A2 1C 01 00 04 00 00 00 00 00 04 F3 00 00 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 0A 00 04 F3 3B 05 20 88 09 00 | ..........;. ...\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 20 D6 00 00 00 00 00 00 00 00 0B 05 | .... ...........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  20 88 A2 1C 00 00 09 00 00 00 00 00 2C AC 00 00 |  ...........,...\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 0C 1B 84 F3 3B 05 F0 E6 04 00 | ..........;.....\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 58 96 00 00 00 00 00 00 00 00 0D 00 | ....X...........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  40 B5 3B 0C FC D5 8D F3 07 00 0C 00 84 F3 08 06 | @.;.............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 74 9F 01 00 0E 00 20 88 A2 1C 88 23 81 10 | ..t..... ....#..\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 40 A1 17 00 00 00 00 09 00 00 00 00 00 | ...@............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 35 00 00 00 00 00 00 00 00 0F 05 01 00 00 00 | .5..............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  A7 EB 09 00 00 00 00 00 30 7D 00 00 00 00 00 00 | ........0}......\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 10 00 04 F3 3B 05 48 D6 09 00 00 00 00 00 | ......;.H.......\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  04 F3 00 00 00 00 00 00 00 00 11 00 84 D6 18 00 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  DA 70 09 00 00 00 00 00 D4 D6 00 00 00 00 00 00 | .p..............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 12 00 04 F3 3B 05 01 00 0A 00 00 00 00 00 | ......;.........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  8C D6 00 00 00 00 00 00 00 00 13 00 70 D7 18 00 | ............p...\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  60 05                                           | `.\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  2D 0C FF FF FF FF 12 02 02 00 00 00 00 00 00 00 | -...............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 01 00 00 02 00 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  02 00 00 00 00 00 00 04 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  01 0A 00 00 00 00 0E 00 04 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 02 00 27 00 00 00 00 28 | ..........'....(\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  9D 1A 08 00 0C 00 18 00 F0 25 00 00 3C 01 00 00 | .........%..<...\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  03 D9 18 00 12 00 00 00 D0 0E 00 00 00 40 03 0F | .............@..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 06 00 00 00 00 00 18 00 00 00 00 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 04 D9 18 00 CE CC 73 00 07 00 00 00 | ..........s.....\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 05 5B 47 47 | .............[GG\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  C9 0B E3 DF 10 27 00 00 00 00 80 93 00 00 00 00 | .....'..........\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 06 F9 18 00 EB 96 9B 00 F8 2A 00 00 | .............*..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 18 00 00 00 00 00 00 00 00 00 07 88 80 93 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 80 C9 3E 8D 11 03 00 12 00 71 00 F1 25 00 00 | ...>......q..%..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  3C 01 00 00 08 D9 18 00 31 00 00 00 D4 0E 00 00 | <.......1.......\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  A0 40 12 0F 00 00 80 40 03 0F 00 00 00 00 7C 96 | .@.....@......|.\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  98 00 00 00 92 F3 00 00 00 00 00 00 00 00 09 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 D0 0E 00 00 70 04 00 00 00 00 00 00 6E 00 00 | .....p.......n..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 0A 00 F4 01 4C 19 F4 F1 09 00 | ..........L.....\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 5F 94 00 00 00 00 00 00 00 00 0B 42 | ...._..........B\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  12 A8 80 93 0C 03 09 00 00 00 00 00 24 02 00 00 | ............$...\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 0C 00 00 00 00 00 84 DA 04 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 78 6E 00 00 00 00 00 00 00 00 0D 00 | ....xn..........\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  D4 00 4C 19 F4 F1 8D F3 07 00 0C 00 5F 94 F2 25 | ..L........._..%\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 3C 01 00 00 0E 42 AA A8 80 93 EC 01 D0 0E | ..<....B........\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 40 03 0F 00 00 00 00 09 00 00 00 00 00 | ...@............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 0F 00 78 6E 9C 00 | ............xn..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  FF FF 09 00 00 00 00 00 B4 66 00 00 00 00 00 00 | .........f......\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 10 00 5F 94 7D 00 20 DB 09 00 00 00 00 00 | ...._.}. .......\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  62 A9 00 00 00 00 00 00 00 00 11 00 E4 66 4B 19 | b............fK.\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 09 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 12 00 78 6E 9C 00 FF FF 0A 00 00 00 00 00 | ....xn..........\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  94 65 00 00 00 00 00 00 00 00 13 00 5F 94 7D 00 | .e.........._.}.\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  68 DB                                           | h.\n"
           , NULL, &memSize
         );
 
@@ -1222,8 +1190,8 @@ ZoneBuilder_startInfo (
         ServerPacketHeader_init (&replyPacket.header, packetType);
         replyPacket.unk1 = 0x18;
         replyPacket.unk2 = 1;
-        replyPacket.unk3 = 4;
-        replyPacket.unk4 = 0x1A12;
+        replyPacket.unk3 = 0xFA1;
+        replyPacket.unk4 = 0;
         replyPacket.unk5 = 0;
         replyPacket.unk6 = 1;
     }

@@ -344,7 +344,7 @@ EventServer_updateClientPosition (
 
     // Get the clients around
     if (!(redisClientsAround = EventServer_redisGetClientsWithinRange (
-        self, mapId, targetSocketId, &PositionXYZToXZ (newPosition),
+        self, mapId, /*targetSocketId*/ NULL, &PositionXYZToXZ (newPosition),
         COMMANDER_RANGE_AROUND
     ))) {
         error ("Cannot get clients within range");

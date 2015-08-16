@@ -484,13 +484,13 @@ ZoneHandler_gameReady (
     ZoneBuilder_helpList (reply);
     ZoneBuilder_myPageMap (reply);
     ZoneBuilder_guestPageMap (reply);
-    ZoneBuilder_startInfo (reply);
-    ZoneBuilder_itemEquipList (reply);
-    ZoneBuilder_skillList (session->game.currentCommander.base.pcId, reply);
-    ZoneBuilder_abilityList (session->game.currentCommander.base.pcId, reply);
-    ZoneBuilder_cooldownList (reply);
     */
-    ZoneBuilder_quickSlotList (reply);
+    ZoneBuilder_startInfo (reply);
+    // ZoneBuilder_itemEquipList (reply);
+    // ZoneBuilder_skillList (session->game.pcId, reply);
+    // ZoneBuilder_abilityList (session->game.pcId, reply);
+    // ZoneBuilder_cooldownList (reply);
+    // ZoneBuilder_quickSlotList (reply);
 
     /*
     ZoneBuilder_normalUnk1 (reply);
@@ -503,8 +503,8 @@ ZoneHandler_gameReady (
     /*
     ZoneBuilder_objectProperty (reply);
     ZoneBuilder_stamina (reply);
-    ZoneBuilder_loginTime (reply);
     */
+    ZoneBuilder_loginTime (reply);
 
     ZoneBuilder_MyPCEnter (&commanderInfo->pos, reply);
     // ZoneBuilder_skillAdd (reply);

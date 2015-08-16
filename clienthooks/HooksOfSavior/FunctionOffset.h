@@ -15,7 +15,7 @@
 #define OFFSET_CNetUsr__Recv  (0x0658AF0 - 0x400000) // ICBT
 
 // Lua
-#define OFFSET_lua_gettop     (0x0CD93C0 - 0x400000)
+#define OFFSET_lua_gettop     (0x0D187A0 - 0x400000) // Search "[no object]"
 
 // String
 #define OFFSET_StringId__c_str 0x0D75F10 // ICBT
