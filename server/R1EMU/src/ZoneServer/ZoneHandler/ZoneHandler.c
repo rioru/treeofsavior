@@ -490,7 +490,7 @@ ZoneHandler_gameReady (
     // ZoneBuilder_skillList (session->game.pcId, reply);
     // ZoneBuilder_abilityList (session->game.pcId, reply);
     // ZoneBuilder_cooldownList (reply);
-    // ZoneBuilder_quickSlotList (reply);
+    ZoneBuilder_quickSlotList (reply);
 
     /*
     ZoneBuilder_normalUnk1 (reply);
@@ -543,7 +543,7 @@ ZoneHandler_gameReady (
     ZoneBuilder_addonMsg (reply);
     */
 
-    ZoneBuilder_moveSpeed (session->game.pcId, 31.0, reply);
+    ZoneBuilder_moveSpeed (session->game.pcId, 1.0f, reply);
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }

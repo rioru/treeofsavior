@@ -78,3 +78,56 @@ void *dumpToMem (
 
     return memory;
 }
+
+void
+compareMem (
+    uint8_t *mem1,
+    size_t memSize1,
+    uint8_t *mem2,
+    size_t memSize2
+) {
+    size_t min = (memSize1 < memSize2) ? memSize1 : memSize2;
+
+    for (int i = 0; i < min; i++) {
+        // Hex Dump
+        if (mem1[i] == mem2[i]) {
+            info_green ("%.02X ", mem1[i]);
+        } else {
+            info_red ("%.02X ", mem1[i]);
+        }
+
+        if (i % 16 == 15) {
+            // ASCII Dump
+            info_white ("| ");
+            for (int j = i-15; j <= i; j++) {
+                if (mem1[j] == mem2[j]) {
+                    info_green ("%c", isprint (mem1[j]) ? mem1[j] : '.');
+                } else {
+                    info_red ("%c", isprint (mem1[j]) ? mem1[j] : '.');
+                }
+            }
+            info_white (" || ");
+
+            // Buffer 2 Hex dump
+            for (int j = i-15; j <= i; j++) {
+                if (mem1[j] == mem2[j]) {
+                    info_green ("%.02X ", mem2[j]);
+                } else {
+                    info_red ("%.02X ", mem2[j]);
+                }
+            }
+            // Buffer 2 ASCII dump
+            for (int j = i-15; j <= i; j++) {
+                if (mem1[j] == mem2[j]) {
+                    info_green ("%c", isprint (mem2[j]) ? mem2[j] : '.');
+                } else {
+                    info_red ("%c", isprint (mem2[j]) ? mem2[j] : '.');
+                }
+            }
+
+            info_white ("\n");
+        }
+    }
+
+    info_white ("\n");
+}

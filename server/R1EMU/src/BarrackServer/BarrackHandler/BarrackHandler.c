@@ -335,6 +335,7 @@ BarrackHandler_currentBarrack (
     //    4E00 03000000 F7030000 D1A8014400000000 03000068 42F0968F 41000070 4111E334 3FCF2635 BF
     //    size pktType  checksum     accountId               float    float    float    float
 
+    BarrackBuilder_petInformation (reply);
     BarrackBuilder_zoneTraffics (reply);
 
     return PACKET_HANDLER_OK;

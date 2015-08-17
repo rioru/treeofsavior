@@ -55,6 +55,9 @@ typedef enum {
             zstr_free (&__time_now__);                                \
     } while (0)
 
+#define dbg_exnl(level, output, format, ...)                          \
+    _dbg (level, format, ##__VA_ARGS__);
+
 /** Buffer dump template */
 #define buffer_print_ex(buffer, size, prefix)                         \
     do {                                                              \
@@ -73,6 +76,23 @@ typedef enum {
 
 
 #if defined(__DBG_ACTIVATED__) && __DBG_ACTIVATED__ == TRUE
+
+    // Colored output
+    #define info_white(format, ...)                                        \
+        dbg_exnl (DBG_LEVEL_DEBUG, stdout, format, ##__VA_ARGS__)
+
+    #define info_green(format, ...)                                        \
+        dbg_exnl (DBG_LEVEL_INFO, stdout, format, ##__VA_ARGS__)
+
+    #define info_yellow(format, ...)                                       \
+        dbg_exnl (DBG_LEVEL_WARNING, stdout, format, ##__VA_ARGS__)
+
+    #define info_red(format, ...)                                          \
+        dbg_exnl (DBG_LEVEL_ERROR, stdout, format, ##__VA_ARGS__)
+
+    #define info_blue(format, ...)                                         \
+        dbg_exnl (DBG_LEVEL_SPECIAL, stdout, format, ##__VA_ARGS__)
+
 
     // Declare debug functions here
     /** Basic level debug function. */

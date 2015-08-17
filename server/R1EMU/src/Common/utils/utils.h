@@ -81,3 +81,14 @@ void *dumpToMem (
     void *memory,
     size_t *memSize
 );
+
+/**
+ * @brief Compare two chunks of memory and display the difference in the console
+ */
+void
+compareMem (
+    uint8_t *mem1,
+    size_t memSize1,
+    uint8_t *mem2,
+    size_t memSize2
+);

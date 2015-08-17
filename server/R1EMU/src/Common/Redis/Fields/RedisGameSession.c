@@ -46,6 +46,7 @@ const char *redisGameSessionsStr [] = {
     [REDIS_GAME_SESSION_commander_unk5] = REDIS_GAME_SESSION_commander_unk5_str,
     [REDIS_GAME_SESSION_commander_level] = REDIS_GAME_SESSION_commander_level_str,
     [REDIS_GAME_SESSION_commander_hairType] = REDIS_GAME_SESSION_commander_hairType_str,
+    [REDIS_GAME_SESSION_commander_unk6] = REDIS_GAME_SESSION_commander_unk6_str,
 
     // Equipment
     [REDIS_GAME_SESSION_equipment_head_top] = REDIS_GAME_SESSION_equipment_head_top_str,
@@ -107,6 +108,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_mapId_str
         " " REDIS_GAME_SESSION_charactersBarrackCount_str
         " " REDIS_GAME_SESSION_accountLogin_str
+
         " " REDIS_GAME_SESSION_commander_commanderName_str
         " " REDIS_GAME_SESSION_commander_familyName_str
         " " REDIS_GAME_SESSION_commander_unk1_str
@@ -120,6 +122,8 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_commander_unk5_str
         " " REDIS_GAME_SESSION_commander_level_str
         " " REDIS_GAME_SESSION_commander_hairType_str
+        " " REDIS_GAME_SESSION_commander_unk6_str
+
         " " REDIS_GAME_SESSION_equipment_head_top_str
         " " REDIS_GAME_SESSION_equipment_head_middle_str
         " " REDIS_GAME_SESSION_equipment_itemUnk1_str
@@ -140,6 +144,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_equipment_ring_left_str
         " " REDIS_GAME_SESSION_equipment_ring_right_str
         " " REDIS_GAME_SESSION_equipment_necklace_str
+
         " " REDIS_GAME_SESSION_info_posX_str
         " " REDIS_GAME_SESSION_info_posY_str
         " " REDIS_GAME_SESSION_info_posZ_str
@@ -156,6 +161,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_info_maxStamina_str
         " " REDIS_GAME_SESSION_info_unk6_str
         " " REDIS_GAME_SESSION_info_unk7_str
+
         , key->routerId, key->mapId, key->accountId
     );
 
@@ -353,6 +359,7 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_unk5_str " %x"
         " " REDIS_GAME_SESSION_commander_level_str " %x"
         " " REDIS_GAME_SESSION_commander_hairType_str " %x"
+        " " REDIS_GAME_SESSION_commander_unk6_str " %x"
 
         " " REDIS_GAME_SESSION_equipment_head_top_str " %x"
         " " REDIS_GAME_SESSION_equipment_head_middle_str " %x"
@@ -415,6 +422,7 @@ Redis_updateGameSession (
         commander->unk5,
         commander->level,
         commander->hairType,
+        commander->unk6,
 
         // Equipment
         equipment->head_top,

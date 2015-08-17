@@ -249,8 +249,26 @@ BarrackBuilder_commanderList (
 }
 
 void
+BarrackBuilder_petInformation (
+    zmsg_t *replyMsg
+) {
+    #pragma pack(push, 1)
+    struct {
+        PacketNormalHeader normalHeader;
+        uint32_t petsCount;
+    } replyPacket;
+    #pragma pack(pop)
+
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    {
+        PacketNormalHeader_init (&replyPacket.normalHeader, BC_NORMAL_PET_INFORMATION, sizeof (replyPacket));
+        replyPacket.petsCount = 0;
+    }
+}
+
+void
 BarrackBuilder_zoneTraffics (
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     typedef struct {
@@ -328,10 +346,10 @@ BarrackBuilder_zoneTraffics (
     #pragma pack(pop)
 
     Zlib_compress (&compressedPacket.zlibData, stackBuffer, outPacketSize);
-    outPacketSize = compressedPacket.zlibData.header.size + sizeof (ZlibHeader) + sizeof (PacketNormalHeader);
+    outPacketSize = ZLIB_GET_COMPRESSED_PACKET_SIZE (&compressedPacket.zlibData, sizeof (compressedPacket));
     PacketNormalHeader_init (&compressedPacket.normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
 
-    zmsg_add (reply, zframe_new (&compressedPacket, outPacketSize));
+    zmsg_add (replyMsg, zframe_new (&compressedPacket, outPacketSize));
 }
 
 void

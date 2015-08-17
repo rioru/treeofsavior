@@ -54,18 +54,19 @@ Commander_init (
 ) {
     memset (commander, 0, sizeof (*commander));
 
-    commander->unk1 = SWAP_UINT32 (0x10000000); // ICBT
-    commander->unk2 = 0; // ICBT
-    commander->unk3 = SWAP_UINT16 (0x0610); // ICBT
+    commander->unk1 = SWAP_UINT32 (0x322C202D); // ICBT
+    commander->unk2 = 0x34; // ICBT
+    commander->unk3 = SWAP_UINT16 (0x2C20); // ICBT
     commander->accountId = -1;
     commander->classId = 0x2715; // Cleric
-    commander->unk4 = SWAP_UINT16 (0xCB0F); // ICBT
+    commander->unk4 = SWAP_UINT16 (0x2220); // ICBT
     commander->jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT
     commander->gender = 2;
-    commander->unk5 = 0;
+    commander->unk5 = 0x4A; // ICBT
     commander->level = 1;
     CommanderEquipment_init (&commander->equipment);
     commander->hairType = 0x10;
+    commander->unk6 = SWAP_UINT16 (0x0020); // ICBT
 }
 
 void
@@ -79,13 +80,13 @@ CommanderInfo_init (
     commanderInfo->pos = PositionXYZ_decl (27.0, 30.0, 29.0);
     commanderInfo->currentXP = 0;
     commanderInfo->maxXP = 0xC; // ICBT
-    commanderInfo->zoneServerId = ZoneServerId_decl (0, 0);
+    commanderInfo->zoneServerId = ZoneServerId_decl (SWAP_UINT32 (0xEE250000), SWAP_UINT32 (0x3C010000));
     commanderInfo->zoneServerId2 = commanderInfo->zoneServerId + 1;
     commanderInfo->commanderId = -1;
-    commanderInfo->currentHP = 1200;
-    commanderInfo->maxHP = 1200;
-    commanderInfo->currentSP = 1200;
-    commanderInfo->maxSP = 1200;
+    commanderInfo->currentHP = 238;
+    commanderInfo->maxHP = 238;
+    commanderInfo->currentSP = 105;
+    commanderInfo->maxSP = 105;
     commanderInfo->currentStamina = 25000;
     commanderInfo->maxStamina = 25000;
     commanderInfo->unk6 = SWAP_UINT16 (0x0020);
@@ -136,6 +137,7 @@ Commander_print (
     dbg ("level = %d (%x)", commander->level, commander->level);
     CommanderEquipment_print (&commander->equipment);
     dbg ("hairType = %d (%x)", commander->hairType, commander->hairType);
+    dbg ("unk6 = %d (%x)", commander->unk6, commander->unk6);
 }
 
 void

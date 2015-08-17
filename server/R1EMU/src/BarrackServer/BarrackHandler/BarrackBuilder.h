@@ -30,8 +30,9 @@ typedef enum PacketTypeBarrackNormal {
     BC_NORMAL_COMMANDER_INFO = 0x0,
     BC_NORMAL_COMMANDER_MOVE_OK = 0x2,
     BC_NORMAL_UNKNOWN_1 = 0x4,
+    BC_NORMAL_PET_INFORMATION = 0x8,
     BC_NORMAL_ZONE_TRAFFIC = 0xB,
-    BC_NORMAL_PET_INFORMATION = 0x8
+    BC_NORMAL_POST_BOX_MESSAGE = 0xF,
 
 }   PacketTypeBarrackNormal;
 
@@ -106,7 +107,7 @@ BarrackBuilder_commanderList (
  */
 void
 BarrackBuilder_zoneTraffics (
-    zmsg_t *reply
+    zmsg_t *replyMsg
 );
 
 
@@ -136,6 +137,14 @@ void
 BarrackBuilder_commanderCreate (
     CommanderCreateInfo *commander,
     zmsg_t *replyMsg
+);
+
+/**
+ * @brief Send information about the pets of the account
+ */
+void
+BarrackBuilder_petInformation (
+    zmsg_t *reply
 );
 
 /**

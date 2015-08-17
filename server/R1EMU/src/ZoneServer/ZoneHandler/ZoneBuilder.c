@@ -709,7 +709,7 @@ ZoneBuilder_enterPc (
         replyPacket.unk3 = 0;
         replyPacket.serverId = commanderInfo->zoneServerId;
         replyPacket.unk4 = 0;
-        replyPacket.moveSpeed = 31.0f;
+        replyPacket.moveSpeed = 1.0f;
         replyPacket.currentHP = commanderInfo->currentHP;
         replyPacket.maxHP = commanderInfo->maxHP;
         replyPacket.currentSP = commanderInfo->currentSP;
@@ -724,6 +724,36 @@ ZoneBuilder_enterPc (
         memcpy (&replyPacket.commander, &commanderInfo->base, sizeof (replyPacket.commander));
         strncpy (replyPacket.stringId, "None", sizeof (replyPacket.stringId));
     }
+
+    size_t memSize1;
+    void *mem1 = dumpToMem (
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  BE 0B FF FF FF FF A6 5F 0B 00 00 00 1D C4 00 00 | ......._........\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  82 43 00 20 80 C4 00 00 80 3F 00 00 00 00 00 00 | .C. .....?......\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  EE 25 00 00 3C 01 00 00 00 00 00 F8 41 00 00 00 | .%..<.......A...\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 EE 00 00 00 EE 00 00 00 69 00 69 00 A8 61 00 | .........i.i..a.\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 A8 61 00 00 00 00 00 FF FF FF FF 24 B4 2B 1B | ..a.........$.+.\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 43 42 54 45 53 54 00 00 00 00 00 00 00 00 00 | .CBTEST.........\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 4D 6F 72 69 69 00 00 00 00 00 00 00 00 00 | ..Morii.........\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 32 2C 20 2D 34 2C 20 4B 0A 0F 06 01 00 10 | ..2, -4, K......\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  01 15 27 22 20 A1 0F 02 4A 01 00 00 00 02 00 00 | ..'' ...J.......\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 02 00 00 00 04 00 00 00 9D 1A 08 00 06 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 07 00 00 00 10 27 00 00 F8 2A 00 00 8D 11 03 | ......'...*.....\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 7C 96 98 00 04 00 00 00 09 00 00 00 09 00 00 | .|..............\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 04 00 00 00 8D F3 07 00 09 00 00 00 09 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 09 00 00 00 09 00 00 00 0A 00 00 00 10 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  20 4E 6F 6E 65 00 00 00 00 00 00 00 00 00 00 00 |  None...........\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:40][main.c:56 in CNetUsr__PacketHandler_1]  00 00                                           | ..\n",
+            NULL, &memSize1
+    );
+    compareMem (mem1, memSize1, (void *) &replyPacket, sizeof (replyPacket));
 }
 
 void
@@ -982,22 +1012,20 @@ ZoneBuilder_quickSlotList (
 ) {
     #pragma pack(push, 1)
     struct {
-        // Not yet implemented
+        ServerPacketHeader header;
+        uint32_t unk1;
+        uint16_t unk2;
     } replyPacket;
     (void) replyPacket;
     #pragma pack(pop)
 
-    // PacketType packetType = ZC_QUICK_SLOT_LIST;
-    // CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
-    // BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    PacketType packetType = ZC_QUICK_SLOT_LIST;
+    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
+    BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        size_t memSize;
-        void *memory = dumpToMem (
-            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  32 0C FF FF FF FF 0C 00 00 00 00 00             | 2...........\n"
-            , NULL, &memSize
-        );
-
-        zmsg_add (replyMsg, zframe_new (memory, memSize));
+        ServerPacketHeader_init (&replyPacket.header, packetType);
+        replyPacket.unk1 = SWAP_UINT32 (0x0C000000); // ICBT
+        replyPacket.unk2 = 0; // ICBT
     }
 }
 
