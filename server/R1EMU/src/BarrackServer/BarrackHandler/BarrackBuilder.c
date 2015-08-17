@@ -254,7 +254,7 @@ BarrackBuilder_zoneTraffics (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        uint8_t zoneListId;
+        uint16_t zoneListId;
         uint16_t currentPlayersCount;
     } SingleZoneTraffic;
     #pragma pack(pop)
@@ -269,8 +269,6 @@ BarrackBuilder_zoneTraffics (
 
 	#pragma pack(push, 1)
     typedef struct {
-        PacketNormalHeader normalHeader;
-        uint16_t zlibHeader;
         uint16_t zoneMaxPcCount;
         uint16_t mapAvailableCount;
         // SingleMapTraffic maps[]; // variable length array
@@ -278,7 +276,6 @@ BarrackBuilder_zoneTraffics (
     #pragma pack(pop)
 
     // === Data from the DB ===
-    int zlibHeader = 0;
     int zoneMaxPcCount = 100;
     // Number of maps playable
     int mapAvailableCount = 1;
@@ -289,30 +286,25 @@ BarrackBuilder_zoneTraffics (
     // Fill the arrays here
     for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++) {
         zoneServerCounts [mapIndex] = 5;
-        mapsId [mapIndex] = 0x3fd;
+        mapsId [mapIndex] = 0x3fd; // West Siauliai Woods
     }
     // Number of players per zone
     int currentPlayersCount = 10;
 
     // Count the total memory space needed for the reply packet
-    int outPacketSize = sizeof (ZoneTrafficsPacket) + (sizeof (SingleMapTraffic) * mapAvailableCount);
+    size_t outPacketSize = sizeof (ZoneTrafficsPacket) + (sizeof (SingleMapTraffic) * mapAvailableCount);
     for (int mapIndex = 0; mapIndex < mapAvailableCount; mapIndex++) {
         outPacketSize += sizeof (SingleZoneTraffic) * zoneServerCounts[mapIndex];
     }
 
     // Allocate on the stack the memory for the packet
     uint8_t *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
-    ZoneTrafficsPacket *replyPacket = (ZoneTrafficsPacket *) stackBuffer;
-    memset (replyPacket, 0, outPacketSize);
+    memset (stackBuffer, 0, outPacketSize);
 
     // Construct the packet
     PacketStream stream;
-    PacketStream_init (&stream, (uint8_t *) replyPacket);
+    PacketStream_init (&stream, (uint8_t *) stackBuffer);
 
-    PacketNormalHeader_init (&replyPacket->normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
-    PacketStream_addOffset (&stream, sizeof (replyPacket->normalHeader));
-
-    PacketStream_append (&stream, &zlibHeader, sizeof_struct_member (ZoneTrafficsPacket, zlibHeader));
     PacketStream_append (&stream, &zoneMaxPcCount, sizeof_struct_member (ZoneTrafficsPacket, zoneMaxPcCount));
     PacketStream_append (&stream, &mapAvailableCount, sizeof_struct_member (ZoneTrafficsPacket, mapAvailableCount));
 
@@ -327,7 +319,19 @@ BarrackBuilder_zoneTraffics (
         }
     }
 
-    zmsg_add (reply, zframe_new (replyPacket, outPacketSize));
+    // Compress the packet
+	#pragma pack(push, 1)
+    struct {
+        PacketNormalHeader normalHeader;
+        Zlib zlibData;
+    } compressedPacket;
+    #pragma pack(pop)
+
+    Zlib_compress (&compressedPacket.zlibData, stackBuffer, outPacketSize);
+    outPacketSize = compressedPacket.zlibData.header.size + sizeof (ZlibHeader) + sizeof (PacketNormalHeader);
+    PacketNormalHeader_init (&compressedPacket.normalHeader, BC_NORMAL_ZONE_TRAFFIC, outPacketSize);
+
+    zmsg_add (reply, zframe_new (&compressedPacket, outPacketSize));
 }
 
 void

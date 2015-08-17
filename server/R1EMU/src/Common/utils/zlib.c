@@ -77,16 +77,19 @@ Zlib_decompress (
     stream.zfree = 0;
 
     if (inflateInit2_(&stream, -15, "1.2.8", 88)) {
+        buffer_print (data, dataSize, "Buffer : ");
         error ("Can't init decompression.");
         return false;
     }
 
     if (inflate(&stream, Z_FINISH) != 1) {
+        buffer_print (data, dataSize, "Buffer : ");
         error ("Can't decompress.");
         return false;
     }
 
     if (inflateEnd(&stream)) {
+        buffer_print (data, dataSize, "Buffer : ");
         error ("Can't end decompression.");
         return false;
     }
