@@ -424,7 +424,7 @@ EventServer_updateClientPosition (
                 goto cleanup;
             }
 
-            ZoneBuilder_enterPc (gameSession.pcId, &gameSession.currentCommander, curPcEnterMsg);
+            ZoneBuilder_enterPc (gameSession.commanderSession.pcId, &gameSession.commanderSession.currentCommander, curPcEnterMsg);
             zframe_t *pcEnterFrame = zmsg_first (curPcEnterMsg);
             if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
                 error ("Failed to send the packet to the clients.");
@@ -478,7 +478,7 @@ EventServer_updateClientPosition (
                 goto cleanup;
             }
 
-            ZoneBuilder_leave (gameSession.pcId, curPcLeaveMsg);
+            ZoneBuilder_leave (gameSession.commanderSession.pcId, curPcLeaveMsg);
             zframe_t *pcLeaveFrame = zmsg_first (curPcLeaveMsg);
             if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcLeaveFrame), zframe_size (pcLeaveFrame)))) {
                 error ("Failed to send the packet to the clients.");

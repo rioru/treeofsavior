@@ -32,7 +32,7 @@ BarrackBuilder_loginOk (
     uint64_t accountId,
     uint8_t *accountLogin,
     uint8_t *sessionKey,
-    GameSessionPrivileges accountPrivileges,
+    AccountSessionPrivileges accountPrivileges,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
@@ -40,7 +40,7 @@ BarrackBuilder_loginOk (
         ServerPacketHeader header;
         uint16_t unk1;
         uint64_t accountId;
-        uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        uint8_t accountLogin [ACCOUNT_SESSION_LOGIN_MAXSIZE];
         uint32_t accountPrivileges;
         uint8_t sessionKey [GAME_SESSION_KEY_MAXSIZE];
     } replyPacket;

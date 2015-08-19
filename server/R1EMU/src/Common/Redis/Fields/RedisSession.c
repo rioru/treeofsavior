@@ -84,6 +84,11 @@ Redis_updateSession (
         .mapId     = session->socket.mapId,
         .accountId = session->socket.accountId
     };
+
+    #warning notice me senpai
+    // XXX :
+    // Pourquoi est-ce que socketId est séparé de la GameSession ?
+    // Est-ce qu'il ne faudrait pas utiliser la socketId de la gameSession plutôt?
     if (!(Redis_updateGameSession (self, &gameKey, session->socket.socketId, &session->game))) {
         error ("Cannot update the game session");
         return false;

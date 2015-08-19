@@ -7,7 +7,7 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file GameSession.h
+ * @file BarrackSession.h
  * @brief
  *
  *
@@ -16,21 +16,21 @@
  */
 
 // ---------- Includes ------------
-#include "GameSession.h"
+#include "BarrackSession.h"
 
-GameSession *
-GameSession_new (
-    CommanderInfo *commanderInfo
+BarrackSession *
+BarrackSession_new (
+
 ) {
-    GameSession *self;
+    BarrackSession *self;
 
-    if ((self = calloc (1, sizeof (GameSession))) == NULL) {
+    if ((self = calloc (1, sizeof (BarrackSession))) == NULL) {
         return NULL;
     }
 
-    if (!GameSession_init (self, commanderInfo)) {
-        GameSession_destroy (&self);
-        error ("GameSession failed to initialize.");
+    if (!BarrackSession_init (self)) {
+        BarrackSession_destroy (&self);
+        error ("BarrackSession failed to initialize.");
         return NULL;
     }
 
@@ -38,38 +38,34 @@ GameSession_new (
 }
 
 bool
-GameSession_init (
-    GameSession *self,
-    CommanderInfo *commanderInfo
+BarrackSession_init (
+    BarrackSession *self
 ) {
-    memset (self, 0, sizeof (GameSession));
+    memset (self, 0, sizeof (BarrackSession));
 
-    CommanderSession_init (&self->commanderSession, commanderInfo);
-    BarrackSession_init (&self->barrackSession);
+    self->charactersCreatedCount = 0;
 
     return true;
 }
 
 void
-GameSession_print (
-    GameSession *self
+BarrackSession_print (
+    BarrackSession *self
 ) {
-    dbg ("==== GameSession %p ====", self);
-    BarrackSession_print (&self->barrackSession);
-    CommanderSession_print (&self->commanderSession);
+    dbg ("==== BarrackSession %p ====", self);
 }
 
 void
-GameSession_destroy (
-    GameSession **_self
+BarrackSession_destroy (
+    BarrackSession **_self
 ) {
-    GameSession_free (*_self);
+    BarrackSession_free (*_self);
     *_self = NULL;
 }
 
 void
-GameSession_free (
-    GameSession *self
+BarrackSession_free (
+    BarrackSession *self
 ) {
     free (self);
 }

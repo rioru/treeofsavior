@@ -49,7 +49,7 @@ SocialHandler_login (
 ) {
     #pragma pack(push, 1)
     typedef struct {
-        char accountLogin[GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        char accountLogin[ACCOUNT_SESSION_LOGIN_MAXSIZE];
         char md5[17];
         uint64_t accountId;
     } CsLoginPacket;
@@ -71,19 +71,11 @@ SocialHandler_login (
     // TODO
 
     // Authentication OK!
-    strncpy (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin));
-    session->socket.authenticated = true;
     session->socket.accountId = clientPacket->accountId;
+    AccountSession_init (&session->game.accountSession, clientPacket->accountLogin, session->socket.socketId, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    session->socket.authenticated = true;
 
-    /*
-    size_t memSize;
-    void *memory = dumpToMem (
-
-        , NULL, &memSize
-    );
-
-    zmsg_add (reply, zframe_new (memory, memSize));
-    */
+    // TODO : Answer something
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }

@@ -21,24 +21,15 @@
 #include "R1EMU.h"
 #include "Common/Commander/Commander.h"
 #include "Common/Session/SocketSession.h"
+#include "Common/Session/BarrackSession.h"
+#include "Common/Session/CommanderSession.h"
+#include "Common/Session/AccountSession.h"
 
 // ---------- Defines -------------
 /** Max size of the Account Login */
-#define GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE 33
 #define GAME_SESSION_KEY_MAXSIZE 64
 
 // ------ Structure declaration -------
-/**
- * @brief GameSessionPrivileges enumerates the different levels of privileges
- *  for an account.
- */
-typedef enum GameSessionPrivileges {
-    GAME_SESSION_PRIVILEGES_ADMIN   = 0,
-    GAME_SESSION_PRIVILEGES_UNKNOWN = 1,
-    GAME_SESSION_PRIVILEGES_GM      = 2,
-    GAME_SESSION_PRIVILEGES_PLAYER  = 3
-}   GameSessionPrivileges;
-
 /**
  * @brief GameSession is a session created when a client authenticates
  *
@@ -48,26 +39,14 @@ typedef enum GameSessionPrivileges {
  */
 struct GameSession
 {
-    /** Socket ID */
-    uint8_t socketId[SOCKET_SESSION_ID_SIZE];
+    /** Account session variables */
+    AccountSession accountSession;
 
-    /** Number of characters registered in the barrack */
-    uint8_t charactersBarrackCount;
+    /** Barrack session variables */
+    BarrackSession barrackSession;
 
-    /** Account privilege level */
-    GameSessionPrivileges accountPrivilege;
-
-    /** The account login */
-    char accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
-
-    /** Current mapId **/
-    uint16_t mapId;
-
-    /** Current PcId **/
-    uint32_t pcId;
-
-    /** Current commander */
-    CommanderInfo currentCommander;
+    /** Commander session variables */
+    CommanderSession commanderSession;
 };
 
 typedef struct GameSession GameSession;

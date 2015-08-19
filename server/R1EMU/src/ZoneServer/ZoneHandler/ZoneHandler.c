@@ -110,7 +110,7 @@ ZoneHandler_chat (
     }
 
     // Custom admin commands
-    if (session->game.accountPrivilege <= GAME_SESSION_PRIVILEGES_ADMIN)
+    if (session->game.accountSession.accountPrivilege <= ACCOUNT_SESSION_PRIVILEGES_ADMIN)
     {
         if (strncmp (clientPacket->msgText, "/cmd ", strlen ("/cmd ")) == 0)
         {
@@ -121,7 +121,8 @@ ZoneHandler_chat (
                 // Add a fake commander with a fake account
                 CommanderInfo fakePc;
                 CommanderInfo_init (&fakePc);
-                fakePc.pos = session->game.currentCommander.pos;
+
+                fakePc.pos = session->game.commanderSession.currentCommander.pos;
                 fakePc.base.accountId = R1EMU_generate_random64 (&self->seed);
                 uint32_t fakePcId = R1EMU_generate_random (&self->seed);
                 strncpy (fakePc.base.familyName, "Dummy", sizeof (fakePc.base.familyName));
@@ -143,8 +144,8 @@ ZoneHandler_chat (
                 // Register the fake game session
                 GameSession fakeGameSession;
                 GameSession_init (&fakeGameSession, &fakePc);
-                strncpy (fakeGameSession.accountLogin, "DummyPC", sizeof (fakeGameSession.accountLogin));
-                fakeGameSession.accountPrivilege = GAME_SESSION_PRIVILEGES_PLAYER;
+                AccountSession_init (&fakeGameSession.accountSession, "DummyPC", socketIdStr, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+
                 RedisGameSessionKey gameKey = {
                     .routerId  = fakeSocketSession.routerId,
                     .mapId     = fakeSocketSession.mapId,
@@ -182,11 +183,11 @@ ZoneHandler_restSit (
     }
 
     // Make sit the current commander
-    ZoneBuilder_restSit (session->game.pcId, reply);
+    ZoneBuilder_restSit (session->game.commanderSession.pcId, reply);
 
     // Notify the players around
     GameEventRestSit event = {
-        .pcId = session->game.pcId,
+        .pcId = session->game.commanderSession.pcId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
@@ -236,7 +237,7 @@ ZoneHandler_skillGround (
     ZoneBuilder_playAni (reply);
 
     ZoneBuilder_normalUnk8 (
-        session->game.pcId,
+        session->game.commanderSession.pcId,
         reply
     );
 
@@ -385,7 +386,7 @@ ZoneHandler_moveStop (
     // Notify the players around
     GameEventMoveStop event = {
         .mapId = session->socket.mapId,
-        .commanderInfo = session->game.currentCommander,
+        .commanderInfo = session->game.commanderSession.currentCommander,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
@@ -433,12 +434,12 @@ ZoneHandler_keyboardMove (
     // TODO : Check coordinates
 
     // Update session
-    session->game.currentCommander.pos = clientPacket->position;
+    session->game.commanderSession.currentCommander.pos = clientPacket->position;
 
     // Notify the players around
     GameEventCommanderMove event = {
         .mapId = session->socket.mapId,
-        .commanderInfo = session->game.currentCommander,
+        .commanderInfo = session->game.commanderSession.currentCommander,
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
@@ -470,7 +471,7 @@ ZoneHandler_gameReady (
     size_t packetSize,
     zmsg_t *reply
 ) {
-    CommanderInfo *commanderInfo = &session->game.currentCommander;
+    CommanderInfo *commanderInfo = &session->game.commanderSession.currentCommander;
 
     /*
     ZoneBuilder_itemInventoryList (reply);
@@ -512,7 +513,7 @@ ZoneHandler_gameReady (
     // Notify players around that a new PC has entered
     GameEventPcEnter pcEnterEvent = {
         .mapId = session->socket.mapId,
-        .pcId = session->game.pcId,
+        .pcId = session->game.commanderSession.pcId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
     };
     memcpy (&pcEnterEvent.commanderInfo, commanderInfo, sizeof (pcEnterEvent.commanderInfo));
@@ -532,18 +533,18 @@ ZoneHandler_gameReady (
 
     ZoneBuilder_normalUnk7 (
         session->socket.accountId,
-        session->game.currentCommander.base.pcId,
-        session->game.currentCommander.base.familyName,
-        session->game.currentCommander.base.commanderName,
+        session->game.commanderSession.currentCommander.base.pcId,
+        session->game.commanderSession.currentCommander.base.familyName,
+        session->game.commanderSession.currentCommander.base.commanderName,
         reply
     );
 
     ZoneBuilder_jobPts (reply);
-    ZoneBuilder_normalUnk9 (session->game.currentCommander.base.pcId, reply);
+    ZoneBuilder_normalUnk9 (session->game.commanderSession.currentCommander.base.pcId, reply);
     ZoneBuilder_addonMsg (reply);
     */
 
-    ZoneBuilder_moveSpeed (session->game.pcId, 1.0f, reply);
+    ZoneBuilder_moveSpeed (session->game.commanderSession.pcId, 30.0f, reply);
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
@@ -561,7 +562,7 @@ ZoneHandler_connect (
         uint32_t unk1;
         uint64_t accountId;
         ZoneServerId zoneServerId;
-        uint8_t accountLogin [GAME_SESSION_ACCOUNT_LOGIN_MAXSIZE];
+        uint8_t accountLogin [ACCOUNT_SESSION_LOGIN_MAXSIZE];
         uint8_t unk4;
         uint32_t zoneServerIndex;
         uint16_t unk3;
@@ -592,9 +593,9 @@ ZoneHandler_connect (
     }
 
     // Check the client packet here (authentication)
-    if (strncmp (session->game.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountLogin)) != 0) {
+    if (strncmp (session->game.accountSession.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountSession.accountLogin)) != 0) {
         error ("Wrong account authentication. (clientPacket account = <%s>, Session account = <%s>",
-            clientPacket->accountLogin, session->game.accountLogin);
+            clientPacket->accountLogin, session->game.accountSession.accountLogin);
         return PACKET_HANDLER_ERROR;
     }
 
@@ -603,7 +604,7 @@ ZoneHandler_connect (
     SocketSession_init (&session->socket,
         clientPacket->accountId,
         self->info.routerId,
-        session->game.mapId,
+        session->game.commanderSession.mapId,
         session->socket.socketId,
         true
     );
@@ -626,13 +627,13 @@ ZoneHandler_connect (
     }
 
     // Position : Official starting point position (tutorial map)
-    session->game.currentCommander.pos = PositionXYZ_decl (-628.0f, 260.0f, -1025.0f);
+    session->game.commanderSession.currentCommander.pos = PositionXYZ_decl (-628.0f, 260.0f, -1025.0f);
 
     ZoneBuilder_connectOk (
-        session->game.pcId,
+        session->game.commanderSession.pcId,
         0, // GameMode
         0, // accountPrivileges
-        &session->game.currentCommander, // Current commander
+        &session->game.commanderSession.currentCommander, // Current commander
         reply
     );
 
@@ -661,7 +662,7 @@ ZoneHandler_jump (
     }
 
     ZoneBuilder_jump (
-        session->game.pcId,
+        session->game.commanderSession.pcId,
         300.0,
         reply
     );
@@ -670,7 +671,7 @@ ZoneHandler_jump (
     GameEventJump event = {
         .mapId = session->socket.mapId,
         .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
-        .commanderInfo = session->game.currentCommander,
+        .commanderInfo = session->game.commanderSession.currentCommander,
         .height = 300.0
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));

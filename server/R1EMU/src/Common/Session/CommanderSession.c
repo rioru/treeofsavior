@@ -7,7 +7,7 @@
  *   ██║  ██║  ██║ ███████╗ ██║ ╚═╝ ██║ ╚██████╔╝
  *   ╚═╝  ╚═╝  ╚═╝ ╚══════╝ ╚═╝     ╚═╝  ╚═════╝
  *
- * @file GameSession.h
+ * @file CommanderSession.h
  * @brief
  *
  *
@@ -16,21 +16,21 @@
  */
 
 // ---------- Includes ------------
-#include "GameSession.h"
+#include "CommanderSession.h"
 
-GameSession *
-GameSession_new (
+CommanderSession *
+CommanderSession_new (
     CommanderInfo *commanderInfo
 ) {
-    GameSession *self;
+    CommanderSession *self;
 
-    if ((self = calloc (1, sizeof (GameSession))) == NULL) {
+    if ((self = calloc (1, sizeof (CommanderSession))) == NULL) {
         return NULL;
     }
 
-    if (!GameSession_init (self, commanderInfo)) {
-        GameSession_destroy (&self);
-        error ("GameSession failed to initialize.");
+    if (!CommanderSession_init (self, commanderInfo)) {
+        CommanderSession_destroy (&self);
+        error ("CommanderSession failed to initialize.");
         return NULL;
     }
 
@@ -38,38 +38,36 @@ GameSession_new (
 }
 
 bool
-GameSession_init (
-    GameSession *self,
+CommanderSession_init (
+    CommanderSession *self,
     CommanderInfo *commanderInfo
 ) {
-    memset (self, 0, sizeof (GameSession));
+    memset (self, 0, sizeof (CommanderSession));
 
-    CommanderSession_init (&self->commanderSession, commanderInfo);
-    BarrackSession_init (&self->barrackSession);
+    memcpy (&self->currentCommander, commanderInfo, sizeof (CommanderInfo));
 
     return true;
 }
 
 void
-GameSession_print (
-    GameSession *self
+CommanderSession_print (
+    CommanderSession *self
 ) {
-    dbg ("==== GameSession %p ====", self);
-    BarrackSession_print (&self->barrackSession);
-    CommanderSession_print (&self->commanderSession);
+    dbg ("==== CommanderSession %p ====", self);
+    CommanderInfo_print (&self->currentCommander);
 }
 
 void
-GameSession_destroy (
-    GameSession **_self
+CommanderSession_destroy (
+    CommanderSession **_self
 ) {
-    GameSession_free (*_self);
+    CommanderSession_free (*_self);
     *_self = NULL;
 }
 
 void
-GameSession_free (
-    GameSession *self
+CommanderSession_free (
+    CommanderSession *self
 ) {
     free (self);
 }

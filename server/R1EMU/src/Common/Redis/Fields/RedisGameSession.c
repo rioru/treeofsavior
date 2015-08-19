@@ -201,20 +201,16 @@ Redis_getGameSession (
             }
 
             /// Write the reply to the session
-            CommanderInfo *cInfo = &gameSession->currentCommander;
+            CommanderInfo *cInfo = &gameSession->commanderSession.currentCommander;
             Commander *commander = &cInfo->base;
             CommanderEquipment *equipment = &commander->equipment;
-            #define COPY_REDIS_STR(_str, _x) strncpy (_str, reply->element[REDIS_GAME_SESSION_##_x]->str, sizeof (_str));
-            #define GET_REDIS_32(_x) strtoul (reply->element[REDIS_GAME_SESSION_##_x]->str, NULL, 16)
-            #define GET_REDIS_64(_x) strtoull (reply->element[REDIS_GAME_SESSION_##_x]->str, NULL, 16)
-            #define GET_REDIS_FLOAT(_x) strtof (reply->element[REDIS_GAME_SESSION_##_x]->str, NULL)
 
             // Session
-            COPY_REDIS_STR (gameSession->socketId, socketId);
-            gameSession->pcId = GET_REDIS_32 (pcId);
-            gameSession->mapId = GET_REDIS_32 (mapId);
-            gameSession->charactersBarrackCount = GET_REDIS_32 (charactersBarrackCount);
-            COPY_REDIS_STR (gameSession->accountLogin, accountLogin);
+            COPY_REDIS_STR (gameSession->accountSession.socketId, socketId);
+            gameSession->commanderSession.pcId = GET_REDIS_32 (pcId);
+            gameSession->commanderSession.mapId = GET_REDIS_32 (mapId);
+            gameSession->barrackSession.charactersCreatedCount = GET_REDIS_32 (charactersBarrackCount);
+            COPY_REDIS_STR (gameSession->accountSession.accountLogin, accountLogin);
 
             // Commander
             COPY_REDIS_STR (commander->commanderName, commander_commanderName);
@@ -334,7 +330,7 @@ Redis_updateGameSession (
     bool result = true;
     redisReply *reply = NULL;
 
-    CommanderInfo *cInfo = &gameSession->currentCommander;
+    CommanderInfo *cInfo = &gameSession->commanderSession.currentCommander;
     Commander *commander = &cInfo->base;
     CommanderEquipment *equipment = &commander->equipment;
 
@@ -403,10 +399,10 @@ Redis_updateGameSession (
 
         // Session
         socketId,
-        gameSession->pcId,
-        gameSession->mapId,
-        gameSession->charactersBarrackCount,
-        gameSession->accountLogin,
+        gameSession->commanderSession.pcId,
+        gameSession->commanderSession.mapId,
+        gameSession->barrackSession.charactersCreatedCount,
+        gameSession->accountSession.accountLogin,
 
         // Commander
         CHECK_REDIS_EMPTY_STRING (commander->commanderName),

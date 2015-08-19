@@ -75,6 +75,11 @@ void crashHandler (int sig, siginfo_t *siginfo, void *_context)
 
 int main (int argc, char **argv)
 {
+    if (argc != 15) {
+        info ("Please launch GlobalServer instead of ZoneServer.");
+        exit (0);
+    }
+
     ZoneServer *zoneServer = NULL;
     BarrackServer *barrackServer = NULL;
     SocialServer *socialServer = NULL;

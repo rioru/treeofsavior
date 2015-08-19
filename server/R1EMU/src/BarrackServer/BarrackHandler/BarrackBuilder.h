@@ -48,7 +48,7 @@ BarrackBuilder_loginOk (
     uint64_t accountId,
     uint8_t *accountLogin,
     uint8_t *sessionKey,
-    GameSessionPrivileges accountPrivileges,
+    AccountSessionPrivileges accountPrivileges,
     zmsg_t *replyMsg
 );
 
