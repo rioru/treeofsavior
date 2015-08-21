@@ -203,7 +203,7 @@ RouterMonitor_monitor (
         // Check if it already exists in the table
         if ((clientFrame = zhash_lookup (self->connected, fdClientKey)) != NULL) {
             uint8_t sessionKey [ROUTER_MONITOR_FDKEY_SIZE];
-            SocketSession_genSocketId (zframe_data (clientFrame), sessionKey);
+            SocketSession_genSessionKey (zframe_data (clientFrame), sessionKey);
             error ("The client FD=%d just connected, but another client has still this FD (previously : %s)",
                    fdClient, sessionKey);
             // TODO : Decide what to do in this case
@@ -233,14 +233,14 @@ RouterMonitor_monitor (
         }
         else {
             // Everything is okay here, disconnect gracefully the client
-            uint8_t socketId [SOCKET_SESSION_ID_SIZE];
-            SocketSession_genSocketId (zframe_data (clientFrame), socketId);
+            uint8_t sessionKeyStr [SOCKET_SESSION_ID_SIZE];
+            SocketSession_genSessionKey (zframe_data (clientFrame), sessionKeyStr);
 
             // Flush the session here
             RedisSessionKey sessionKey = {
                 .socketKey = {
                     .routerId = self->info.routerId,
-                    .socketId = socketId
+                    .sessionKey = sessionKeyStr
                 }
             };
             Redis_flushSession (self->redis, &sessionKey);
@@ -249,7 +249,7 @@ RouterMonitor_monitor (
             zhash_delete (self->connected, fdClientKey);
             zframe_destroy (&clientFrame);
 
-            info ("%s session successfully flushed !", socketId);
+            info ("%s session successfully flushed !", sessionKeyStr);
         }
     }
 

@@ -46,7 +46,7 @@ Redis_getSocketSession (
         REDIS_SOCKET_SESSION_routerId_str " "
         REDIS_SOCKET_SESSION_mapId_str " "
         REDIS_SOCKET_SESSION_authenticated_str " ",
-        key->routerId, key->socketId
+        key->routerId, key->sessionKey
     );
 
     if (!reply) {
@@ -77,12 +77,12 @@ Redis_getSocketSession (
 
             if (Redis_anyElementIsNull (reply->element, reply->elements) != -1) {
                 // The socket session doesn't exist : create a new one and set it to its default value
-                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, key->routerId, SOCKET_SESSION_UNDEFINED_MAP, key->socketId, false);
+                SocketSession_init (socketSession, SOCKET_SESSION_UNDEFINED_ACCOUNT, key->routerId, SOCKET_SESSION_UNDEFINED_MAP, key->sessionKey, false);
 
                 // Update the newly created socketSession to the Redis Session
                 RedisSocketSessionKey socketKey = {
                     .routerId = socketSession->routerId,
-                    .socketId = socketSession->socketId
+                    .sessionKey = socketSession->sessionKey
                 };
                 if (!Redis_updateSocketSession (self, &socketKey, socketSession)) {
                     dbg ("Cannot update the socket session");
@@ -96,7 +96,7 @@ Redis_getSocketSession (
                 socketSession->routerId = strtoul (reply->element[REDIS_SOCKET_SESSION_routerId]->str, NULL, 16);
                 socketSession->mapId = strtoul (reply->element[REDIS_SOCKET_SESSION_mapId]->str, NULL, 16);
                 socketSession->authenticated = strtoul (reply->element[REDIS_SOCKET_SESSION_authenticated]->str, NULL, 16);
-                memcpy (socketSession->socketId, key->socketId, sizeof (socketSession->socketId));
+                memcpy (socketSession->sessionKey, key->sessionKey, sizeof (socketSession->sessionKey));
             }
         break;
 
@@ -126,7 +126,7 @@ Redis_updateSocketSession (
         " routerId %x"
         " mapId %x"
         " authenticated %x"
-        , key->routerId, key->socketId,
+        , key->routerId, key->sessionKey,
         socketSession->accountId,
         key->routerId,
         socketSession->mapId,
@@ -172,7 +172,7 @@ Redis_flushSocketSession (
     // Delete the key from the Redis
     reply = Redis_commandDbg (self,
         "DEL zone%x:socket%s",
-        key->routerId, key->socketId
+        key->routerId, key->sessionKey
     );
 
     if (!reply) {

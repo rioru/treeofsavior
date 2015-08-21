@@ -23,6 +23,10 @@ LuaInterface__getInstance = 0x00D75EF0
 LuaInterface__getObject   = 0x00D75EA0
 LuaInterface__getObjectEx = 0x00DBBCB0
 
+MakeNameEx (LuaInterface__getInstance, "LuaInterface::getInstance", SN_NOWARN);
+MakeNameEx (LuaInterface__getObject, "LuaInterface::getObject", SN_NOWARN);
+MakeNameEx (LuaInterface__getObjectEx, "LuaInterface::getObjectEx", SN_NOWARN);
+
 def MakeNameForce (address, name):
     x = 2;
     newName = name;

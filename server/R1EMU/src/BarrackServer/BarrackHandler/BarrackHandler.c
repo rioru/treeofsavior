@@ -96,7 +96,7 @@ BarrackHandler_login (
     // Update the session
     // ===== Gives a fake admin account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
-    AccountSession_init (&session->game.accountSession, clientPacket->accountLogin, session->socket.socketId, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    AccountSession_init (&session->game.accountSession, clientPacket->accountLogin, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
     // ==================================
     info ("AccountID %llx generated !", session->socket.accountId);
 
@@ -149,10 +149,11 @@ BarrackHandler_loginByPassport (
     // Update the session
     // ===== Gives a random account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
-    snprintf (session->game.accountSession.accountLogin, sizeof (session->game.accountSession.accountLogin), "%0llX", session->socket.accountId);
-    AccountSession_init (&session->game.accountSession, session->game.accountSession.accountLogin, session->socket.socketId, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    AccountSession_init (&session->game.accountSession, session->game.accountSession.accountLogin, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    snprintf (session->game.accountSession.accountLogin, sizeof (session->game.accountSession.accountLogin), "%llX", session->socket.accountId);
     // ==================================
-    info ("AccountID %llx generated !", session->socket.accountId);
+    info ("Account %s generated !", session->game.accountSession.accountLogin);
+    buffer_print (session->game.accountSession.accountLogin, 10, ">>>");
 
     BarrackBuilder_loginOk (
         session->socket.accountId,
@@ -221,7 +222,7 @@ BarrackHandler_startGame (
         .accountId = session->socket.accountId
     };
     if (!(Redis_moveGameSession (self->redis, &fromKey, &toKey))) {
-        error ("Cannot move the Game session %s.", session->socket.socketId);
+        error ("Cannot move the Game session %s.", session->socket.sessionKey);
         return PACKET_HANDLER_ERROR;
     }
 

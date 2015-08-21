@@ -49,7 +49,7 @@ AccountSession_init (
     memset (self, 0, sizeof (AccountSession));
 
     memcpy (self->accountLogin, accountLogin, sizeof (self->accountLogin));
-    memcpy (self->socketId, socketId, sizeof (self->socketId));
+    memcpy (self->sessionKey, socketId, sizeof (self->sessionKey));
     self->accountPrivilege = accountPrivilege;
 
     return true;

@@ -43,8 +43,8 @@ struct AccountSession
     /** The account login */
     uint8_t accountLogin [ACCOUNT_SESSION_LOGIN_MAXSIZE];
 
-    /** Socket ID */
-    uint8_t socketId [SOCKET_SESSION_ID_SIZE];
+    /** Session key */
+    uint8_t sessionKey [SOCKET_SESSION_ID_SIZE];
 
     /** Account privilege level */
     AccountSessionPrivileges accountPrivilege;

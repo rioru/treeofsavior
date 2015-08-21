@@ -53,13 +53,13 @@ SocketSession_init (
     uint64_t accountId,
     uint16_t routerId,
     uint16_t mapId,
-    uint8_t *socketId,
+    uint8_t *sessionKey,
     bool authenticated
 ) {
     self->accountId = accountId;
     self->routerId = routerId;
     self->mapId = mapId;
-    memcpy (self->socketId, socketId, sizeof (self->socketId));
+    memcpy (self->sessionKey, sessionKey, sizeof (self->sessionKey));
 
     self->authenticated = authenticated;
 
@@ -67,7 +67,7 @@ SocketSession_init (
 }
 
 void
-SocketSession_genSocketId (
+SocketSession_genSessionKey (
     uint8_t *sessionId,
     uint8_t sessionKey[SOCKET_SESSION_ID_SIZE]
 ) {
@@ -96,7 +96,7 @@ SocketSession_print (
     SocketSession *self
 ) {
     dbg ("==== SocketSession %p ====", self);
-    dbg ("socketId = <%s>", self->socketId);
+    dbg ("sessionKey = <%s>", self->sessionKey);
     dbg ("accountId = <%llx>", self->accountId);
     dbg ("routerId = <%x>", self->routerId);
     dbg ("authenticated = <%x>", self->authenticated);

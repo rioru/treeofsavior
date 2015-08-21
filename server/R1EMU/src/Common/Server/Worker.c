@@ -298,22 +298,22 @@ Worker_processClientPacket (
     zframe_t *headerAnswer = NULL;
 
     // Read the message
-    zframe_t *socketIdFrame = zmsg_first (msg);
+    zframe_t *sessionKeyFrame = zmsg_first (msg);
     zframe_t *packetFrame = zmsg_next (msg);
     // We don't need the client packet in the reply
     zmsg_remove (msg, packetFrame);
 
     // Convert the frame to socketId
-    uint8_t socketId [SOCKET_SESSION_ID_SIZE];
+    uint8_t sessionKeyStr [SOCKET_SESSION_ID_SIZE];
 
     // Generate the socketId key
-    SocketSession_genSocketId (zframe_data (socketIdFrame), socketId);
+    SocketSession_genSessionKey (zframe_data (sessionKeyFrame), sessionKeyStr);
 
     // Request the Session
     RedisSessionKey sessionKey = {
         .socketKey = {
             .routerId = self->info.routerId,
-            .socketId = socketId
+            .sessionKey = sessionKeyStr
         }
     };
     if (!(Redis_getSession (self->redis, &sessionKey, &session))) {
@@ -427,7 +427,7 @@ Worker_processOneRequest (
             RedisSessionKey sessionKey = {
                 .socketKey = {
                     .routerId = session->socket.routerId,
-                    .socketId = session->socket.socketId
+                    .sessionKey = session->socket.sessionKey
                 }
             };
             if (!(Redis_flushSession (self->redis, &sessionKey))) {

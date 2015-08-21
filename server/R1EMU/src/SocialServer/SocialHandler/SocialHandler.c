@@ -72,7 +72,7 @@ SocialHandler_login (
 
     // Authentication OK!
     session->socket.accountId = clientPacket->accountId;
-    AccountSession_init (&session->game.accountSession, clientPacket->accountLogin, session->socket.socketId, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    AccountSession_init (&session->game.accountSession, clientPacket->accountLogin, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
     session->socket.authenticated = true;
 
     // TODO : Answer something

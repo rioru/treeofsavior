@@ -39,8 +39,8 @@ struct SocketSession
     uint16_t routerId;
     /** The map Id of the commander currently played */
     uint16_t mapId;
-    /** Socket Redis key */
-    uint8_t socketId [SOCKET_SESSION_ID_SIZE];
+    /** Session Redis key */
+    uint8_t sessionKey [SOCKET_SESSION_ID_SIZE];
 
     /** States */
     bool authenticated;
@@ -88,7 +88,7 @@ SocketSession_init (
  * @return
  */
 void
-SocketSession_genSocketId (
+SocketSession_genSessionKey (
     uint8_t *sessionId,
     uint8_t sessionKey[SOCKET_SESSION_ID_SIZE]
 );

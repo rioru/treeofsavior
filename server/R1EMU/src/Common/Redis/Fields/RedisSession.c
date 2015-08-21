@@ -47,7 +47,7 @@ Redis_getSession (
         CommanderInfo commanderInfo;
         CommanderInfo_init (&commanderInfo);
         GameSession_init (gameSession, &commanderInfo);
-        dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey->socketId);
+        dbg ("Welcome, SOCKET_%s ! A new session has been initialized for you.", socketKey->sessionKey);
     } else {
         // The client already exist in the game, get Game Session
         RedisGameSessionKey gameKey = {
@@ -59,7 +59,7 @@ Redis_getSession (
             error ("Cannot get Game Session.");
             return false;
         }
-        // dbg ("Welcome back, SOCKET_%s !", socketId);
+        // dbg ("Welcome back, SOCKET_%s !", sessionKey);
     }
 
     return true;
@@ -73,7 +73,7 @@ Redis_updateSession (
 ) {
     RedisSocketSessionKey socketKey = {
         .routerId = session->socket.routerId,
-        .socketId = session->socket.socketId
+        .sessionKey = session->socket.sessionKey
     };
     if (!Redis_updateSocketSession (self, &socketKey, &session->socket)) {
         error ("Cannot update the socket session.");
@@ -85,11 +85,7 @@ Redis_updateSession (
         .accountId = session->socket.accountId
     };
 
-    #warning notice me senpai
-    // XXX :
-    // Pourquoi est-ce que socketId est séparé de la GameSession ?
-    // Est-ce qu'il ne faudrait pas utiliser la socketId de la gameSession plutôt?
-    if (!(Redis_updateGameSession (self, &gameKey, session->socket.socketId, &session->game))) {
+    if (!(Redis_updateGameSession (self, &gameKey, session->socket.sessionKey, &session->game))) {
         error ("Cannot update the game session");
         return false;
     }
@@ -108,7 +104,7 @@ Redis_flushSession (
     SocketSession socketSession;
 
     if (!(Redis_getSocketSession (self, socketKey, &socketSession))) {
-        error ("Cannot get the SocketSession for %s.", socketKey->socketId);
+        error ("Cannot get the SocketSession for %s.", socketKey->sessionKey);
         return false;
     }
 

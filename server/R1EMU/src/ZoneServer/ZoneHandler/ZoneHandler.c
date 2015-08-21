@@ -131,29 +131,30 @@ ZoneHandler_chat (
 
                 // Register the fake socket session
                 SocketSession fakeSocketSession;
-                uint64_t socketId = R1EMU_generate_random64 (&self->seed);
-                uint8_t socketIdStr [SOCKET_SESSION_ID_SIZE] = {0};
-                sprintf (socketIdStr, "%.10I64x", socketId);
-                SocketSession_init (&fakeSocketSession, fakePc.base.accountId, self->info.routerId, session->socket.mapId, socketIdStr, true);
+                uint64_t sessionKey = R1EMU_generate_random64 (&self->seed);
+                uint8_t sessionKeyStr [SOCKET_SESSION_ID_SIZE];
+                SocketSession_genSessionKey ((uint8_t *) &sessionKey, sessionKeyStr);
+                sprintf (sessionKeyStr, "%.10I64x", sessionKey);
+                SocketSession_init (&fakeSocketSession, fakePc.base.accountId, self->info.routerId, session->socket.mapId, sessionKeyStr, true);
                 RedisSocketSessionKey socketKey = {
                     .routerId = self->info.routerId,
-                    .socketId = socketIdStr
+                    .sessionKey = sessionKeyStr
                 };
                 Redis_updateSocketSession (self->redis, &socketKey, &fakeSocketSession);
 
                 // Register the fake game session
                 GameSession fakeGameSession;
                 GameSession_init (&fakeGameSession, &fakePc);
-                AccountSession_init (&fakeGameSession.accountSession, "DummyPC", socketIdStr, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+                AccountSession_init (&fakeGameSession.accountSession, "DummyPC", sessionKeyStr, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
 
                 RedisGameSessionKey gameKey = {
                     .routerId  = fakeSocketSession.routerId,
                     .mapId     = fakeSocketSession.mapId,
                     .accountId = fakeSocketSession.accountId
                 };
-                Redis_updateGameSession (self->redis, &gameKey, socketIdStr, &fakeGameSession);
+                Redis_updateGameSession (self->redis, &gameKey, sessionKeyStr, &fakeGameSession);
 
-                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", socketIdStr, fakePc.base.accountId, fakePcId);
+                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", sessionKeyStr, fakePc.base.accountId, fakePcId);
             }
         }
     }
@@ -188,7 +189,7 @@ ZoneHandler_restSit (
     // Notify the players around
     GameEventRestSit event = {
         .pcId = session->game.commanderSession.pcId,
-        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
+        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
 
@@ -390,7 +391,7 @@ ZoneHandler_moveStop (
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
-        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
+        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_MOVE_STOP, &event, sizeof (event));
 
@@ -443,7 +444,7 @@ ZoneHandler_keyboardMove (
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
-        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
+        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_COMMANDER_MOVE, &event, sizeof (event));
 
@@ -514,7 +515,7 @@ ZoneHandler_gameReady (
     GameEventPcEnter pcEnterEvent = {
         .mapId = session->socket.mapId,
         .pcId = session->game.commanderSession.pcId,
-        .socketId = SOCKET_ID_ARRAY (session->socket.socketId)
+        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     memcpy (&pcEnterEvent.commanderInfo, commanderInfo, sizeof (pcEnterEvent.commanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
@@ -605,7 +606,7 @@ ZoneHandler_connect (
         clientPacket->accountId,
         self->info.routerId,
         session->game.commanderSession.mapId,
-        session->socket.socketId,
+        session->socket.sessionKey,
         true
     );
 
@@ -670,7 +671,7 @@ ZoneHandler_jump (
     // Notify the players around
     GameEventJump event = {
         .mapId = session->socket.mapId,
-        .socketId = SOCKET_ID_ARRAY (session->socket.socketId),
+        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey),
         .commanderInfo = session->game.commanderSession.currentCommander,
         .height = 300.0
     };

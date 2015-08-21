@@ -206,7 +206,7 @@ Redis_getGameSession (
             CommanderEquipment *equipment = &commander->equipment;
 
             // Session
-            COPY_REDIS_STR (gameSession->accountSession.socketId, socketId);
+            COPY_REDIS_STR (gameSession->accountSession.sessionKey, socketId);
             gameSession->commanderSession.pcId = GET_REDIS_32 (pcId);
             gameSession->commanderSession.mapId = GET_REDIS_32 (mapId);
             gameSession->barrackSession.charactersCreatedCount = GET_REDIS_32 (charactersBarrackCount);
@@ -293,13 +293,13 @@ bool
 Redis_getGameSessionBySocketId (
     Redis *self,
     uint16_t routerId,
-    uint8_t *socketId,
+    uint8_t *sessionKey,
     GameSession *gameSession
 ) {
     SocketSession socketSession;
     RedisSocketSessionKey socketKey = {
         .routerId = routerId,
-        .socketId = socketId
+        .sessionKey = sessionKey
     };
     if (!(Redis_getSocketSession (self, &socketKey, &socketSession))) {
         error ("Cannot get the socket session of the client.");
@@ -398,7 +398,7 @@ Redis_updateGameSession (
         , key->routerId, key->mapId, key->accountId,
 
         // Session
-        socketId,
+        gameSession->accountSession.sessionKey,
         gameSession->commanderSession.pcId,
         gameSession->commanderSession.mapId,
         gameSession->barrackSession.charactersCreatedCount,

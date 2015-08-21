@@ -42,7 +42,7 @@ enum RedisSocketSessionFields {
 typedef struct {
 
     uint16_t routerId;
-    uint8_t *socketId; // Size : SOCKET_SESSION_ID_SIZE
+    uint8_t *sessionKey; // Size : SOCKET_SESSION_ID_SIZE
 
 } RedisSocketSessionKey;
 
