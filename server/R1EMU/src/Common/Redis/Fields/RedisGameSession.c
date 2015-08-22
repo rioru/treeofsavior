@@ -392,7 +392,7 @@ Redis_updateGameSession (
         , key->routerId, key->mapId, key->accountId,
 
         // Account
-        gameSession->accountSession.sessionKey,
+        socketId,
         gameSession->accountSession.login,
         gameSession->accountSession.privilege,
         // Barrack

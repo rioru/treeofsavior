@@ -495,13 +495,11 @@ ZoneHandler_gameReady (
 
     ZoneBuilder_quickSlotList (replyMsg);
 
-    /*
     ZoneBuilder_normalUnk1 (replyMsg);
     ZoneBuilder_normalUnk2 (replyMsg);
     ZoneBuilder_normalUnk3 (replyMsg);
     ZoneBuilder_normalUnk4 (session->game.commanderSession.currentCommander.socialInfoId, replyMsg);
     ZoneBuilder_normalUnk5 (replyMsg);
-    */
 
     ZoneBuilder_startGame (1.0, 0.0, 0.0, 0.0, replyMsg);
     /*

@@ -116,10 +116,8 @@ int __cdecl imcCrypt__NetEncrypt (size_t plaintextSize, BYTE *plaintextIn, BYTE 
     WORD type = *(WORD *) (plaintextIn);
     char *packetType = PacketType_to_string (type);
 
-    WaitForSingleObject (mutex, INFINITE);
     dbg ("[CLIENT SEND] Packet type : <%s>", packetType);
     buffer_print (plaintextIn, plaintextSize, NULL);
-    ReleaseMutex (mutex);
 
     writePacketToFile (packetType, plaintextIn, plaintextSize);
 
@@ -158,9 +156,9 @@ void startInjection (void)
 		return;
 	}
 
-	DWORD baseAddr = get_baseaddr ("Client_tos.exe");
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
-	HookEngine_hook ((ULONG_PTR) baseAddr + OFFSET_CNetUsr__Recv,  (ULONG_PTR) CNetUsr__Recv);
+	// DWORD baseAddr = get_baseaddr ("Client_tos.exe");
+	HookEngine_hook ((ULONG_PTR) 0x400000 + OFFSET_NetEncrypt,     (ULONG_PTR) imcCrypt__NetEncrypt);
+	HookEngine_hook ((ULONG_PTR) 0x400000 + OFFSET_CNetUsr__Recv,  (ULONG_PTR) CNetUsr__Recv);
 }
 
 void endInjection (void)

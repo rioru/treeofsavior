@@ -343,7 +343,7 @@ EventServer_updateClientPosition (
 
     // Get the clients around
     if (!(redisClientsAround = EventServer_redisGetClientsWithinRange (
-        self, mapId, /*targetSocketId*/ NULL, &PositionXYZToXZ (newPosition),
+        self, mapId, targetSocketId, &PositionXYZToXZ (newPosition),
         COMMANDER_RANGE_AROUND
     ))) {
         error ("Cannot get clients within range");
@@ -646,14 +646,14 @@ EventServer_unlinkClients (
 GraphNode *
 EventServer_getClientNode (
     EventServer *self,
-    uint8_t *socketId
+    uint8_t *sessionKey
 ) {
     GraphNode *clientNode;
 
-    if (!(clientNode = Graph_getNode (self->clientsGraph, socketId))) {
+    if (!(clientNode = Graph_getNode (self->clientsGraph, sessionKey))) {
         // Client node doesn't exist, create it
-        info ("Add client %s in the graph", socketId);
-        if (!(clientNode = GraphNode_new (socketId, NULL))) {
+        info ("Add client %s in the graph", sessionKey);
+        if (!(clientNode = GraphNode_new (sessionKey, NULL))) {
             error ("Cannot allocate a new client node.");
             return NULL;
         }
