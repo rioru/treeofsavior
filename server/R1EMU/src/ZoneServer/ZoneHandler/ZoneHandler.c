@@ -21,41 +21,41 @@
 
 // ------ Static declaration -------
 /** Connect to the zone server */
-static PacketHandlerState ZoneHandler_connect         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_connect         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** Client is ready to enter the zone */
-static PacketHandlerState ZoneHandler_gameReady       (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_gameReady       (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** Jump handler */
-static PacketHandlerState ZoneHandler_jump            (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_jump            (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On air handler */
-static PacketHandlerState ZoneHandler_onAir           (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_onAir           (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On ground handler */
-static PacketHandlerState ZoneHandler_onGround        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_onGround        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On move with keyboard handler */
-static PacketHandlerState ZoneHandler_keyboardMove    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_keyboardMove    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On stop commander movement */
-static PacketHandlerState ZoneHandler_moveStop        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_moveStop        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On movement information */
-static PacketHandlerState ZoneHandler_movementInfo    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_movementInfo    (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On commander rotation */
-static PacketHandlerState ZoneHandler_rotate          (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_rotate          (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On commander head rotation */
-static PacketHandlerState ZoneHandler_headRotate      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_headRotate      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** @unknown */
-static PacketHandlerState ZoneHandler_campInfo        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_campInfo        (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On log out */
-static PacketHandlerState ZoneHandler_czQuickSlotList (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_czQuickSlotList (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On log out */
-static PacketHandlerState ZoneHandler_itemUse         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_itemUse         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On log out */
-static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_iNeedParty      (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On log out */
-static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_logout          (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On cast a spell on the ground */
-static PacketHandlerState ZoneHandler_skillGround     (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_skillGround     (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On commander sit */
-static PacketHandlerState ZoneHandler_restSit         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_restSit         (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 /** On commander chat */
-static PacketHandlerState ZoneHandler_chat            (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *reply);
+static PacketHandlerState ZoneHandler_chat            (Worker *self, Session *session, uint8_t *packet, size_t packetSize, zmsg_t *replyMsg);
 
 // ------ Structure declaration -------
 /**
@@ -93,7 +93,7 @@ ZoneHandler_chat (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -110,7 +110,7 @@ ZoneHandler_chat (
     }
 
     // Custom admin commands
-    if (session->game.accountSession.accountPrivilege <= ACCOUNT_SESSION_PRIVILEGES_ADMIN)
+    if (session->game.accountSession.privilege <= ACCOUNT_SESSION_PRIVILEGES_ADMIN)
     {
         if (strncmp (clientPacket->msgText, "/cmd ", strlen ("/cmd ")) == 0)
         {
@@ -124,10 +124,10 @@ ZoneHandler_chat (
 
                 fakePc.pos = session->game.commanderSession.currentCommander.pos;
                 fakePc.base.accountId = R1EMU_generate_random64 (&self->seed);
-                uint32_t fakePcId = R1EMU_generate_random (&self->seed);
+                fakePc.pcId = R1EMU_generate_random (&self->seed);
                 strncpy (fakePc.base.familyName, "Dummy", sizeof (fakePc.base.familyName));
                 strncpy (fakePc.base.commanderName, "Fake", sizeof (fakePc.base.commanderName));
-                ZoneBuilder_enterPc (fakePcId, &fakePc, reply);
+                ZoneBuilder_enterPc (&fakePc, replyMsg);
 
                 // Register the fake socket session
                 SocketSession fakeSocketSession;
@@ -154,7 +154,7 @@ ZoneHandler_chat (
                 };
                 Redis_updateGameSession (self->redis, &gameKey, sessionKeyStr, &fakeGameSession);
 
-                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", sessionKeyStr, fakePc.base.accountId, fakePcId);
+                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", sessionKeyStr, fakePc.base.accountId, fakePc.pcId);
             }
         }
     }
@@ -168,7 +168,7 @@ ZoneHandler_restSit (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -184,12 +184,12 @@ ZoneHandler_restSit (
     }
 
     // Make sit the current commander
-    ZoneBuilder_restSit (session->game.commanderSession.pcId, reply);
+    ZoneBuilder_restSit (session->game.commanderSession.currentCommander.pcId, replyMsg);
 
     // Notify the players around
     GameEventRestSit event = {
-        .pcId = session->game.commanderSession.pcId,
-        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        .pcId = session->game.commanderSession.currentCommander.pcId,
+        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_REST_SIT, &event, sizeof (event));
 
@@ -202,7 +202,7 @@ ZoneHandler_skillGround (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -235,11 +235,11 @@ ZoneHandler_skillGround (
          00 439C0000 00000000 1E43FFC3 1F7CA143 E130D443 1E43FFC3 1F7CA143 E130D443 EF04353F F80435BF 00000000 00 00
     */
 
-    ZoneBuilder_playAni (reply);
+    ZoneBuilder_playAni (replyMsg);
 
     ZoneBuilder_normalUnk8 (
-        session->game.commanderSession.pcId,
-        reply
+        session->game.commanderSession.currentCommander.pcId,
+        replyMsg
     );
 
     return PACKET_HANDLER_OK;
@@ -251,7 +251,7 @@ ZoneHandler_campInfo (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -267,7 +267,7 @@ ZoneHandler_campInfo (
         return PACKET_HANDLER_ERROR;
     }
 
-    ZoneBuilder_campInfo (session->socket.accountId, reply);
+    ZoneBuilder_campInfo (session->socket.accountId, replyMsg);
 
     return PACKET_HANDLER_OK;
 }
@@ -278,7 +278,7 @@ ZoneHandler_itemUse (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_ITEM_USE not implemented yet.");
     return PACKET_HANDLER_OK;
@@ -290,11 +290,11 @@ ZoneHandler_iNeedParty (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_I_NEED_PARTY not implemented yet.");
-    // ZoneBuilder_partyInfo (reply);
-    // ZoneBuilder_partyList (reply);
+    // ZoneBuilder_partyInfo (replyMsg);
+    // ZoneBuilder_partyList (replyMsg);
 
     return PACKET_HANDLER_OK;
 }
@@ -305,7 +305,7 @@ ZoneHandler_logout (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_LOGOUT not implemented yet.");
     return PACKET_HANDLER_OK;
@@ -317,7 +317,7 @@ ZoneHandler_headRotate (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_HEAD_ROTATE not implemented yet.");
     return PACKET_HANDLER_OK;
@@ -329,7 +329,7 @@ ZoneHandler_rotate (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_ROTATE not implemented yet.");
     return PACKET_HANDLER_OK;
@@ -341,7 +341,7 @@ ZoneHandler_movementInfo (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_MOVEMENT_INFO not implemented yet.");
     return PACKET_HANDLER_OK;
@@ -353,7 +353,7 @@ ZoneHandler_moveStop (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -391,7 +391,7 @@ ZoneHandler_moveStop (
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
-        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_MOVE_STOP, &event, sizeof (event));
 
@@ -404,7 +404,7 @@ ZoneHandler_keyboardMove (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -444,7 +444,7 @@ ZoneHandler_keyboardMove (
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
-        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_COMMANDER_MOVE, &event, sizeof (event));
 
@@ -457,7 +457,7 @@ ZoneHandler_czQuickSlotList (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_QUICKSLOT_LIST not implemented yet.");
     // Answer PacketType : ZC_QUICKSLOT_REGISTER
@@ -470,66 +470,66 @@ ZoneHandler_gameReady (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     CommanderInfo *commanderInfo = &session->game.commanderSession.currentCommander;
 
     /*
-    ZoneBuilder_itemInventoryList (reply);
-    ZoneBuilder_sessionObjects (reply);
-    ZoneBuilder_optionList (reply);
-    ZoneBuilder_skillmapList (reply);
-    ZoneBuilder_achievePointList (reply);
-    ZoneBuilder_chatMacroList (reply);
-    ZoneBuilder_uiInfoList (reply);
-    ZoneBuilder_npcStateList (reply);
-    ZoneBuilder_helpList (reply);
-    ZoneBuilder_myPageMap (reply);
-    ZoneBuilder_guestPageMap (reply);
+    ZoneBuilder_itemInventoryList (replyMsg);
+    ZoneBuilder_sessionObjects (replyMsg);
+    ZoneBuilder_optionList (replyMsg);
+    ZoneBuilder_skillmapList (replyMsg);
+    ZoneBuilder_achievePointList (replyMsg);
+    ZoneBuilder_chatMacroList (replyMsg);
+    ZoneBuilder_uiInfoList (replyMsg);
+    ZoneBuilder_npcStateList (replyMsg);
+    ZoneBuilder_helpList (replyMsg);
+    ZoneBuilder_myPageMap (replyMsg);
+    ZoneBuilder_guestPageMap (replyMsg);
     */
-    ZoneBuilder_startInfo (reply);
-    // ZoneBuilder_itemEquipList (reply);
-    // ZoneBuilder_skillList (session->game.pcId, reply);
-    // ZoneBuilder_abilityList (session->game.pcId, reply);
-    // ZoneBuilder_cooldownList (reply);
-    ZoneBuilder_quickSlotList (reply);
+    ZoneBuilder_startInfo (replyMsg);
+    // ZoneBuilder_itemEquipList (replyMsg);
+    // ZoneBuilder_skillList (session->game.pcId, replyMsg);
+    // ZoneBuilder_abilityList (session->game.pcId, replyMsg);
+    // ZoneBuilder_cooldownList (replyMsg);
+    ZoneBuilder_quickSlotList (replyMsg);
 
     /*
-    ZoneBuilder_normalUnk1 (reply);
-    ZoneBuilder_normalUnk2 (reply);
-    ZoneBuilder_normalUnk3 (reply);
-    ZoneBuilder_normalUnk4 (reply);
-    ZoneBuilder_normalUnk5 (reply);
+    ZoneBuilder_normalUnk1 (replyMsg);
+    ZoneBuilder_normalUnk2 (replyMsg);
+    ZoneBuilder_normalUnk3 (replyMsg);
+    ZoneBuilder_normalUnk4 (replyMsg);
+    ZoneBuilder_normalUnk5 (replyMsg);
     */
-    ZoneBuilder_startGame (1.0, 0.0, 0.0, 0.0, reply);
+    ZoneBuilder_startGame (1.0, 0.0, 0.0, 0.0, replyMsg);
     /*
-    ZoneBuilder_objectProperty (reply);
-    ZoneBuilder_stamina (reply);
+    ZoneBuilder_objectProperty (replyMsg);
+    ZoneBuilder_stamina (replyMsg);
     */
-    ZoneBuilder_loginTime (reply);
+    ZoneBuilder_loginTime (replyMsg);
 
-    ZoneBuilder_MyPCEnter (&commanderInfo->pos, reply);
-    // ZoneBuilder_skillAdd (reply);
+    ZoneBuilder_MyPCEnter (&commanderInfo->pos, replyMsg);
+    // ZoneBuilder_skillAdd (replyMsg);
 
     // Notify players around that a new PC has entered
     GameEventPcEnter pcEnterEvent = {
         .mapId = session->socket.mapId,
-        .pcId = session->game.commanderSession.pcId,
-        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     memcpy (&pcEnterEvent.commanderInfo, commanderInfo, sizeof (pcEnterEvent.commanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
+    ZoneBuilder_enterPc (&pcEnterEvent.commanderInfo, replyMsg);
 
-    // ZoneBuilder_buffList (commanderInfo->base.pcId, reply);
+    // ZoneBuilder_buffList (commanderInfo->base.pcId, replyMsg);
 
     // Add NPC at the start screen
-    // ZoneBuilder_enterMonster (reply);
-    // ZoneBuilder_faction (reply);
+    // ZoneBuilder_enterMonster (replyMsg);
+    // ZoneBuilder_faction (replyMsg);
 
     /*
     ZoneBuilder_normalUnk6 (
         commanderInfo->base.commanderName,
-        reply
+        replyMsg
     );
 
     ZoneBuilder_normalUnk7 (
@@ -537,15 +537,15 @@ ZoneHandler_gameReady (
         session->game.commanderSession.currentCommander.base.pcId,
         session->game.commanderSession.currentCommander.base.familyName,
         session->game.commanderSession.currentCommander.base.commanderName,
-        reply
+        replyMsg
     );
 
-    ZoneBuilder_jobPts (reply);
-    ZoneBuilder_normalUnk9 (session->game.commanderSession.currentCommander.base.pcId, reply);
-    ZoneBuilder_addonMsg (reply);
+    ZoneBuilder_jobPts (replyMsg);
+    ZoneBuilder_normalUnk9 (session->game.commanderSession.currentCommander.base.pcId, replyMsg);
+    ZoneBuilder_addonMsg (replyMsg);
     */
 
-    ZoneBuilder_moveSpeed (session->game.commanderSession.pcId, 30.0f, reply);
+    ZoneBuilder_moveSpeed (session->game.commanderSession.currentCommander.pcId, 31.0f, replyMsg);
 
     return PACKET_HANDLER_UPDATE_SESSION;
 }
@@ -556,14 +556,14 @@ ZoneHandler_connect (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         uint32_t unk1;
         uint64_t accountId;
-        ZoneServerId zoneServerId;
-        uint8_t accountLogin [ACCOUNT_SESSION_LOGIN_MAXSIZE];
+        uint64_t zoneServerId;
+        uint8_t login [ACCOUNT_SESSION_LOGIN_MAXSIZE];
         uint8_t unk4;
         uint32_t zoneServerIndex;
         uint16_t unk3;
@@ -594,9 +594,9 @@ ZoneHandler_connect (
     }
 
     // Check the client packet here (authentication)
-    if (strncmp (session->game.accountSession.accountLogin, clientPacket->accountLogin, sizeof (session->game.accountSession.accountLogin)) != 0) {
+    if (strncmp (session->game.accountSession.login, clientPacket->login, sizeof (session->game.accountSession.login)) != 0) {
         error ("Wrong account authentication. (clientPacket account = <%s>, Session account = <%s>",
-            clientPacket->accountLogin, session->game.accountSession.accountLogin);
+            clientPacket->login, session->game.accountSession.login);
         return PACKET_HANDLER_ERROR;
     }
 
@@ -631,11 +631,11 @@ ZoneHandler_connect (
     session->game.commanderSession.currentCommander.pos = PositionXYZ_decl (-628.0f, 260.0f, -1025.0f);
 
     ZoneBuilder_connectOk (
-        session->game.commanderSession.pcId,
+        session->game.commanderSession.currentCommander.pcId,
         0, // GameMode
         0, // accountPrivileges
         &session->game.commanderSession.currentCommander, // Current commander
-        reply
+        replyMsg
     );
 
     return PACKET_HANDLER_UPDATE_SESSION;
@@ -647,7 +647,7 @@ ZoneHandler_jump (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
@@ -663,17 +663,17 @@ ZoneHandler_jump (
     }
 
     ZoneBuilder_jump (
-        session->game.commanderSession.pcId,
-        300.0,
-        reply
+        session->game.commanderSession.currentCommander.pcId,
+        COMMANDER_HEIGHT_JUMP,
+        replyMsg
     );
 
     // Notify the players around
     GameEventJump event = {
         .mapId = session->socket.mapId,
-        .socketId = SOCKET_ID_ARRAY (session->socket.sessionKey),
+        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey),
         .commanderInfo = session->game.commanderSession.currentCommander,
-        .height = 300.0
+        .height = COMMANDER_HEIGHT_JUMP
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));
 
@@ -686,7 +686,7 @@ ZoneHandler_onAir (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_ON_AIR not implemented yet.");
     return PACKET_HANDLER_OK;
@@ -698,7 +698,7 @@ ZoneHandler_onGround (
     Session *session,
     uint8_t *packet,
     size_t packetSize,
-    zmsg_t *reply
+    zmsg_t *replyMsg
 ) {
     warning ("CZ_ON_GROUND not implemented yet.");
     return PACKET_HANDLER_OK;

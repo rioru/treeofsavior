@@ -66,7 +66,7 @@ BarrackBuilder_startGameOk (
     uint32_t zoneServerPort,
     uint16_t mapId,
     uint8_t commanderListId,
-    ZoneServerId *targetZoneZoneServerId,
+    uint64_t socialInfoId,
     uint8_t isSingleMap,
     zmsg_t *replyMsg
 ) {
@@ -78,7 +78,7 @@ BarrackBuilder_startGameOk (
         uint32_t zoneServerPort;
         uint32_t mapId;
         uint8_t commanderListId;
-        ZoneServerId targetZoneZoneServerId;
+        uint64_t socialInfoId;
         uint8_t isSingleMap;
         uint8_t unk1;
     } replyPacket;
@@ -94,7 +94,7 @@ BarrackBuilder_startGameOk (
         replyPacket.zoneServerPort = zoneServerPort;
         replyPacket.mapId = mapId;
         replyPacket.commanderListId = commanderListId;
-        memcpy (&replyPacket.targetZoneZoneServerId, targetZoneZoneServerId, sizeof (replyPacket.targetZoneZoneServerId));
+        replyPacket.socialInfoId = socialInfoId;
         replyPacket.isSingleMap = isSingleMap;
         replyPacket.unk1 = 1;
     }
@@ -419,4 +419,31 @@ BarrackBuilder_commanderCreate (
         ServerPacketHeader_init (&replyPacket.header, packetType);
         memcpy (&replyPacket.commanderCreate, commanderCreate, sizeof (replyPacket.commanderCreate));
     }
+
+    size_t memSize;
+    void *memory = dumpToMem (
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  10 00 FF FF FF FF 43 42 54 45 53 54 00 00 00 00 | ......CBTEST....\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 00 00 00 00 15 27 00 00 A1 0F 02 00 01 00 | .......'........\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 02 00 00 00 02 00 00 00 04 00 00 00 9D 1A | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  08 00 06 00 00 00 07 00 00 00 10 27 00 00 F8 2A | ...........'...*\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 8D 11 03 00 7C 96 98 00 04 00 00 00 09 00 | ......|.........\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 09 00 00 00 04 00 00 00 8D F3 07 00 09 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 09 00 00 00 09 00 00 00 09 00 00 00 0A 00 | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  00 00 10 00 00 00 EE 25 00 00 3C 01 00 00 04 00 | .......%..<.....\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  FD 03 02 00 00 00 00 00 00 00 0C 00 00 00 C0 1C | ................\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  76 1C 00 00 98 41 C9 1F DE 41 00 00 E8 41 F1 04 | v....A...A...A..\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  35 3F F5 04 35 BF 00 00 98 41 C9 1F DE 41 00 00 | 5?..5....A...A..\n"
+            "[03:07:23][main.c:55 in CNetUsr__PacketHandler_0]  E8 41 F1 04 35 3F F5 04 35 BF 00 00 00 00       | .A..5?..5.....\n"
+        , NULL, &memSize
+    );
+
+    compareMem (memory, memSize, (uint8_t *) &replyPacket, sizeof (replyPacket));
 }

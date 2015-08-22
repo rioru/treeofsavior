@@ -32,9 +32,6 @@ struct CommanderSession
     /** Current mapId **/
     uint16_t mapId;
 
-    /** Current PcId **/
-    uint32_t pcId;
-
     /** Current commander */
     CommanderInfo currentCommander;
 };

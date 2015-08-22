@@ -34,16 +34,6 @@ typedef enum {
     SERVER_TYPE_ZONE
 } ServerType;
 
-
-/** Server identifier */
-#define ZoneServerId_decl(_id, _unk) \
-    (ZoneServerId) {(uint64_t) _unk << 32 | _id}
-#define ZoneServerId_getId(this) \
-    (this & 0xFFFFFFFF)
-#define ZoneServerId_getUnk(this) \
-    (this & 0xFFFFFFFF00000000 >> 32)
-typedef uint64_t ZoneServerId;
-
 // MySQL environment
 #include <mysql/mysql.h>
 

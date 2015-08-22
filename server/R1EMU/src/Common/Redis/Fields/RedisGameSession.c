@@ -25,19 +25,16 @@
 
 // ------ Extern variables implementation -------
 const char *redisGameSessionsStr [] = {
-    // Session
-    [REDIS_GAME_SESSION_socketId] = REDIS_GAME_SESSION_socketId_str,
-    [REDIS_GAME_SESSION_pcId] = REDIS_GAME_SESSION_pcId_str,
-    [REDIS_GAME_SESSION_mapId] = REDIS_GAME_SESSION_mapId_str,
-    [REDIS_GAME_SESSION_charactersBarrackCount] = REDIS_GAME_SESSION_charactersBarrackCount_str,
-    [REDIS_GAME_SESSION_accountLogin] = REDIS_GAME_SESSION_accountLogin_str,
-
-    // Commander
+    // Account session
+    [REDIS_GAME_SESSION_account_login] = REDIS_GAME_SESSION_account_login_str,
+    [REDIS_GAME_SESSION_account_sessionKey] = REDIS_GAME_SESSION_account_sessionKey_str,
+    [REDIS_GAME_SESSION_account_privilege] = REDIS_GAME_SESSION_account_privilege_str,
+    // Barrack session
+    [REDIS_GAME_SESSION_barrack_charactersCreatedCount] = REDIS_GAME_SESSION_barrack_charactersCreatedCount_str,
+    // Commander session
+    [REDIS_GAME_SESSION_commander_mapId] = REDIS_GAME_SESSION_commander_mapId_str,
     [REDIS_GAME_SESSION_commander_commanderName] = REDIS_GAME_SESSION_commander_commanderName_str,
     [REDIS_GAME_SESSION_commander_familyName] = REDIS_GAME_SESSION_commander_familyName_str,
-    [REDIS_GAME_SESSION_commander_unk1] = REDIS_GAME_SESSION_commander_unk1_str,
-    [REDIS_GAME_SESSION_commander_unk2] = REDIS_GAME_SESSION_commander_unk2_str,
-    [REDIS_GAME_SESSION_commander_unk3] = REDIS_GAME_SESSION_commander_unk3_str,
     [REDIS_GAME_SESSION_commander_accountId] = REDIS_GAME_SESSION_commander_accountId_str,
     [REDIS_GAME_SESSION_commander_classId] = REDIS_GAME_SESSION_commander_classId_str,
     [REDIS_GAME_SESSION_commander_unk4] = REDIS_GAME_SESSION_commander_unk4_str,
@@ -47,8 +44,7 @@ const char *redisGameSessionsStr [] = {
     [REDIS_GAME_SESSION_commander_level] = REDIS_GAME_SESSION_commander_level_str,
     [REDIS_GAME_SESSION_commander_hairType] = REDIS_GAME_SESSION_commander_hairType_str,
     [REDIS_GAME_SESSION_commander_unk6] = REDIS_GAME_SESSION_commander_unk6_str,
-
-    // Equipment
+    // Equipment session
     [REDIS_GAME_SESSION_equipment_head_top] = REDIS_GAME_SESSION_equipment_head_top_str,
     [REDIS_GAME_SESSION_equipment_head_middle] = REDIS_GAME_SESSION_equipment_head_middle_str,
     [REDIS_GAME_SESSION_equipment_itemUnk1] = REDIS_GAME_SESSION_equipment_itemUnk1_str,
@@ -69,16 +65,15 @@ const char *redisGameSessionsStr [] = {
     [REDIS_GAME_SESSION_equipment_ring_left] = REDIS_GAME_SESSION_equipment_ring_left_str,
     [REDIS_GAME_SESSION_equipment_ring_right] = REDIS_GAME_SESSION_equipment_ring_right_str,
     [REDIS_GAME_SESSION_equipment_necklace] = REDIS_GAME_SESSION_equipment_necklace_str,
-
-    // Commander info
+    // Commander Info session
     [REDIS_GAME_SESSION_info_posX] = REDIS_GAME_SESSION_info_posX_str,
     [REDIS_GAME_SESSION_info_posY] = REDIS_GAME_SESSION_info_posY_str,
     [REDIS_GAME_SESSION_info_posZ] = REDIS_GAME_SESSION_info_posZ_str,
     [REDIS_GAME_SESSION_info_currentXP] = REDIS_GAME_SESSION_info_currentXP_str,
     [REDIS_GAME_SESSION_info_maxXP] = REDIS_GAME_SESSION_info_maxXP_str,
+    [REDIS_GAME_SESSION_info_pcId] = REDIS_GAME_SESSION_info_pcId_str,
+    [REDIS_GAME_SESSION_info_socialInfoId] = REDIS_GAME_SESSION_info_socialInfoId_str,
     [REDIS_GAME_SESSION_info_commanderId] = REDIS_GAME_SESSION_info_commanderId_str,
-    [REDIS_GAME_SESSION_info_zoneServerId] = REDIS_GAME_SESSION_info_zoneServerId_str,
-    [REDIS_GAME_SESSION_info_zoneServerId2] = REDIS_GAME_SESSION_info_zoneServerId2_str,
     [REDIS_GAME_SESSION_info_currentHP] = REDIS_GAME_SESSION_info_currentHP_str,
     [REDIS_GAME_SESSION_info_maxHP] = REDIS_GAME_SESSION_info_maxHP_str,
     [REDIS_GAME_SESSION_info_currentSP] = REDIS_GAME_SESSION_info_currentSP_str,
@@ -103,17 +98,17 @@ Redis_getGameSession (
 
     reply = Redis_commandDbg (self,
         "HMGET zone%x:map%x:acc%llx"
-        " " REDIS_GAME_SESSION_socketId_str
-        " " REDIS_GAME_SESSION_pcId_str
-        " " REDIS_GAME_SESSION_mapId_str
-        " " REDIS_GAME_SESSION_charactersBarrackCount_str
-        " " REDIS_GAME_SESSION_accountLogin_str
-
+        /** Keep these fields in the same order than the RedisGameSessionFields fields one */
+        // Account
+        " " REDIS_GAME_SESSION_account_login_str
+        " " REDIS_GAME_SESSION_account_sessionKey_str
+        " " REDIS_GAME_SESSION_account_privilege_str
+        // Barrack
+        " " REDIS_GAME_SESSION_barrack_charactersCreatedCount_str
+        // Commander
+        " " REDIS_GAME_SESSION_commander_mapId_str
         " " REDIS_GAME_SESSION_commander_commanderName_str
         " " REDIS_GAME_SESSION_commander_familyName_str
-        " " REDIS_GAME_SESSION_commander_unk1_str
-        " " REDIS_GAME_SESSION_commander_unk2_str
-        " " REDIS_GAME_SESSION_commander_unk3_str
         " " REDIS_GAME_SESSION_commander_accountId_str
         " " REDIS_GAME_SESSION_commander_classId_str
         " " REDIS_GAME_SESSION_commander_unk4_str
@@ -123,7 +118,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_commander_level_str
         " " REDIS_GAME_SESSION_commander_hairType_str
         " " REDIS_GAME_SESSION_commander_unk6_str
-
+        // Equipment
         " " REDIS_GAME_SESSION_equipment_head_top_str
         " " REDIS_GAME_SESSION_equipment_head_middle_str
         " " REDIS_GAME_SESSION_equipment_itemUnk1_str
@@ -144,15 +139,15 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_equipment_ring_left_str
         " " REDIS_GAME_SESSION_equipment_ring_right_str
         " " REDIS_GAME_SESSION_equipment_necklace_str
-
+        // Commander Info
         " " REDIS_GAME_SESSION_info_posX_str
         " " REDIS_GAME_SESSION_info_posY_str
         " " REDIS_GAME_SESSION_info_posZ_str
         " " REDIS_GAME_SESSION_info_currentXP_str
         " " REDIS_GAME_SESSION_info_maxXP_str
+        " " REDIS_GAME_SESSION_info_pcId_str
+        " " REDIS_GAME_SESSION_info_socialInfoId_str
         " " REDIS_GAME_SESSION_info_commanderId_str
-        " " REDIS_GAME_SESSION_info_zoneServerId_str
-        " " REDIS_GAME_SESSION_info_zoneServerId2_str
         " " REDIS_GAME_SESSION_info_currentHP_str
         " " REDIS_GAME_SESSION_info_maxHP_str
         " " REDIS_GAME_SESSION_info_currentSP_str
@@ -201,23 +196,23 @@ Redis_getGameSession (
             }
 
             /// Write the reply to the session
-            CommanderInfo *cInfo = &gameSession->commanderSession.currentCommander;
+            CommanderSession *commanderSession = &gameSession->commanderSession;
+            CommanderInfo *cInfo = &commanderSession->currentCommander;
             Commander *commander = &cInfo->base;
             CommanderEquipment *equipment = &commander->equipment;
 
-            // Session
-            COPY_REDIS_STR (gameSession->accountSession.sessionKey, socketId);
-            gameSession->commanderSession.pcId = GET_REDIS_32 (pcId);
-            gameSession->commanderSession.mapId = GET_REDIS_32 (mapId);
-            gameSession->barrackSession.charactersCreatedCount = GET_REDIS_32 (charactersBarrackCount);
-            COPY_REDIS_STR (gameSession->accountSession.accountLogin, accountLogin);
+            // Account
+            COPY_REDIS_STR (gameSession->accountSession.login, account_login);
+            COPY_REDIS_STR (gameSession->accountSession.sessionKey, account_sessionKey);
+            gameSession->accountSession.privilege = GET_REDIS_32 (account_privilege);
+
+            // Barrack
+            gameSession->barrackSession.charactersCreatedCount = GET_REDIS_32 (barrack_charactersCreatedCount);
 
             // Commander
+            commanderSession->mapId = GET_REDIS_32 (commander_mapId);
             COPY_REDIS_STR (commander->commanderName, commander_commanderName);
             COPY_REDIS_STR (commander->familyName, commander_familyName);
-            commander->unk1      = GET_REDIS_32 (commander_unk1);
-            commander->unk2      = GET_REDIS_32 (commander_unk2);
-            commander->unk3      = GET_REDIS_32 (commander_unk3);
             commander->accountId = GET_REDIS_64 (commander_accountId);
             commander->classId   = GET_REDIS_32 (commander_classId);
             commander->unk4      = GET_REDIS_32 (commander_unk4);
@@ -255,9 +250,9 @@ Redis_getGameSession (
             cInfo->pos.z = GET_REDIS_FLOAT (info_posZ);
             cInfo->currentXP = GET_REDIS_32 (info_currentXP);
             cInfo->maxXP = GET_REDIS_32 (info_maxXP);
-            cInfo->commanderId = GET_REDIS_32 (info_commanderId);
-            cInfo->zoneServerId = GET_REDIS_64 (info_zoneServerId);
-            cInfo->zoneServerId2 = GET_REDIS_64 (info_zoneServerId2);
+            cInfo->pcId = GET_REDIS_32 (info_pcId);
+            cInfo->socialInfoId = GET_REDIS_64 (info_socialInfoId);
+            cInfo->commanderId = GET_REDIS_64 (info_commanderId);
             cInfo->currentHP = GET_REDIS_32 (info_currentHP);
             cInfo->maxHP = GET_REDIS_32 (info_maxHP);
             cInfo->currentSP = GET_REDIS_32 (info_currentSP);
@@ -336,17 +331,16 @@ Redis_updateGameSession (
 
     reply = Redis_commandDbg (self,
         "HMSET zone%x:map%x:acc%llx"
-        " " REDIS_GAME_SESSION_socketId_str " %s"
-        " " REDIS_GAME_SESSION_pcId_str " %x"
-        " " REDIS_GAME_SESSION_mapId_str " %x"
-        " " REDIS_GAME_SESSION_charactersBarrackCount_str " %x"
-        " " REDIS_GAME_SESSION_accountLogin_str " %s"
-
+        // Account
+        " " REDIS_GAME_SESSION_account_sessionKey_str " %s"
+        " " REDIS_GAME_SESSION_account_login_str " %s"
+        " " REDIS_GAME_SESSION_account_privilege_str " %x"
+        // Barrack
+        " " REDIS_GAME_SESSION_barrack_charactersCreatedCount_str " %x"
+        // Commander
+        " " REDIS_GAME_SESSION_commander_mapId_str " %x"
         " " REDIS_GAME_SESSION_commander_commanderName_str " %s"
         " " REDIS_GAME_SESSION_commander_familyName_str " %s"
-        " " REDIS_GAME_SESSION_commander_unk1_str " %x"
-        " " REDIS_GAME_SESSION_commander_unk2_str " %x"
-        " " REDIS_GAME_SESSION_commander_unk3_str " %x"
         " " REDIS_GAME_SESSION_commander_accountId_str " %llx"
         " " REDIS_GAME_SESSION_commander_classId_str " %x"
         " " REDIS_GAME_SESSION_commander_unk4_str " %x"
@@ -356,7 +350,7 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_level_str " %x"
         " " REDIS_GAME_SESSION_commander_hairType_str " %x"
         " " REDIS_GAME_SESSION_commander_unk6_str " %x"
-
+        // Equipment
         " " REDIS_GAME_SESSION_equipment_head_top_str " %x"
         " " REDIS_GAME_SESSION_equipment_head_middle_str " %x"
         " " REDIS_GAME_SESSION_equipment_itemUnk1_str " %x"
@@ -377,15 +371,15 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_equipment_ring_left_str " %x"
         " " REDIS_GAME_SESSION_equipment_ring_right_str " %x"
         " " REDIS_GAME_SESSION_equipment_necklace_str " %x"
-
+        // Commander Info
         " " REDIS_GAME_SESSION_info_posX_str " %f"
         " " REDIS_GAME_SESSION_info_posY_str " %f"
         " " REDIS_GAME_SESSION_info_posZ_str " %f"
         " " REDIS_GAME_SESSION_info_currentXP_str " %x"
         " " REDIS_GAME_SESSION_info_maxXP_str " %x"
-        " " REDIS_GAME_SESSION_info_commanderId_str " %x"
-        " " REDIS_GAME_SESSION_info_zoneServerId_str " %llx"
-        " " REDIS_GAME_SESSION_info_zoneServerId2_str " %llx"
+        " " REDIS_GAME_SESSION_info_pcId_str " %x"
+        " " REDIS_GAME_SESSION_info_socialInfoId_str " %llx"
+        " " REDIS_GAME_SESSION_info_commanderId_str " %llx"
         " " REDIS_GAME_SESSION_info_currentHP_str " %x"
         " " REDIS_GAME_SESSION_info_maxHP_str " %x"
         " " REDIS_GAME_SESSION_info_currentSP_str " %x"
@@ -394,22 +388,18 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_info_maxStamina_str " %x"
         " " REDIS_GAME_SESSION_info_unk6_str " %x"
         " " REDIS_GAME_SESSION_info_unk7_str " %x"
-
         , key->routerId, key->mapId, key->accountId,
 
-        // Session
+        // Account
         gameSession->accountSession.sessionKey,
-        gameSession->commanderSession.pcId,
-        gameSession->commanderSession.mapId,
+        gameSession->accountSession.login,
+        gameSession->accountSession.privilege,
+        // Barrack
         gameSession->barrackSession.charactersCreatedCount,
-        gameSession->accountSession.accountLogin,
-
         // Commander
+        gameSession->commanderSession.mapId,
         CHECK_REDIS_EMPTY_STRING (commander->commanderName),
         CHECK_REDIS_EMPTY_STRING (commander->familyName),
-        commander->unk1,
-        commander->unk2,
-        commander->unk3,
         key->accountId,
         commander->classId,
         commander->unk4,
@@ -448,9 +438,9 @@ Redis_updateGameSession (
         cInfo->pos.z,
         cInfo->currentXP,
         cInfo->maxXP,
+        cInfo->pcId,
+        cInfo->socialInfoId,
         cInfo->commanderId,
-        cInfo->zoneServerId,
-        cInfo->zoneServerId2,
         cInfo->currentHP,
         cInfo->maxHP,
         cInfo->currentSP,
@@ -509,7 +499,7 @@ Redis_moveGameSession (
         "zone%x:map%x:acc%llx "
         "zone%x:map%x:acc%llx",
         from->routerId, from->mapId, from->accountId,
-        to->routerId,   to->mapId,   to->accountId
+          to->routerId,   to->mapId,   to->accountId
     );
 
     if (!reply) {
@@ -604,7 +594,7 @@ Redis_getClientsWithinDistance (
                     posReply = Redis_commandDbg (self,
                         "HMGET %s " REDIS_GAME_SESSION_info_posX_str
                                 " " REDIS_GAME_SESSION_info_posZ_str // Get position
-                                " " REDIS_GAME_SESSION_socketId_str, // SocketKey
+                                " " REDIS_GAME_SESSION_account_sessionKey_str, // SocketKey
                         reply->element[1]->element[i]->str // account key
                     );
 

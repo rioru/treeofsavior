@@ -204,7 +204,6 @@ ZoneBuilder_buffList (
  */
 void
 ZoneBuilder_enterPc (
-    uint32_t pcId,
     CommanderInfo *commanderInfo,
     zmsg_t *replyMsg
 );

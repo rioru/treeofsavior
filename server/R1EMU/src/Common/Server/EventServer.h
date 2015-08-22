@@ -159,7 +159,6 @@ EventServer_destroy (
 /**
  * @brief Update the position of a client within the event server structures
  * @param self A pointer to an allocated EventServer.
- * @param pcId The PCID of the commander
  * @param mapId The mapId of the commander
  * @param targetSocketId The target socket ID of the client
  * @param commander The commander information of the client
@@ -170,7 +169,6 @@ EventServer_destroy (
 bool
 EventServer_updateClientPosition (
     EventServer *self,
-    uint32_t pcId,
     uint16_t mapId,
     uint8_t *targetSocketId,
     CommanderInfo *commander,

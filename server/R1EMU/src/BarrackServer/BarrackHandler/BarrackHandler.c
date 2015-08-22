@@ -74,7 +74,7 @@ BarrackHandler_login (
 ) {
     #pragma pack(push, 1)
     struct {
-        uint8_t accountLogin [ACCOUNT_SESSION_LOGIN_MAXSIZE];
+        uint8_t login [ACCOUNT_SESSION_LOGIN_MAXSIZE];
         uint8_t md5Password[17];
         uint8_t unk1[5];
     } *clientPacket = (void *) packet;
@@ -96,15 +96,15 @@ BarrackHandler_login (
     // Update the session
     // ===== Gives a fake admin account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
-    AccountSession_init (&session->game.accountSession, clientPacket->accountLogin, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    AccountSession_init (&session->game.accountSession, clientPacket->login, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
     // ==================================
     info ("AccountID %llx generated !", session->socket.accountId);
 
     BarrackBuilder_loginOk (
         session->socket.accountId,
-        session->game.accountSession.accountLogin,
+        session->game.accountSession.login,
         "*0FC621B82495C18DEC8D8D956C82297BEAAAA858",
-        session->game.accountSession.accountPrivilege,
+        session->game.accountSession.privilege,
         reply
     );
 
@@ -149,17 +149,16 @@ BarrackHandler_loginByPassport (
     // Update the session
     // ===== Gives a random account =====
     session->socket.accountId = R1EMU_generate_random64 (&self->seed);
-    AccountSession_init (&session->game.accountSession, session->game.accountSession.accountLogin, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
-    snprintf (session->game.accountSession.accountLogin, sizeof (session->game.accountSession.accountLogin), "%llX", session->socket.accountId);
+    AccountSession_init (&session->game.accountSession, session->game.accountSession.login, session->socket.sessionKey, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
+    snprintf (session->game.accountSession.login, sizeof (session->game.accountSession.login), "%llX", session->socket.accountId);
     // ==================================
-    info ("Account %s generated !", session->game.accountSession.accountLogin);
-    buffer_print (session->game.accountSession.accountLogin, 10, ">>>");
+    info ("Account %s generated !", session->game.accountSession.login);
 
     BarrackBuilder_loginOk (
         session->socket.accountId,
-        session->game.accountSession.accountLogin,
+        session->game.accountSession.login,
         "*0FC621B82495C18DEC8D8D956C82297BEAAAA858",
-        session->game.accountSession.accountPrivilege,
+        session->game.accountSession.privilege,
         reply
     );
 
@@ -233,7 +232,7 @@ BarrackHandler_startGame (
         zoneServerPort,
         session->game.commanderSession.mapId,
         clientPacket->commanderListId,
-        &ZoneServerId_decl (clientPacket->routerId, SWAP_UINT32 (0x3C010000)),
+        session->game.commanderSession.currentCommander.socialInfoId,
         false,
         reply
     );
@@ -365,6 +364,7 @@ BarrackHandler_barracknameChange (
     }
 
     CommanderInfo *commanderInfo = &session->game.commanderSession.currentCommander;
+    Commander *commander = &commanderInfo->base;
 
     // Check if the barrack name is not empty and contains only ASCII characters
     size_t barrackNameLen = strlen (clientPacket->barrackName);
@@ -380,11 +380,11 @@ BarrackHandler_barracknameChange (
     }
 
     // Update the session
-    strncpy (commanderInfo->base.familyName, clientPacket->barrackName, sizeof (commanderInfo->base.familyName));
+    strncpy (commander->familyName, clientPacket->barrackName, sizeof (commander->familyName));
 
     // Build the reply packet
     BarrackBuilder_barrackNameChange (
-        commanderInfo->base.familyName,
+        commander->familyName,
         reply
     );
 
@@ -440,12 +440,13 @@ BarrackHandler_commanderCreate (
     }
 
     CommanderInfo *commanderInfo = &session->game.commanderSession.currentCommander;
+    Commander *commander = &commanderInfo->base;
 
     // CharName
-    strncpy (commanderInfo->base.commanderName, clientPacket->commanderName, sizeof (commanderInfo->base.commanderName));
+    strncpy (commander->commanderName, clientPacket->commanderName, sizeof (commander->commanderName));
 
     // AccountID
-    commanderInfo->base.accountId = session->socket.accountId;
+    commander->accountId = session->socket.accountId;
 
     // JobID
     switch (clientPacket->jobId)
@@ -455,25 +456,25 @@ BarrackHandler_commanderCreate (
             return PACKET_HANDLER_ERROR;
         break;
         case COMMANDER_JOB_WARRIOR:
-            commanderInfo->base.classId = COMMANDER_CLASS_WARRIOR;
+            commander->classId = COMMANDER_CLASS_WARRIOR;
             break;
         case COMMANDER_JOB_ARCHER:
-            commanderInfo->base.classId = COMMANDER_CLASS_ARCHER;
+            commander->classId = COMMANDER_CLASS_ARCHER;
             break;
         case COMMANDER_JOB_MAGE:
-            commanderInfo->base.classId = COMMANDER_CLASS_MAGE;
+            commander->classId = COMMANDER_CLASS_MAGE;
             break;
         case COMMANDER_JOB_CLERIC:
-            commanderInfo->base.classId = COMMANDER_CLASS_CLERIC;
+            commander->classId = COMMANDER_CLASS_CLERIC;
             break;
     }
-    commanderInfo->base.jobId = clientPacket->jobId;
+    commander->jobId = clientPacket->jobId;
 
     // Gender
     switch (clientPacket->gender) {
         case COMMANDER_GENDER_MALE:
         case COMMANDER_GENDER_FEMALE:
-            commanderInfo->base.gender = clientPacket->gender;
+            commander->gender = clientPacket->gender;
             break;
 
         case COMMANDER_GENDER_BOTH:
@@ -489,15 +490,15 @@ BarrackHandler_commanderCreate (
     }
 
     // Hair type
-    commanderInfo->base.hairType = clientPacket->hairType;
+    commander->hairType = clientPacket->hairType;
 
     // PCID
-    session->game.commanderSession.pcId = R1EMU_generate_random (&self->seed);
-    info ("pcId generated : %x", session->game.commanderSession.pcId);
+    session->game.commanderSession.currentCommander.pcId = R1EMU_generate_random (&self->seed);
+    info ("PCID generated : %x", session->game.commanderSession.currentCommander.pcId);
 
     // CommanderID
-    commanderInfo->commanderId = R1EMU_generate_random (&self->seed);
-    info ("CommanderId generated : %x", commanderInfo->commanderId);
+    commanderInfo->commanderId = R1EMU_generate_random64 (&self->seed);
+    info ("CommanderID generated : %llx", commanderInfo->commanderId);
 
     // Position : Center of the barrack
     commanderInfo->pos = PositionXYZ_decl (27.0, 30.0, 29.0);
@@ -512,7 +513,7 @@ BarrackHandler_commanderCreate (
     CommanderCreateInfo commanderCreate = {
         .commander = commanderInfo->base,
         .mapId = session->game.commanderSession.mapId,
-        .zoneServerId = commanderInfo->zoneServerId,
+        .socialInfoId = commanderInfo->socialInfoId,
         .commanderPosition = session->game.barrackSession.charactersCreatedCount,
         .unk4 = SWAP_UINT32 (0),
         .unk5 = 0,

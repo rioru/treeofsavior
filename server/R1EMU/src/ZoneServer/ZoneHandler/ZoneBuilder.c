@@ -665,7 +665,6 @@ ZoneBuilder_campInfo (
 
 void
 ZoneBuilder_enterPc (
-    uint32_t pcId,
     CommanderInfo *commanderInfo,
     zmsg_t *replyMsg
 ) {
@@ -677,7 +676,7 @@ ZoneBuilder_enterPc (
         float unk1; // 0000803F
         uint32_t unk2; // 00000000
         uint16_t unk3; // 0000
-        ZoneServerId serverId; // EE2500003C010000
+        uint64_t socialInfoId; // EE2500003C010000
         uint8_t unk4; // 00
         float moveSpeed; // 0000F841
         uint32_t unk5; // 00000000
@@ -689,11 +688,11 @@ ZoneBuilder_enterPc (
         uint32_t maxStamina; // A8610000
         uint8_t unk6; // 00
         uint16_t unk7; // 0000
-        uint32_t unk8; // FFFFFFFF
-        uint32_t unk9; // 24B42B1B
+        uint32_t titleAchievmentId; // 24B42B1B
+        uint32_t unk9; // FFFFFFFF
         uint8_t unk10; // 00
         Commander commander;
-        uint8_t stringId [48+1]; // "None"
+        uint8_t partyName [48+1]; // "None"
     } replyPacket;
     #pragma pack(pop)
 
@@ -702,14 +701,14 @@ ZoneBuilder_enterPc (
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         ServerPacketHeader_init (&replyPacket.header, packetType);
-        replyPacket.pcId = pcId;
+        replyPacket.pcId = commanderInfo->pcId;
         replyPacket.position = commanderInfo->pos;
         replyPacket.unk1 = 1.0f;
         replyPacket.unk2 = 0;
         replyPacket.unk3 = 0;
-        replyPacket.serverId = commanderInfo->zoneServerId;
+        replyPacket.socialInfoId = commanderInfo->socialInfoId;
         replyPacket.unk4 = 0;
-        replyPacket.moveSpeed = 1.0f;
+        replyPacket.moveSpeed = 31.0f;
         replyPacket.currentHP = commanderInfo->currentHP;
         replyPacket.maxHP = commanderInfo->maxHP;
         replyPacket.currentSP = commanderInfo->currentSP;
@@ -718,11 +717,11 @@ ZoneBuilder_enterPc (
         replyPacket.maxStamina = commanderInfo->maxStamina;
         replyPacket.unk6 = 0;
         replyPacket.unk7 = 0;
-        replyPacket.unk8 = -1;
-        replyPacket.unk9 = SWAP_UINT32 (0x24B42B1B);
+        replyPacket.titleAchievmentId = SWAP_UINT32 (0xA1860100); // ICBT, "Hunter"
+        replyPacket.unk9 = -1;
         replyPacket.unk10 = 0;
         memcpy (&replyPacket.commander, &commanderInfo->base, sizeof (replyPacket.commander));
-        strncpy (replyPacket.stringId, "None", sizeof (replyPacket.stringId));
+        strncpy (replyPacket.partyName, "None", sizeof (replyPacket.partyName));
     }
 
     size_t memSize1;
@@ -1544,7 +1543,7 @@ ZoneBuilder_jump (
         replyPacket.pcId = targetPcId;
         replyPacket.height = height;
         replyPacket.unk1 = 0;
-        replyPacket.unk2 = 1;
+        replyPacket.unk2 = 0;
     }
 }
 

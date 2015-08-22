@@ -87,8 +87,8 @@ void *dumpToMem (
  */
 void
 compareMem (
-    uint8_t *mem1,
+    void *_mem1,
     size_t memSize1,
-    uint8_t *mem2,
+    void *_mem2,
     size_t memSize2
 );

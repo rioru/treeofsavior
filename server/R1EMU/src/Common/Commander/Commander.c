@@ -54,15 +54,12 @@ Commander_init (
 ) {
     memset (commander, 0, sizeof (*commander));
 
-    commander->unk1 = SWAP_UINT32 (0x322C202D); // ICBT
-    commander->unk2 = 0x34; // ICBT
-    commander->unk3 = SWAP_UINT16 (0x2C20); // ICBT
     commander->accountId = -1;
     commander->classId = 0x2715; // Cleric
-    commander->unk4 = SWAP_UINT16 (0x2220); // ICBT
+    commander->unk4 = 0; // ICBT
     commander->jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT
     commander->gender = 2;
-    commander->unk5 = 0x4A; // ICBT
+    commander->unk5 = 0; // ICBT
     commander->level = 1;
     CommanderEquipment_init (&commander->equipment);
     commander->hairType = 0x10;
@@ -80,8 +77,8 @@ CommanderInfo_init (
     commanderInfo->pos = PositionXYZ_decl (27.0, 30.0, 29.0);
     commanderInfo->currentXP = 0;
     commanderInfo->maxXP = 0xC; // ICBT
-    commanderInfo->zoneServerId = ZoneServerId_decl (SWAP_UINT32 (0xEE250000), SWAP_UINT32 (0x3C010000));
-    commanderInfo->zoneServerId2 = commanderInfo->zoneServerId + 1;
+    commanderInfo->pcId = -1;
+    commanderInfo->socialInfoId = SWAP_UINT64 (0xEE2500003C010000);
     commanderInfo->commanderId = -1;
     commanderInfo->currentHP = 238;
     commanderInfo->maxHP = 238;
@@ -125,9 +122,6 @@ Commander_print (
 ) {
     dbg ("commanderName = %s", commander->commanderName);
     dbg ("familyName = %s", commander->familyName);
-    dbg ("unk1 = %d (%x)", commander->unk1, commander->unk1);
-    dbg ("unk2 = %d (%x)", commander->unk2, commander->unk2);
-    dbg ("unk3 = %d (%x)", commander->unk3, commander->unk3);
     dbg ("accountId = %llu (%llx)", commander->accountId, commander->accountId);
     dbg ("classId = %d (%x)", commander->classId, commander->classId);
     dbg ("unk4 = %d (%x)", commander->unk4, commander->unk4);
@@ -150,9 +144,8 @@ CommanderInfo_print (
          commanderInfo->pos.x, commanderInfo->pos.y, commanderInfo->pos.z);
     dbg ("currentXP = %d (%x)", commanderInfo->currentXP, commanderInfo->currentXP);
     dbg ("maxXP = %d (%x)", commanderInfo->maxXP, commanderInfo->maxXP);
-    dbg ("commanderId = %d (%x)", commanderInfo->commanderId, commanderInfo->commanderId);
-    dbg ("zoneServerId = %llu (%llx)", commanderInfo->zoneServerId, commanderInfo->zoneServerId);
-    dbg ("zoneServerId2 = %llu (%llx)", commanderInfo->zoneServerId2, commanderInfo->zoneServerId2);
+    dbg ("socialInfoId = %llu (%llx)", commanderInfo->socialInfoId, commanderInfo->socialInfoId);
+    dbg ("commanderId = %llu (%llx)", commanderInfo->commanderId, commanderInfo->commanderId);
     dbg ("currentHP = %d (%x)", commanderInfo->currentHP, commanderInfo->currentHP);
     dbg ("maxHP = %d (%x)", commanderInfo->maxHP, commanderInfo->maxHP);
     dbg ("currentSP = %d (%x)", commanderInfo->currentSP, commanderInfo->currentSP);

@@ -21,6 +21,7 @@
 // ---------- Defines -------------
 #define COMMANDER_NAME_SIZE 64
 #define COMMANDER_FAMILY_NAME_SIZE 64
+#define COMMANDER_HEIGHT_JUMP 350.0f
 
 // ------ Structure declaration -------
 
@@ -61,9 +62,7 @@ typedef struct Commander
 {
     uint8_t commanderName[COMMANDER_NAME_SIZE+1];
     uint8_t familyName[COMMANDER_FAMILY_NAME_SIZE];
-    uint32_t unk1;
-    uint8_t unk2;
-    uint16_t unk3;
+    uint8_t unk2[7];
     uint64_t accountId;
     uint16_t classId;
     uint16_t unk4;
@@ -82,9 +81,9 @@ typedef struct CommanderInfo
     PositionXYZ pos;
     uint32_t currentXP;
     uint32_t maxXP;
-    uint32_t commanderId;
-    ZoneServerId zoneServerId;
-    ZoneServerId zoneServerId2;
+    uint32_t pcId;
+    uint64_t socialInfoId;
+    uint64_t commanderId;
     uint32_t currentHP;
     uint32_t maxHP;
     uint16_t currentSP;
@@ -98,7 +97,7 @@ typedef struct CommanderInfo
 
 typedef struct CommanderCreateInfo {
     Commander commander;
-    ZoneServerId zoneServerId;
+    uint64_t socialInfoId;
     uint16_t commanderPosition;
     uint16_t mapId;
     uint32_t unk4;

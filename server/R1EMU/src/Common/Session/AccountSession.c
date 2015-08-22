@@ -42,15 +42,15 @@ AccountSession_new (
 bool
 AccountSession_init (
     AccountSession *self,
-    uint8_t *accountLogin,
+    uint8_t *login,
     uint8_t *socketId,
-    AccountSessionPrivileges accountPrivilege
+    AccountSessionPrivileges privilege
 ) {
     memset (self, 0, sizeof (AccountSession));
 
-    memcpy (self->accountLogin, accountLogin, sizeof (self->accountLogin));
+    memcpy (self->login, login, sizeof (self->login));
     memcpy (self->sessionKey, socketId, sizeof (self->sessionKey));
-    self->accountPrivilege = accountPrivilege;
+    self->privilege = privilege;
 
     return true;
 }

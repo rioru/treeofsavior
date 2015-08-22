@@ -41,13 +41,13 @@ typedef enum AccountSessionPrivileges {
 struct AccountSession
 {
     /** The account login */
-    uint8_t accountLogin [ACCOUNT_SESSION_LOGIN_MAXSIZE];
+    uint8_t login [ACCOUNT_SESSION_LOGIN_MAXSIZE];
 
     /** Session key */
     uint8_t sessionKey [SOCKET_SESSION_ID_SIZE];
 
     /** Account privilege level */
-    AccountSessionPrivileges accountPrivilege;
+    AccountSessionPrivileges privilege;
 };
 
 typedef struct AccountSession AccountSession;

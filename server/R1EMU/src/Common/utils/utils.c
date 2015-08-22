@@ -81,12 +81,16 @@ void *dumpToMem (
 
 void
 compareMem (
-    uint8_t *mem1,
+    void *_mem1,
     size_t memSize1,
-    uint8_t *mem2,
+    void *_mem2,
     size_t memSize2
 ) {
     size_t min = (memSize1 < memSize2) ? memSize1 : memSize2;
+    uint8_t *mem1 = _mem1;
+    uint8_t *mem2 = _mem2;
+
+    dbg ("Compare mem : %p (%d bytes) VS %p (%d bytes)", mem1, memSize1, mem2, memSize2);
 
     for (int i = 0; i < min; i++) {
         // Hex Dump
