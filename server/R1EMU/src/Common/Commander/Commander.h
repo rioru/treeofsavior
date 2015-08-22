@@ -72,7 +72,7 @@ typedef struct Commander
     uint32_t level;
     CommanderEquipment equipment;
     uint16_t hairType;
-    uint16_t unk6;
+    uint16_t pose;
 }   Commander;
 
 typedef struct CommanderInfo

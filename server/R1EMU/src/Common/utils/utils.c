@@ -100,28 +100,46 @@ compareMem (
             info_red ("%.02X ", mem1[i]);
         }
 
-        if (i % 16 == 15) {
+        if (i == min-1) {
+            for (int j = 0; j < abs ((min%16) - 16) ; j++) {
+                info_white ("   ");
+            }
+        }
+
+        if (i % 16 == 15 || i == min-1) {
             // ASCII Dump
             info_white ("| ");
-            for (int j = i-15; j <= i; j++) {
+            int bytesToDisplay = i % 16;
+            for (int j = i-bytesToDisplay; j <= i; j++) {
                 if (mem1[j] == mem2[j]) {
                     info_green ("%c", isprint (mem1[j]) ? mem1[j] : '.');
                 } else {
                     info_red ("%c", isprint (mem1[j]) ? mem1[j] : '.');
                 }
             }
+            if (i == min-1) {
+                for (int j = 0; j < abs ((min%16) - 16) ; j++) {
+                    info_white (" ");
+                }
+            }
             info_white (" || ");
 
             // Buffer 2 Hex dump
-            for (int j = i-15; j <= i; j++) {
+            for (int j = i-bytesToDisplay; j <= i; j++) {
                 if (mem1[j] == mem2[j]) {
                     info_green ("%.02X ", mem2[j]);
                 } else {
                     info_red ("%.02X ", mem2[j]);
                 }
             }
+            if (i == min-1) {
+                for (int j = 0; j < abs ((min%16) - 16) ; j++) {
+                    info_white ("   ");
+                }
+            }
+            info_white ("| ");
             // Buffer 2 ASCII dump
-            for (int j = i-15; j <= i; j++) {
+            for (int j = i-bytesToDisplay; j <= i; j++) {
                 if (mem1[j] == mem2[j]) {
                     info_green ("%c", isprint (mem2[j]) ? mem2[j] : '.');
                 } else {

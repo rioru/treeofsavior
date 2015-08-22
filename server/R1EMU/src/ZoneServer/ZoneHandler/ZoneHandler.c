@@ -474,7 +474,6 @@ ZoneHandler_gameReady (
 ) {
     CommanderInfo *commanderInfo = &session->game.commanderSession.currentCommander;
 
-    /*
     ZoneBuilder_itemInventoryList (replyMsg);
     ZoneBuilder_sessionObjects (replyMsg);
     ZoneBuilder_optionList (replyMsg);
@@ -483,24 +482,27 @@ ZoneHandler_gameReady (
     ZoneBuilder_chatMacroList (replyMsg);
     ZoneBuilder_uiInfoList (replyMsg);
     ZoneBuilder_npcStateList (replyMsg);
+
     ZoneBuilder_helpList (replyMsg);
     ZoneBuilder_myPageMap (replyMsg);
     ZoneBuilder_guestPageMap (replyMsg);
-    */
     ZoneBuilder_startInfo (replyMsg);
-    // ZoneBuilder_itemEquipList (replyMsg);
-    // ZoneBuilder_skillList (session->game.pcId, replyMsg);
-    // ZoneBuilder_abilityList (session->game.pcId, replyMsg);
-    // ZoneBuilder_cooldownList (replyMsg);
+
+    ZoneBuilder_itemEquipList (replyMsg);
+    // ZoneBuilder_skillList (session->game.commanderSession.currentCommander.pcId, replyMsg);
+    ZoneBuilder_abilityList (session->game.commanderSession.currentCommander.pcId, replyMsg);
+    ZoneBuilder_cooldownList (session->game.commanderSession.currentCommander.socialInfoId, replyMsg);
+
     ZoneBuilder_quickSlotList (replyMsg);
 
     /*
     ZoneBuilder_normalUnk1 (replyMsg);
     ZoneBuilder_normalUnk2 (replyMsg);
     ZoneBuilder_normalUnk3 (replyMsg);
-    ZoneBuilder_normalUnk4 (replyMsg);
+    ZoneBuilder_normalUnk4 (session->game.commanderSession.currentCommander.socialInfoId, replyMsg);
     ZoneBuilder_normalUnk5 (replyMsg);
     */
+
     ZoneBuilder_startGame (1.0, 0.0, 0.0, 0.0, replyMsg);
     /*
     ZoneBuilder_objectProperty (replyMsg);

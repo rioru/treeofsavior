@@ -73,7 +73,7 @@ BarrackBuilder_startGameOk (
     #pragma pack(push, 1)
     struct BcStartGameOkPacket {
         ServerPacketHeader header;
-        uint32_t zoneServerId;
+        uint32_t zoneServerId; // TODO : RouterID 16 -> 32
         uint32_t zoneServerIp;
         uint32_t zoneServerPort;
         uint32_t mapId;

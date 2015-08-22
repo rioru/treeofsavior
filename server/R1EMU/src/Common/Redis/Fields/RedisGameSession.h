@@ -43,7 +43,7 @@
 #define REDIS_GAME_SESSION_commander_unk5_str            "commander_unk5"
 #define REDIS_GAME_SESSION_commander_level_str           "commander_level"
 #define REDIS_GAME_SESSION_commander_hairType_str        "commander_hairType"
-#define REDIS_GAME_SESSION_commander_unk6_str            "commander_unk6"
+#define REDIS_GAME_SESSION_commander_pose_str            "commander_pose"
 
 // CommanderEquipment
 #define REDIS_GAME_SESSION_equipment_head_top_str        "equipment_head_top"
@@ -106,7 +106,7 @@ enum RedisGameSessionFields {
     REDIS_GAME_SESSION_commander_unk5,
     REDIS_GAME_SESSION_commander_level,
     REDIS_GAME_SESSION_commander_hairType,
-    REDIS_GAME_SESSION_commander_unk6,
+    REDIS_GAME_SESSION_commander_pose,
     // Equipment Session
     REDIS_GAME_SESSION_equipment_head_top,
     REDIS_GAME_SESSION_equipment_head_middle,

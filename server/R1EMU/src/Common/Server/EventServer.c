@@ -219,7 +219,7 @@ EventServer_handleEvent (
     }
 
     if (!result) {
-        error ("Event type = %d failed.");
+        error ("Event type = %d failed.", eventType);
         return false;
     }
 

@@ -55,15 +55,15 @@ Commander_init (
     memset (commander, 0, sizeof (*commander));
 
     commander->accountId = -1;
-    commander->classId = 0x2715; // Cleric
-    commander->unk4 = 0; // ICBT
-    commander->jobId = SWAP_UINT16 (0xA10F); // Cleric ; ICBT
-    commander->gender = 2;
+    commander->classId = -1; // Cleric
+    commander->unk4 = SWAP_UINT16 (0x2220); // ICBT
+    commander->jobId = -1;
+    commander->gender = -1;
     commander->unk5 = 0; // ICBT
     commander->level = 1;
     CommanderEquipment_init (&commander->equipment);
-    commander->hairType = 0x10;
-    commander->unk6 = SWAP_UINT16 (0x0020); // ICBT
+    commander->hairType = -1;
+    commander->pose = SWAP_UINT16 (0x0000); // Idle (ICBT)
 }
 
 void
@@ -78,7 +78,7 @@ CommanderInfo_init (
     commanderInfo->currentXP = 0;
     commanderInfo->maxXP = 0xC; // ICBT
     commanderInfo->pcId = -1;
-    commanderInfo->socialInfoId = SWAP_UINT64 (0xEE2500003C010000);
+    commanderInfo->socialInfoId = -1;
     commanderInfo->commanderId = -1;
     commanderInfo->currentHP = 238;
     commanderInfo->maxHP = 238;
@@ -131,7 +131,7 @@ Commander_print (
     dbg ("level = %d (%x)", commander->level, commander->level);
     CommanderEquipment_print (&commander->equipment);
     dbg ("hairType = %d (%x)", commander->hairType, commander->hairType);
-    dbg ("unk6 = %d (%x)", commander->unk6, commander->unk6);
+    dbg ("pose = %d (%x)", commander->pose, commander->pose);
 }
 
 void

@@ -63,7 +63,7 @@ struct _WorkerStartupInfo
     uint16_t workerId;
 
     /** The Server ID having authority on this worker */
-    uint16_t routerId;
+    uint32_t routerId;
 
     /** The server type of the current Worker */
     ServerType serverType;

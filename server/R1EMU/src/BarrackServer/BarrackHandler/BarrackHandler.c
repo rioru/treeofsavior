@@ -500,8 +500,12 @@ BarrackHandler_commanderCreate (
     commanderInfo->commanderId = R1EMU_generate_random64 (&self->seed);
     info ("CommanderID generated : %llx", commanderInfo->commanderId);
 
+    // SocialInfoID
+    commanderInfo->socialInfoId = R1EMU_generate_random64 (&self->seed);
+    info ("SocialInfoID generated : %llx", commanderInfo->socialInfoId);
+
     // Position : Center of the barrack
-    commanderInfo->pos = PositionXYZ_decl (27.0, 30.0, 29.0);
+    commanderInfo->pos = PositionXYZ_decl (19.0, 28.0, 29.0);
 
     // Default MapId : West Siauliai Woods
     session->game.commanderSession.mapId = 0x3FD;
@@ -510,19 +514,20 @@ BarrackHandler_commanderCreate (
     session->game.barrackSession.charactersCreatedCount++;
 
     // Build the reply packet
+    PositionXZ commanderDir = PositionXZ_decl (-0.707107f, 0.707107f);
     CommanderCreateInfo commanderCreate = {
         .commander = commanderInfo->base,
         .mapId = session->game.commanderSession.mapId,
         .socialInfoId = commanderInfo->socialInfoId,
         .commanderPosition = session->game.barrackSession.charactersCreatedCount,
-        .unk4 = SWAP_UINT32 (0),
+        .unk4 = SWAP_UINT32 (0x02000000), // ICBT
         .unk5 = 0,
-        .maxXP = 0xC, // ICBT
-        .unk6 = SWAP_UINT32 (0), // ICBT
+        .maxXP = 0xC, // ICBT ; TODO : Implement EXP table
+        .unk6 = SWAP_UINT32 (0xC01C761C), // ICBT
         .pos = commanderInfo->pos,
-        .dir = PositionXZ_decl (0.0f, 0.0f),
+        .dir = commanderDir,
         .pos2 = commanderInfo->pos,
-        .dir2 = PositionXZ_decl (0.0f, 0.0f),
+        .dir2 = commanderDir,
     };
     BarrackBuilder_commanderCreate (&commanderCreate, reply);
 

@@ -43,7 +43,7 @@ const char *redisGameSessionsStr [] = {
     [REDIS_GAME_SESSION_commander_unk5] = REDIS_GAME_SESSION_commander_unk5_str,
     [REDIS_GAME_SESSION_commander_level] = REDIS_GAME_SESSION_commander_level_str,
     [REDIS_GAME_SESSION_commander_hairType] = REDIS_GAME_SESSION_commander_hairType_str,
-    [REDIS_GAME_SESSION_commander_unk6] = REDIS_GAME_SESSION_commander_unk6_str,
+    [REDIS_GAME_SESSION_commander_pose] = REDIS_GAME_SESSION_commander_pose_str,
     // Equipment session
     [REDIS_GAME_SESSION_equipment_head_top] = REDIS_GAME_SESSION_equipment_head_top_str,
     [REDIS_GAME_SESSION_equipment_head_middle] = REDIS_GAME_SESSION_equipment_head_middle_str,
@@ -117,7 +117,7 @@ Redis_getGameSession (
         " " REDIS_GAME_SESSION_commander_unk5_str
         " " REDIS_GAME_SESSION_commander_level_str
         " " REDIS_GAME_SESSION_commander_hairType_str
-        " " REDIS_GAME_SESSION_commander_unk6_str
+        " " REDIS_GAME_SESSION_commander_pose_str
         // Equipment
         " " REDIS_GAME_SESSION_equipment_head_top_str
         " " REDIS_GAME_SESSION_equipment_head_middle_str
@@ -221,6 +221,7 @@ Redis_getGameSession (
             commander->unk5      = GET_REDIS_32 (commander_unk5);
             commander->level     = GET_REDIS_32 (commander_level);
             commander->hairType  = GET_REDIS_32 (commander_hairType);
+            commander->pose      = GET_REDIS_32 (commander_pose);
 
             // Equipment
             equipment->head_top    = GET_REDIS_32 (equipment_head_top);
@@ -349,7 +350,7 @@ Redis_updateGameSession (
         " " REDIS_GAME_SESSION_commander_unk5_str " %x"
         " " REDIS_GAME_SESSION_commander_level_str " %x"
         " " REDIS_GAME_SESSION_commander_hairType_str " %x"
-        " " REDIS_GAME_SESSION_commander_unk6_str " %x"
+        " " REDIS_GAME_SESSION_commander_pose_str " %x"
         // Equipment
         " " REDIS_GAME_SESSION_equipment_head_top_str " %x"
         " " REDIS_GAME_SESSION_equipment_head_middle_str " %x"
@@ -408,7 +409,7 @@ Redis_updateGameSession (
         commander->unk5,
         commander->level,
         commander->hairType,
-        commander->unk6,
+        commander->pose,
 
         // Equipment
         equipment->head_top,

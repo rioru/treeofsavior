@@ -860,8 +860,8 @@ ZoneBuilder_normalUnk5 (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 1D 00 15 01 00 00 8D FA 0D 00 | 0...............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  63 61 63 60 28 99 CF C8 C0 C8 00 06 00          | cac`(........\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  33 0D FF FF FF FF 1D 00 21 01 00 00 8D FA 0D 00 | 3.......!.......\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  7B A7 CA C0 60 C3 C8 C0 00 44 20 00 00          | {...`....D ..\n"
           , NULL, &memSize
         );
 
@@ -871,24 +871,29 @@ ZoneBuilder_normalUnk5 (
 
 void
 ZoneBuilder_normalUnk4 (
+    uint64_t socialInfoId,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         // Not yet implemented
-    } replyPacket;
+        PacketNormalHeader normalHeader;
+        uint64_t socialInfoId;
+    } replyPacket, *memory;
     (void) replyPacket;
     #pragma pack(pop)
 
     // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize;
-        void *memory = dumpToMem (
-            "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 2C 00 DF 00 00 00 04 06 00 00 | 0.....,.........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  74 9F 01 00 01 00 00 00 01 00 00 00 04 00 01 00 | t...............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 00 00 00 80 56 9E 10 83 7F D0 01             | .....V......\n"
+        memory = dumpToMem (
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  33 0D FF FF FF FF 2C 00 E6 00 00 00 EE 25 00 00 | 3.....,......%..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  3C 01 00 00 01 00 00 00 01 00 00 00 A1 0F 01 00 | <...............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 80 1D 61 60 E7 D2 D0 01             | ......a`....\n"
           , NULL, &memSize
         );
+
+        memory->socialInfoId = socialInfoId;
 
         zmsg_add (replyMsg, zframe_new (memory, memSize));
     }
@@ -909,7 +914,7 @@ ZoneBuilder_normalUnk3 (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 10 00 D2 00 00 00 00 00 00 00 | 0...............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  33 0D FF FF FF FF 10 00 D9 00 00 00 00 00 00 00 | 3...............\n"
           , NULL, &memSize
         );
 
@@ -932,8 +937,8 @@ ZoneBuilder_normalUnk2 (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF 18 00 C4 00 00 00 04 06 00 00 | 0...............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  74 9F 01 00 00 00 00 00                         | t.......\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  33 0D FF FF FF FF 18 00 CA 00 00 00 EE 25 00 00 | 3............%..\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  3C 01 00 00 00 00 00 00                         | <.......\n"
           , NULL, &memSize
         );
 
@@ -956,18 +961,8 @@ ZoneBuilder_normalUnk1 (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:10:20][           ToSClient:                     dbgBuffer]  30 0D FF FF FF FF BD 00 92 00 00 00 00 01 00 00 | 0...............\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 61 EA 00 00 E5 5E 00 00 79 9F 01 00 EC 28 00 | .a....^..y....(.\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 D1 91 01 00 D7 37 00 00 0A 00 EC 9A B0 EC AD | ......7.........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  88 EC AD 88 00 00 00 00 00 7E 00 40 17 00 00 E0 | .........~.@....\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  40 4F 11 00 00 D8 41 4E 11 00 00 D8 41 A5 00 00 | @O....AN....A...\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 E0 40 B0 00 00 C0 6B 44 A1 00 00 00 D0 41 F4 | ..@....kD.....A.\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  1D 00 00 00 00 05 1C 00 00 00 00 A3 16 00 00 D8 | ................\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  41 E7 1B 00 00 20 41 64 1E 00 00 00 00 E5 1B 00 | A.... Ad........\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  80 9A 43 EC 1B 00 00 50 41 EB 1B 00 00 00 40 03 | ..C....PA.....@.\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  1C 00 00 C0 40 0A 1C 00 00 E0 40 6A 17 00 00 A0 | ....@.....@j....\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  40 65 17 00 00 A0 40 62 00 00 00 F0 43 60 00 00 | @e....@b....C`..\n"
-            "[11:10:20][           ToSClient:                     dbgBuffer]  00 02 44 90 17 00 00 7A 44 00 00 00 00          | ..D....zD....\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  33 0D FF FF FF FF 11 00 97 00 00 00 00 00 00 00 | 3...............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00                                              | .\n"
           , NULL, &memSize
         );
 
@@ -1030,14 +1025,14 @@ ZoneBuilder_quickSlotList (
 
 void
 ZoneBuilder_cooldownList (
+    uint64_t socialInfoId,
     zmsg_t *replyMsg
 ) {
     #pragma pack(push, 1)
     struct {
         ServerPacketHeader header;
         uint16_t unk1;
-        uint32_t unk2;
-        uint32_t unk3;
+        uint64_t socialInfoId;
         uint32_t unk4;
     } replyPacket;
     #pragma pack(pop)
@@ -1047,9 +1042,8 @@ ZoneBuilder_cooldownList (
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         ServerPacketHeader_init (&replyPacket.header, packetType);
-        replyPacket.unk1 = 0x14;
-        replyPacket.unk2 = 0x604;
-        replyPacket.unk3 = 0x019F74;
+        replyPacket.unk1 = 0x14; // ICBT
+        replyPacket.socialInfoId = socialInfoId;
         replyPacket.unk4 = 0;
     }
 }
@@ -1064,7 +1058,6 @@ ZoneBuilder_abilityList (
         VariableSizePacketHeader variableSizeHeader;
         uint32_t pcId;
         uint16_t numberEntries;
-        uint8_t unk [48];
     } replyPacket;
     #pragma pack(pop)
 
@@ -1073,16 +1066,14 @@ ZoneBuilder_abilityList (
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
         size_t memSize = sizeof (replyPacket);
-        dumpToMem (                                                                              //   [--PcId---]
-            "[11:36:22][           ToSClient:                     dbgBuffer]  33 0C FF FF FF FF 3E 00 36 F8 01 00 03 00 8D FA | 3.....>.6.......\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  1C 00 7B 7F 99 81 61 F1 7C 46 06 41 75 06 20 F8 | ..{...a.|F.Au. .\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  CF F0 01 CA 17 87 F2 3F 42 F9 92 50 3E 00 F1 D3 | .......?B..P>...\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  00 00 A3 9F 01 00 19 27 00 00 00 00 FF 00       | .......'......\n"
+        dumpToMem (
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  35 0C FF FF FF FF 0E 00 A6 5F 0B 00 00 00       | 5........_....\n"
             , &replyPacket, &memSize
         );
 
         VariableSizePacketHeader_init (&replyPacket.variableSizeHeader, packetType, sizeof (replyPacket));
         replyPacket.pcId = targetPcId;
+        replyPacket.numberEntries = 0;
     }
 }
 
@@ -1096,37 +1087,19 @@ ZoneBuilder_skillList (
         VariableSizePacketHeader variableSizeHeader;
         uint32_t pcId;
         uint16_t skillCount;
-        uint8_t unk [318];
-    } replyPacket;
+        Zlib zlibData;
+    } replyPacket, *memory;
     #pragma pack(pop)
 
     BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        size_t memSize = sizeof (replyPacket);
-        dumpToMem (                                                                              //   [--PcId---]
-            "[11:45:10][           ToSClient:                     dbgBuffer]  31 0C FF FF FF FF 4C 01 36 F8 01 00 07 00 8D FA | 1.....L.6.......\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  3A 01 63 60 80 00 11 20 55 C1 A0 F4 0A C4 DB B4 | :.c`... U.......\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  D3 DB 3C 94 91 81 A1 C1 DE 03 48 32 30 B8 81 49 | ..<.......H20..I\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  1F 20 79 C2 C9 0F 48 3E 70 F4 07 92 09 8E 65 60 | . y...H>p.....e`\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  F1 24 20 F9 C1 B1 14 CC 2E 04 93 05 40 B2 C1 7E | .$ .........@..~\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  36 98 3D 17 4C AE 00 92 0E 0E C7 C0 EC E3 40 B2 | 6.=.L.........@.\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  C1 FE 04 98 7D 5F 02 64 FE 15 20 FB 84 D3 25 B0 | ....}_.d.. ...%.\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  08 88 0F 02 CC 40 5C C1 C0 B4 42 07 28 9A A7 6F | .....@....B.(..o\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  D2 8F 70 CF 34 67 74 F7 F0 38 A1 BB 87 C7 89 52 | ..p.4gt..8.....R\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  F7 2C 40 73 4F 0A D8 3D 0C 09 40 8A 41 AD FE 9F | .,@sO..=..@.A...\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  13 C2 3D 98 E1 A3 00 76 CF 01 A4 F0 39 41 B5 F0 | ..=....v....9A..\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  29 BC C9 C0 B0 78 3E 23 83 CB 1C 50 F8 2C 0F 04 | )....x>#...P.,..\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  B9 C7 28 7E 97 1D DC 3D 1F 82 DC D0 C3 87 81 01 | ..(~...=........\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  11 3E 0D F6 A0 F8 62 60 C0 1E 3E 0A 8E 88 F8 6A | .>....b`..>....j\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  00 C7 57 95 33 F6 F8 62 60 80 C4 57 01 D4 3D CE | ..W.3..b`..W..=.\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  60 F7 88 79 83 CC BE 5E CF F0 09 EE 9E 1B B6 EE | `..y...^........\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  D8 DD A3 00 0E 1F AA B9 C7 01 E2 9E 7C A8 7B 9C | ............|.{.\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  C0 EE 61 60 10 92 02 B9 A8 C1 1E E4 1E 07 07 60 | ..a`...........`\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  7A B6 38 4E 41 F8 AC 20 3A 7C 20 E9 D9 C1 D1 E5 | z.8NA.. :| .....\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  0A 24 BE 1C A1 EE 01 B9 06 C5 3D 06 7D A4 B9 C7 | .$........=.}...\n"
-            "[11:45:10][           ToSClient:                     dbgBuffer]  61 8E 2B 22 7F CD 20 D1 3D 3C 4E 00             | a.+... .=<N.\n"
-          , &replyPacket, &memSize
+        size_t memSize;
+        memory = dumpToMem (
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  33 0C FF FF FF FF 14 00 A6 5F 0B 00 00 00 8D FA | 3........_......\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  02 00 03 00                                     | ....\n"
+          , NULL, &memSize
         );
+        memory->pcId = targetPcId;
 
         /* Uncompressed :
             00000000 00000000 14000000 780022EA 00000000 B2B94B37 55010000 803F4801 00000000 46010000 00004C01 0000C842 4E010000 E0414F01 00006041 76010000 00006201 0000F041 75010000 00007101 00000000 70010000 803F9B01 00000000 9D010000 0000A801 00004040 C6010000 0000C701 0000803F C8010000 0000DF18 00000000 D4010000 C842D201 00000000
@@ -1302,38 +1275,24 @@ ZoneBuilder_helpList (
 ) {
     #pragma pack(push, 1)
     struct {
-        ServerPacketHeader header;
-        uint16_t unk1;
-
-        uint32_t nbEntries;
-
-        uint32_t unk3;
-        uint8_t  unk4;
-
-        uint32_t unk5;
-        uint8_t  unk6;
-
-        uint32_t unk7;
-        uint8_t  unk8;
+        // Not yet implemented
     } replyPacket;
+    (void) replyPacket;
     #pragma pack(pop)
 
-    PacketType packetType = ZC_HELP_LIST;
-    CHECK_SERVER_PACKET_SIZE (replyPacket, packetType);
-    BUILD_REPLY_PACKET (replyPacket, replyMsg)
+    // BUILD_REPLY_PACKET (replyPacket, replyMsg)
     {
-        ServerPacketHeader_init (&replyPacket.header, packetType);
-        replyPacket.unk1 = 0x1B;
-        replyPacket.nbEntries = 3;
+        size_t memSize;
+        void *memory = dumpToMem (
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  47 0D FF FF FF FF 48 00 0C 00 00 00 01 00 00 00 | G.....H.........\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 02 00 00 00 00 03 00 00 00 00 04 00 00 00 00 | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  09 00 00 00 00 0A 00 00 00 00 0E 00 00 00 00 0F | ................\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 00 1A 00 00 00 00 1C 00 00 00 00 27 00 | ..............'.\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  00 00 00 28 00 00 00 00                         | ...(....\n"
+          , NULL, &memSize
+        );
 
-        replyPacket.unk3 = 2;
-        replyPacket.unk4 = 0;
-
-        replyPacket.unk5 = 3;
-        replyPacket.unk6 = 0;
-
-        replyPacket.unk7 = 4;
-        replyPacket.unk8 = 0;
+        zmsg_add (replyMsg, zframe_new (memory, memSize));
     }
 }
 
@@ -1564,9 +1523,8 @@ ZoneBuilder_connectOk (
         uint16_t unk2;
         uint64_t unk3;
         uint8_t markers[3];
-        uint8_t passport[40];
+        uint8_t passport[41];
         uint32_t pcId;
-        uint8_t unk4;
         uint32_t unk5;
         CommanderInfo commander;
     } replyPacket;
@@ -1586,7 +1544,6 @@ ZoneBuilder_connectOk (
         memcpy (replyPacket.markers, "*\x00*", sizeof (replyPacket.markers));
         memcpy (replyPacket.passport, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", sizeof (replyPacket.passport));
         replyPacket.pcId = pcId;
-        replyPacket.unk4 = 0; // ICBT
         replyPacket.unk5 = 0; // ICBT
         // Copy the current commander information
         memcpy (&replyPacket.commander, commander, sizeof (replyPacket.commander));
@@ -1610,28 +1567,11 @@ ZoneBuilder_sessionObjects (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:15:14][           ToSClient:                     dbgBuffer]  89 0C FF FF FF FF 18 01 0A 00 D1 BF 0B 00 20 E0 | .............. .\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  02 93 05 D4 00 00 A3 9F 01 00 00 00 00 00 06 00 | ................\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  32 83 C4 0F 00 00 80 3F A0 3A 00 00 3A D7 80 17 | 2......?.:..:...\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  FE D3 00 00 A3 9F 01 00 00 00 00 00 00 00 D9 6C | ...............l\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  60 EA 00 00 C5 19 20 49 FD D3 00 00 A3 9F 01 00 | `..... I........\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 01 00 00 77 01 00 AF 03 00 00 | .........w......\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  FC D3 00 00 A3 9F 01 00 00 00 00 00 00 00 00 00 | ................\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  03 00 00 00 03 00 00 00 FB D3 00 00 A3 9F 01 00 | ................\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 A0 86 01 00 61 01 00 00 | ............a...\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  FA D3 00 00 A3 9F 01 00 00 00 00 00 00 00 18 1F | ................\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  81 38 01 00 01 00 00 00 F9 D3 00 00 A3 9F 01 00 | .8..............\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 00 00 18 73 01 00 60 D5 18 00 | .........s..`...\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  F8 D3 00 00 A3 9F 01 00 00 00 00 00 00 00 55 00 | ..............U.\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  80 38 01 00 13 D1 56 00 F7 D3 00 00 A3 9F 01 00 | .8....V.........\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  00 00 00 00 00 00 51 05 90 5F 01 00 74 D5 18 00 | ......Q.._..t...\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  F6 D3 00 00 A3 9F 01 00 00 00 00 00 18 00 3B 05 | ..............;.\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  3A 0A 00 00 96 43 41 0A 00 00 96 43 52 0A 00 00 | :....CA....CR...\n"
-            "[11:15:14][           ToSClient:                     dbgBuffer]  96 43 42 0A 00 00 96 43                         | .CB....C\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  2B 0C FF FF FF FF 12 00 00 00 00 00 8D FA 02 00 | +...............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  03 00                                           | ..\n"
             , NULL, &memSize
         );
 
-        replyPacket.variableSizeHeader.serverHeader.type = ZC_SESSION_OBJECTS;
         zmsg_add (replyMsg, zframe_new (memory, memSize));
     }
 }
@@ -1640,54 +1580,6 @@ void
 ZoneBuilder_itemInventoryList (
     zmsg_t *replyMsg
 ) {
-    /*
-    #pragma pack(push, 1)
-    typedef struct {
-        ServerPacketHeader header;
-        uint16_t unk1;
-        uint32_t unk2;
-        ZlibHeader zlibHeader;
-    } ZcItemInventoryList;
-    #pragma pack(pop)
-
-        Packet uncompressed : (this is only *one* packet once decompressed)
-
-        unk1     unk2     unk3
-        00D80900 06006172 BEE10000
-
-        id_unk1  id_unk2  unk4     unk5 unk6 unk7     id_unk4  unk8     id_unk5  unk9     unk10
-        A39F0100 01000000 00000000 439C 0000 6C756500 03100000 000050C4 09000600 382EFEDC 0000
-        A39F0100 07000000 00000000 3975 0000 352D3034 03100000 00001EC4 09000600 4279DEDC 0000
-        A39F0100 02000000 00000000 3575 0000 01000800 03100000 000019C4 09000600 0008CBDB 0000
-        A39F0100 05000000 00000000 3875 0000 000F0043 03100060 6A46FED7 09000600 6C00ECDA 0000
-        A39F0100 01000000 00000000 429C 0000 02003100 03100000 000067C4 09000600 EC82D4D8 0000
-        A39F0100 03000000 00000000 3775 0000 68616E67 03100060 EA461BC4 09000600 003442D5 0000
-        A39F0100 05000000 00000000 3675 0000 4F010000 03100060 EA46FDD7 09000600 0000CBD4 0000
-        A39F0100 03000000 00000000 419C 0000 0000B041 03100000 00001AC4 09000600 C601B8D4 0000
-        A39F0100 06000000 00000000 3475 0000 0000D401 03100000 0000ABBB 0D000600 0000B7D4 0000
-        A39F0100 30030000 00000000 F924 0100 55010000 03100000 00001CEB 09000600 0000F5D3 0000
-        A39F0100 01000000 00000000 61EA 0000 0000803F 0310007C 924961C4 09000600 7101F4D3 0000
-        A39F0100 01000000 00000000 3375 0000 0000A801 03100060 EA465EC4 09000600 0000F3D3 0000
-        A39F0100 07000000 00000000 3275 0000 D2010000 03100060 EA465BC4 09000600 0000F2D3 0000
-        A39F0100 07000000 00000000 3175 0000 00A08C47 03100060 EA468D11 03001800 4E010706 0000
-
-        749F0100 01000000 00000000 8913 0000 00007501 FA0F00F0 53458C10 0000A040 8D100000 8040A117 00000000
-    */
-
-    /*
-    uint8_t *stackBuffer = alloca (sizeof (*stackBuffer) * outPacketSize);
-    ZcItemInventoryList *replyPacket = (ZoneTrafficsPacket *) stackBuffer;
-
-    // Build the static part of the packet
-    replyPacket->type = ZC_ITEM_INVENTORY_LIST;
-
-    // Construct the packet stream
-    PacketStream stream;
-    PacketStream_init (&stream, (uint8_t *) replyPacket);
-    // Go to the end of the static size
-    PacketStream_addOffset (&stream, sizeof (ZcItemInventoryList));
-    */
-
     #pragma pack(push, 1)
     struct {
         // Not yet implemented
@@ -1701,28 +1593,8 @@ ZoneBuilder_itemInventoryList (
     {
         size_t memSize;
         void *memory = dumpToMem (
-            "[11:36:22][           ToSClient:                     dbgBuffer]  29 0C FF FF FF FF 60 01 0F 00 00 00 8D FA 50 01 | ).....`.......P.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  63 B8 C1 C9 C0 C6 90 58 B4 EF 21 03 C3 E2 F9 8C | c......X..!.....\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  0C 8C 0C 10 E0 3C 87 81 21 A7 34 95 81 59 00 C4 | .....<..!.4..Y..\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  0F 38 02 52 65 A1 F7 EF 0E 44 15 3B 44 11 83 65 | .8.Re....D.;D..e\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  29 03 83 A9 AE 81 09 44 95 1C 58 95 53 E5 3D A8 | )......D..X.S.=.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  2A 26 A8 2A 53 A0 2A 46 06 0E A8 59 92 60 55 0C | *&.*S.*F...Y.`U.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  1C A7 6F 43 CC 62 85 AA B2 00 AA 62 E0 67 70 06 | ..oC.b.....b.gp.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  9A 95 90 E5 F6 EF 3A C8 C6 1C 86 37 B7 50 DD E5 | ......:....7.P..\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  04 74 17 13 83 21 D4 AC 74 B0 59 6F 9A AE DC 80 | .t...!..t.Yo....\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  A8 62 86 9A 65 0E 34 2B 23 31 2F 1D 64 D6 2B 37 | .b..e.4+#1/.d.+7\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  69 88 8D 26 4E 57 51 6D 34 03 AA F2 07 7A 18 A2 | i..&NWQm4....z..\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  EA 2F D8 46 06 86 D3 57 50 CD 72 04 DA C8 C0 B0 | ./.F...WP.r.....\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  C1 11 E2 47 29 B0 59 C7 18 77 40 55 B1 41 6D 34 | ...G).Y..w@U.Am4\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  01 B9 9E E1 0A 23 44 D5 EA DD BC 40 D7 33 30 6C | .....#D....@.30l\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  87 AA 32 80 3A EC A7 0A 23 43 28 C4 46 A0 AC CC | ..2.:...#C(.F...\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  6B 90 1F 19 18 BE 5E 46 F5 63 E2 2B A0 20 43 83 | k.....^F.c.+. C.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  3D D0 AC 9A 49 9E 89 60 1B 0B 19 BF A0 A9 32 06 | =...I..`......2.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  DB B8 02 64 23 D0 8F 71 10 3F 32 7C 86 AA 82 C5 | ...d#..q.?2|....\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  90 11 50 D5 25 B8 1F A3 A1 AA 3E A1 A9 32 04 99 | ..P.%.....>..2..\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  B5 A0 C7 1D 62 56 AF 20 33 83 04 83 1F 23 3B D0 | ....bV. 3....#;.\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  71 25 48 69 A2 53 18 E4 AE 52 C6 5F FC 0C 1F 82 | q%Hi.S...R._....\n"
-            "[11:36:22][           ToSClient:                     dbgBuffer]  5D 7B 04 80 5A 1C 7A 81 64 83 C3 42 71 90 0C 00 | ]{..Z.z.d..Bq...\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  2B 0C FF FF FF FF 12 00 00 00 00 00 8D FA 02 00 | +...............\n"
+            "[03:07:36][main.c:56 in CNetUsr__PacketHandler_1]  03 00                                           | ..\n"
           , NULL, &memSize
         );
 
