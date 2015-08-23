@@ -14,6 +14,7 @@
 // ---------- Includes ------------
 #include "ZoneHandler.h"
 #include "ZoneBuilder.h"
+#include "AdminCmd.h"
 #include "Common/Packet/Packet.h"
 #include "Common/Redis/Fields/RedisGameSession.h"
 #include "Common/Redis/Fields/RedisSocketSession.h"
@@ -95,68 +96,28 @@ ZoneHandler_chat (
     size_t packetSize,
     zmsg_t *replyMsg
 ) {
+    // The first 2 bytes of ZC_CHAT are the packet size
+    size_t chatTextSize = *((uint16_t *) packet) - sizeof (ClientPacketHeader) - sizeof (uint16_t);
+
     #pragma pack(push, 1)
     struct {
         uint16_t msgSize;
-        uint8_t msgText [1];
+        uint8_t msgText [chatTextSize];
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
-    if (clientPacket->msgSize - 10 != packetSize) {
+    if (clientPacket->msgSize - sizeof (ClientPacketHeader) != packetSize) {
         error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (clientPacket->msgSize - 10));
+            packetSize, sizeof (clientPacket->msgSize - sizeof (ClientPacketHeader)));
 
         return PACKET_HANDLER_ERROR;
     }
 
     // Custom admin commands
-    if (session->game.accountSession.privilege <= ACCOUNT_SESSION_PRIVILEGES_ADMIN)
-    {
-        if (strncmp (clientPacket->msgText, "/cmd ", strlen ("/cmd ")) == 0)
-        {
-            char *command = clientPacket->msgText + strlen ("/cmd ");
-
-            if (strncmp (command, "spawn", strlen ("spawn")) == 0)
-            {
-                // Add a fake commander with a fake account
-                CommanderInfo fakePc;
-                CommanderInfo_init (&fakePc);
-
-                fakePc.pos = session->game.commanderSession.currentCommander.pos;
-                fakePc.base.accountId = R1EMU_generate_random64 (&self->seed);
-                fakePc.pcId = R1EMU_generate_random (&self->seed);
-                strncpy (fakePc.base.familyName, "Dummy", sizeof (fakePc.base.familyName));
-                strncpy (fakePc.base.commanderName, "Fake", sizeof (fakePc.base.commanderName));
-                ZoneBuilder_enterPc (&fakePc, replyMsg);
-
-                // Register the fake socket session
-                SocketSession fakeSocketSession;
-                uint64_t sessionKey = R1EMU_generate_random64 (&self->seed);
-                uint8_t sessionKeyStr [SOCKET_SESSION_ID_SIZE];
-                SocketSession_genSessionKey ((uint8_t *) &sessionKey, sessionKeyStr);
-                sprintf (sessionKeyStr, "%.10I64x", sessionKey);
-                SocketSession_init (&fakeSocketSession, fakePc.base.accountId, self->info.routerId, session->socket.mapId, sessionKeyStr, true);
-                RedisSocketSessionKey socketKey = {
-                    .routerId = self->info.routerId,
-                    .sessionKey = sessionKeyStr
-                };
-                Redis_updateSocketSession (self->redis, &socketKey, &fakeSocketSession);
-
-                // Register the fake game session
-                GameSession fakeGameSession;
-                GameSession_init (&fakeGameSession, &fakePc);
-                AccountSession_init (&fakeGameSession.accountSession, "DummyPC", sessionKeyStr, ACCOUNT_SESSION_PRIVILEGES_ADMIN);
-
-                RedisGameSessionKey gameKey = {
-                    .routerId  = fakeSocketSession.routerId,
-                    .mapId     = fakeSocketSession.mapId,
-                    .accountId = fakeSocketSession.accountId
-                };
-                Redis_updateGameSession (self->redis, &gameKey, sessionKeyStr, &fakeGameSession);
-
-                info ("Fake PC spawned. (SocketId=%s, Acc=%I64x, PcID=%#x)", sessionKeyStr, fakePc.base.accountId, fakePc.pcId);
-            }
-        }
+    if (session->game.accountSession.privilege <= ACCOUNT_SESSION_PRIVILEGES_ADMIN
+    && (strncmp (clientPacket->msgText, "/cmd ", sizeof (clientPacket->msgText)) == 0)
+    ) {
+        AdminCmd_process (self, clientPacket->msgText + strlen ("/cmd "), session, replyMsg);
     }
 
     return PACKET_HANDLER_OK;
