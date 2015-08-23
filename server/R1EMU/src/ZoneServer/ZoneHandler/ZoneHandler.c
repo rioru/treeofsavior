@@ -99,19 +99,19 @@ ZoneHandler_chat (
     // The first 2 bytes of ZC_CHAT are the packet size
     size_t chatTextSize = *((uint16_t *) packet) - sizeof (ClientPacketHeader) - sizeof (uint16_t);
 
-    if (chatTextSize - sizeof (ClientPacketHeader) != packetSize) {
-        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (chatTextSize - sizeof (ClientPacketHeader)));
-
-        return PACKET_HANDLER_ERROR;
-    }
-
     #pragma pack(push, 1)
     struct {
         uint16_t msgSize;
         uint8_t msgText [chatTextSize];
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
+
+    if (sizeof (*clientPacket) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (*clientPacket));
+
+        return PACKET_HANDLER_ERROR;
+    }
 
     // The chat message sent by the client should always finish by a null byte
     clientPacket->msgText [chatTextSize-1] = '\0';
@@ -124,8 +124,15 @@ ZoneHandler_chat (
     }
 
     else {
-        // Normal message
-
+        // Normal message : Dispatch a GameEventChat
+        size_t gameEventSize = sizeof (GameEventChat) + chatTextSize;
+        GameEventChat *event = alloca (gameEventSize);
+        event->pcId = session->game.commanderSession.currentCommander.pcId;
+        memcpy (event->sessionKey, session->socket.sessionKey, sizeof (event->sessionKey));
+        memcpy (event->familyName, session->game.commanderSession.currentCommander.base.familyName, sizeof (event->familyName));
+        memcpy (event->commanderName, session->game.commanderSession.currentCommander.base.commanderName, sizeof (event->commanderName));
+        memcpy (event->chatText, clientPacket->msgText, chatTextSize);
+        Worker_dispatchEvent (self, EVENT_SERVER_TYPE_CHAT, event, gameEventSize);
     }
 
     return PACKET_HANDLER_OK;

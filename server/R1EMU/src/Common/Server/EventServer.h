@@ -56,7 +56,8 @@ typedef enum EventServerType {
     EVENT_SERVER_TYPE_REST_SIT,
     EVENT_SERVER_TYPE_JUMP,
     EVENT_SERVER_TYPE_MOVE_STOP,
-    EVENT_SERVER_TYPE_ENTER_PC
+    EVENT_SERVER_TYPE_ENTER_PC,
+    EVENT_SERVER_TYPE_CHAT
 } EventServerType;
 
 // ------ Structure declaration -------
@@ -224,14 +225,14 @@ EventServerStartupInfo_init (
 /**
  * @brief Return a list of clients around a given player
  * @param self An allocated EventServer
- * @param socketId The player socketId
+ * @param sessionKey The player sessionKey
  * @param[out] _clients The result list of clients socketIds
  * @return true on success, false otherwise
  */
 bool
 EventServer_getClientsAround (
     EventServer *self,
-    uint8_t *socketId,
+    uint8_t *sessionKey,
     zlist_t **_clients
 );
 

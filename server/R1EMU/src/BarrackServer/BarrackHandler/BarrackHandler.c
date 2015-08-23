@@ -422,7 +422,7 @@ BarrackHandler_commanderCreate (
     #pragma pack(push, 1)
     struct {
         uint8_t charPosition;
-        uint8_t commanderName[COMMANDER_NAME_SIZE+1];
+        uint8_t commanderName [COMMANDER_NAME_SIZE+1];
         uint16_t jobId;
         uint8_t gender;
         float unk4;

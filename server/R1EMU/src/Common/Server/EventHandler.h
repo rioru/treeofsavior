@@ -26,6 +26,11 @@
 
 
 // ------ Structure declaration -------
+// TODO
+typedef struct {
+
+} GameEventUpdatePosition;
+
 typedef struct {
     uint16_t mapId;
     char sessionKey [SOCKET_SESSION_ID_SIZE];
@@ -62,6 +67,14 @@ typedef struct {
     CommanderInfo commanderInfo;
 } GameEventPcEnter;
 
+typedef struct {
+    uint32_t pcId;
+    char sessionKey [SOCKET_SESSION_ID_SIZE];
+    uint8_t familyName [COMMANDER_FAMILY_NAME_SIZE];
+    uint8_t commanderName [COMMANDER_NAME_SIZE];
+    uint8_t chatText [0]; // Variable length array
+} GameEventChat;
+
 
 // ----------- Functions ------------
 
@@ -75,6 +88,12 @@ bool
 EventHandler_moveStop (
     EventServer *self,
     GameEventMoveStop *eventData
+);
+
+bool
+EventHandler_chat (
+    EventServer *self,
+    GameEventChat *event
 );
 
 bool

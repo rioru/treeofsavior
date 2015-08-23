@@ -60,8 +60,8 @@ typedef struct CommanderEquipment {
 
 typedef struct Commander
 {
-    uint8_t commanderName[COMMANDER_NAME_SIZE+1];
-    uint8_t familyName[COMMANDER_FAMILY_NAME_SIZE];
+    uint8_t commanderName [COMMANDER_NAME_SIZE+1];
+    uint8_t familyName [COMMANDER_FAMILY_NAME_SIZE];
     uint8_t unk2[7];
     uint64_t accountId;
     uint16_t classId;

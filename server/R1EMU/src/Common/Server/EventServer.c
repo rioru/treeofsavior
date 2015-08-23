@@ -204,6 +204,10 @@ EventServer_handleEvent (
             result = EventHandler_restSit (self, eventData);
         } break;
 
+        case EVENT_SERVER_TYPE_CHAT : {
+            result = EventHandler_chat (self, eventData);
+        } break;
+
         case EVENT_SERVER_TYPE_ENTER_PC : {
             result = EventHandler_enterPc (self, eventData);
         } break;
@@ -559,7 +563,7 @@ EventServer_redisGetClientsWithinRange (
 bool
 EventServer_getClientsAround (
     EventServer *self,
-    uint8_t *socketId,
+    uint8_t *sessionKey,
     zlist_t **_clients
 ) {
     bool status = true;
@@ -573,9 +577,9 @@ EventServer_getClientsAround (
     }
     *_clients = clients;
 
-    // Get the node associated with the socketId
-    if (!(node = EventServer_getClientNode (self, socketId))) {
-        error ("Cannot get the node %s.", socketId);
+    // Get the node associated with the sessionKey
+    if (!(node = EventServer_getClientNode (self, sessionKey))) {
+        error ("Cannot get the node %s.", sessionKey);
         return NULL;
     }
 

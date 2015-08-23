@@ -42,6 +42,7 @@ EventHandler_enterPc (
     }
 
 cleanup:
+    zlist_destroy (&clientsAround);
     return status;
 }
 
@@ -133,6 +134,7 @@ EventHandler_moveStop (
     }
 
 cleanup:
+    zlist_destroy (&clientsAround);
     zmsg_destroy (&msg);
     return status;
 }
@@ -177,6 +179,52 @@ EventHandler_jump (
     }
 
 cleanup:
+    zlist_destroy (&clientsAround);
+    zmsg_destroy (&msg);
+    return status;
+}
+
+bool
+EventHandler_chat (
+    EventServer *self,
+    GameEventChat *event
+) {
+    bool status = true;
+    zmsg_t *msg = NULL;
+    zlist_t *clientsAround = NULL;
+
+    // Get the clients around
+    if (!EventServer_getClientsAround (self, event->sessionKey, &clientsAround)) {
+        error ("Cannot get clients within range");
+        status = false;
+        goto cleanup;
+    }
+
+    // Add itself in the senders list
+    zlist_append (clientsAround, event->sessionKey);
+
+    if (zlist_size (clientsAround) > 0)
+    {
+        // Build the packet for the clients around
+        msg = zmsg_new ();
+        ZoneBuilder_chat (
+            event->pcId,
+            event->familyName,
+            event->commanderName,
+            event->chatText,
+            msg
+        );
+        // Send the packet
+        zframe_t *frame = zmsg_first (msg);
+        if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
+            error ("Failed to send the packet to the clients.");
+            status = false;
+            goto cleanup;
+        }
+    }
+
+cleanup:
+    zlist_destroy (&clientsAround);
     zmsg_destroy (&msg);
     return status;
 }
@@ -216,6 +264,7 @@ EventHandler_restSit (
     }
 
 cleanup:
+    zlist_destroy (&clientsAround);
     zmsg_destroy (&msg);
     return status;
 }

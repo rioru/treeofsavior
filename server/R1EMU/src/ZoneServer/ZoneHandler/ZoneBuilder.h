@@ -490,6 +490,19 @@ ZoneBuilder_jump (
 
 
 /**
+ * Makes a normal chat message
+ */
+void
+ZoneBuilder_chat (
+    uint32_t targetPcId,
+    uint8_t *familyName,
+    uint8_t *commanderName,
+    uint8_t *chatText,
+    zmsg_t *replyMsg
+);
+
+
+/**
  * @brief @unknown Contains information about quest position ?
  */
 void
