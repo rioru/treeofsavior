@@ -208,6 +208,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="../../../src/SocialServer/SocialServer.h" />
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/AdminCmd.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../../src/ZoneServer/ZoneHandler/AdminCmd.h" />
 		<Unit filename="../../../src/ZoneServer/ZoneHandler/ZoneBuilder.c">
 			<Option compilerVar="CC" />
 		</Unit>
