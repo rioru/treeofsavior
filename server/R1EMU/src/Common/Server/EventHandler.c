@@ -147,7 +147,7 @@ EventHandler_jump (
         goto cleanup;
     }
 
-    // Add itself in the senders list
+    // Add itself in the clients list
     zlist_append (clientsAround, event->updatePosEvent.sessionKey);
 
     // Build the packet for the clients around
@@ -188,7 +188,7 @@ EventHandler_chat (
         goto cleanup;
     }
 
-    // Add itself in the senders list
+    // Add itself in the clients list
     zlist_append (clientsAround, event->sessionKey);
 
     // Build the packet for the clients around
@@ -230,7 +230,7 @@ EventHandler_restSit (
         goto cleanup;
     }
 
-    // Add itself in the senders list
+    // Add itself in the clients list
     zlist_append (clientsAround, event->sessionKey);
 
     // Build the packet for the clients around
