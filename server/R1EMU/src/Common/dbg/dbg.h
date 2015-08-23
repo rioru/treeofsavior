@@ -189,3 +189,26 @@ void
 dbg_close (
     void
 );
+
+
+// Crash handlers
+#ifdef WIN32
+LONG WINAPI
+crashHandler (
+    EXCEPTION_POINTERS *ExceptionInfo
+);
+#else
+#include <ucontext.h>
+#include <execinfo.h>
+void
+print_trace (
+    void
+);
+
+void
+crashHandler (
+    int sig,
+    siginfo_t *siginfo,
+    void *_context
+);
+#endif // WIN32

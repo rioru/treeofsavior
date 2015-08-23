@@ -22,57 +22,6 @@
 #include "Common/Server/EventServer.h"
 #include "Common/Server/ServerFactory.h"
 
-/* Crash handlers */
-
-#ifdef WIN32
-LONG WINAPI crashHandler (EXCEPTION_POINTERS *ExceptionInfo)
-{
-    DWORD exceptionCode = ExceptionInfo->ExceptionRecord->ExceptionCode;
-    uintptr_t ip = ExceptionInfo->ContextRecord->Rip;
-
-    die ("Application crashed at %p. Exception code = %x", ip, exceptionCode);
-
-    return EXCEPTION_EXECUTE_HANDLER;
-}
-#else
-#include <ucontext.h>
-#include <execinfo.h>
-
-void
-print_trace (void)
-{
-    void *array[20];
-    size_t size;
-    char **strings;
-
-    size = backtrace (array, sizeof_array (array));
-    strings = backtrace_symbols (array, size);
-
-    error ("Obtained %zd stack frames.", size);
-
-    for (size_t i = 0; i < size; i++) {
-        error ("Frame %d : %s", i, strings[i]);
-    }
-
-    error ("==================================");
-
-    free (strings);
-}
-
-void crashHandler (int sig, siginfo_t *siginfo, void *_context)
-{
-    int exceptionCode = siginfo->si_errno;
-    ucontext_t *context = (ucontext_t*) _context;
-    uintptr_t ip = context->uc_mcontext.gregs[REG_RIP];
-
-    if (sig == SIGABRT) {
-        print_trace ();
-    }
-
-    die ("Application crashed at %p. Exception code = %x", ip, exceptionCode);
-}
-#endif
-
 int main (int argc, char **argv)
 {
     if (argc <= 1) {
