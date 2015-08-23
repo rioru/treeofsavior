@@ -159,9 +159,6 @@ ZoneHandler_restSit (
         return PACKET_HANDLER_ERROR;
     }
 
-    // Make sit the current commander
-    ZoneBuilder_restSit (session->game.commanderSession.currentCommander.pcId, replyMsg);
-
     // Notify the players around
     GameEventRestSit event = {
         .pcId = session->game.commanderSession.currentCommander.pcId,
@@ -490,9 +487,9 @@ ZoneHandler_gameReady (
     // Notify players around that a new PC has entered
     GameEventPcEnter pcEnterEvent = {
         .mapId = session->socket.mapId,
-        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey),
+        .commanderInfo = *commanderInfo
     };
-    memcpy (&pcEnterEvent.commanderInfo, commanderInfo, sizeof (pcEnterEvent.commanderInfo));
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
     ZoneBuilder_enterPc (&pcEnterEvent.commanderInfo, replyMsg);
 
@@ -637,12 +634,6 @@ ZoneHandler_jump (
 
         return PACKET_HANDLER_ERROR;
     }
-
-    ZoneBuilder_jump (
-        session->game.commanderSession.currentCommander.pcId,
-        COMMANDER_HEIGHT_JUMP,
-        replyMsg
-    );
 
     // Notify the players around
     GameEventJump event = {

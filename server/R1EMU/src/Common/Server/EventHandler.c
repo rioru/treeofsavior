@@ -159,23 +159,23 @@ EventHandler_jump (
         goto cleanup;
     }
 
-    if (zlist_size (clientsAround) > 0)
-    {
-        // Build the packet for the clients around
-        msg = zmsg_new ();
-        ZoneBuilder_jump (
-            event->commanderInfo.pcId,
-            event->height,
-            msg
-        );
+    // Add itself in the senders list
+    zlist_append (clientsAround, event->sessionKey);
 
-        // Send the packet
-        zframe_t *frame = zmsg_first (msg);
-        if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
-            error ("Failed to send the packet to the clients.");
-            status = false;
-            goto cleanup;
-        }
+    // Build the packet for the clients around
+    msg = zmsg_new ();
+    ZoneBuilder_jump (
+        event->commanderInfo.pcId,
+        event->height,
+        msg
+    );
+
+    // Send the packet
+    zframe_t *frame = zmsg_first (msg);
+    if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
+        error ("Failed to send the packet to the clients.");
+        status = false;
+        goto cleanup;
     }
 
 cleanup:
@@ -203,24 +203,21 @@ EventHandler_chat (
     // Add itself in the senders list
     zlist_append (clientsAround, event->sessionKey);
 
-    if (zlist_size (clientsAround) > 0)
-    {
-        // Build the packet for the clients around
-        msg = zmsg_new ();
-        ZoneBuilder_chat (
-            event->pcId,
-            event->familyName,
-            event->commanderName,
-            event->chatText,
-            msg
-        );
-        // Send the packet
-        zframe_t *frame = zmsg_first (msg);
-        if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
-            error ("Failed to send the packet to the clients.");
-            status = false;
-            goto cleanup;
-        }
+    // Build the packet for the clients around
+    msg = zmsg_new ();
+    ZoneBuilder_chat (
+        event->pcId,
+        event->familyName,
+        event->commanderName,
+        event->chatText,
+        msg
+    );
+    // Send the packet
+    zframe_t *frame = zmsg_first (msg);
+    if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
+        error ("Failed to send the packet to the clients.");
+        status = false;
+        goto cleanup;
     }
 
 cleanup:
@@ -245,22 +242,22 @@ EventHandler_restSit (
         goto cleanup;
     }
 
-    if (zlist_size (clientsAround) > 0)
-    {
-        // Build the packet for the clients around
-        msg = zmsg_new ();
-        ZoneBuilder_restSit (
-            event->pcId,
-            msg
-        );
+    // Add itself in the senders list
+    zlist_append (clientsAround, event->sessionKey);
 
-        // Send the packet
-        zframe_t *frame = zmsg_first (msg);
-        if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
-            error ("Failed to send the packet to the clients.");
-            status = false;
-            goto cleanup;
-        }
+    // Build the packet for the clients around
+    msg = zmsg_new ();
+    ZoneBuilder_restSit (
+        event->pcId,
+        msg
+    );
+
+    // Send the packet
+    zframe_t *frame = zmsg_first (msg);
+    if (!(EventServer_sendToClients (self, clientsAround, zframe_data (frame), zframe_size (frame)))) {
+        error ("Failed to send the packet to the clients.");
+        status = false;
+        goto cleanup;
     }
 
 cleanup:
