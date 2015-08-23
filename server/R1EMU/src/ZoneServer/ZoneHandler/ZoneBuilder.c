@@ -677,7 +677,7 @@ ZoneBuilder_enterPc (
         uint32_t unk2; // 00000000
         uint16_t unk3; // 0000
         uint64_t socialInfoId; // EE2500003C010000
-        uint8_t unk4; // 00
+        uint8_t pose; // 00
         float moveSpeed; // 0000F841
         uint32_t unk5; // 00000000
         uint32_t currentHP; // EE00
@@ -707,8 +707,8 @@ ZoneBuilder_enterPc (
         replyPacket.unk2 = 0;
         replyPacket.unk3 = 0;
         replyPacket.socialInfoId = commanderInfo->socialInfoId;
-        replyPacket.unk4 = 0;
-        replyPacket.moveSpeed = 31.0f;
+        replyPacket.pose = 0;
+        replyPacket.moveSpeed = 31.0f; // TODO : store this in CommanderSession
         replyPacket.currentHP = commanderInfo->currentHP;
         replyPacket.maxHP = commanderInfo->maxHP;
         replyPacket.currentSP = commanderInfo->currentSP;
