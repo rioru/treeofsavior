@@ -141,11 +141,6 @@ typedef enum {
 #define info(format, ...)                                          \
     dbg_ex (DBG_LEVEL_INFO, stdout, format "\n", ##__VA_ARGS__)
 
-#ifndef sizeof_array
-#define sizeof_array(array) \
-    ((int)(sizeof(array) / sizeof(*(array))))
-#endif
-
 // ----------- Functions ------------
 
 /**
