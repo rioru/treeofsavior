@@ -99,6 +99,13 @@ ZoneHandler_chat (
     // The first 2 bytes of ZC_CHAT are the packet size
     size_t chatTextSize = *((uint16_t *) packet) - sizeof (ClientPacketHeader) - sizeof (uint16_t);
 
+    if (chatTextSize - sizeof (ClientPacketHeader) != packetSize) {
+        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
+            packetSize, sizeof (chatTextSize - sizeof (ClientPacketHeader)));
+
+        return PACKET_HANDLER_ERROR;
+    }
+
     #pragma pack(push, 1)
     struct {
         uint16_t msgSize;
@@ -106,18 +113,19 @@ ZoneHandler_chat (
     } *clientPacket = (void *) packet;
     #pragma pack(pop)
 
-    if (clientPacket->msgSize - sizeof (ClientPacketHeader) != packetSize) {
-        error ("The packet size received isn't correct. (packet size = %d, correct size = %d)",
-            packetSize, sizeof (clientPacket->msgSize - sizeof (ClientPacketHeader)));
+    // The chat message sent by the client should always finish by a null byte
+    clientPacket->msgText [chatTextSize-1] = '\0';
 
-        return PACKET_HANDLER_ERROR;
-    }
-
-    // Custom admin commands
+    // Check for custom admin commands
     if (session->game.accountSession.privilege <= ACCOUNT_SESSION_PRIVILEGES_ADMIN
     && (strncmp (clientPacket->msgText, "/cmd ", sizeof (clientPacket->msgText)) == 0)
     ) {
         AdminCmd_process (self, clientPacket->msgText + strlen ("/cmd "), session, replyMsg);
+    }
+
+    else {
+        // Normal message
+
     }
 
     return PACKET_HANDLER_OK;
