@@ -60,6 +60,12 @@ typedef enum EventServerType {
     EVENT_SERVER_TYPE_CHAT
 } EventServerType;
 
+typedef struct {
+    uint16_t mapId;
+    char sessionKey [SOCKET_SESSION_ID_SIZE];
+    CommanderInfo commanderInfo;
+} GameEventUpdatePosition;
+
 // ------ Structure declaration -------
 typedef struct {
     uint16_t routerId;
@@ -160,9 +166,7 @@ EventServer_destroy (
 /**
  * @brief Update the position of a client within the event server structures
  * @param self A pointer to an allocated EventServer.
- * @param mapId The mapId of the commander
- * @param targetSocketId The target socket ID of the client
- * @param commander The commander information of the client
+ * @param updatePosEvent Contains needed information for updating a commander position
  * @param newPosition The new position of the client
  * @param[out] redisClientsAround The list of other clients around the client at its new position
  * @return true on success, false otherwise
@@ -170,9 +174,7 @@ EventServer_destroy (
 bool
 EventServer_updateClientPosition (
     EventServer *self,
-    uint16_t mapId,
-    uint8_t *targetSocketId,
-    CommanderInfo *commander,
+    GameEventUpdatePosition *updatePosEvent,
     PositionXYZ *newPosition,
     zlist_t **_redisClientsAround
 );

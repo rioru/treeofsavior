@@ -359,12 +359,14 @@ ZoneHandler_moveStop (
 
     // Notify the players around
     GameEventMoveStop event = {
-        .mapId = session->socket.mapId,
-        .commanderInfo = session->game.commanderSession.currentCommander,
+        .updatePosEvent = {
+            .mapId = session->socket.mapId,
+            .commanderInfo = session->game.commanderSession.currentCommander,
+            .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        },
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
-        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_MOVE_STOP, &event, sizeof (event));
 
@@ -412,12 +414,14 @@ ZoneHandler_keyboardMove (
 
     // Notify the players around
     GameEventCommanderMove event = {
-        .mapId = session->socket.mapId,
-        .commanderInfo = session->game.commanderSession.currentCommander,
+        .updatePosEvent = {
+            .mapId = session->socket.mapId,
+            .commanderInfo = session->game.commanderSession.currentCommander,
+            .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        },
         .position = clientPacket->position,
         .direction = clientPacket->direction,
         .timestamp = clientPacket->timestamp,
-        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_COMMANDER_MOVE, &event, sizeof (event));
 
@@ -462,16 +466,16 @@ ZoneHandler_gameReady (
     ZoneBuilder_startInfo (replyMsg);
 
     ZoneBuilder_itemEquipList (replyMsg);
-    // ZoneBuilder_skillList (session->game.commanderSession.currentCommander.pcId, replyMsg);
-    ZoneBuilder_abilityList (session->game.commanderSession.currentCommander.pcId, replyMsg);
-    ZoneBuilder_cooldownList (session->game.commanderSession.currentCommander.socialInfoId, replyMsg);
+    // ZoneBuilder_skillList (commanderInfo->pcId, replyMsg);
+    ZoneBuilder_abilityList (commanderInfo->pcId, replyMsg);
+    ZoneBuilder_cooldownList (commanderInfo->socialInfoId, replyMsg);
 
     ZoneBuilder_quickSlotList (replyMsg);
 
     ZoneBuilder_normalUnk1 (replyMsg);
     ZoneBuilder_normalUnk2 (replyMsg);
     ZoneBuilder_normalUnk3 (replyMsg);
-    ZoneBuilder_normalUnk4 (session->game.commanderSession.currentCommander.socialInfoId, replyMsg);
+    ZoneBuilder_normalUnk4 (commanderInfo->socialInfoId, replyMsg);
     ZoneBuilder_normalUnk5 (replyMsg);
 
     ZoneBuilder_startGame (1.0, 0.0, 0.0, 0.0, replyMsg);
@@ -486,12 +490,14 @@ ZoneHandler_gameReady (
 
     // Notify players around that a new PC has entered
     GameEventPcEnter pcEnterEvent = {
-        .mapId = session->socket.mapId,
-        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey),
-        .commanderInfo = *commanderInfo
+        .updatePosEvent = {
+            .mapId = session->socket.mapId,
+            .commanderInfo = *commanderInfo,
+            .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        }
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_ENTER_PC, &pcEnterEvent, sizeof (pcEnterEvent));
-    ZoneBuilder_enterPc (&pcEnterEvent.commanderInfo, replyMsg);
+    ZoneBuilder_enterPc (&pcEnterEvent.updatePosEvent.commanderInfo, replyMsg);
 
     // ZoneBuilder_buffList (commanderInfo->base.pcId, replyMsg);
 
@@ -637,9 +643,11 @@ ZoneHandler_jump (
 
     // Notify the players around
     GameEventJump event = {
-        .mapId = session->socket.mapId,
-        .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey),
-        .commanderInfo = session->game.commanderSession.currentCommander,
+        .updatePosEvent = {
+            .mapId = session->socket.mapId,
+            .commanderInfo = session->game.commanderSession.currentCommander,
+            .sessionKey = SOCKET_ID_ARRAY (session->socket.sessionKey)
+        },
         .height = COMMANDER_HEIGHT_JUMP
     };
     Worker_dispatchEvent (self, EVENT_SERVER_TYPE_JUMP, &event, sizeof (event));

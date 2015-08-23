@@ -52,7 +52,7 @@ EventServer_subscribe (
  * @brief Return a list of clients into an area according to the Redis database
  * @param self An allocated EventServer
  * @param mapId : The mapId of the target zone
- * @param ignoredSocketId A socketID to ignore. NULL don't ignore anybody.
+ * @param ignoredSessionKey A socketID to ignore. NULL don't ignore anybody.
  * @param center The position of the center of the circle
  * @param range Radius of the circle
  * @return a zlist_t of identity keys
@@ -61,7 +61,7 @@ static zlist_t *
 EventServer_redisGetClientsWithinRange (
     EventServer *self,
     uint16_t mapId,
-    uint8_t *ignoredSocketId,
+    uint8_t *ignoredSessionKey,
     PositionXZ *center,
     float range
 );
@@ -329,9 +329,7 @@ cleanup:
 bool
 EventServer_updateClientPosition (
     EventServer *self,
-    uint16_t mapId,
-    uint8_t *targetSocketId,
-    CommanderInfo *commanderInfo,
+    GameEventUpdatePosition *updatePosEvent,
     PositionXYZ *newPosition,
     zlist_t **_redisClientsAround
 ) {
@@ -345,9 +343,13 @@ EventServer_updateClientPosition (
     zlist_t *pcLeaveList = NULL;
     zlist_t *redisClientsAround = NULL;
 
+    uint8_t *sessionKey = updatePosEvent->sessionKey;
+    uint16_t mapId = updatePosEvent->mapId;
+    CommanderInfo *commanderInfo = &updatePosEvent->commanderInfo;
+
     // Get the clients around
     if (!(redisClientsAround = EventServer_redisGetClientsWithinRange (
-        self, mapId, targetSocketId, &PositionXYZToXZ (newPosition),
+        self, mapId, sessionKey, &PositionXYZToXZ (newPosition),
         COMMANDER_RANGE_AROUND
     ))) {
         error ("Cannot get clients within range");
@@ -357,7 +359,7 @@ EventServer_updateClientPosition (
     *_redisClientsAround = redisClientsAround;
 
     // Get the node of the current client
-    GraphNode *nodeCurrentClient = EventServer_getClientNode (self, targetSocketId);
+    GraphNode *nodeCurrentClient = EventServer_getClientNode (self, sessionKey);
 
     // Mark the neighbours nodes as unvisited
     for (GraphArc *neighbourArc = zlist_first (nodeCurrentClient->arcs);
@@ -414,7 +416,7 @@ EventServer_updateClientPosition (
              enterPcSocketId != NULL;
              enterPcSocketId = zlist_next (pcEnterList)
         ) {
-            if (strcmp (enterPcSocketId, targetSocketId) == 0) {
+            if (strcmp (enterPcSocketId, sessionKey) == 0) {
                 // Doesn't send again the packet if the client sees himself
                 continue;
             }
@@ -429,7 +431,7 @@ EventServer_updateClientPosition (
 
             ZoneBuilder_enterPc (&gameSession.commanderSession.currentCommander, curPcEnterMsg);
             zframe_t *pcEnterFrame = zmsg_first (curPcEnterMsg);
-            if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
+            if (!(EventServer_sendToClient (self, sessionKey, zframe_data (pcEnterFrame), zframe_size (pcEnterFrame)))) {
                 error ("Failed to send the packet to the clients.");
                 status = false;
                 goto cleanup;
@@ -483,7 +485,7 @@ EventServer_updateClientPosition (
 
             ZoneBuilder_leave (gameSession.commanderSession.currentCommander.pcId, curPcLeaveMsg);
             zframe_t *pcLeaveFrame = zmsg_first (curPcLeaveMsg);
-            if (!(EventServer_sendToClient (self, targetSocketId, zframe_data (pcLeaveFrame), zframe_size (pcLeaveFrame)))) {
+            if (!(EventServer_sendToClient (self, sessionKey, zframe_data (pcLeaveFrame), zframe_size (pcLeaveFrame)))) {
                 error ("Failed to send the packet to the clients.");
                 status = false;
                 goto cleanup;
@@ -553,11 +555,11 @@ static zlist_t *
 EventServer_redisGetClientsWithinRange (
     EventServer *self,
     uint16_t mapId,
-    uint8_t *ignoredSocketId,
+    uint8_t *ignoredSessionKey,
     PositionXZ *position,
     float range
 ) {
-    return Redis_getClientsWithinDistance (self->redis, self->info.routerId, mapId, position, range, ignoredSocketId);
+    return Redis_getClientsWithinDistance (self->redis, self->info.routerId, mapId, position, range, ignoredSessionKey);
 }
 
 bool

@@ -32,11 +32,8 @@ EventHandler_enterPc (
     zlist_t *clientsAround = NULL;
 
     // Update client position
-    if (!(EventServer_updateClientPosition (
-        self, event->mapId, event->sessionKey,
-        &event->commanderInfo, &event->commanderInfo.pos, &clientsAround))
-    ) {
-        error ("Cannot update player %s position.", event->sessionKey);
+    if (!(EventServer_updateClientPosition (self, &event->updatePosEvent, &event->updatePosEvent.commanderInfo.pos, &clientsAround))) {
+        error ("Cannot update player %s position.", event->updatePosEvent.sessionKey);
         status = false;
         goto cleanup;
     }
@@ -57,11 +54,8 @@ EventHandler_commanderMove (
     zmsg_t *msg = NULL;
 
     // Update client position and get the clients around
-    if (!(EventServer_updateClientPosition (
-        self, event->mapId, event->sessionKey,
-        &event->commanderInfo, &event->position, &clientsAround))
-    ) {
-        error ("Cannot update player %s position.", event->sessionKey);
+    if (!(EventServer_updateClientPosition (self, &event->updatePosEvent, &event->position, &clientsAround))) {
+        error ("Cannot update player %s position.", event->updatePosEvent.sessionKey);
         status = false;
         goto cleanup;
     }
@@ -71,7 +65,7 @@ EventHandler_commanderMove (
         // Build the packet for the clients around
         msg = zmsg_new ();
         ZoneBuilder_moveDir (
-            event->commanderInfo.pcId,
+            event->updatePosEvent.commanderInfo.pcId,
             &event->position,
             &event->direction,
             event->timestamp,
@@ -103,11 +97,8 @@ EventHandler_moveStop (
     zlist_t *clientsAround = NULL;
 
     // Update client position and get the clients around
-    if (!(EventServer_updateClientPosition (
-        self, event->mapId, event->sessionKey,
-        &event->commanderInfo, &event->position, &clientsAround))
-    ) {
-        error ("Cannot update player %s position.", event->sessionKey);
+    if (!(EventServer_updateClientPosition (self, &event->updatePosEvent, &event->position, &clientsAround))) {
+        error ("Cannot update player %s position.", event->updatePosEvent.sessionKey);
         status = false;
         goto cleanup;
     }
@@ -117,7 +108,7 @@ EventHandler_moveStop (
         // Build the packet for the clients around
         msg = zmsg_new ();
         ZoneBuilder_pcMoveStop (
-            event->commanderInfo.pcId,
+            event->updatePosEvent.commanderInfo.pcId,
             &event->position,
             &event->direction,
             event->timestamp,
@@ -150,22 +141,19 @@ EventHandler_jump (
     zlist_t *clientsAround = NULL;
 
     // Update client position and get the clients around
-    if (!(EventServer_updateClientPosition (
-        self, event->mapId, event->sessionKey,
-        &event->commanderInfo, &event->commanderInfo.pos, &clientsAround))
-    ) {
-        error ("Cannot update player %s position.", event->sessionKey);
+    if (!(EventServer_updateClientPosition (self, &event->updatePosEvent, &event->updatePosEvent.commanderInfo.pos, &clientsAround))) {
+        error ("Cannot update player %s position.", event->updatePosEvent.sessionKey);
         status = false;
         goto cleanup;
     }
 
     // Add itself in the senders list
-    zlist_append (clientsAround, event->sessionKey);
+    zlist_append (clientsAround, event->updatePosEvent.sessionKey);
 
     // Build the packet for the clients around
     msg = zmsg_new ();
     ZoneBuilder_jump (
-        event->commanderInfo.pcId,
+        event->updatePosEvent.commanderInfo.pcId,
         event->height,
         msg
     );

@@ -542,7 +542,7 @@ Redis_getClientsWithinDistance (
     uint16_t routerId, uint16_t mapId,
     PositionXZ *center,
     float range,
-    char *ignoredSocketId
+    char *ignoredSessionKey
 ) {
     bool status = true;
     zlist_t *clients = NULL;
@@ -635,7 +635,7 @@ Redis_getClientsWithinDistance (
                             if (Math_isWithin2DManhattanDistance (&curPpos, center, range)) {
                                 // The current client is within the area, add it to the list
                                 // Don't include the ignored socketId
-                                if (!(ignoredSocketId && strcmp (socketId, ignoredSocketId) == 0)) {
+                                if (!(ignoredSessionKey && strcmp (socketId, ignoredSessionKey) == 0)) {
                                     zlist_append (clients, strdup (socketId));
                                 }
                             }

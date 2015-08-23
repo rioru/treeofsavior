@@ -26,24 +26,15 @@
 
 
 // ------ Structure declaration -------
-// TODO
 typedef struct {
-
-} GameEventUpdatePosition;
-
-typedef struct {
-    uint16_t mapId;
-    char sessionKey [SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commanderInfo;
+    GameEventUpdatePosition updatePosEvent;
     PositionXYZ position;
     PositionXZ direction;
     float timestamp;
 } GameEventCommanderMove;
 
 typedef struct {
-    uint16_t mapId;
-    char sessionKey [SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commanderInfo;
+    GameEventUpdatePosition updatePosEvent;
     PositionXYZ position;
     PositionXZ direction;
     float timestamp;
@@ -55,16 +46,12 @@ typedef struct {
 } GameEventRestSit;
 
 typedef struct {
-    uint16_t mapId;
-    char sessionKey [SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commanderInfo;
+    GameEventUpdatePosition updatePosEvent;
     float height;
 } GameEventJump;
 
 typedef struct {
-    uint16_t mapId;
-    char sessionKey [SOCKET_SESSION_ID_SIZE];
-    CommanderInfo commanderInfo;
+    GameEventUpdatePosition updatePosEvent;
 } GameEventPcEnter;
 
 typedef struct {
