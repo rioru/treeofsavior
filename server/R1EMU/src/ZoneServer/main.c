@@ -33,8 +33,6 @@ int main (int argc, char **argv)
     BarrackServer *barrackServer = NULL;
     SocialServer *socialServer = NULL;
 
-    int curArg = 1;
-
     // === Crash handler ===
     #ifdef WIN32
     SetUnhandledExceptionFilter (crashHandler);
@@ -48,28 +46,27 @@ int main (int argc, char **argv)
     #endif
 
     // === Read the command line arguments ===
-    uint16_t routerId = atoi (argv[curArg++]);
-
-    char *routerIp = argv[curArg++];
-    int portsCount = atoi (argv[curArg++]);
+    uint16_t routerId = atoi (*++argv);
+    char *routerIp = *++argv;
+    int portsCount = atoi (*++argv);
     int *ports;
     if (!(ports = malloc (sizeof (int) * portsCount))) {
         error ("Cannot allocate the port array.");
         return -1;
     }
     for (int i = 0; i < portsCount; i++) {
-        ports[i] = atoi (argv[curArg++]);
+        ports[i] = atoi (*++argv);
     }
-    uint16_t workersCount = atoi (argv[curArg++]);
-    char *globalServerIp = argv[curArg++];
-    int globalServerPort = atoi (argv[curArg++]);
-    char *sqlHostname = argv[curArg++];
-    char *sqlUsername = argv[curArg++];
-    char *sqlPassword = argv[curArg++];
-    char *sqlDatabase = argv[curArg++];
-    char *redisHostname = argv[curArg++];
-    int redisPort = atoi(argv[curArg++]);
-    ServerType serverType = atoi(argv[curArg++]);
+    uint16_t workersCount = atoi (*++argv);
+    char *globalServerIp = *++argv;
+    int globalServerPort = atoi (*++argv);
+    char *sqlHostname = *++argv;
+    char *sqlUsername = *++argv;
+    char *sqlPassword = *++argv;
+    char *sqlDatabase = *++argv;
+    char *redisHostname = *++argv;
+    int redisPort = atoi(*++argv);
+    ServerType serverType = atoi(*++argv);
 
 
     // Set a custom output for linux for each servers
