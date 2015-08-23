@@ -164,7 +164,7 @@ print_trace (
     size_t size;
     char **strings;
 
-    size = backtrace (array, sizeof (array) / sizeof(*(array)))));
+    size = backtrace (array, sizeof (array) / sizeof(*(array)));
     strings = backtrace_symbols (array, size);
 
     error ("Obtained %zd stack frames.", size);
